@@ -1,0 +1,47 @@
+import {MultiModelStore} from "@event-engine/infrastructure/MultiModelStore";
+import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
+import {InMemoryEventStore} from "@event-engine/infrastructure/EventStore/InMemoryEventStore";
+import {InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
+import {MetadataMatcher} from "@event-engine/infrastructure/EventStore";
+import {Event, EventMeta} from "@event-engine/messaging/event";
+
+export class InMemoryMultiModelStore implements MultiModelStore {
+  private eventStore: InMemoryEventStore;
+  private documentStore: InMemoryDocumentStore;
+
+  constructor(eventStore: InMemoryEventStore, documentStore: InMemoryDocumentStore) {
+    this.eventStore = eventStore;
+    this.documentStore = documentStore;
+  }
+
+  async loadEvents <P = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P,M>>> {
+    return this.eventStore.load(streamName, metadataMatcher, fromEventId, limit);
+  }
+
+  async loadDoc <D extends object>(collectionName: string, docId: string): Promise<D | null> {
+    return this.documentStore.getDoc(collectionName, docId);
+  }
+
+  beginSession(): Session {
+    return new Session();
+  }
+
+  async commitSession(session: Session): Promise<boolean> {
+    session.commit();
+
+    session.getAppendEventsTasks().forEach(task => this.eventStore.appendTo(
+      task.streamName,
+      task.events,
+      task.metadataMatcher,
+      task.expectedVersion
+    ));
+
+    session.getUpsertDocumentTasks().forEach(task => this.documentStore.upsertDoc(
+      task.collectionName,
+      task.docId,
+      task.doc
+    ));
+
+    return true;
+  }
+}

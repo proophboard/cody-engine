@@ -14,7 +14,10 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@event-engine/infrastructure/*": ["packages/infrastructure/src/lib/*"],
+      "@event-engine/messaging/*": ["packages/messaging/src/lib/*"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

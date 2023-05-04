@@ -1,0 +1,10 @@
+{
+  "name": "@event-engine/messaging",
+  "version": "0.0.1",
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "ajv-formats": "^2.1.1",
+    "json-schema-to-ts": "^2.8.0",
+    "@event-engine/messaging": "^0.0.1"
+  }
+}
