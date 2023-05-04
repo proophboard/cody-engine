@@ -1,12 +1,13 @@
 {
   "name": "cody-engine",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "scripts": {},
-  "private": true,
-  "dependencies": {},
+  "private": false,
   "devDependencies": {
     "@nx/js": "16.0.3",
+    "@nx/node": "^16.0.3",
+    "@nx/react": "^16.0.3",
     "@nx/workspace": "16.0.3",
     "nx": "16.0.3",
     "prettier": "^2.6.2",
