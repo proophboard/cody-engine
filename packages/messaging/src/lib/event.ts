@@ -6,15 +6,25 @@ import {randomUUID} from "crypto";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
+import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
+import {Description} from "@event-engine/infrastructure/ProophBoard/Description";
 
-export interface EventDescription {
+export interface EventDescription extends Description {
+  name: string;
   aggregateEvent: boolean;
+  public: boolean;
 }
 
 export interface AggregateEventDescription extends EventDescription {
   aggregateName: string;
   aggregateIdentifier: string;
-  aggregateState: string;
+  aggregateState: ValueObjectRuntimeInfo;
+}
+
+export interface EventRuntimeInfo {
+  desc: EventDescription | AggregateEventDescription;
+  factory: ReturnType<typeof makeEvent>;
+  schema: DeepReadonly<JSONSchema7>;
 }
 
 export type EventVisibility = "public" | "service" | "archive";

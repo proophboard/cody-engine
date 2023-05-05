@@ -4,8 +4,9 @@ import {ValidationError} from "ajv";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
+import {Description} from "@event-engine/infrastructure/ProophBoard/Description";
 
-export interface ValueObjectDescription {
+export interface ValueObjectDescription extends Description{
   name: string;
   isList: boolean;
   hasIdentifier: boolean;
@@ -17,6 +18,12 @@ export interface StateDescription extends ValueObjectDescription {
 
 export interface StateListDescription extends ValueObjectDescription{
   itemIdentifier: string;
+}
+
+export interface ValueObjectRuntimeInfo {
+  desc: ValueObjectDescription | StateDescription | StateListDescription;
+  factory: ReturnType<typeof makeValueObject>;
+  schema: DeepReadonly<JSONSchema7>;
 }
 
 export const makeValueObject = <T>(
