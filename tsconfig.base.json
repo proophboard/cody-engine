@@ -15,12 +15,13 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@server/env": ["packages/be/environments/environment.current.ts"],
-      "@server/*": ["packages/be/src/*"],
-      "@frontend/*": ["packages/fe/src/*"],
       "@app/shared/*": ["packages/shared/src/lib/*"],
+      "@app/extensions/*": ["packages/extensions/src/lib/*"],
       "@event-engine/infrastructure/*": ["packages/infrastructure/src/lib/*"],
-      "@event-engine/messaging/*": ["packages/messaging/src/lib/*"]
+      "@event-engine/messaging/*": ["packages/messaging/src/lib/*"],
+      "@frontend/*": ["packages/fe/src/*"],
+      "@server/*": ["packages/be/src/*"],
+      "@server/env": ["packages/be/environments/environment.current.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
