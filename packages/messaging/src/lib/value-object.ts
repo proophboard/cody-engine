@@ -5,6 +5,20 @@ import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
 
+export interface ValueObjectDescription {
+  name: string;
+  isList: boolean;
+  hasIdentifier: boolean;
+}
+
+export interface StateDescription extends ValueObjectDescription {
+  identifier: string;
+}
+
+export interface StateListDescription extends ValueObjectDescription{
+  itemIdentifier: string;
+}
+
 export const makeValueObject = <T>(
   name: string,
   schema: JSONSchema7,

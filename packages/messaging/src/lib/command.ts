@@ -7,6 +7,23 @@ import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
 
+export interface CommandDescription {
+  name: string;
+  aggregateCommand: boolean;
+}
+
+export interface AggregateCommandDescription extends CommandDescription{
+  newAggregate: boolean;
+  aggregateName: string;
+  aggregateIdentifier: string;
+}
+
+export interface CommandRuntimeInfo {
+  desc: CommandDescription | AggregateCommandDescription;
+  factory: ReturnType<typeof makeCommand>,
+  schema: DeepReadonly<JSONSchema7>,
+}
+
 export type Command<P extends Payload = any, M extends Meta = any> = Message<
   P,
   M

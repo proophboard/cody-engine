@@ -15,6 +15,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@server/env": ["packages/be/environments/environment.current.ts"],
+      "@server/*": ["packages/be/src/*"],
+      "@frontend/*": ["packages/fe/src/*"],
+      "@app/shared/*": ["packages/shared/src/lib/*"],
       "@event-engine/infrastructure/*": ["packages/infrastructure/src/lib/*"],
       "@event-engine/messaging/*": ["packages/messaging/src/lib/*"]
     }

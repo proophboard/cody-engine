@@ -7,6 +7,16 @@ import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
 
+export interface EventDescription {
+  aggregateEvent: boolean;
+}
+
+export interface AggregateEventDescription extends EventDescription {
+  aggregateName: string;
+  aggregateIdentifier: string;
+  aggregateState: string;
+}
+
 export type EventVisibility = "public" | "service" | "archive";
 
 export type EventMeta = Meta & {visibility: EventVisibility, version: string}
