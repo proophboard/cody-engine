@@ -5,10 +5,10 @@ import {PostgresDocumentStore} from "@event-engine/infrastructure/DocumentStore/
 import {getConfiguredDB} from "@server/infrastructure/configuredDB";
 import {PostgresMultiModelStore} from "@event-engine/infrastructure/MultiModelStore/PostgresMultiModelStore";
 import {PostgresEventStore} from "@event-engine/infrastructure/EventStore/PostgresEventStore";
-import {env} from "@server/env";
 import {InMemoryEventStore} from "@event-engine/infrastructure/EventStore/InMemoryEventStore";
 import {InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
 import {InMemoryMultiModelStore} from "@event-engine/infrastructure/MultiModelStore/InMemoryMultiModelStore";
+import {env} from "@server/environments/environment.current";
 
 let store: MultiModelStore;
 

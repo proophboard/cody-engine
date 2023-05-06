@@ -1,32 +1,36 @@
 {
-  "name": "shared",
+  "name": "descriptions",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "packages/shared/src",
+  "sourceRoot": "packages/descriptions/src",
   "projectType": "library",
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/packages/shared",
-        "tsConfig": "packages/shared/tsconfig.lib.json",
-        "packageJson": "package.json",
-        "main": "packages/shared/src/index.ts",
-        "assets": ["packages/shared/*.md"]
+        "outputPath": "dist/packages/descriptions",
+        "tsConfig": "packages/descriptions/tsconfig.lib.json",
+        "packageJson": "packages/descriptions/package.json",
+        "main": "packages/descriptions/src/index.ts",
+        "assets": ["packages/descriptions/*.md"]
       }
+    },
+    "publish": {
+      "command": "node tools/scripts/publish.mjs descriptions {args.ver} {args.tag}",
+      "dependsOn": ["build"]
     },
     "lint": {
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["packages/shared/**/*.ts"]
+        "lintFilePatterns": ["packages/descriptions/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "packages/shared/jest.config.ts",
+        "jestConfig": "packages/descriptions/jest.config.ts",
         "passWithNoTests": true
       },
       "configurations": {

@@ -1,6 +1,6 @@
 import {DB} from "@event-engine/infrastructure/Postgres/DB";
 import {Pool} from "pg";
-import {env} from "@server/env";
+import {env} from "@server/environments/environment.current";
 
 let db: DB;
 

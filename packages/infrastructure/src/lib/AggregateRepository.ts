@@ -35,6 +35,8 @@ export interface EventMetadata {
 
 export type ApplyFunction<S> = (aggregateState: S, event: Event) => S;
 
+export type ApplyFunctionRegistry<S> = {[eventName: string]: ApplyFunction<S>;}
+
 export const AggregateMeta = {
     VERSION: "aggregateVersion",
     TYPE: "aggregateType",
@@ -47,7 +49,7 @@ export class AggregateRepository<T> {
     protected readonly store: MultiModelStore;
     protected readonly eventStream: string;
     protected readonly aggregateCollection: string;
-    protected readonly applyFunctions: {[eventName: string]: ApplyFunction<T>};
+    protected readonly applyFunctions: ApplyFunctionRegistry<T>;
     protected readonly stateFactory: AggregateStateFactory<T>;
     protected readonly publicStream: string;
     protected nextSession: Session | undefined;
@@ -140,7 +142,7 @@ export class AggregateRepository<T> {
 
     public async loadState(aggregateId: string, untilVersion?: number): Promise<[T, number]> {
         let maybeVersionMatcher: MetadataMatcher = {};
-        let aggregateState: AggregateState = this.stateFactory({});
+        let aggregateState: AggregateState = {};
         let aggregateVersion = 0;
 
         if(!untilVersion) {
@@ -170,7 +172,7 @@ export class AggregateRepository<T> {
                     return;
                 }
 
-                resolve([finalState, finalVersion]);
+                resolve([this.stateFactory(finalState as object), finalVersion]);
             });
         })
     }

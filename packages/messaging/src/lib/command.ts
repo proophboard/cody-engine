@@ -6,18 +6,7 @@ import {randomUUID} from "crypto";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
-import {Description} from "@event-engine/infrastructure/ProophBoard/Description";
-
-export interface CommandDescription extends Description {
-  name: string;
-  aggregateCommand: boolean;
-}
-
-export interface AggregateCommandDescription extends CommandDescription{
-  newAggregate: boolean;
-  aggregateName: string;
-  aggregateIdentifier: string;
-}
+import {AggregateCommandDescription, CommandDescription} from "@event-engine/descriptions/descriptions";
 
 export interface CommandRuntimeInfo {
   desc: CommandDescription | AggregateCommandDescription;

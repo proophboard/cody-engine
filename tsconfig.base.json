@@ -15,13 +15,14 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@app/shared/*": ["packages/shared/src/lib/*"],
       "@app/extensions/*": ["packages/extensions/src/lib/*"],
+      "@app/shared/*": ["packages/shared/src/lib/*"],
+      "@event-engine/others": ["packages/others/src"],
+      "@event-engine/descriptions/*": ["packages/descriptions/src/lib/*"],
       "@event-engine/infrastructure/*": ["packages/infrastructure/src/lib/*"],
       "@event-engine/messaging/*": ["packages/messaging/src/lib/*"],
       "@frontend/*": ["packages/fe/src/*"],
       "@server/*": ["packages/be/src/*"],
-      "@server/env": ["packages/be/environments/environment.current.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

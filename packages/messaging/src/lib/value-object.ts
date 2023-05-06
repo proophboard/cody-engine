@@ -4,21 +4,7 @@ import {ValidationError} from "ajv";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
-import {Description} from "@event-engine/infrastructure/ProophBoard/Description";
-
-export interface ValueObjectDescription extends Description{
-  name: string;
-  isList: boolean;
-  hasIdentifier: boolean;
-}
-
-export interface StateDescription extends ValueObjectDescription {
-  identifier: string;
-}
-
-export interface StateListDescription extends ValueObjectDescription{
-  itemIdentifier: string;
-}
+import {StateDescription, StateListDescription, ValueObjectDescription} from "@event-engine/descriptions/descriptions";
 
 export interface ValueObjectRuntimeInfo {
   desc: ValueObjectDescription | StateDescription | StateListDescription;

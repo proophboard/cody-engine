@@ -6,20 +6,7 @@ import {randomUUID} from "crypto";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
-import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
-import {Description} from "@event-engine/infrastructure/ProophBoard/Description";
-
-export interface EventDescription extends Description {
-  name: string;
-  aggregateEvent: boolean;
-  public: boolean;
-}
-
-export interface AggregateEventDescription extends EventDescription {
-  aggregateName: string;
-  aggregateIdentifier: string;
-  aggregateState: ValueObjectRuntimeInfo;
-}
+import {AggregateEventDescription, EventDescription} from "@event-engine/descriptions/descriptions";
 
 export interface EventRuntimeInfo {
   desc: EventDescription | AggregateEventDescription;
