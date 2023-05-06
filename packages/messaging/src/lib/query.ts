@@ -6,6 +6,13 @@ import {randomUUID} from "crypto";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
+import {QueryDescription} from "@event-engine/descriptions/descriptions";
+
+export interface QueryRuntimeInfo {
+  desc: QueryDescription;
+  factory: ReturnType<typeof makeQuery>;
+  schema: DeepReadonly<JSONSchema7>;
+}
 
 export type Query<P extends Payload = any, M extends Meta = any> = Message<
   P,
@@ -48,3 +55,6 @@ export const makeQuery = <P extends Payload, M extends Meta = any>(
 
   return func;
 };
+
+export type QueryResolver<S> = (query: Query<S>) => Promise<S>;
+export type QueryResolverRegistry = {[queryName: string]: QueryResolver<any>};
