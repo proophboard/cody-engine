@@ -17,6 +17,7 @@
     "paths": {
       "@app/extensions/*": ["packages/extensions/src/lib/*"],
       "@app/shared/*": ["packages/shared/src/lib/*"],
+      "@cody-engine/cody": ["packages/cody/src/index.ts"],
       "@event-engine/descriptions/*": ["packages/descriptions/src/lib/*"],
       "@event-engine/infrastructure/*": ["packages/infrastructure/src/lib/*"],
       "@event-engine/messaging/*": ["packages/messaging/src/lib/*"],
