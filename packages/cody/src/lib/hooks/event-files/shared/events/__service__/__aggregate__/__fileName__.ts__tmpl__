@@ -1,0 +1,25 @@
+import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
+import {FromSchema} from "json-schema-to-ts";
+import {EventRuntimeInfo, makeEvent} from "@event-engine/messaging/event";
+import {Writable} from "json-schema-to-ts/lib/types/type-utils";
+import definitions from "@app/shared/types/definitions";
+import {references} from "@app/shared/types/references";
+import {<%= className %>Desc} from "@app/shared/events/<%= service %>/<%= aggregate %>/<%= fileName %>.desc";
+import {<%= className %>Schema} from "@app/shared/events/<%= service %>/<%= aggregate %>/<%= fileName %>.schema";
+
+export type <%= className %> = DeepReadonly<FromSchema<
+  typeof <%= className %>Schema,
+  {references: references}
+  >>;
+
+export const <%= propertyName %> = makeEvent<<%= className %>>(
+  <%= className %>Desc.name,
+  <%= className %>Schema as Writable<typeof <%= className %>Schema>,
+  definitions
+);
+
+export const <%= serviceNames.className %><%= aggregateNames.className %><%= className %>RuntimeInfo: EventRuntimeInfo = {
+  desc: <%= className %>Desc,
+  factory: <%= propertyName %>,
+  schema: <%= className %>Schema,
+}

@@ -1,10 +1,10 @@
 import {AggregateCommandDescription} from "@event-engine/descriptions/descriptions";
 
 export const <%= className %>Desc: AggregateCommandDescription = {
-  name: '<%= service %>.<%= className %>',
+  name: '<%= serviceNames.className %>.<%= className %>',
   aggregateCommand: <%= isAggregateCommand %>,
   newAggregate: <%= newAggregate %>,
-  aggregateName: "<%= service %>.<%= aggregateName %>",
+  aggregateName: "<%= serviceNames.className %>.<%= aggregateName %>",
   aggregateIdentifier: "<%= aggregateIdentifier %>",
   _pbBoardId: "<%= _pbBoardId %>",
   _pbCardId: "<%= _pbCardId %>",

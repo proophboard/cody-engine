@@ -1,5 +1,6 @@
 import {Map} from "immutable";
 import {onCommand} from "./src/lib/hooks/on-command";
+import {onEvent} from "./src/lib/hooks/on-event";
 
 module.exports = {
   context: {
@@ -25,7 +26,7 @@ module.exports = {
     // onBoundedContext,
     onCommand,
     // onDocument,
-    // onEvent,
+    onEvent,
     // onFeature: onFeatureHook,
     // onFreeText: onFreeTextHook,
     // onExternalSystem: onExternalSystemHook,

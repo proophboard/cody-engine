@@ -1,0 +1,18 @@
+import {AggregateEventDescription} from "@event-engine/descriptions/descriptions";
+
+export const <%= className %>Desc: AggregateEventDescription = {
+  name: '<%= serviceNames.className %>.<%= aggregateNames.className %>.<%= className %>',
+  aggregateEvent: <%= isAggregateEvent %>,
+  public: <%= !isAggregateEvent %>,
+  aggregateState: "<%= serviceNames.className %>.<%= aggregateStateNames.classNameWithNamespace %>",
+  aggregateName: "<%= serviceNames.className %>.<%= aggregateNames.className %>",
+  aggregateIdentifier: "<%= aggregateIdentifier %>",
+  _pbBoardId: "<%= _pbBoardId %>",
+  _pbCardId: "<%= _pbCardId %>",
+  _pbCreatedBy: "<%= _pbCreatedBy %>",
+  _pbCreatedAt: "<%= _pbCreatedAt %>",
+  _pbLastUpdatedBy: "<%= _pbLastUpdatedBy %>",
+  _pbLastUpdatedAt: "<%= _pbLastUpdatedAt %>",
+  _pbVersion: <%= _pbVersion %>,
+  _pbLink: "<%= _pbLink %>",
+};

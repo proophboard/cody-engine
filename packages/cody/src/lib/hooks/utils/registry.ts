@@ -2,7 +2,7 @@ import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-
 import {Context} from "../context";
 import {FsTree} from "nx/src/generators/tree";
 import {loadDescription} from "./prooph-board-info";
-import {isCodyError, nodeNameToPascalCase} from "@proophboard/cody-utils";
+import {getSingleSource, isCodyError, nodeNameToPascalCase} from "@proophboard/cody-utils";
 import {ObjectLiteralExpression, Project, ScriptTarget, SyntaxKind} from "ts-morph";
 import {joinPathFragments} from "nx/src/utils/path";
 import {detectService} from "./detect-service";
@@ -24,7 +24,7 @@ const addRegistryEntry = (registryFilename: string, registryVarName: string, ent
     SyntaxKind.ObjectLiteralExpression
   ) as ObjectLiteralExpression;
 
-  if(registryObject.getProperty(entryId)) {
+  if(registryObject.getProperty(`"${entryId}"`)) {
     return;
   }
 
@@ -77,6 +77,20 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       entryId = `${serviceNames.className}.${arNames.className}`;
       entryValue = `${serviceNames.className}${arNames.className}Desc`;
       importPath = `@app/shared/aggregates/${serviceNames.fileName}/${arNames.fileName}.desc`;
+      break;
+    case NodeType.event:
+      const eventNames = names(node.getName());
+      const evtAggregate = getSingleSource(node, NodeType.aggregate);
+      if(isCodyError(evtAggregate)) {
+        return evtAggregate;
+      }
+      const evtArNames = names(evtAggregate.getName());
+
+      registryFilename = 'events.ts';
+      registryVarName = 'events';
+      entryId = `${serviceNames.className}.${evtArNames.className}.${eventNames.className}`;
+      entryValue = `${serviceNames.className}${evtArNames.className}${eventNames.className}RuntimeInfo`;
+      importPath = `@app/shared/events/${serviceNames.fileName}/${evtArNames.fileName}/${eventNames.fileName}`;
       break;
     default:
       return {
