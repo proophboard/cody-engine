@@ -13,6 +13,9 @@ module.exports = {
     beSrc: 'packages/be/src',
     feSrc: 'packages/fe/src',
     sharedSrc: 'packages/shared/src/lib',
+    boardId: '',
+    boardName: '',
+    userId: '',
   },
   hooks: {
     /**

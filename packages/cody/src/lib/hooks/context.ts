@@ -7,4 +7,7 @@ export interface Context {
   feSrc: string,
   sharedSrc: string,
   projectRoot: string,
+  boardId: string,
+  boardName: string,
+  userId: string,
 }

@@ -6,6 +6,7 @@ export interface ProophBoardDescription {
   _pbLastUpdatedBy: string;
   _pbLastUpdatedAt: string;
   _pbVersion: number;
+  _pbLink: string;
 }
 
 export interface AggregateDescription extends ProophBoardDescription {

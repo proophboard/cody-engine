@@ -1,1 +1,25 @@
-export type <%= className %> = {}
+import {FromSchema} from "json-schema-to-ts";
+import {Writable} from "json-schema-to-ts/lib/types/type-utils";
+import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
+import {CommandRuntimeInfo, makeCommand} from "@event-engine/messaging/command";
+import definitions from "@app/shared/types/definitions";
+import {references} from "@app/shared/types/references";
+import {<%= className %>Schema} from "@app/shared/commands/<%= service %>/<%= fileName %>.schema";
+import {<%= className %>Desc} from "@app/shared/commands/<%= service %>/<%= fileName %>.desc";
+
+export type <%= className %> = DeepReadonly<FromSchema<
+  typeof <%= className %>Schema,
+  {references: references}
+  >>;
+
+export const <%= propertyName %> = makeCommand<<%= className %>>(
+  <%= className %>Desc.name,
+  <%= className %>Schema as Writable<typeof <%= className %>Schema>,
+  definitions
+);
+
+export const <%= serviceNames.className %><%= className %>RuntimeInfo: CommandRuntimeInfo = {
+  desc: <%= className %>Desc,
+  factory: <%= propertyName %>,
+  schema: <%= className %>Schema,
+}
