@@ -16,7 +16,7 @@ import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
 import {generateFiles} from "@nx/devkit";
 import {toJSON} from "./utils/to-json";
-import {updateProophBoardInfo} from "./utils/prooph-board-info";
+import {loadDescription, updateProophBoardInfo} from "./utils/prooph-board-info";
 import {namespaceToJSONPointer} from "./utils/value-object/namespace";
 import {register} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
@@ -79,6 +79,8 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
     });
 
     withErrorCheck(register, [event, ctx, tree]);
+
+    withErrorCheck(loadDescription, [event, ctx, tree]);
 
     const changes = tree.listChanges();
 

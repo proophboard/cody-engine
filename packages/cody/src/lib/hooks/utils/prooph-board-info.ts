@@ -3,7 +3,7 @@ import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-
 import {Context} from "../context";
 import {FsTree} from "nx/src/generators/tree";
 import {names} from "@event-engine/messaging/helpers";
-import {isCodyError, nodeNameToPascalCase} from "@proophboard/cody-utils";
+import {getSingleSource, isCodyError, nodeNameToPascalCase} from "@proophboard/cody-utils";
 import {detectService} from "./detect-service";
 import {getVoMetadata} from "./value-object/get-vo-metadata";
 import {now} from "./time";
@@ -29,7 +29,13 @@ export const loadDescription = <D extends ProophBoardDescription>(node: Node, ct
       nodeTypeFilename = 'commands';
       break;
     case NodeType.event:
+      const evtAggregate = getSingleSource(node, NodeType.aggregate);
+      if(isCodyError(evtAggregate)) {
+        return evtAggregate;
+      }
+
       nodeTypeFilename = 'events';
+      ns = `/${names(evtAggregate.getName()).fileName}/`;
       break;
     case NodeType.document:
       const voMeta = getVoMetadata(node, ctx);
@@ -49,7 +55,7 @@ export const loadDescription = <D extends ProophBoardDescription>(node: Node, ct
 
   const fullPath = `${nodeTypeFilename}/${serviceFilename}${ns}${descFile}`;
 
-  if(tree.isFile(fullPath)) {
+  if(tree.isFile(`${sharedSrc}/${fullPath}`)) {
     const desc = require(`@app/shared/${fullPath.slice(0,-3)}`);
 
     for (const descKey in desc) {
@@ -61,12 +67,18 @@ export const loadDescription = <D extends ProophBoardDescription>(node: Node, ct
         }
       }
     }
+
+    return {
+      cody: `I was not able to load prooph board description file: ${fullPath}.`,
+      type: CodyResponseType.Error,
+      details: 'The file seems to exist, but it does not export a description with _pb* info included. Usually such a file is added and updated automatically by me. Did it get deleted somehow?'
+    }
   }
 
   return {
-    cody: `I was not able to load prooph board description file: ${fullPath}.`,
+    cody: `I was not able to load prooph board description file: ${sharedSrc}/${fullPath}.`,
     type: CodyResponseType.Error,
-    details: 'The file seems to exist, but it does not export a description with _pb* info included. Usually such a file is added and updated automatically by me. Did it get deleted somehow?'
+    details: 'The file does not exist'
   }
 }
 
