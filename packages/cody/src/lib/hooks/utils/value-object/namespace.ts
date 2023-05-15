@@ -1,4 +1,6 @@
-export const namespaceToJSONPointer = (ns: string): string => {
+import {names} from "@event-engine/messaging/helpers";
+
+const prepareNs = (ns: string): string => {
   if(ns.length === 0) {
     return ns;
   }
@@ -13,9 +15,21 @@ export const namespaceToJSONPointer = (ns: string): string => {
 
   ns = ns.slice(1, -1);
 
+  return ns;
+}
+
+export const namespaceToJSONPointer = (ns: string): string => {
   if(ns.length === 0) {
     return ns;
   }
 
+  ns = prepareNs(ns);
+
   return ns.split("/").join(".");
+}
+
+export const namespaceToFilePath = (ns: string): string => {
+  ns = prepareNs(ns);
+
+  return ns.split("/").map(part => names(part).fileName).join("/");
 }

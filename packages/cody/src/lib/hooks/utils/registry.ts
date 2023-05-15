@@ -14,8 +14,21 @@ const project = new Project({
   },
 });
 
-const addRegistryEntry = (registryFilename: string, registryVarName: string, entryId: string, entryValue: string, importPath: string, tree: FsTree) => {
-  const registryPath = joinPathFragments('packages', 'shared', 'src', 'lib', registryFilename);
+const sharedRegistryPath = (registryFilename: string): string => {
+  return joinPathFragments('packages', 'shared', 'src', 'lib', registryFilename);
+}
+
+const getFilenameFromPath = (path: string): string => {
+  const pathParts = path.split("/");
+  if(!pathParts.length) {
+    return '';
+  }
+
+  return pathParts[pathParts.length - 1];
+}
+
+const addRegistryEntry = (registryPath: string, registryVarName: string, entryId: string, entryValue: string, importName: string, importPath: string, tree: FsTree) => {
+  const registryFilename = getFilenameFromPath(registryPath);
   const registryFileContent = tree.read(registryPath)!.toString();
 
   const registrySource = project.createSourceFile(registryFilename, registryFileContent);
@@ -34,7 +47,7 @@ const addRegistryEntry = (registryFilename: string, registryVarName: string, ent
   });
 
   registrySource.addImportDeclaration({
-    defaultImport: `{${entryValue}}`,
+    defaultImport: `{${importName}}`,
     moduleSpecifier: importPath
   });
 
@@ -50,7 +63,7 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
     return true;
   }
 
-  let registryFilename: string, registryVarName: string, entryId: string, entryValue: string, importPath: string;
+  let registryPath: string, registryVarName: string, entryId: string, entryValue: string, importName: string, importPath: string;
 
   const service = detectService(node, ctx);
   if(isCodyError(service)) {
@@ -63,19 +76,19 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
     case NodeType.command:
       const commandNames = names(nodeNameToPascalCase(node));
 
-      registryFilename = 'commands.ts';
+      registryPath = sharedRegistryPath('commands.ts');
       registryVarName = 'commands';
       entryId = `${serviceNames.className}.${commandNames.className}`;
-      entryValue = `${serviceNames.className}${commandNames.className}RuntimeInfo`;
+      entryValue = importName = `${serviceNames.className}${commandNames.className}RuntimeInfo`;
       importPath = `@app/shared/commands/${serviceNames.fileName}/${commandNames.fileName}`;
       break;
     case NodeType.aggregate:
       const arNames = names(nodeNameToPascalCase(node));
 
-      registryFilename = 'aggregates.ts';
+      registryPath = sharedRegistryPath('aggregates.ts');
       registryVarName = 'aggregates';
       entryId = `${serviceNames.className}.${arNames.className}`;
-      entryValue = `${serviceNames.className}${arNames.className}Desc`;
+      entryValue = importName = `${serviceNames.className}${arNames.className}Desc`;
       importPath = `@app/shared/aggregates/${serviceNames.fileName}/${arNames.fileName}.desc`;
       break;
     case NodeType.event:
@@ -86,10 +99,10 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       }
       const evtArNames = names(evtAggregate.getName());
 
-      registryFilename = 'events.ts';
+      registryPath = sharedRegistryPath('events.ts');
       registryVarName = 'events';
       entryId = `${serviceNames.className}.${evtArNames.className}.${eventNames.className}`;
-      entryValue = `${serviceNames.className}${evtArNames.className}${eventNames.className}RuntimeInfo`;
+      entryValue = importName = `${serviceNames.className}${evtArNames.className}${eventNames.className}RuntimeInfo`;
       importPath = `@app/shared/events/${serviceNames.fileName}/${evtArNames.fileName}/${eventNames.fileName}`;
       break;
     default:
@@ -100,6 +113,42 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       }
   }
 
-  addRegistryEntry(registryFilename, registryVarName, entryId, entryValue, importPath, tree);
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
+  return true;
+}
+
+export const registerCommandHandler = (service: string, aggregate: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const serviceNames = names(service);
+  const command = getSingleSource(aggregate, NodeType.command);
+  if(isCodyError(command)) {
+    return command;
+  }
+  const commandNames = names(command.getName());
+  const aggregateNames = names(aggregate.getName());
+  let addToRegistry = false;
+
+  tree.listChanges().forEach(c => {
+    console.log(c.type, c.path);
+    if(c.path === joinPathFragments('packages', 'be', 'src', 'command-handlers', serviceNames.fileName, aggregateNames.fileName, `handle-${commandNames.fileName}.ts`)
+      && c.type === "CREATE") {
+      addToRegistry = true;
+    }
+  })
+
+
+  if(!addToRegistry) {
+    return true;
+  }
+
+  const registryPath = joinPathFragments('packages', 'be', 'src', 'command-handlers', 'index.ts');
+  const registryVarName = 'commandHandlers';
+  const entryId = `${serviceNames.className}.${commandNames.className}`;
+  const entryValue = `handle${serviceNames.className}${commandNames.className}`;
+  const importName = `handle${commandNames.className} as handle${serviceNames.className}${commandNames.className}`;
+  const importPath = `@server/command-handlers/${serviceNames.fileName}/${aggregateNames.fileName}/handle-${commandNames.fileName}`;
+
+
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
+
   return true;
 }

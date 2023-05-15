@@ -1,0 +1,17 @@
+import {AggregateDescription} from "@event-engine/descriptions/descriptions";
+
+export const <%= serviceNames.className %><%= className %>AggregateDesc: AggregateDescription = {
+  name: '<%= serviceNames.className %>.<%= className %>',
+  identifier: "<%= aggregateIdentifier %>",
+  collection: "<%= collection %>",
+  stream: "<%= stream %>",
+  state: "<%= serviceNames.className %>.<%= aggregateStateNames.classNameWithNamespace %>",
+  _pbBoardId: "<%= _pbBoardId %>",
+  _pbCardId: "<%= _pbCardId %>",
+  _pbCreatedBy: "<%= _pbCreatedBy %>",
+  _pbCreatedAt: "<%= _pbCreatedAt %>",
+  _pbLastUpdatedBy: "<%= _pbLastUpdatedBy %>",
+  _pbLastUpdatedAt: "<%= _pbLastUpdatedAt %>",
+  _pbVersion: <%= _pbVersion %>,
+  _pbLink: "<%= _pbLink %>",
+};

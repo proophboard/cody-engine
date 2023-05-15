@@ -80,8 +80,6 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
 
     withErrorCheck(register, [event, ctx, tree]);
 
-    withErrorCheck(loadDescription, [event, ctx, tree]);
-
     const changes = tree.listChanges();
 
     flushChanges(ctx.projectRoot, changes);

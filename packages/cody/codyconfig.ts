@@ -1,6 +1,7 @@
 import {Map} from "immutable";
 import {onCommand} from "./src/lib/hooks/on-command";
 import {onEvent} from "./src/lib/hooks/on-event";
+import {onAggregate} from "./src/lib/hooks/on-aggregate";
 
 module.exports = {
   context: {
@@ -22,7 +23,7 @@ module.exports = {
     /**
      * Uncomment and implement a hook to activate it
      */
-    // onAggregate,
+    onAggregate,
     // onBoundedContext,
     onCommand,
     // onDocument,
