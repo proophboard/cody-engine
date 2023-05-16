@@ -3,11 +3,9 @@ import {Command} from "@event-engine/messaging/command";
 import {Event} from "@event-engine/messaging/event";
 import * as jexl from "jexl";
 import {<%= commandNames.className %>} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= commandNames.fileName %>";
-<% events.forEach(function(event) { %>
-import {<%= event.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= fileName %>/<%= event.fileName %>";
+<% events.forEach(function(event) { %>import {<%= event.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= fileName %>/<%= event.fileName %>";
 <% }) %>
 
-
 export const handle<%= commandNames.className %> = async function* (<%= aggregateStateNames.propertyName %>: Partial<<%= aggregateStateNames.className %>>, command: Command<<%= commandNames.className %>>): AsyncGenerator<Event> {
-  <%- behavior %>
+<%- behavior %>
 }

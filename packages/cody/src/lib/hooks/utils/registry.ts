@@ -7,6 +7,7 @@ import {ObjectLiteralExpression, Project, ScriptTarget, SyntaxKind} from "ts-mor
 import {joinPathFragments} from "nx/src/utils/path";
 import {detectService} from "./detect-service";
 import {names} from "@event-engine/messaging/helpers";
+import {isNewFile} from "./fs-tree";
 
 const project = new Project({
   compilerOptions: {
@@ -31,7 +32,7 @@ const addRegistryEntry = (registryPath: string, registryVarName: string, entryId
   const registryFilename = getFilenameFromPath(registryPath);
   const registryFileContent = tree.read(registryPath)!.toString();
 
-  const registrySource = project.createSourceFile(registryFilename, registryFileContent);
+  const registrySource = project.createSourceFile(registryFilename, registryFileContent, {overwrite: true});
   const registryVar = registrySource.getVariableDeclaration(registryVarName);
   const registryObject = registryVar!.getInitializerIfKindOrThrow(
     SyntaxKind.ObjectLiteralExpression
@@ -125,18 +126,12 @@ export const registerCommandHandler = (service: string, aggregate: Node, ctx: Co
   }
   const commandNames = names(command.getName());
   const aggregateNames = names(aggregate.getName());
-  let addToRegistry = false;
 
-  tree.listChanges().forEach(c => {
-    console.log(c.type, c.path);
-    if(c.path === joinPathFragments('packages', 'be', 'src', 'command-handlers', serviceNames.fileName, aggregateNames.fileName, `handle-${commandNames.fileName}.ts`)
-      && c.type === "CREATE") {
-      addToRegistry = true;
-    }
-  })
-
-
-  if(!addToRegistry) {
+  if(!isNewFile(
+    joinPathFragments('packages', 'be', 'src', 'command-handlers', serviceNames.fileName, aggregateNames.fileName, `handle-${commandNames.fileName}.ts`),
+    tree
+    )
+  ) {
     return true;
   }
 

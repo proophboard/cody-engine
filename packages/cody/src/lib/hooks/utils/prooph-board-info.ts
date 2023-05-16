@@ -7,6 +7,7 @@ import {getSingleSource, isCodyError, nodeNameToPascalCase} from "@proophboard/c
 import {detectService} from "./detect-service";
 import {getVoMetadata} from "./value-object/get-vo-metadata";
 import {now} from "./time";
+import {isNewFile} from "./fs-tree";
 
 export const loadDescription = <D extends ProophBoardDescription>(node: Node, ctx: Context, tree: FsTree): D | CodyResponse => {
   const {sharedSrc} = ctx;
@@ -55,7 +56,7 @@ export const loadDescription = <D extends ProophBoardDescription>(node: Node, ct
 
   const fullPath = `${nodeTypeFilename}/${serviceFilename}${ns}${descFile}`;
 
-  if(tree.isFile(`${sharedSrc}/${fullPath}`)) {
+  if(!isNewFile(`${sharedSrc}/${fullPath}`, tree)) {
     const desc = require(`@app/shared/${fullPath.slice(0,-3)}`);
 
     for (const descKey in desc) {

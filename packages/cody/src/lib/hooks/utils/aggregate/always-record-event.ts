@@ -5,9 +5,10 @@ export const alwaysRecordEvent = (event: Node): AlwaysRule => {
   return {
     rule: "always",
     then: {
-      do: "record_event",
-      event: event.getName(),
-      mapping: "command"
+      record: {
+        event: event.getName(),
+        mapping: "command"
+      },
     } as ThenRecordEvent
   }
 }
