@@ -15,12 +15,9 @@ import {register, registerCommandHandler} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {alwaysRecordEvent} from "./utils/aggregate/always-record-event";
 import {convertRuleConfigToAggregateBehavior} from "./utils/rule-engine/convert-rule-config-to-behavior";
+import {AggregateMetadata} from "./utils/aggregate/metadata";
 
-interface AggregateMetadata {
-  collection?: string;
-  stream?: string;
-  rules?: Rule[];
-}
+
 
 export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Context) => {
   try {

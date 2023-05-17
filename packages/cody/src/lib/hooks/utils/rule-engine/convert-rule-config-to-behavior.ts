@@ -1,10 +1,15 @@
 import {
-  AlwaysRule, ConditionRule,
-  IfConditionRule,
-  IfNotConditionRule, isExecuteRules,
-  isIfConditionRule, isIfNotConditionRule, isRecordEvent,
+  AlwaysRule,
+  ConditionRule,
+  isAssignVariable,
+  isExecuteRules,
+  isIfConditionRule,
+  isIfNotConditionRule,
+  isRecordEvent,
   PropMapping,
-  Rule, ThenExecuteRules,
+  Rule,
+  ThenAssignVariable,
+  ThenExecuteRules,
   ThenRecordEvent
 } from "./configuration";
 import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
@@ -42,12 +47,36 @@ export const convertRuleConfigToAggregateBehavior = (aggregate: Node, ctx: Conte
   return lines.join("\n");
 }
 
-const convertRule = (aggregate: Node, ctx: Context, rule: Rule, lines: string[], indent = ''): boolean | CodyResponse => {
+export const convertRuleConfigToEventReducerRules = (event: Node, ctx: Context, rules: Rule[], indent = '  ') => {
+  const lines: string[] = [];
+
+  for (const rule of rules) {
+    if(!isAssignVariable(rule.then)) {
+      return {
+        cody: `Rule ${JSON.stringify(rule)} of event: "${event.getName()}" is not an "assign:variable" rule.`,
+        type: CodyResponseType.Error,
+        details: `Event rules should only assign variables to map data from the event to the aggregate state.`,
+      }
+    }
+
+    lines.push("");
+    const res = convertRule(event, ctx, rule, lines, indent);
+    if(isCodyError(res)) {
+      return res;
+    }
+  }
+
+  lines.push("");
+
+  return lines.join("\n");
+}
+
+const convertRule = (node: Node, ctx: Context, rule: Rule, lines: string[], indent = ''): boolean | CodyResponse => {
   switch (rule.rule) {
     case "always":
-      return convertAlwaysRule(aggregate, ctx, rule, lines, indent);
+      return convertAlwaysRule(node, ctx, rule, lines, indent);
     case "condition":
-      return convertConditionRule(aggregate, ctx, rule as ConditionRule, lines, indent);
+      return convertConditionRule(node, ctx, rule as ConditionRule, lines, indent);
     default:
       return {
         cody: `I don't know how to handle a rule of type "${rule.rule}".`,
@@ -57,8 +86,8 @@ const convertRule = (aggregate: Node, ctx: Context, rule: Rule, lines: string[],
   }
 }
 
-const convertAlwaysRule = (aggregate: Node, ctx: Context, rule: AlwaysRule, lines: string[], indent = ''): boolean | CodyResponse => {
-  return convertThen(aggregate, ctx, rule, lines, indent);
+const convertAlwaysRule = (node: Node, ctx: Context, rule: AlwaysRule, lines: string[], indent = ''): boolean | CodyResponse => {
+  return convertThen(node, ctx, rule, lines, indent);
 }
 
 const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lines: string[], indent = ''): boolean | CodyResponse => {
@@ -102,6 +131,8 @@ const convertThen = (node: Node, ctx: Context, rule: Rule, lines: string[], inde
       return convertThenRecordEvent(node, ctx, then as ThenRecordEvent, rule, lines, indent);
     case isExecuteRules(then):
       return convertThenExecuteRules(node, ctx, then as ThenExecuteRules, rule, lines, indent);
+    case isAssignVariable(then):
+      return convertThenAssignVariable(node, ctx, then as ThenAssignVariable, rule, lines, indent);
     default:
       return {
         cody: `I don't know the "then" part of that rule: ${JSON.stringify(rule)}.`,
@@ -170,6 +201,14 @@ const convertThenExecuteRules = (node: Node, ctx: Context, then: ThenExecuteRule
   return true;
 }
 
+const convertThenAssignVariable = (node: Node, ctx: Context, then: ThenAssignVariable, rule: Rule, lines: string[], indent = ''): boolean | CodyResponse => {
+  const valueMapping = convertMapping(node, ctx, then.assign.value, rule, indent);
+
+  lines.push(`ctx['${then.assign.variable}'] = ${valueMapping}`);
+
+  return true;
+}
+
 const convertMapping = (node: Node, ctx: Context, mapping: string | PropMapping, rule: Rule, indent = ''): string | CodyResponse => {
   if(typeof mapping === "string") {
     return wrapExpression(mapping);
@@ -178,7 +217,17 @@ const convertMapping = (node: Node, ctx: Context, mapping: string | PropMapping,
   let propMap = `{\n`;
 
   for (const propName in mapping) {
-    propMap += `${indent}  "${propName}": ${wrapExpression(mapping[propName])},\n`
+    if(propName === '$merge') {
+      let mergeVal = mapping['$merge'];
+      if(typeof mergeVal === 'string') {
+        mergeVal = [mergeVal];
+      }
+      mergeVal.forEach(exp => {
+        propMap += `${indent}  ...${wrapExpression(exp)},\n`
+      })
+    } else {
+      propMap += `${indent}  "${propName}": ${wrapExpression(mapping[propName] as string)},\n`
+    }
   }
 
   propMap += `${indent}}`;

@@ -33,7 +33,7 @@ export interface EventMetadata {
     version: string;
 }
 
-export type ApplyFunction<S> = (aggregateState: S, event: Event) => S;
+export type ApplyFunction<S> = (aggregateState: S, event: Event) => Promise<S>;
 
 export type ApplyFunctionRegistry<S> = {[eventName: string]: ApplyFunction<S>;}
 
@@ -165,7 +165,7 @@ export class AggregateRepository<T> {
             }).then(async (eventsItr) => {
                 const events = await asyncIteratorToArray(eventsItr);
 
-                const [finalState, finalVersion] = this.applyEvents(aggregateState as T, aggregateVersion, events);
+                const [finalState, finalVersion] = await this.applyEvents(aggregateState as T, aggregateVersion, events);
 
                 if(finalVersion === 0) {
                     reject(new NotFoundError(`Aggregate of type ${this.aggregateType} with id: ${aggregateId} not found.`));
@@ -177,7 +177,7 @@ export class AggregateRepository<T> {
         })
     }
 
-    public applyEvents(arState: T, arVersion: number, events: Iterable<Event<any, EventMetadata>>): [T, number] {
+    public async applyEvents(arState: T, arVersion: number, events: Iterable<Event<any, EventMetadata>>): Promise<[T, number]> {
         for (const evt of events) {
             if(evt.meta.visibility !== "service") {
                 continue;

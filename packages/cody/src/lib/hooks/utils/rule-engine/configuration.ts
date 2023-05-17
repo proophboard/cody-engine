@@ -37,7 +37,7 @@ export interface ValidateRule extends Rule {
 
 export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenPerformQuery | ThenExecuteRules;
 
-export type PropMapping = {[name: string]: string};
+export type PropMapping = {[name: string]: string | string[]};
 
 export interface ThenRecordEvent {
   record: {
@@ -59,7 +59,7 @@ export const isThrowError = (then: any): then is ThenThrowError => typeof then.t
 export interface ThenAssignVariable {
   assign: {
     variable: string;
-    value: string;
+    value: string | PropMapping;
   }
 }
 

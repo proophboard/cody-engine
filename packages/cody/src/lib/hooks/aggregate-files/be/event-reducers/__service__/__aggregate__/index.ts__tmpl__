@@ -1,0 +1,8 @@
+import {ApplyFunctionRegistry} from "@event-engine/infrastructure/AggregateRepository";
+import {<%= aggregateStateNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %>/<%= aggregateStateNames.fileNameWithNamespace %>";
+
+const reducers: ApplyFunctionRegistry<<%= aggregateStateNames.className %>> = {
+
+};
+
+export default reducers;

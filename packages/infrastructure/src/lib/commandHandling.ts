@@ -44,7 +44,7 @@ export async function handle<C, E, S, D = any>(
 
         const event = result.value;
 
-        [state, currentVersion] = repository.applyEvents(state as S, currentVersion, [event]);
+        [state, currentVersion] = await repository.applyEvents(state as S, currentVersion, [event]);
 
         events.push(event);
     }

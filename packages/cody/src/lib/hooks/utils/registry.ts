@@ -147,3 +147,29 @@ export const registerCommandHandler = (service: string, aggregate: Node, ctx: Co
 
   return true;
 }
+
+export const registerEventReducer = (service: string, event: Node, aggregate: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const serviceNames = names(service);
+  const eventNames = names(event.getName());
+  const aggregateNames = names(aggregate.getName());
+
+  if(!isNewFile(
+    joinPathFragments('packages', 'be', 'src', 'event-reducers', serviceNames.fileName, aggregateNames.fileName, `apply-${eventNames.fileName}.ts`),
+    tree
+  )
+  ) {
+    return true;
+  }
+
+  const registryPath = joinPathFragments('packages', 'be', 'src', 'event-reducers', serviceNames.fileName, aggregateNames.fileName, 'index.ts');
+  const registryVarName = 'reducers';
+  const entryId = `${serviceNames.className}.${aggregateNames.className}.${eventNames.className}`;
+  const entryValue = `apply${eventNames.className}`;
+  const importName = `apply${eventNames.className}`;
+  const importPath = `@server/event-reducers/${serviceNames.fileName}/${aggregateNames.fileName}/apply-${eventNames.fileName}`;
+
+
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
+
+  return true;
+}
