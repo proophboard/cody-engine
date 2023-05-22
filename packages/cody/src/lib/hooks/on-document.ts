@@ -12,7 +12,7 @@ import {detectService} from "./utils/detect-service";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {toJSON} from "./utils/to-json";
 import {convertRuleConfigToValueObjectInitializeRules} from "./utils/rule-engine/convert-rule-config-to-behavior";
-import {register, registerValueObjectDefinition} from "./utils/registry";
+import {register, registerQuery, registerValueObjectDefinition} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
@@ -36,6 +36,8 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
       JSONPointer: namespaceToJSONPointer(voMeta.ns)
     }
 
+    // Register Value Object
+
     let initializeRules = '';
 
     if(voMeta.initialize) {
@@ -57,6 +59,24 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
 
     withErrorCheck(register, [vo, ctx, tree]);
     withErrorCheck(registerValueObjectDefinition, [service, vo, voMeta, ctx, tree]);
+
+    // Register Query if VO is queryable
+
+    if(voMeta.isQueryable) {
+      generateFiles(tree, __dirname + '/query-files/shared', ctx.sharedSrc, {
+        tmpl: "",
+        service: serviceNames.fileName,
+        serviceNames,
+        voNames,
+        ns,
+        schema: voMeta.querySchema,
+        toJSON,
+        ...queryNames,
+        ...withErrorCheck(updateProophBoardInfo, [vo, ctx, tree])
+      });
+
+      withErrorCheck(registerQuery, [service, vo, voMeta, ctx, tree]);
+    }
 
     const changes = tree.listChanges();
 

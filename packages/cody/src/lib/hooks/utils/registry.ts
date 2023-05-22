@@ -253,3 +253,28 @@ export const registerValueObjectDefinition = (service: string, vo: Node, voMeta:
   addArrayRegistryItem(refPath, refVarName, refEntryValue, refImportName, refImportPath, tree);
   return true;
 }
+
+export const registerQuery = (service: string, vo: Node, voMeta: ValueObjectMetadata, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const serviceNames = names(service);
+  const queryNames = names('Get ' + vo.getName());
+
+  if(!isNewFile(
+    joinPathFragments(ctx.sharedSrc, 'queries', serviceNames.fileName, `${queryNames.fileName}.ts`),
+    tree
+  )
+  ) {
+    return true;
+  }
+
+  let importName;
+  const registryPath = joinPathFragments(ctx.sharedSrc, 'queries.ts');
+  const registryVarName = 'queries';
+  const entryId = `${serviceNames.className}.${queryNames.className}`;
+  const entryValue = importName = `${serviceNames.className}${queryNames.className}QueryRuntimeInfo`;
+  const importPath = `@app/shared/queries/${serviceNames.fileName}/${queryNames.fileName}`;
+
+
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
+
+  return true;
+}

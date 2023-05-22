@@ -1,0 +1,25 @@
+import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
+import {FromSchema} from "json-schema-to-ts";
+import {makeQuery, QueryRuntimeInfo} from "@event-engine/messaging/query";
+import {Writable} from "json-schema-to-ts/lib/types/type-utils";
+import definitions from "@app/shared/types/definitions";
+import {references} from "@app/shared/types/references";
+import {<%= className %>Schema} from "@app/shared/queries/<%= serviceNames.fileName %>/<%= fileName %>.schema";
+import {<%= className %>Desc} from "@app/shared/queries/<%= serviceNames.fileName %>/<%= fileName %>.desc";
+
+export type <%= className %> = DeepReadonly<FromSchema<
+  typeof <%= className %>Schema,
+  {references: references}
+  >>;
+
+export const <%= propertyName %> = makeQuery<<%= className %>>(
+  <%= className %>Desc.name,
+  <%= className %>Schema as Writable<typeof <%= className %>Schema>,
+  definitions
+);
+
+export const <%= serviceNames.className %><%= className %>QueryRuntimeInfo: QueryRuntimeInfo = {
+  desc: <%= className %>Desc,
+  factory: <%= propertyName %>,
+  schema: <%= className %>Schema,
+}
