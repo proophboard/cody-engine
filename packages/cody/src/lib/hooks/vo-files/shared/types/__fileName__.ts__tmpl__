@@ -1,0 +1,33 @@
+import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
+import {FromSchema} from "json-schema-to-ts";
+import {makeValueObject, ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
+import {Writable} from "json-schema-to-ts/lib/types/type-utils";
+import definitions from "@app/shared/types/definitions";
+import {references} from "@app/shared/types/references";
+import {<%= className %>Schema} from "./<%= fileName %>.schema";
+import {<%= className %>Desc} from "./<%= fileName %>.desc";
+
+export type <%= className %> = DeepReadonly<FromSchema<
+  typeof <%= className %>Schema,
+  {references: references}
+>>;
+
+export const <%= propertyName %> = makeValueObject<<%= className %>>(
+  <%= className %>Desc.name,
+  <%= className %>Schema as Writable<typeof <%= className %>Schema>,
+  definitions,
+  (data: any): <%= className %> => {
+    const ctx: any = {};
+    ctx['data'] = data;
+
+    <%- initializeRules %>
+
+    return ctx['data'] as <%= className %>;
+  }
+);
+
+export const <%= serviceNames.className %><%= ns.className %><%= className %>VORuntimeInfo: ValueObjectRuntimeInfo = {
+  desc: <%= className %>Desc,
+  factory: <%= propertyName %>,
+  schema: <%= className %>Schema,
+}

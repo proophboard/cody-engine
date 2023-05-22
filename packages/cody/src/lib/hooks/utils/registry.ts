@@ -3,11 +3,13 @@ import {Context} from "../context";
 import {FsTree} from "nx/src/generators/tree";
 import {loadDescription} from "./prooph-board-info";
 import {getSingleSource, isCodyError, nodeNameToPascalCase} from "@proophboard/cody-utils";
-import {ObjectLiteralExpression, Project, ScriptTarget, SyntaxKind} from "ts-morph";
+import {ObjectLiteralExpression, Project, ScriptTarget, SyntaxKind, TupleTypeNode} from "ts-morph";
 import {joinPathFragments} from "nx/src/utils/path";
 import {detectService} from "./detect-service";
 import {names} from "@event-engine/messaging/helpers";
 import {isNewFile} from "./fs-tree";
+import {getVoMetadata, ValueObjectMetadata} from "./value-object/get-vo-metadata";
+import {namespaceToClassName, namespaceToFilePath, namespaceToJSONPointer} from "./value-object/namespace";
 
 const project = new Project({
   compilerOptions: {
@@ -46,6 +48,33 @@ const addRegistryEntry = (registryPath: string, registryVarName: string, entryId
     name: `"${entryId}"`,
     initializer: entryValue
   });
+
+  registrySource.addImportDeclaration({
+    defaultImport: `{${importName}}`,
+    moduleSpecifier: importPath
+  });
+
+  registrySource.formatText({indentSize: 2});
+  tree.write(registryPath, registrySource.getText());
+}
+
+const addArrayRegistryItem = (registryPath: string, registryVarName: string, entryValue: string, importName: string, importPath: string, tree: FsTree) => {
+  const registryFilename = getFilenameFromPath(registryPath);
+  const registryFileContent = tree.read(registryPath)!.toString();
+
+  const registrySource = project.createSourceFile(registryFilename, registryFileContent, {overwrite: true});
+
+  const typeAlias = registrySource.getTypeAliasOrThrow(registryVarName);
+  const tuple = typeAlias.getTypeNodeOrThrow() as TupleTypeNode;
+
+  let tupleText = '';
+  if(tuple.getText() === '[]') {
+    tupleText = tuple.getText().replace("]", `\n  ${entryValue}\n]`);
+  } else {
+    tupleText = tuple.getText().replace("\n]", `,\n  ${entryValue}\n]`);
+  }
+
+  tuple.replaceWithText(tupleText);
 
   registrySource.addImportDeclaration({
     defaultImport: `{${importName}}`,
@@ -105,6 +134,23 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       entryId = `${serviceNames.className}.${evtArNames.className}.${eventNames.className}`;
       entryValue = importName = `${serviceNames.className}${evtArNames.className}${eventNames.className}RuntimeInfo`;
       importPath = `@app/shared/events/${serviceNames.fileName}/${evtArNames.fileName}/${eventNames.fileName}`;
+      break;
+    case NodeType.document:
+      const voNames = names(node.getName());
+      const voMeta = getVoMetadata(node, ctx);
+
+      if(isCodyError(voMeta)) {
+        return voMeta;
+      }
+
+      const nsClassName = namespaceToJSONPointer(voMeta.ns);
+      const nsFilename = namespaceToFilePath(voMeta.ns);
+
+      registryPath = sharedRegistryPath('types.ts');
+      registryVarName = 'types';
+      entryId = `${serviceNames.className}.${nsClassName}.${voNames.className}`;
+      entryValue = importName = `${serviceNames.className}${nsClassName}${voNames.className}VORuntimeInfo`;
+      importPath = `@app/shared/types/${serviceNames.fileName}${nsFilename}${voNames.fileName}`;
       break;
     default:
       return {
@@ -171,5 +217,39 @@ export const registerEventReducer = (service: string, event: Node, aggregate: No
 
   addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
 
+  return true;
+}
+
+export const registerValueObjectDefinition = (service: string, vo: Node, voMeta: ValueObjectMetadata, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const serviceNames = names(service);
+  const voNames = names(vo.getName());
+
+  const nsClassName = namespaceToClassName(voMeta.ns);
+  const nsFilename = namespaceToFilePath(voMeta.ns);
+
+  if(!isNewFile(joinPathFragments(ctx.sharedSrc, 'types', serviceNames.fileName, nsFilename.slice(1, -1), voNames.fileName + '.ts'), tree)) {
+    // already registered
+    return true;
+  }
+
+  // Register Definition
+
+  const registryPath = joinPathFragments(ctx.sharedSrc, 'types', 'definitions.ts');
+  const registryVarName = 'definitions';
+  const entryId = `/definitions/${serviceNames.fileName}/${nsFilename}/${voNames.fileName}`;
+  const entryValue = `${serviceNames.className}${nsClassName}${voNames.className}Schema`;
+  const importName = `${voNames.className}Schema as ${serviceNames.className}${nsClassName}${voNames.className}Schema`;
+  const importPath = `@app/shared/types/${serviceNames.fileName}${nsFilename}${voNames.fileName}.schema`;
+
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
+
+  // Register Reference
+  const refPath = joinPathFragments(ctx.sharedSrc, 'types', 'references.ts');
+  const refVarName = 'references';
+  const refEntryValue = `typeof ${serviceNames.className}${nsClassName}${voNames.className}Schema`;
+  const refImportName = `${voNames.className}Schema as ${serviceNames.className}${nsClassName}${voNames.className}Schema`;
+  const refImportPath = `@app/shared/types/${serviceNames.fileName}/${nsFilename}/${voNames.fileName}.schema`;
+
+  addArrayRegistryItem(refPath, refVarName, refEntryValue, refImportName, refImportPath, tree);
   return true;
 }

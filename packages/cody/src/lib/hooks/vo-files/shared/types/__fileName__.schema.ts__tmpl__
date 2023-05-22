@@ -1,0 +1,1 @@
+export const <%= className %>Schema = <%- toJSON(meta.schema) %> as const;

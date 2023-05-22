@@ -71,6 +71,30 @@ export const convertRuleConfigToEventReducerRules = (event: Node, ctx: Context, 
   return lines.join("\n");
 }
 
+export const convertRuleConfigToValueObjectInitializeRules = (vo: Node, ctx: Context, rules: Rule[], indent = '    ') => {
+  const lines: string[] = [];
+
+  for (const rule of rules) {
+    if(!isAssignVariable(rule.then)) {
+      return {
+        cody: `Rule ${JSON.stringify(rule)} of value object: "${vo.getName()}" is not an "assign:variable" rule.`,
+        type: CodyResponseType.Error,
+        details: `Value object initialize rules should only assign the value object "data" variable with initial/default values.`,
+      }
+    }
+
+    lines.push("");
+    const res = convertRule(vo, ctx, rule, lines, indent);
+    if(isCodyError(res)) {
+      return res;
+    }
+  }
+
+  lines.push("");
+
+  return lines.join("\n");
+}
+
 const convertRule = (node: Node, ctx: Context, rule: Rule, lines: string[], indent = ''): boolean | CodyResponse => {
   switch (rule.rule) {
     case "always":

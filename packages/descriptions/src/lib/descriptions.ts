@@ -49,18 +49,21 @@ export interface QueryDescription extends ProophBoardDescription {
   returnType: string;
 }
 
-export interface ValueObjectDescription extends ProophBoardDescription {
-  name: string;
+export interface ValueObjectDescriptionFlags {
   isList: boolean;
   hasIdentifier: boolean;
   isQueryable: boolean;
+}
+
+export interface ValueObjectDescription extends ProophBoardDescription, ValueObjectDescriptionFlags {
+  name: string;
 }
 
 export interface StateDescription extends ValueObjectDescription {
   identifier: string;
 }
 
-export const isStateDescription = (desc: ValueObjectDescription): desc is StateDescription => {
+export const isStateDescription = (desc: ValueObjectDescriptionFlags): desc is StateDescription => {
   return desc.hasIdentifier && !desc.isList;
 }
 
@@ -68,7 +71,7 @@ export interface StateListDescription extends ValueObjectDescription{
   itemIdentifier: string;
 }
 
-export const isStateListDescription = (desc: ValueObjectDescription): desc is StateListDescription => {
+export const isStateListDescription = (desc: ValueObjectDescriptionFlags): desc is StateListDescription => {
   return desc.hasIdentifier && desc.isList;
 }
 
@@ -77,7 +80,7 @@ export interface QueryableStateDescription extends StateDescription {
   collection: string;
 }
 
-export const isQueryableStateDescription = (desc: ValueObjectDescription): desc is QueryableStateDescription => {
+export const isQueryableStateDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableStateDescription => {
   return isStateDescription(desc) && desc.isQueryable;
 }
 
@@ -86,7 +89,23 @@ export interface QueryableStateListDescription extends StateListDescription {
   collection: string;
 }
 
-export const isQueryableStateListDescription = (desc: ValueObjectDescription): desc is QueryableStateListDescription => {
-  return isQueryableStateListDescription(desc) && desc.isQueryable;
+export const isQueryableStateListDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableStateListDescription => {
+  return isStateListDescription(desc) && desc.isQueryable;
 }
 
+export type ValueObjectDescriptionType = "ValueObjectDescription" | "StateDescription" | "StateListDescription" | "QueryableStateDescription" | "QueryableStateListDescription";
+
+export const detectDescriptionType = (desc: ValueObjectDescriptionFlags): ValueObjectDescriptionType => {
+  switch (true) {
+    case isQueryableStateListDescription(desc):
+      return "QueryableStateListDescription";
+    case isQueryableStateDescription(desc):
+      return "QueryableStateDescription";
+    case isStateListDescription(desc):
+      return "StateListDescription";
+    case isStateDescription(desc):
+      return "StateDescription";
+    default:
+      return "ValueObjectDescription";
+  }
+}

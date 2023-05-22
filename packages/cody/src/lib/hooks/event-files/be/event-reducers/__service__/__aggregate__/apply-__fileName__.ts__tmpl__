@@ -1,6 +1,6 @@
 import {Event} from "@event-engine/messaging/event";
 import * as jexl from "jexl";
-import {<%= aggregateStateNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %>/<%= aggregateStateNames.fileNameWithNamespace %>";
+import {<%= aggregateStateNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %><%= aggregateStateNames.fileNameWithNamespace %>";
 import {<%= className %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= aggregateNames.fileName %>/<%= fileName %>";
 
 export const apply<%= className %> = async (<%= aggregateStateNames.propertyName %>: <%= aggregateStateNames.className %>, event: Event<<%= className %>>): Promise<<%= aggregateStateNames.className %>> => {

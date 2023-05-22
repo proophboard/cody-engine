@@ -1,4 +1,4 @@
-import {<%= aggregateStateNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %>/<%= aggregateStateNames.fileNameWithNamespace %>";
+import {<%= aggregateStateNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %><%= aggregateStateNames.fileNameWithNamespace %>";
 import {Command} from "@event-engine/messaging/command";
 import {Event} from "@event-engine/messaging/event";
 import * as jexl from "jexl";

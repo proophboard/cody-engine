@@ -3,6 +3,7 @@ import {Context} from "../../context";
 import {getTargetsOfType, isCodyError} from "@proophboard/cody-utils";
 import {getNodeFromSyncedNodes} from "../node-tree";
 import {getVoMetadata} from "../value-object/get-vo-metadata";
+import {isStateDescription} from "@event-engine/descriptions/descriptions";
 
 type Success = Node;
 type Error = CodyResponse;
@@ -34,7 +35,7 @@ export const findAggregateState = (aggregate: Node, ctx: Context): Success | Err
         return voMeta;
       }
 
-      if(voMeta.aggregateState && voMeta.identifier) {
+      if(isStateDescription(voMeta)) {
         return vo;
       }
     }

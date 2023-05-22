@@ -30,7 +30,7 @@ export const createApplyFunctionRegistryIfNotExists = (aggregate: Node, ctx: Con
       serviceNames,
       aggregateStateNames: {
         ...aggregateStateNames,
-        fileNameWithNamespace: `${namespaceToFilePath(aggregateStateMeta.ns)}/${aggregateStateNames.fileName}`,
+        fileNameWithNamespace: `${namespaceToFilePath(aggregateStateMeta.ns)}${aggregateStateNames.fileName}`,
       },
       ...aggregateNames,
     });

@@ -4,25 +4,37 @@ import {isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {JSONSchema7} from "json-schema-to-ts";
 import {convertShorthandObjectToJsonSchema, ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
 import {detectService} from "../detect-service";
+import {definitionId, normalizeRefs} from "./definitions";
+import {names} from "@event-engine/messaging/helpers";
+import { ValueObjectDescriptionFlags } from "@event-engine/descriptions/descriptions";
+import {Rule} from "../rule-engine/configuration";
 
 interface ValueObjectMetadataRaw {
-  aggregateState?: boolean;
   identifier?: string;
-  shorthand: boolean;
+  shorthand?: boolean;
   schema: object;
+  querySchema?: object;
   ns?: string;
+  collection?: string;
+  initialize?: Rule[];
 }
 
-interface ValueObjectMetadata {
-  aggregateState: boolean;
+export interface ValueObjectMetadata extends ValueObjectDescriptionFlags {
   schema: JSONSchema7;
+  querySchema?: JSONSchema7;
   ns: string;
   service: string;
+  isList: boolean;
+  hasIdentifier: boolean;
+  isQueryable: boolean;
   identifier?: string;
+  collection?: string;
+  initialize?: Rule[];
 }
 
 export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | CodyResponse => {
   const meta = parseJsonMetadata<ValueObjectMetadataRaw>(vo);
+  const voNames = names(vo.getName());
 
   if(isCodyError(meta)) {
     return meta;
@@ -42,6 +54,18 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     }
 
     meta.schema = jsonSchema;
+
+    meta.schema['$id'] = definitionId(vo, ns, ctx);
+
+    if(meta.querySchema) {
+      const queryJsonSchema = convertShorthandObjectToJsonSchema(meta.querySchema as ShorthandObject, ns);
+
+      if(isCodyError(queryJsonSchema)) {
+        return queryJsonSchema;
+      }
+
+      meta.querySchema = queryJsonSchema;
+    }
   }
 
   const service = detectService(vo, ctx);
@@ -50,11 +74,32 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     return service;
   }
 
-  return {
-    aggregateState: !!meta.aggregateState,
-    schema: meta.schema as JSONSchema7,
+  const normalizedSchema = normalizeRefs(meta.schema, service) as JSONSchema7;
+
+  const hasIdentifier = !!meta.identifier;
+  const isQueryable = !!meta.querySchema;
+
+  const convertedMeta: ValueObjectMetadata = {
+    schema: normalizedSchema,
     ns,
     service,
-    identifier: meta.identifier,
-  };
+    isList: normalizedSchema['type'] === 'array',
+    hasIdentifier,
+    isQueryable,
+  }
+
+  if(hasIdentifier) {
+    convertedMeta.identifier = meta.identifier;
+  }
+
+  if(isQueryable) {
+    convertedMeta.querySchema = normalizeRefs(meta.querySchema, service) as JSONSchema7;
+    convertedMeta.collection = meta.collection || voNames.constantName.toLowerCase() + '_collection';
+  }
+
+  if(meta.initialize) {
+    convertedMeta.initialize = meta.initialize;
+  }
+
+  return convertedMeta;
 }

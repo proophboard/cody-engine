@@ -8,6 +8,7 @@ import {detectService} from "./detect-service";
 import {getVoMetadata} from "./value-object/get-vo-metadata";
 import {now} from "./time";
 import {isNewFile} from "./fs-tree";
+import {namespaceToFilePath} from "./value-object/namespace";
 
 export const loadDescription = <D extends ProophBoardDescription>(node: Node, ctx: Context, tree: FsTree): D | CodyResponse => {
   const {sharedSrc} = ctx;
@@ -43,7 +44,8 @@ export const loadDescription = <D extends ProophBoardDescription>(node: Node, ct
       if(isCodyError(voMeta)) {
         return voMeta;
       }
-      ns = voMeta.ns;
+
+      ns = namespaceToFilePath(voMeta.ns);
       nodeTypeFilename = 'types';
       break;
     default:

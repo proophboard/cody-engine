@@ -2,6 +2,7 @@ import {Map} from "immutable";
 import {onCommand} from "./src/lib/hooks/on-command";
 import {onEvent} from "./src/lib/hooks/on-event";
 import {onAggregate} from "./src/lib/hooks/on-aggregate";
+import {onDocument} from "./src/lib/hooks/on-document";
 
 module.exports = {
   context: {
@@ -26,7 +27,7 @@ module.exports = {
     onAggregate,
     // onBoundedContext,
     onCommand,
-    // onDocument,
+    onDocument,
     onEvent,
     // onFeature: onFeatureHook,
     // onFreeText: onFreeTextHook,

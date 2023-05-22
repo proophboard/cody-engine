@@ -8,7 +8,6 @@ import {findAggregateState} from "./utils/aggregate/find-aggregate-state";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
 import {generateFiles} from "@nx/devkit";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
-import {Rule} from "./utils/rule-engine/configuration";
 import {namespaceToFilePath, namespaceToJSONPointer} from "./utils/value-object/namespace";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {register, registerCommandHandler} from "./utils/registry";
@@ -32,7 +31,7 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
     const meta = withErrorCheck(parseJsonMetadata, [aggregate]) as AggregateMetadata;
 
-    const collection = meta.collection || aggregateNames.constantName.toLowerCase() + '_collection';
+    const collection = aggregateStateMeta.collection || aggregateStateNames.constantName.toLowerCase() + '_collection';
     const stream = meta.stream || 'write_model_stream';
     const rules = meta.rules || [];
 
@@ -84,7 +83,7 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
       behavior,
       aggregateStateNames: {
         ...aggregateStateNames,
-        fileNameWithNamespace: `${namespaceToFilePath(aggregateStateMeta.ns)}/${aggregateStateNames.fileName}`,
+        fileNameWithNamespace: `${namespaceToFilePath(aggregateStateMeta.ns)}${aggregateStateNames.fileName}`,
       },
       events: events.map(evt => names(evt.getName())),
       ...aggregateNames,
