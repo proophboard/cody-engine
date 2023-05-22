@@ -1,0 +1,12 @@
+import {Query} from "@event-engine/messaging/query";
+import {getConfiguredDocumentStore} from "@server/infrastructure/configuredDocumentStore";
+import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
+import {<%= className %>} from "@app/shared/queries/<%= serviceNames.fileName %>/<%= fileName %>";
+import {<%= voNames.propertyName %>, <%= voNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %><%= ns.fileName %><%= voNames.fileName %>";
+import {<%= voNames.className %>Desc} from "@app/shared/types/<%= serviceNames.fileName %><%= ns.fileName %><%= voNames.fileName %>.desc";
+
+export const resolve<%= className %> = async (query: Query<<%= className %>>): Promise<<%= voNames.className %>> => {
+  const ds = getConfiguredDocumentStore();
+
+  <%- resolve %>
+}

@@ -200,14 +200,14 @@ export const registerEventReducer = (service: string, event: Node, aggregate: No
   const aggregateNames = names(aggregate.getName());
 
   if(!isNewFile(
-    joinPathFragments('packages', 'be', 'src', 'event-reducers', serviceNames.fileName, aggregateNames.fileName, `apply-${eventNames.fileName}.ts`),
+    joinPathFragments(ctx.beSrc, 'event-reducers', serviceNames.fileName, aggregateNames.fileName, `apply-${eventNames.fileName}.ts`),
     tree
   )
   ) {
     return true;
   }
 
-  const registryPath = joinPathFragments('packages', 'be', 'src', 'event-reducers', serviceNames.fileName, aggregateNames.fileName, 'index.ts');
+  const registryPath = joinPathFragments(ctx.beSrc, 'event-reducers', serviceNames.fileName, aggregateNames.fileName, 'index.ts');
   const registryVarName = 'reducers';
   const entryId = `${serviceNames.className}.${aggregateNames.className}.${eventNames.className}`;
   const entryValue = `apply${eventNames.className}`;
@@ -272,6 +272,31 @@ export const registerQuery = (service: string, vo: Node, voMeta: ValueObjectMeta
   const entryId = `${serviceNames.className}.${queryNames.className}`;
   const entryValue = importName = `${serviceNames.className}${queryNames.className}QueryRuntimeInfo`;
   const importPath = `@app/shared/queries/${serviceNames.fileName}/${queryNames.fileName}`;
+
+
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
+
+  return true;
+}
+
+export const registerQueryResolver = (service: string, vo: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const serviceNames = names(service);
+  const queryNames = names('Get ' + vo.getName());
+
+  if(!isNewFile(
+    joinPathFragments(ctx.beSrc, 'query-resolvers', serviceNames.fileName, `resolve-${queryNames.fileName}.ts`),
+    tree
+  )
+  ) {
+    return true;
+  }
+
+  const registryPath = joinPathFragments(ctx.beSrc, 'query-resolvers', 'index.ts');
+  const registryVarName = 'queryResolvers';
+  const entryId = `${serviceNames.className}.${queryNames.className}`;
+  const entryValue = `resolve${serviceNames.className}${queryNames.className}`;
+  const importName = `resolve${queryNames.className} as resolve${serviceNames.className}${queryNames.className}`;
+  const importPath = `@server/query-resolvers/${serviceNames.fileName}/resolve-${queryNames.fileName}`;
 
 
   addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);

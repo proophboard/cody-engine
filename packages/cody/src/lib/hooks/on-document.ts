@@ -12,8 +12,9 @@ import {detectService} from "./utils/detect-service";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {toJSON} from "./utils/to-json";
 import {convertRuleConfigToValueObjectInitializeRules} from "./utils/rule-engine/convert-rule-config-to-behavior";
-import {register, registerQuery, registerValueObjectDefinition} from "./utils/registry";
+import {register, registerQuery, registerQueryResolver, registerValueObjectDefinition} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
+import {makeQueryResolver} from "./utils/query/make-query-resolver";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
   try {
@@ -32,7 +33,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
     const ns = {
       ns: voMeta.ns,
       className: namespaceToClassName(voMeta.ns),
-      path: namespaceToFilePath(voMeta.ns),
+      fileName: namespaceToFilePath(voMeta.ns),
       JSONPointer: namespaceToJSONPointer(voMeta.ns)
     }
 
@@ -76,6 +77,18 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
       });
 
       withErrorCheck(registerQuery, [service, vo, voMeta, ctx, tree]);
+
+      generateFiles(tree, __dirname + '/query-files/be', ctx.beSrc, {
+        tmpl: "",
+        service: serviceNames.fileName,
+        serviceNames,
+        voNames,
+        ns,
+        ...queryNames,
+        resolve: withErrorCheck(makeQueryResolver, [vo, voMeta, ctx])
+      });
+
+      withErrorCheck(registerQueryResolver, [service, vo, ctx, tree]);
     }
 
     const changes = tree.listChanges();
