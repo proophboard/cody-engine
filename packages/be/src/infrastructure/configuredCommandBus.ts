@@ -67,7 +67,7 @@ class CommandBus {
   }
 }
 
-let commandBus;
+let commandBus: CommandBus;
 
 export const getConfiguredCommandBus = (): CommandBus => {
   if(!commandBus) {

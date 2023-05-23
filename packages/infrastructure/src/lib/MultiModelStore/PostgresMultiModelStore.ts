@@ -9,6 +9,7 @@ import {QueryResult} from "pg";
 import {PostgresQueryBuilder} from "@event-engine/infrastructure/DocumentStore/Postgres/PostgresQueryBuilder";
 import {PostgresFilterProcessor} from "@event-engine/infrastructure/DocumentStore/Postgres/PostgresFilterProcessor";
 import {PostgresIndexProcessor} from "@event-engine/infrastructure/DocumentStore/Postgres/PostgresIndexProcessor";
+import {Payload} from "@event-engine/messaging/message";
 
 type Query = [string, any[]];
 
@@ -73,7 +74,7 @@ export class PostgresMultiModelStore implements MultiModelStore {
     return this.documentStore.getDoc(collectionName, docId);
   }
 
-  loadEvents<P, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P, M>>> {
+  loadEvents<P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P, M>>> {
     return this.eventStore.load(streamName, metadataMatcher, fromEventId, limit);
   }
 }

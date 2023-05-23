@@ -8,9 +8,9 @@ import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
 import {AggregateCommandDescription, CommandDescription} from "@event-engine/descriptions/descriptions";
 
-export interface CommandRuntimeInfo {
+export interface CommandRuntimeInfo<P extends Payload = any, M extends Meta = any> {
   desc: CommandDescription | AggregateCommandDescription;
-  factory: ReturnType<typeof makeCommand>,
+  factory: ReturnType<typeof makeCommand<P, M>>,
   schema: DeepReadonly<JSONSchema7>,
 }
 

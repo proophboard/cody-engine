@@ -4,6 +4,7 @@ import {InMemoryEventStore} from "@event-engine/infrastructure/EventStore/InMemo
 import {InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
 import {MetadataMatcher} from "@event-engine/infrastructure/EventStore";
 import {Event, EventMeta} from "@event-engine/messaging/event";
+import {Payload} from "@event-engine/messaging/message";
 
 export class InMemoryMultiModelStore implements MultiModelStore {
   private eventStore: InMemoryEventStore;
@@ -14,7 +15,7 @@ export class InMemoryMultiModelStore implements MultiModelStore {
     this.documentStore = documentStore;
   }
 
-  async loadEvents <P = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P,M>>> {
+  async loadEvents <P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P,M>>> {
     return this.eventStore.load(streamName, metadataMatcher, fromEventId, limit);
   }
 

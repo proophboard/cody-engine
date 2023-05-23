@@ -8,9 +8,9 @@ import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
 import {AggregateEventDescription, EventDescription} from "@event-engine/descriptions/descriptions";
 
-export interface EventRuntimeInfo {
+export interface EventRuntimeInfo<P extends Payload = any, M extends EventMeta = any> {
   desc: EventDescription | AggregateEventDescription;
-  factory: ReturnType<typeof makeEvent>;
+  factory: ReturnType<typeof makeEvent<P,M>>;
   schema: DeepReadonly<JSONSchema7>;
 }
 

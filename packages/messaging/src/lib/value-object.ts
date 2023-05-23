@@ -6,9 +6,9 @@ import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
 import {StateDescription, StateListDescription, ValueObjectDescription} from "@event-engine/descriptions/descriptions";
 
-export interface ValueObjectRuntimeInfo {
+export interface ValueObjectRuntimeInfo<T extends {} = any> {
   desc: ValueObjectDescription | StateDescription | StateListDescription;
-  factory: ReturnType<typeof makeValueObject>;
+  factory: ReturnType<typeof makeValueObject<T>>;
   schema: DeepReadonly<JSONSchema7>;
 }
 

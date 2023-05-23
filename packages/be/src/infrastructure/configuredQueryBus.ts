@@ -2,14 +2,15 @@ import {Query, QueryResolver} from "@event-engine/messaging/query";
 import {QueryDescription} from "@event-engine/descriptions/descriptions";
 import {queryResolverExtensions} from "@app/extensions/query-resolvers";
 import {queryResolvers} from "@server/query-resolvers/index";
+import {Payload} from "@event-engine/messaging/message";
 
 class QueryBus {
-  public async dispatch<S>(query: Query, desc: QueryDescription): Promise<S> {
+  public async dispatch<S extends Payload = any>(query: Query, desc: QueryDescription): Promise<S> {
     const resolver = this.getResolver<S>(desc);
     return await resolver(query);
   }
 
-  private getResolver<S> (desc: QueryDescription): QueryResolver<S> {
+  private getResolver<S extends Payload = any> (desc: QueryDescription): QueryResolver<S> {
     if(queryResolverExtensions[desc.name]) {
       return queryResolverExtensions[desc.name];
     }

@@ -14,7 +14,7 @@ const getAggregateId = (p: Payload, aggregateIdentifier: string): string => {
     return p[aggregateIdentifier];
 }
 
-export async function handle<C, E, S, D = any>(
+export async function handle<C extends Payload = any, E extends Payload = any, S extends {} = any, D = any>(
     command: Command<C>,
     process: ProcessingFunction<C, E, S> | ProcessingFunctionWithDeps<C, E, S, D>,
     repository: AggregateRepository<S>,

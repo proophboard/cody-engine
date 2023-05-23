@@ -14,7 +14,7 @@ export class DB {
   public constructor(pool: Pool) {
     this.pool = pool;
 
-    this.pool.on('error', (err) => {
+    this.pool.on('error', (err: any) => {
       console.error('Unexpected error on idle client', err);
       process.exit(-1);
     });
@@ -45,7 +45,7 @@ export class DB {
           return {
             async next() {
               return new Promise((resolve, reject) => {
-                cursor.read(1, (err, rows) => {
+                cursor.read(1, (err: any, rows: any[]) => {
                   if(err) {
                     client.release(true);
                     clientReleased = true;

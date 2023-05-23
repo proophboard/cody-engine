@@ -6,7 +6,7 @@ import { FleetManagementCarCarAddedRuntimeInfo } from "@app/shared/events/fleet-
 
 type EventRegistry = { [eventName: string]: EventRuntimeInfo };
 
-export const events = {
+export const events: EventRegistry = {
   "FleetManagement.Car.CarAddedToFleet": FleetManagementCarCarAddedToFleetRuntimeInfo,
   "FleetManagement.Car.CarUpdated": FleetManagementCarCarUpdatedRuntimeInfo,
   "FleetManagement.Car.IncompleteCarAdded": FleetManagementCarIncompleteCarAddedRuntimeInfo,

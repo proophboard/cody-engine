@@ -1,4 +1,5 @@
 import {Event, EventMeta} from "@event-engine/messaging/event";
+import {Payload} from "@event-engine/messaging/message";
 
 export enum MatchOperator {
     EQ = '===',
@@ -35,7 +36,7 @@ export interface EventStore {
     createStream: (streamName: string, type?: StreamType) => Promise<boolean>;
     deleteStream: (streamName: string) => Promise<boolean>;
     appendTo: (streamName: string, events: Event[], metadataMatcher?: MetadataMatcher, expectedVersion?: number) => Promise<boolean>;
-    load: <P = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number) => Promise<AsyncIterable<Event<P,M>>>;
+    load: <P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number) => Promise<AsyncIterable<Event<P,M>>>;
     attachAppendToListener: (listener: AppendToListener) => void;
     detachAppendToListener: (listener: AppendToListener) => void;
 }

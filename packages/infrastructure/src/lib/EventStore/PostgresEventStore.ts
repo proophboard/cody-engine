@@ -9,6 +9,7 @@ import {DB} from "@event-engine/infrastructure/Postgres/DB";
 import {Event, EventMeta} from "@event-engine/messaging/event";
 import {AggregateMeta} from "@event-engine/infrastructure/AggregateRepository";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
+import {Payload} from "@event-engine/messaging/message";
 
 interface Row<P,M> {
   no: number;
@@ -148,7 +149,7 @@ export class PostgresEventStore implements EventStore {
     this.appendToListeners.forEach(l => l(streamName, events));
   }
 
-  async load<P, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P, M>>> {
+  async load<P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P, M>>> {
     let fromEventNo;
     const bindings = [];
 

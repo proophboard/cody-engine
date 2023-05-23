@@ -1,5 +1,6 @@
 import {Event, EventMeta} from "@event-engine/messaging/event";
 import {Writable} from "json-schema-to-ts/lib/types/type-utils";
+import {Payload} from "@event-engine/messaging/message";
 
 export type EventListener = (event: Event) => Promise<boolean>;
 export type EventListenerMap = Record<string, EventListener[]>;
@@ -11,7 +12,7 @@ const merge = (event1: Writable<Event>, event2: Event): Event => {
   return event1 as Readonly<Event>;
 }
 
-export const validate = <P, M extends EventMeta = any>(listener: EventListener, eventFactory: (payload: any, meta: any) => Event<P,M>): EventListener => {
+export const validate = <P extends Payload = any, M extends EventMeta = any>(listener: EventListener, eventFactory: (payload: any, meta: any) => Event<P,M>): EventListener => {
   return (async (event: Event): Promise<boolean> => {
     const validatedEvent = merge(eventFactory(event.payload, event.meta) as unknown as Writable<Event>, event);
     return await listener(validatedEvent);

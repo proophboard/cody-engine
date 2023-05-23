@@ -7,7 +7,7 @@ import {
   MatchOperator,
   MetadataMatcher, StreamType
 } from "@event-engine/infrastructure/EventStore";
-import {messageFromJSON} from "@event-engine/messaging/message";
+import {messageFromJSON, Payload} from "@event-engine/messaging/message";
 
 interface InMemoryStreamStore {
   [streamName: string]: Event[];
@@ -123,7 +123,7 @@ export class InMemoryEventStore implements EventStore {
     return true;
   }
 
-  public async load<P = any, M extends EventMeta= any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P,M>>> {
+  public async load<P extends Payload = any, M extends EventMeta= any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P,M>>> {
     return new Promise<AsyncIterable<Event>>(resolve => {
 
       if(!this.streams.hasOwnProperty(streamName)) {

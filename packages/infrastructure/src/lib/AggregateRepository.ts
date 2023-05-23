@@ -6,6 +6,7 @@ import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-i
 import {MatchOperator, MetadataMatcher} from "@event-engine/infrastructure/EventStore";
 import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
 import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
+import {makeValueObject} from "@event-engine/messaging/value-object";
 
 interface AggregateState {
     [prop: string]: any;
@@ -16,7 +17,7 @@ interface AggregateStateDoc {
     version: number;
 }
 
-type AggregateStateFactory<S> = (state: object) => S;
+type AggregateStateFactory<T extends {} = any> = ReturnType<typeof makeValueObject<T>>;
 
 export interface AggregateStateDocument<S = any> {
     state: S;
@@ -43,7 +44,7 @@ export const AggregateMeta = {
     ID: "aggregateId",
 }
 
-export class AggregateRepository<T> {
+export class AggregateRepository<T extends {} = any> {
     public readonly aggregateType: string;
     public readonly aggregateIdentifier: string;
     protected readonly store: MultiModelStore;
@@ -172,7 +173,7 @@ export class AggregateRepository<T> {
                     return;
                 }
 
-                resolve([this.stateFactory(finalState as object), finalVersion]);
+                resolve([this.stateFactory(finalState), finalVersion]);
             });
         })
     }
@@ -190,7 +191,7 @@ export class AggregateRepository<T> {
 
             const applyFunc: ApplyFunction<T> = this.applyFunctions[evt.name];
 
-            arState = applyFunc(arState, evt) as T;
+            arState = await applyFunc(arState, evt) as T;
             arVersion = evt.meta.aggregateVersion;
         }
 
