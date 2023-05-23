@@ -1,4 +1,4 @@
-import {CodyResponse, Node} from "@proophboard/cody-types";
+import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
 import {Context} from "../../context";
 import {isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {JSONSchema7} from "json-schema-to-ts";
@@ -6,8 +6,14 @@ import {convertShorthandObjectToJsonSchema, ShorthandObject} from "@proophboard/
 import {detectService} from "../detect-service";
 import {definitionId, normalizeRefs} from "./definitions";
 import {names} from "@event-engine/messaging/helpers";
-import { ValueObjectDescriptionFlags } from "@event-engine/descriptions/descriptions";
+import {
+  isQueryableStateDescription,
+  isStateDescription,
+  ValueObjectDescriptionFlags
+} from "@event-engine/descriptions/descriptions";
 import {Rule} from "../rule-engine/configuration";
+import {isListSchema} from "../json-schema/list-schema";
+import {resolveRef} from "../json-schema/resolve-ref";
 
 interface ValueObjectMetadataRaw {
   identifier?: string;
@@ -30,6 +36,7 @@ export interface ValueObjectMetadata extends ValueObjectDescriptionFlags {
   identifier?: string;
   collection?: string;
   initialize?: Rule[];
+  itemType?: string;
 }
 
 export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | CodyResponse => {
@@ -83,7 +90,7 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     schema: normalizedSchema,
     ns,
     service,
-    isList: normalizedSchema['type'] === 'array',
+    isList: isListSchema(normalizedSchema),
     hasIdentifier,
     isQueryable,
   }
@@ -99,6 +106,31 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
 
   if(meta.initialize) {
     convertedMeta.initialize = meta.initialize;
+  }
+
+  if(isListSchema(normalizedSchema)) {
+    const refVORuntimeInfo = resolveRef(normalizedSchema.items, normalizedSchema, vo);
+    if(isCodyError(refVORuntimeInfo)) {
+      return refVORuntimeInfo;
+    }
+
+    convertedMeta.itemType = refVORuntimeInfo.desc.name;
+
+    if(isQueryable) {
+      if(!isStateDescription(refVORuntimeInfo.desc)) {
+        return {
+          cody: `The queryable list value object "${vo.getName()}" references value object: "${refVORuntimeInfo.desc.name}", which is not a state value object. This combination is not supported.`,
+          type: CodyResponseType.Error,
+          details: `Define an identifier for "${refVORuntimeInfo.desc.name}" in its metadata and tell me about it.`
+        }
+      }
+      convertedMeta.hasIdentifier = true;
+      convertedMeta.identifier = refVORuntimeInfo.desc.identifier;
+
+      if(isQueryableStateDescription(refVORuntimeInfo.desc)) {
+        convertedMeta.collection = refVORuntimeInfo.desc.collection;
+      }
+    }
   }
 
   return convertedMeta;

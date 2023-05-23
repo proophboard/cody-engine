@@ -87,6 +87,7 @@ export const isQueryableStateDescription = (desc: ValueObjectDescriptionFlags): 
 export interface QueryableStateListDescription extends StateListDescription {
   query: string;
   collection: string;
+  itemType: string;
 }
 
 export const isQueryableStateListDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableStateListDescription => {

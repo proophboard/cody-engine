@@ -8,7 +8,8 @@ import {
   QueryableStateListDescription
 } from "@event-engine/descriptions/descriptions";
 import {names} from "@event-engine/messaging/helpers";
-import {isObjectSchema} from "../json-schema/is-object-schema";
+import {objectSchema} from "../json-schema/object-schema";
+import {voClassNameFromFQCN} from "../value-object/definitions";
 
 export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
   if(!voMeta.isQueryable) {
@@ -44,7 +45,7 @@ const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableS
     details: `You can solve the issue by setting querySchema to: \n{\n  ${meta.identifier}: "string"\n}`
   };
 
-  if(!isObjectSchema(querySchema)) {
+  if(!objectSchema(querySchema)) {
     return codyQuerySchemaError;
   }
 
@@ -65,8 +66,30 @@ const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableS
 }
 
 const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableStateListDescription, ctx: Context): string | CodyResponse => {
-  return {
-    cody: "makeListQueryResolver is not implemented yet",
-    type: CodyResponseType.Error
+  const voNames = names(vo.getName());
+  const querySchema = meta.querySchema;
+
+  const codyQuerySchemaError = {
+    cody: `Value object "${vo.getName()}" represents a list of queryable state objects: "${vo.getName()}", but the querySchema is not supported. At the moment you can only use an empty query schema.`,
+    type: CodyResponseType.Error,
+    details: `You can solve the issue by setting querySchema to: {}`
   };
+
+  if(!objectSchema(querySchema)) {
+    return codyQuerySchemaError;
+  }
+
+  if(Object.keys(querySchema.properties).length !== 0) {
+    return codyQuerySchemaError;
+  }
+
+  const itemClassName = voClassNameFromFQCN(meta.itemType);
+
+  return `const cursor = await ds.findDocs<{state: ${itemClassName}}>(
+    ${voNames.className}Desc.collection,
+    new AnyFilter()
+  );
+  
+  return asyncIteratorToArray(asyncMap(cursor, ([,d]) => ${names(itemClassName).propertyName}(d.state)));
+`
 }

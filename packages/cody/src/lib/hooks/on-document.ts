@@ -5,9 +5,15 @@ import {names} from "@event-engine/messaging/helpers";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
 import {generateFiles} from "@nx/devkit";
-import {namespaceToClassName, namespaceToFilePath, namespaceToJSONPointer} from "./utils/value-object/namespace";
+import {
+  namespaceNames,
+  namespaceToClassName,
+  namespaceToFilePath,
+  namespaceToJSONPointer,
+  valueObjectNamespaceFromFQCN
+} from "./utils/value-object/namespace";
 import {voPath} from "./utils/value-object/vo-path";
-import {detectDescriptionType} from "@event-engine/descriptions/descriptions";
+import {detectDescriptionType, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import {detectService} from "./utils/detect-service";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {toJSON} from "./utils/to-json";
@@ -15,6 +21,7 @@ import {convertRuleConfigToValueObjectInitializeRules} from "./utils/rule-engine
 import {register, registerQuery, registerQueryResolver, registerValueObjectDefinition} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {makeQueryResolver} from "./utils/query/make-query-resolver";
+import {voClassNameFromFQCN} from "./utils/value-object/definitions";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
   try {
@@ -30,12 +37,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
 
     const tree = new FsTree(ctx.projectRoot, true);
 
-    const ns = {
-      ns: voMeta.ns,
-      className: namespaceToClassName(voMeta.ns),
-      fileName: namespaceToFilePath(voMeta.ns),
-      JSONPointer: namespaceToJSONPointer(voMeta.ns)
-    }
+    const ns = namespaceNames(voMeta.ns);
 
     // Register Value Object
 
@@ -78,12 +80,23 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
 
       withErrorCheck(registerQuery, [service, vo, voMeta, ctx, tree]);
 
+      let itemNames, itemNS, isList = false;
+
+      if(isQueryableStateListDescription(voMeta)) {
+        itemNames = names(voClassNameFromFQCN(voMeta.itemType));
+        itemNS = namespaceNames(valueObjectNamespaceFromFQCN(voMeta.itemType));
+        isList = true;
+      }
+
       generateFiles(tree, __dirname + '/query-files/be', ctx.beSrc, {
         tmpl: "",
         service: serviceNames.fileName,
         serviceNames,
         voNames,
         ns,
+        isList,
+        itemNames,
+        itemNS,
         ...queryNames,
         resolve: withErrorCheck(makeQueryResolver, [vo, voMeta, ctx])
       });

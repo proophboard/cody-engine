@@ -1,6 +1,5 @@
 import {JSONSchema} from "json-schema-to-ts";
 import {names} from "@event-engine/messaging/helpers";
-import {ValueObjectMetadata} from "./get-vo-metadata";
 import {Context} from "../../context";
 import {CodyResponse, Node} from "@proophboard/cody-types";
 import {detectService} from "../detect-service";
@@ -19,6 +18,16 @@ export const definitionId = (vo: Node, ns: string, ctx: Context): string | CodyR
 
 
   return `/definitions/${serviceNames.fileName}${nsFilename}${voNames.fileName}`;
+}
+
+export const voClassNameFromFQCN = (fqcn: string): string => {
+  const parts = fqcn.split(".");
+  return names(parts[parts.length - 1]).className;
+}
+
+export const voServiceFromFQCN = (fqcn: string): string => {
+  const parts = fqcn.split(".");
+  return names(parts[0]).className;
 }
 
 export const normalizeRefs = (schema: JSONSchema, service: string): JSONSchema => {

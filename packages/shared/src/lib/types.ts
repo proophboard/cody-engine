@@ -6,5 +6,5 @@ type TypeRegistry = { [valueObjectName: string]: ValueObjectRuntimeInfo };
 
 export const types: TypeRegistry = {
   "FleetManagement.Car.Car": FleetManagementCarCarVORuntimeInfo,
-  "FleetManagement.Car.CarList": FleetManagementCarCarListVORuntimeInfo,
+  "FleetManagement.Car.CarList": FleetManagementCarCarListVORuntimeInfo
 }

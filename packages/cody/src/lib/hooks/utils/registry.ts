@@ -236,7 +236,7 @@ export const registerValueObjectDefinition = (service: string, vo: Node, voMeta:
 
   const registryPath = joinPathFragments(ctx.sharedSrc, 'types', 'definitions.ts');
   const registryVarName = 'definitions';
-  const entryId = `/definitions/${serviceNames.fileName}/${nsFilename}/${voNames.fileName}`;
+  const entryId = `/definitions/${serviceNames.fileName}${nsFilename}${voNames.fileName}`;
   const entryValue = `${serviceNames.className}${nsClassName}${voNames.className}Schema`;
   const importName = `${voNames.className}Schema as ${serviceNames.className}${nsClassName}${voNames.className}Schema`;
   const importPath = `@app/shared/types/${serviceNames.fileName}${nsFilename}${voNames.fileName}.schema`;
@@ -248,7 +248,7 @@ export const registerValueObjectDefinition = (service: string, vo: Node, voMeta:
   const refVarName = 'references';
   const refEntryValue = `typeof ${serviceNames.className}${nsClassName}${voNames.className}Schema`;
   const refImportName = `${voNames.className}Schema as ${serviceNames.className}${nsClassName}${voNames.className}Schema`;
-  const refImportPath = `@app/shared/types/${serviceNames.fileName}/${nsFilename}/${voNames.fileName}.schema`;
+  const refImportPath = `@app/shared/types/${serviceNames.fileName}${nsFilename}${voNames.fileName}.schema`;
 
   addArrayRegistryItem(refPath, refVarName, refEntryValue, refImportName, refImportPath, tree);
   return true;
