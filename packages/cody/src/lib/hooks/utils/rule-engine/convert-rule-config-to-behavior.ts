@@ -167,7 +167,6 @@ const convertThen = (node: Node, ctx: Context, rule: Rule, lines: string[], inde
 }
 
 const convertThenRecordEvent = (node: Node, ctx: Context, then: ThenRecordEvent, rule: Rule, lines: string[], indent = ''): boolean | CodyResponse => {
-  const aggregateNames = names(node.getName());
   const service = detectService(node, ctx);
   if(isCodyError(service)) {
     return service;
@@ -211,6 +210,8 @@ const convertThenRecordEvent = (node: Node, ctx: Context, then: ThenRecordEvent,
   }
 
   lines.push(`${indent}yield ${eventNames.propertyName}(${mapping});`);
+
+  return true;
 }
 
 const convertThenExecuteRules = (node: Node, ctx: Context, then: ThenExecuteRules, rule: Rule, lines: string[], indent = ''): boolean | CodyResponse => {

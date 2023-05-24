@@ -39,7 +39,7 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
     const serviceNames = names(service);
     const meta = withErrorCheck(parseJsonMetadata, [event]) as EventMeta;
 
-    let schema = meta.schema || {};
+    let schema: any = meta.schema || {};
     if(meta.shorthand) {
       schema = withErrorCheck(convertShorthandObjectToJsonSchema, [schema as ShorthandObject]);
     }

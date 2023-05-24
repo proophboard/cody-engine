@@ -1,6 +1,6 @@
 import {CodyHook, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
-import {JSONSchema} from "json-schema-to-ts";
+import {JSONSchema, JSONSchema7} from "json-schema-to-ts";
 import {convertShorthandObjectToJsonSchema, ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
 import {names} from "@event-engine/messaging/helpers";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
@@ -9,7 +9,6 @@ import {
   isCodyError,
   nodeNameToPascalCase,
   parseJsonMetadata,
-  getSingleSource,
   getSingleTarget
 } from "@proophboard/cody-utils";
 import {detectService} from "./utils/detect-service";
@@ -21,6 +20,7 @@ import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {toJSON} from "./utils/to-json";
 import {register} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
+import {Writable} from "json-schema-to-ts/lib/types/type-utils";
 
 interface CommandMeta {
   newAggregate: boolean;
@@ -38,12 +38,12 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
     const serviceNames = names(service);
     const meta = withErrorCheck(parseJsonMetadata, [command]) as CommandMeta;
 
-    let schema = meta.schema || {};
+    let schema: any = meta.schema || {};
     if(meta.shorthand) {
       schema = withErrorCheck(convertShorthandObjectToJsonSchema, [schema as ShorthandObject]);
     }
 
-    if(!schema.hasOwnProperty('$id')) {
+    if(typeof schema === "object" && !schema.hasOwnProperty('$id')) {
       schema['$id'] = `/definitions/${serviceNames.fileName}/commands/${cmdNames.fileName}`;
     }
 

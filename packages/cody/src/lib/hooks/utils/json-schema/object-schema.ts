@@ -7,6 +7,6 @@ export interface ObjectSchema {
   required: string[]
 }
 
-export const objectSchema = (schema: JSONSchema7): schema is ObjectSchema => {
+export const objectSchema = (schema: any): schema is ObjectSchema => {
   return schema['type'] && schema['type'] === "object";
 }

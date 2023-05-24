@@ -18,8 +18,8 @@ import {resolveRef} from "../json-schema/resolve-ref";
 interface ValueObjectMetadataRaw {
   identifier?: string;
   shorthand?: boolean;
-  schema: object;
-  querySchema?: object;
+  schema: any;
+  querySchema?: any;
   ns?: string;
   collection?: string;
   initialize?: Rule[];

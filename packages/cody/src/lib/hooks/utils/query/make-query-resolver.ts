@@ -45,7 +45,7 @@ const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableS
     details: `You can solve the issue by setting querySchema to: \n{\n  ${meta.identifier}: "string"\n}`
   };
 
-  if(!objectSchema(querySchema)) {
+  if(!objectSchema(querySchema!)) {
     return codyQuerySchemaError;
   }
 
@@ -75,7 +75,7 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableSt
     details: `You can solve the issue by setting querySchema to: {}`
   };
 
-  if(!objectSchema(querySchema)) {
+  if(!objectSchema(querySchema!)) {
     return codyQuerySchemaError;
   }
 

@@ -6,6 +6,6 @@ export interface ListSchema {
   items: RefSchema;
 }
 
-export const isListSchema = (schema: JSONSchema7): schema is ListSchema => {
+export const isListSchema = (schema: any): schema is ListSchema => {
   return schema['type'] && schema['type'] === "array" && schema['items'] && isRefSchema(schema['items']);
 }

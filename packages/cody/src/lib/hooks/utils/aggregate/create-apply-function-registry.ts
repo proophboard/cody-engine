@@ -35,6 +35,7 @@ export const createApplyFunctionRegistryIfNotExists = (aggregate: Node, ctx: Con
       ...aggregateNames,
     });
 
+    return true;
   } catch (e) {
     if(e instanceof CodyResponseException) {
       return e.codyResponse;
