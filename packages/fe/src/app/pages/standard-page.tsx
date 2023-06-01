@@ -9,7 +9,7 @@ interface Props {
 export const StandardPage = (props: Props) => {
   const routeParams = useParams();
 
-  const components = props.page.components.map(c => <Grid2 xs={12}>{c(routeParams)}</Grid2>);
+  const components = props.page.components.map((c, index) => <Grid2 key={'c'+index} xs={12}>{c(routeParams)}</Grid2>);
 
   return <Grid2 container={true} spacing={3}>
     {components}

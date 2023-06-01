@@ -1,5 +1,6 @@
 import {TopLevelPage} from "@frontend/app/pages/page-definitions";
 import {Welcome} from "@frontend/app/components/core/welcome";
+import {staticLabel} from "@frontend/util/breadcrumb/static-label";
 
 export const Dashboard: TopLevelPage = {
   commands: [],
@@ -7,7 +8,7 @@ export const Dashboard: TopLevelPage = {
   sidebar: {
     label: "Dashboard"
   },
-  route: "/",
+  route: "/dashboard",
   topLevel: true,
-  breadcrumb: () => 'Dashboard'
+  breadcrumb: staticLabel('Dashboard')
 }

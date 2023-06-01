@@ -1,10 +1,13 @@
 import React from "react";
 import {QueryClient} from "@tanstack/react-query";
 
+export type UnsubscribeBreadcrumbListener = () => void;
+export type BreadcrumbFn = (params: Record<string, string>, queryClient: QueryClient, onLabelChanged: (label: string) => void) => UnsubscribeBreadcrumbListener;
+
 export interface PageDefinition {
   topLevel: boolean;
   route: string;
-  breadcrumb: (params: Record<string, string>, queryClient: QueryClient) => string;
+  breadcrumb: BreadcrumbFn;
   components: React.FunctionComponent<any>[];
   commands: React.FunctionComponent[];
 }

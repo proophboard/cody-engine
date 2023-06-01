@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {Box, CssBaseline} from "@mui/material";
+import TopBar from "@frontend/app/layout/TopBar";
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -24,6 +25,7 @@ const MainLayout = (props: MainLayoutProps) => {
             display: 'flex'
         }}>
             <CssBaseline />
+            <TopBar />
             <Box component={"main"} sx={{
                 padding: "32px",
                 minHeight: '100%',
