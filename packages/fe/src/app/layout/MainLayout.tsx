@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
 import {Box, CssBaseline} from "@mui/material";
 import TopBar from "@frontend/app/layout/TopBar";
+import Sidebar from "@frontend/app/layout/Sidebar";
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -26,6 +27,7 @@ const MainLayout = (props: MainLayoutProps) => {
         }}>
             <CssBaseline />
             <TopBar />
+            <Sidebar open={sideBarOpen} onClose={() => setSideBarOpen(false)} />
             <Box component={"main"} sx={{
                 padding: "32px",
                 minHeight: '100%',

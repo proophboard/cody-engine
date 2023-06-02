@@ -30,7 +30,7 @@ const Breadcrumbs = (props: BreadcrumbsProps) => {
                 }
               })}
               >
-    <MaterialBreadcrumbs aria-label="breadcrumb">
+    <MaterialBreadcrumbs aria-label="breadcrumb" sx={{"& .MuiBreadcrumbs-separator": {color: (theme) => theme.palette.primary.contrastText} }}>
       {links}
     </MaterialBreadcrumbs>
   </Box>

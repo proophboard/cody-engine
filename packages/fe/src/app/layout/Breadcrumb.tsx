@@ -24,12 +24,12 @@ const Breadcrumb = (props: BreadcrumbProps) => {
   if(props.isLast) {
     return <Typography
       key={props.page.route}
-      sx={{color: 'white'}}
+      sx={{color: theme.palette.primary.contrastText}}
       aria-current="page">{label}</Typography>
   } else {
     return <Link to={generatePath(props.page.route, params)}
                  key={props.page.route}
-                 style={{color: theme.palette.primary.main, textDecoration: 'none'}}
+                 style={{color: theme.palette.primary.contrastText, textDecoration: 'none'}}
     >{label}</Link>
   }
 };

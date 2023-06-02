@@ -12,12 +12,12 @@ const TopBar = (props: TopBarProps) => {
   return (
     <AppBar position="fixed" color="default" sx={{
       boxShadow: "none",
-      backgroundColor: (theme) => theme.topBar.background,
+      backgroundColor: (theme) => theme.palette.primary.main,
       height: "64px"
     }}>
       <Toolbar>
         <Box component={"div"} sx={{minWidth: {lg: "300px"}}}>
-          <Typography variant={"h3"} sx={{color: (theme) => theme.palette.primary.main}}>Cody Engine</Typography>
+          <Typography variant={"h3"} sx={{color: (theme) => theme.palette.primary.contrastText}}>Cody Engine</Typography>
         </Box>
         <Breadcrumbs />
         <Box component={"div"} sx={{flexGrow: 1}} />

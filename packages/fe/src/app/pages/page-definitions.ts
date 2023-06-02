@@ -1,5 +1,6 @@
 import React from "react";
 import {QueryClient} from "@tanstack/react-query";
+import {SvgIcon} from "@mui/material";
 
 export type UnsubscribeBreadcrumbListener = () => void;
 export type BreadcrumbFn = (params: Record<string, string>, queryClient: QueryClient, onLabelChanged: (label: string) => void) => UnsubscribeBreadcrumbListener;
@@ -13,7 +14,7 @@ export interface PageDefinition {
 }
 
 export interface TopLevelPage extends PageDefinition {
-  sidebar: {label: string}
+  sidebar: {label: string, Icon: typeof SvgIcon}
 }
 
 export const isTopLevelPage = (page: PageDefinition): page is TopLevelPage => {
