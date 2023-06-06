@@ -40,7 +40,7 @@ const executeCommand = async (commandName: string, payload: any): Promise<AxiosR
     const [service, cmd] = commandName.split(".");
 
     return sendApiRequest({
-        url: `/api/${kebabCase(service)}/messages/${kebabCase(commandName)}`,
+        url: `/api/${kebabCase(service)}/messages/${kebabCase(cmd)}`,
         method: 'post',
         data: payload,
         headers: {

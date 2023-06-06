@@ -18,14 +18,17 @@ import MainLayout from "@frontend/app/layout/MainLayout";
 import React from "react";
 import {pages} from "@frontend/app/pages";
 import {theme} from "@frontend/app/layout/theme";
+import {SnackbarProvider} from "notistack";
 
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
       <ThemeProvider theme={theme}>
-        <MainLayout>
-          <Outlet />
-        </MainLayout>
+        <SnackbarProvider maxSnack={3} >
+          <MainLayout>
+            <Outlet />
+          </MainLayout>
+        </SnackbarProvider>
       </ThemeProvider>
     </>
   };

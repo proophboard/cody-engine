@@ -36,6 +36,7 @@
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
     "@types/react-router-dom": "5.3.3",
+    "@types/uuid": "^9.0.1",
     "@typescript-eslint/eslint-plugin": "^5.58.0",
     "@typescript-eslint/parser": "^5.58.0",
     "babel-jest": "^29.4.1",
@@ -67,7 +68,13 @@
     "@emotion/react": "^11.11.0",
     "@emotion/styled": "^11.11.0",
     "@fontsource/roboto": "^5.0.1",
+    "@monaco-editor/react": "^4.5.1",
+    "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.2",
+    "@rjsf/core": "5.7",
+    "@rjsf/mui": "^5.8.0",
+    "@rjsf/utils": "^5.7.3",
+    "@rjsf/validator-ajv8": "^5.8.0",
     "@swc/helpers": "~0.5.0",
     "@tanstack/react-query": "^4.29.7",
     "@tanstack/react-query-devtools": "^4.29.7",
@@ -78,11 +85,13 @@
     "jexl": "^2.3.0",
     "lodash": "^4.17.21",
     "mdi-material-ui": "^7.7.0",
+    "notistack": "^3.0.1",
     "pg": "^8.10.0",
     "pg-cursor": "^2.9.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-router-dom": "6.8.1",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "uuid": "^9.0.0"
   }
 }

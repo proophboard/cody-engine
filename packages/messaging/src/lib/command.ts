@@ -2,16 +2,18 @@ import { Message, Payload, Meta } from './message';
 import {JSONSchema7} from "json-schema";
 import {ajv} from "@event-engine/messaging/configuredAjv";
 import {ValidationError} from "ajv";
-import {randomUUID} from "crypto";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
 import {AggregateCommandDescription, CommandDescription} from "@event-engine/descriptions/descriptions";
+import {UiSchema} from "@rjsf/utils";
+import {v4 as uuidv4} from 'uuid';
 
 export interface CommandRuntimeInfo<P extends Payload = any, M extends Meta = any> {
   desc: CommandDescription | AggregateCommandDescription;
   factory: ReturnType<typeof makeCommand<P, M>>,
   schema: DeepReadonly<JSONSchema7>,
+  uiSchema?: UiSchema,
 }
 
 export type Command<P extends Payload = any, M extends Meta = any> = Message<
@@ -43,7 +45,7 @@ export const makeCommand = <P extends Payload, M extends Meta = any>(
 
   const func = (payload: Partial<P>, meta?: M, uuid?: string, createdAt?: Date): Command<P,M> => {
     return {
-      uuid: uuid || randomUUID(),
+      uuid: uuid || uuidv4(),
       name,
       payload: validator(payload),
       meta: meta || ({} as M),

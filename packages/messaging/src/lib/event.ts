@@ -2,11 +2,11 @@ import { Message, Payload, Meta } from './message';
 import {JSONSchema7} from "json-schema";
 import {ajv} from "@event-engine/messaging/configuredAjv";
 import {ValidationError} from "ajv";
-import {randomUUID} from "crypto";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
 import {AggregateEventDescription, EventDescription} from "@event-engine/descriptions/descriptions";
+import {v4 as uuidv4} from 'uuid';
 
 export interface EventRuntimeInfo<P extends Payload = any, M extends EventMeta = any> {
   desc: EventDescription | AggregateEventDescription;
@@ -62,7 +62,7 @@ export const makeEvent = <P extends Payload, M extends EventMeta = any>(
     } as M;
 
     return {
-      uuid: uuid || randomUUID(),
+      uuid: uuid || uuidv4(),
       name,
       payload: validator(payload),
       meta: meta,

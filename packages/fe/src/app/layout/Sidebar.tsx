@@ -30,7 +30,7 @@ const Sidebar = (props: SidebarProps) => {
   >
     <Button
       sx={{
-        color: theme.palette.secondary.main,
+        color: 'inherit',
         padding: '10px 8px',
         justifyContent: 'flex-start',
         textTransform: 'none',

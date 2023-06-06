@@ -32,6 +32,7 @@ const MainLayout = (props: MainLayoutProps) => {
                 padding: "32px",
                 minHeight: '100%',
                 boxSizing: 'border-box',
+                width: '100%',
                 backgroundColor: (theme) => theme.palette.background.default
             }}>
                 {props.children}

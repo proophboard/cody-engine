@@ -1,0 +1,171 @@
+import * as React from 'react';
+import {CommandRuntimeInfo} from "@event-engine/messaging/command";
+import {
+  ArrayFieldTemplateProps,
+  Field,
+  FieldTemplateProps,
+  ObjectFieldTemplateProps,
+  RJSFSchema,
+  Widget
+} from "@rjsf/utils";
+import {useEffect, useImperativeHandle, useRef, useState} from "react";
+import {UseMutateAsyncFunction, useMutation} from "@tanstack/react-query";
+import {Logger} from "@frontend/util/Logger";
+import Form from "@rjsf/mui";
+import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
+import {v4} from "uuid";
+import Grid2 from "@mui/material/Unstable_Grid2";
+import {Alert, AlertTitle, Container} from "@mui/material";
+import AxiosResponseViewer from "@frontend/app/components/core/AxiosResponseViewer";
+import {AxiosResponse} from "axios";
+import {commandTitle} from "@frontend/app/components/core/CommandButton";
+import validator from '@rjsf/validator-ajv8';
+import {IChangeEvent} from "@rjsf/core";
+
+interface OwnProps {
+  command: CommandRuntimeInfo;
+  commandFn: UseMutateAsyncFunction;
+  onBeforeSubmitting?: (formData: {[prop: string]: any}) => {[prop: string]: any};
+  onSubmitted?: () => void;
+  onResponseReceived?: () => void;
+  onBackendErrorReceived?: () => void;
+  onValidationError?: () => void;
+  onChange?: () => void;
+  formData?: {[prop: string]: any};
+  objectFieldTemplate?: React.FunctionComponent<ObjectFieldTemplateProps>;
+  arrayFieldTemplate?: React.FunctionComponent<ArrayFieldTemplateProps>;
+  fieldTemplate?: React.FunctionComponent<FieldTemplateProps>;
+  widgets?: {[name: string]: Widget};
+  fields?: {[name: string]: Field};
+}
+
+type CommandFormProps = OwnProps;
+
+const CommandForm = (props: CommandFormProps, ref: any) => {
+  let formRef: any = useRef();
+  let formData: {[prop: string]: any} = {};
+  const [liveValidate, setLiveValidate] = useState(false);
+  const [submittedFormData, setSubmittedFormData] = useState<{[prop: string]: any}>();
+  const mutation = useMutation({
+    mutationKey: [props.command.desc.name],
+    mutationFn: props.commandFn,
+  });
+
+  useImperativeHandle(ref, () => ({
+    submit: (): void => {
+      setLiveValidate(true);
+      setSubmittedFormData(formRef.state.formData)
+      formRef.submit();
+    },
+  }));
+
+  useEffect(() => {
+    mutation.reset();
+    setSubmittedFormData({});
+  }, [props.command]);
+
+  useEffect(() => {
+    if(mutation.isError && props.onBackendErrorReceived) {
+      props.onBackendErrorReceived();
+      return;
+    }
+
+    if(mutation.isSuccess && props.onResponseReceived) {
+      props.onResponseReceived();
+    }
+  }, [mutation.isSuccess, mutation.isError])
+
+  const handleValidationError = (error: any) => {
+    Logger.warn('Validation failed: ', error, 'current formData: ', formData);
+
+    if(props.onValidationError) {
+      props.onValidationError();
+    }
+  }
+
+  const handleChange = () => {
+    if(props.onChange) {
+      props.onChange();
+    }
+  }
+
+  const handleSubmit = (e: IChangeEvent<any>) => {
+    let formData = e.formData;
+    if(props.onBeforeSubmitting) {
+      formData = props.onBeforeSubmitting(e.formData);
+    }
+    mutation.mutate(e.formData);
+    setLiveValidate(false);
+    if(props.onSubmitted) {
+      props.onSubmitted();
+    }
+  }
+
+  const {desc} = props.command;
+
+  if(isAggregateCommandDescription(desc) && desc.newAggregate && desc.aggregateIdentifier) {
+    formData[desc.aggregateIdentifier] = v4();
+  }
+
+  if(props.formData) {
+    formData = {...formData, ...props.formData};
+  }
+
+  if(submittedFormData) {
+    formData = submittedFormData;
+  }
+
+  const widgets = props.widgets || {};
+
+  return (
+    <div>
+      <Grid2 container={true} spacing={3}>
+        <Grid2 md={12}>
+          {!mutation.isSuccess && !mutation.isError && <Form
+              schema={props.command.schema as RJSFSchema}
+              children={<></>}
+            // @ts-ignore
+              ref={(form) => formRef = form}
+              onSubmit={handleSubmit}
+              formData={formData}
+              formContext={formData}
+              uiSchema={props.command.uiSchema}
+              liveValidate={liveValidate}
+              showErrorList={false}
+              onError={handleValidationError}
+              onChange={handleChange}
+              validator={validator}
+              templates={{
+                ...(props.objectFieldTemplate? {ObjectFieldTemplate: props.objectFieldTemplate} : {}),
+                ...(props.arrayFieldTemplate? {ArrayFieldTemplate: props.arrayFieldTemplate} : {}),
+              }}
+              widgets={
+                {
+                  // DynamicEnum: Widgets.SelectWidget,
+                  // @ts-ignore
+                  // TextWidget: TextWidget,
+                  ...widgets
+                }
+              }
+              fields={props.fields}
+          />}
+          {(mutation.isSuccess || mutation.isError) && <div>
+            {mutation.isSuccess && <AxiosResponseViewer response={mutation.data as AxiosResponse} successMessageCreated={<Alert severity={'success'}>
+              <AlertTitle>{commandTitle(props.command)} was successful</AlertTitle>
+            </Alert>}/>}
+            {mutation.isError && (
+              <Container disableGutters={true}>
+                <Alert severity={'error'}>
+                  <AlertTitle>{(mutation.error as Error).name || 'Error'}</AlertTitle>
+                  {(mutation.error as Error).message}
+                </Alert>
+              </Container>
+            )}
+          </div>}
+        </Grid2>
+      </Grid2>
+    </div>
+  );
+};
+
+export default React.forwardRef(CommandForm);

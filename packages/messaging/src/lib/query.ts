@@ -2,11 +2,11 @@ import { Message, Payload, Meta } from './message';
 import {JSONSchema7} from "json-schema";
 import {ajv} from "@event-engine/messaging/configuredAjv";
 import {ValidationError} from "ajv";
-import {randomUUID} from "crypto";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
 import {QueryDescription} from "@event-engine/descriptions/descriptions";
+import {v4 as uuidv4} from 'uuid';
 
 export interface QueryRuntimeInfo<P extends Payload = any, M extends Meta = any> {
   desc: QueryDescription;
@@ -43,7 +43,7 @@ export const makeQuery = <P extends Payload, M extends Meta = any>(
 
   const func = (payload: Partial<P>, meta?: M, uuid?: string, createdAt?: Date): Query<P,M> => {
     return {
-      uuid: uuid || randomUUID(),
+      uuid: uuid || uuidv4(),
       name,
       payload: validator(payload),
       meta: meta || ({} as M),
