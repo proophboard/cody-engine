@@ -71,6 +71,7 @@
     "@monaco-editor/react": "^4.5.1",
     "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.13.2",
+    "@mui/x-data-grid": "^6.6.0",
     "@rjsf/core": "5.7",
     "@rjsf/mui": "^5.8.0",
     "@rjsf/utils": "^5.7.3",

@@ -5,11 +5,13 @@ import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
 import {StateDescription, StateListDescription, ValueObjectDescription} from "@event-engine/descriptions/descriptions";
+import {UiSchema} from "@rjsf/utils";
 
 export interface ValueObjectRuntimeInfo<T extends {} = any> {
   desc: ValueObjectDescription | StateDescription | StateListDescription;
   factory: ReturnType<typeof makeValueObject<T>>;
   schema: DeepReadonly<JSONSchema7>;
+  uiSchema?: UiSchema;
 }
 
 export const makeValueObject = <T>(
