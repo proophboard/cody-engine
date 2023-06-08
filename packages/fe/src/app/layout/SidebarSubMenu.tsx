@@ -177,7 +177,7 @@ const SidebarSubMenu = (props: SidebarSubMenuProps) => {
 
       return <ListItem id={anchor.hash} key={anchor.hash} sx={anchorStyle} >
         <Button sx={{
-            color: anchor.active? theme.palette.primary.main : 'inherit',
+            color: anchor.active? theme.palette.primary.main : 'currentColor',
             padding: '10px 8px',
             justifyContent: 'flex-start',
             textTransform: 'none',
