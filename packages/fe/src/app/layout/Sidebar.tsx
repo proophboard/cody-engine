@@ -3,6 +3,8 @@ import {Box, Button, Drawer, List, ListItem, useMediaQuery, useTheme} from "@mui
 import {pages} from "@frontend/app/pages";
 import {NavLink} from "react-router-dom";
 import {isTopLevelPage, TopLevelPage} from "@frontend/app/pages/page-definitions";
+import SidebarSubMenu from "@frontend/app/layout/SidebarSubMenu";
+import {usePageMatch} from "@frontend/util/hook/use-page-match";
 
 interface OwnProps {
   open: boolean;
@@ -14,12 +16,13 @@ type SidebarProps = OwnProps;
 const Sidebar = (props: SidebarProps) => {
 
   const theme = useTheme();
+  const pageMatch = usePageMatch();
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
 
   const topLevelPages: TopLevelPage[] = Object.values(pages).filter(p => isTopLevelPage(p)) as TopLevelPage[];
-  const topLevelPageItems = topLevelPages.map(({route, sidebar: {label, Icon}}) => <ListItem
+  const topLevelPageItems = topLevelPages.map(({route, sidebar: {label, Icon}}) => <><ListItem
     key={route}
     disableGutters={true}
     sx={{
@@ -56,7 +59,9 @@ const Sidebar = (props: SidebarProps) => {
       </Box>
       {label}
     </Button>
-  </ListItem>);
+  </ListItem>
+    {pageMatch.pathname.includes(route) && <SidebarSubMenu />}
+  </>);
 
   return <Drawer
     open={props.open || sideBarPersistent}

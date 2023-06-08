@@ -9,9 +9,10 @@ import {
   Widget
 } from "@rjsf/utils";
 import {Box, Card, CardContent, CircularProgress, SxProps, Typography, useTheme} from "@mui/material";
-import {PropsWithChildren} from "react";
+import {PropsWithChildren, useEffect} from "react";
 import {Form} from "@rjsf/mui";
 import validator from '@rjsf/validator-ajv8';
+import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 
 interface OwnProps {
   state?: Record<string, any>;
@@ -106,6 +107,10 @@ const StateView = (props: StateViewProps) => {
   const uiSchema = props.description.uiSchema? {"ui:readonly": true, ...props.description.uiSchema} : {"ui:readonly": true};
 
   const widgets = props.widgets || {};
+
+  useEffect(() => {
+    triggerSideBarAnchorsRendered();
+  }, [props.state]);
 
   return <Card>
           <CardContent sx={theme.stateView.styleOverrides}>

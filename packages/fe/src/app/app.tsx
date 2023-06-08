@@ -19,6 +19,7 @@ import React from "react";
 import {pages} from "@frontend/app/pages";
 import {theme} from "@frontend/app/layout/theme";
 import {SnackbarProvider} from "notistack";
+import ScrollToTop from "@frontend/app/components/core/ScrollToTop";
 
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
@@ -26,6 +27,7 @@ export function App() {
       <ThemeProvider theme={theme}>
         <SnackbarProvider maxSnack={3} >
           <MainLayout>
+            <ScrollToTop />
             <Outlet />
           </MainLayout>
         </SnackbarProvider>
