@@ -146,12 +146,12 @@ const SidebarSubMenu = (props: SidebarSubMenuProps) => {
     if (nextLevel < matchingPages.length) {
       const nextPage = matchingPages[nextLevel];
 
-      return <List disablePadding={true} sx={{
+      return <List disablePadding={true} key={`sidebar-next-level-${nextPage.route}`} sx={{
         width: "100%",
         flex: 1,
         paddingLeft: theme => theme.spacing(1)
       }}>
-        <SubMenuItem page={nextPage}/>
+        <SubMenuItem key={`sub-menu-item-${nextPage.route}`} page={nextPage}/>
         {renderNextLevel(nextLevel + 1)}
       </List>
     }

@@ -25,7 +25,7 @@ const SubMenuItem = (props: SubMenuItemProps) => {
       display: 'flex',
       paddingTop: 0,
       paddingBottom: 0,
-    }}>
+    }} key={props.page.route}>
       <Button
         sx={{
           color: theme => theme.palette.primary.main,

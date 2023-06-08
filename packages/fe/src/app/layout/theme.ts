@@ -19,7 +19,7 @@ export const theme = createTheme({
     styleOverrides: {
       "form.stateview .Mui-disabled": {
         color: "inherit",
-        "-webkit-text-fill-color": "inherit",
+        WebkitTextFillColor: "inherit",
 
       },
       "form.stateview .MuiButton-root.Mui-disabled": {

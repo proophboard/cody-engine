@@ -61,7 +61,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
 
   useEffect(() => {
     mutation.reset();
-    setSubmittedFormData({});
+    setSubmittedFormData(undefined);
   }, [props.command]);
 
   useEffect(() => {
@@ -92,9 +92,9 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   const handleSubmit = (e: IChangeEvent<any>) => {
     let formData = e.formData;
     if(props.onBeforeSubmitting) {
-      formData = props.onBeforeSubmitting(e.formData);
+      formData = props.onBeforeSubmitting(formData);
     }
-    mutation.mutate(e.formData);
+    mutation.mutate(formData);
     setLiveValidate(false);
     if(props.onSubmitted) {
       props.onSubmitted();

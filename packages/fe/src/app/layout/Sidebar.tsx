@@ -22,7 +22,7 @@ const Sidebar = (props: SidebarProps) => {
   });
 
   const topLevelPages: TopLevelPage[] = Object.values(pages).filter(p => isTopLevelPage(p)) as TopLevelPage[];
-  const topLevelPageItems = topLevelPages.map(({route, sidebar: {label, Icon}}) => <><ListItem
+  const topLevelPageItems = topLevelPages.map(({route, sidebar: {label, Icon}}) => <div key={route}><ListItem
     key={route}
     disableGutters={true}
     sx={{
@@ -60,8 +60,8 @@ const Sidebar = (props: SidebarProps) => {
       {label}
     </Button>
   </ListItem>
-    {pageMatch.pathname.includes(route) && <SidebarSubMenu />}
-  </>);
+  {pageMatch.pathname.includes(route) && <SidebarSubMenu />}
+  </div>);
 
   return <Drawer
     open={props.open || sideBarPersistent}
