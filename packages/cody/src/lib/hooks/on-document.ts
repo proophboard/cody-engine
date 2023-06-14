@@ -7,9 +7,6 @@ import {flushChanges, FsTree} from "nx/src/generators/tree";
 import {generateFiles} from "@nx/devkit";
 import {
   namespaceNames,
-  namespaceToClassName,
-  namespaceToFilePath,
-  namespaceToJSONPointer,
   valueObjectNamespaceFromFQCN
 } from "./utils/value-object/namespace";
 import {voPath} from "./utils/value-object/vo-path";
