@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "prepare-contribution": {
+      "factory": "./src/generators/prepare-contribution/generator",
+      "schema": "./src/generators/prepare-contribution/schema.json",
+      "description": "prepare-contribution generator"
+    }
+  }
+}
