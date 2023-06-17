@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "serve": "npx nx run-many -t serve"
+    "serve": "npx nx run-many -t serve",
+    "prepare-contribution": "npx nx g @cody-engine/contribution:prepare-contribution"
   },
   "private": false,
   "devDependencies": {

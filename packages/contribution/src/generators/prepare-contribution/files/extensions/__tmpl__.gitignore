@@ -1,0 +1,4 @@
+*
+!command-handlers.ts
+!event-reducers.ts
+!query-resolvers.ts
