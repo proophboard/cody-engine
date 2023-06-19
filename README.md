@@ -50,6 +50,7 @@ git update-index --skip-worktree packages/shared/src/lib/types/references.ts
 git update-index --skip-worktree packages/be/src/command-handlers/index.ts
 git update-index --skip-worktree packages/be/src/query-resolvers/index.ts
 git update-index --skip-worktree packages/be/src/repositories/index.ts
+git update-index --skip-worktree packages/fe/src/app/pages/index.ts
 ```
 
 *Please Note: If you add a new registry file that should be included in the skeleton, please make sure that changes through contributions are not tracked. 
