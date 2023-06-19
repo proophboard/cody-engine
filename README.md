@@ -60,6 +60,27 @@ Ask a maintainer for help, if you're not sure how to do it!*
 
 Run `nx graph` to see a diagram of the dependencies of the projects.
 
+## Batteries Included
+
+The Cody Engine app skeleton makes use of a bunch of awesome open source libraries. Here is a list of the most important ones, so that you can find their documentation quickly:
+
+### Backend
+
+- [Express](https://expressjs.com/): Fast, unopinionated, minimalist web framework for Node.js
+- CQRS/Event Sourcing implementation is inspired by [prooph components](https://getprooph.org/), [Event Engine](https://event-engine.github.io/) and [MartenDB](https://martendb.io/)
+- [Jexl](https://github.com/TomFrost/jexl): Powerful context-based expression parser and evaluator
+
+### Frontend
+- [React](https://react.dev/): The library for web and native user interfaces
+- [MUI](https://mui.com/): Move faster with intuitive React UI tools
+- [react-jsonschema-form](https://rjsf-team.github.io/react-jsonschema-form/docs/): A simple React component capable of building HTML forms out of a JSON schema
+
+### Lowcode
+
+- [prooph board Cody](https://wiki.prooph-board.com/cody/Cody-Server.html): Cody is a HTTP server that receives requests from prooph board to turn an event model into working code
+- [Nx Generators](https://nx.dev/plugin-features/use-code-generators): Generators provide a way to automate many tasks you regularly perform as part of your development workflow
+- [ts-morph](https://ts-morph.com/): Setup, navigation, and manipulation of the TypeScript AST made simple
+
 ## Further help
 
 Visit the [Nx Documentation](https://nx.dev) to learn more.
