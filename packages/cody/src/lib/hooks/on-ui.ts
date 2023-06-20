@@ -45,5 +45,5 @@ export const onUi: CodyHook<Context> = async (ui, ctx) => {
   const existingPageDefinition: PageDefinition | undefined = isCodyError(pageDefinitionOrError) ? undefined : pageDefinitionOrError;
   const newPageDefinition = makeDefaultPageDefinition(ui, isTopLevelPage);
 
-
+  if(!isTopLevelPage)
 }

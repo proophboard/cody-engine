@@ -1,11 +1,12 @@
 import React from "react";
 import {QueryClient} from "@tanstack/react-query";
 import {SvgIcon} from "@mui/material";
+import {ProophBoardDescription} from "@event-engine/descriptions/descriptions";
 
 export type UnsubscribeBreadcrumbListener = () => void;
 export type BreadcrumbFn = (params: Record<string, string>, queryClient: QueryClient, onLabelChanged: (label: string) => void) => UnsubscribeBreadcrumbListener;
 
-export interface PageDefinition {
+export interface PageDefinition extends ProophBoardDescription {
   topLevel: boolean;
   route: string;
   breadcrumb: BreadcrumbFn;
