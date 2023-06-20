@@ -8,7 +8,7 @@ import PageLink from "@frontend/app/components/core/PageLink";
 import {useEffect} from "react";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 
-export function CarList(params: GetCarList) {
+const CarList = (params: GetCarList) => {
   const query = useGetCarList(params);
 
   useEffect(() => {
@@ -53,3 +53,5 @@ export function CarList(params: GetCarList) {
     </Box>
   );
 }
+
+export default CarList;

@@ -9,8 +9,8 @@ export interface PageDefinition {
   topLevel: boolean;
   route: string;
   breadcrumb: BreadcrumbFn;
-  components: React.FunctionComponent<any>[];
-  commands: React.FunctionComponent[];
+  components: string[];
+  commands: string[];
 }
 
 export interface TopLevelPage extends PageDefinition {

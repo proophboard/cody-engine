@@ -5,7 +5,7 @@ import {FleetManagementCarCarVORuntimeInfo} from "@app/shared/types/fleet-manage
 
 type CarProps = Record<string, string> & {vehicleId: string};
 
-export const Car = (props: CarProps) => {
+const Car = (props: CarProps) => {
   const query = useGetCar(props);
 
   return <>
@@ -13,3 +13,5 @@ export const Car = (props: CarProps) => {
     {query.isSuccess && <StateView description={FleetManagementCarCarVORuntimeInfo} state={query.data} />}
   </>
 }
+
+export default Car;
