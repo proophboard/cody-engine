@@ -8,6 +8,7 @@ import {isQueryableStateDescription} from "@event-engine/descriptions/descriptio
 import {Rule} from "./utils/rule-engine/configuration";
 import {loadPageDefinition} from "./utils/ui/load-page-definition";
 import {PageDefinition} from "@frontend/app/pages/page-definitions";
+import {makeDefaultPageDefinition} from "./utils/ui/make-default-page-definition";
 
 export interface UiMeta {
   route?: string;
@@ -42,6 +43,7 @@ export const onUi: CodyHook<Context> = async (ui, ctx) => {
 
   const pageDefinitionOrError = await loadPageDefinition(ui, ctx);
   const existingPageDefinition: PageDefinition | undefined = isCodyError(pageDefinitionOrError) ? undefined : pageDefinitionOrError;
+  const newPageDefinition = makeDefaultPageDefinition(ui, isTopLevelPage);
 
 
 }
