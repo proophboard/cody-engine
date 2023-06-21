@@ -34,7 +34,7 @@ const getFilenameFromPath = (path: string): string => {
   return pathParts[pathParts.length - 1];
 }
 
-const addRegistryEntry = (registryPath: string, registryVarName: string, entryId: string, entryValue: string, importName: string, importPath: string, tree: FsTree) => {
+const addRegistryEntry = (registryPath: string, registryVarName: string, entryId: string, entryValue: string, importName: string, importPath: string, tree: FsTree, isDefaultImport?: boolean) => {
   const registryFilename = getFilenameFromPath(registryPath);
   const registryFileContent = tree.read(registryPath)!.toString();
 
@@ -53,10 +53,17 @@ const addRegistryEntry = (registryPath: string, registryVarName: string, entryId
     initializer: entryValue
   });
 
-  registrySource.addImportDeclaration({
-    defaultImport: `{${importName}}`,
-    moduleSpecifier: importPath
-  });
+  if(isDefaultImport) {
+    registrySource.addImportDeclaration({
+      defaultImport: `${importName}`,
+      moduleSpecifier: importPath
+    });
+  } else {
+    registrySource.addImportDeclaration({
+      defaultImport: `{${importName}}`,
+      moduleSpecifier: importPath
+    });
+  }
 
   registrySource.formatText({indentSize: 2});
   tree.write(registryPath, registrySource.getText());
@@ -204,6 +211,31 @@ export const registerCommandHandler = (service: string, aggregate: Node, ctx: Co
 
 
   addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
+
+  return true;
+}
+
+export const registerCommandComponent = (service: string, command: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const serviceNames = names(service);
+  const commandNames = names(command.getName());
+
+  if(!isNewFile(
+    joinPathFragments('packages', 'fe', 'src', 'app', 'components', serviceNames.fileName, 'commands', `${commandNames.className}.tsx`),
+    tree
+  )
+  ) {
+    return true;
+  }
+
+  const registryPath = joinPathFragments('packages', 'fe', 'src', 'app', 'components', 'commands.ts');
+  const registryVarName = 'commands';
+  const entryId = `${serviceNames.className}.${commandNames.className}`;
+  const entryValue = `${serviceNames.className}${commandNames.className}`;
+  const importName = `${serviceNames.className}${commandNames.className}`;
+  const importPath = `@frontend/app/components/${serviceNames.fileName}/commands/${commandNames.className}`;
+
+
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree, true);
 
   return true;
 }

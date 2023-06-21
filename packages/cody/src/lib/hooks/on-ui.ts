@@ -14,7 +14,8 @@ import {flushChanges, FsTree} from "nx/src/generators/tree";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {isSubLevelPage} from "@frontend/app/pages/page-definitions";
 import {formatFiles} from "@nx/devkit";
-import {register} from "./utils/registry";
+import {register, registerCommandComponent} from "./utils/registry";
+import {upsertCommandComponent} from "./utils/ui/upsert-command-component";
 
 export const onUi: CodyHook<Context> = async (ui, ctx) => {
   try {
@@ -65,6 +66,10 @@ export const onUi: CodyHook<Context> = async (ui, ctx) => {
     }
 
     withErrorCheck(register, [ui, ctx, tree]);
+
+    for (const command of commands) {
+      await asyncWithErrorCheck(upsertCommandComponent, [command, ctx, tree]);
+    }
 
     await formatFiles(tree);
 

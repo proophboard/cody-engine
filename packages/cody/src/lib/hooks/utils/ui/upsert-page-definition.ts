@@ -64,7 +64,7 @@ export const upsertTopLevelPage = async (
     icon: sidebarIcon
   };
 
-  generateFiles(tree, __dirname + '/../../ui-files/pages/top-level', ctx.feSrc + '/app/pages', {
+  generateFiles(tree, __dirname + '/../../ui-files/page-files/top-level', ctx.feSrc + '/app/pages', {
     ...pbInfo,
     tmpl: '',
     service: serviceNames.fileName,
@@ -124,7 +124,7 @@ export const upsertSubLevelPage = async (
 
   const [breadcrumb, breadcrumbImports] = breadcrumbInfo;
 
-  generateFiles(tree, __dirname + '/../../ui-files/pages/sub-level', ctx.feSrc + '/app/pages', {
+  generateFiles(tree, __dirname + '/../../ui-files/page-files/sub-level', ctx.feSrc + '/app/pages', {
     ...pbInfo,
     tmpl: '',
     service: serviceNames.fileName,
