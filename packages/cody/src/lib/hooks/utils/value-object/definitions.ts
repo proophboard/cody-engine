@@ -4,7 +4,8 @@ import {Context} from "../../context";
 import {CodyResponse, Node} from "@proophboard/cody-types";
 import {detectService} from "../detect-service";
 import {isCodyError} from "@proophboard/cody-utils";
-import {namespaceToFilePath} from "./namespace";
+import {namespaceToFilePath, namespaceToJSONPointer} from "./namespace";
+import {ValueObjectMetadata} from "./get-vo-metadata";
 
 export const definitionId = (vo: Node, ns: string, ctx: Context): string | CodyResponse => {
   const service = detectService(vo, ctx);
@@ -18,6 +19,17 @@ export const definitionId = (vo: Node, ns: string, ctx: Context): string | CodyR
 
 
   return `/definitions/${serviceNames.fileName}${nsFilename}${voNames.fileName}`;
+}
+
+export const voFQCN = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
+  const service = detectService(vo, ctx);
+  if(isCodyError(service)) {
+    return service;
+  }
+
+  const nsJsonPointer = namespaceToJSONPointer(voMeta.ns);
+
+  return `${names(service).className}.${nsJsonPointer}.${names(vo.getName()).className}`;
 }
 
 export const voClassNameFromFQCN = (fqcn: string): string => {

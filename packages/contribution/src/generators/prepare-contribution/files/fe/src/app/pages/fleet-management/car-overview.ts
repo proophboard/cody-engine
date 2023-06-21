@@ -1,8 +1,8 @@
-import {TopLevelPage} from "@frontend/app/pages/page-definitions";
+import {TopLevelPageWithProophBoardDescription} from "@frontend/app/pages/page-definitions";
 import {staticLabel} from "@frontend/util/breadcrumb/static-label";
 import {CarMultiple} from "mdi-material-ui";
 
-export const CarOverview: TopLevelPage = {
+export const CarOverview: TopLevelPageWithProophBoardDescription = {
   topLevel: true,
   breadcrumb: staticLabel('Car Overview'),
   route: '/cars',

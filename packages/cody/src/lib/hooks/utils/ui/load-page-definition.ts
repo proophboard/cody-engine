@@ -22,7 +22,7 @@ export const getPageDefinitionImport = (ui: Node, ctx: Context): string | CodyRe
     return service;
   }
 
-  return `@frontend/pages/${names(service).fileName}/${names(ui.getName()).fileName}`;
+  return `@frontend/app/pages/${names(service).fileName}/${names(ui.getName()).fileName}`;
 }
 
 export const loadPageDefinition = async (ui: Node, ctx: Context): Promise<PageDefinition | CodyResponse> => {
@@ -34,10 +34,18 @@ export const loadPageDefinition = async (ui: Node, ctx: Context): Promise<PageDe
 
   const uiNames = names(ui.getName());
 
-  const module = await import(importPath);
+  try {
+    const module = await import(importPath);
 
-  if(module && module[uiNames.className]) {
-    return module[uiNames.className];
+    if(module && module[uiNames.className]) {
+      return module[uiNames.className];
+    }
+  } catch (e) {
+    return {
+      cody: `Failed to import page definition: ${importPath}`,
+      type: CodyResponseType.Error,
+      details: JSON.stringify(e)
+    }
   }
 
   return {

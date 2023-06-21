@@ -1,12 +1,14 @@
-import {CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
+import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "../../context";
-import {UiMeta} from "../../on-ui";
 import {PageDefinition} from "@frontend/app/pages/page-definitions";
 import {names} from "@event-engine/messaging/helpers";
 import {getSourcesOfType, isCodyError} from "@proophboard/cody-utils";
 import {getNodeFromSyncedNodes} from "../node-tree";
+import {getUiMetadata, UiMetadata} from "./get-ui-metadata";
+import {isTopLevelPage} from "./is-top-level-page";
+import {loadPageDefinition} from "./load-page-definition";
 
-export const detectRoute = async (ui: Node, meta: UiMeta, topLevelPage: boolean, ctx: Context, pageDefinition?: PageDefinition): Promise<string | CodyResponse> => {
+export const detectRoute = async (ui: Node, meta: UiMetadata, topLevelPage: boolean, ctx: Context, routeParams: string[] = [], pageDefinition?: PageDefinition): Promise<string | CodyResponse> => {
   if(meta.route) {
     return meta.route;
   }
@@ -43,8 +45,45 @@ export const detectRoute = async (ui: Node, meta: UiMeta, topLevelPage: boolean,
 
   const connectedUI = connectedUIs.first() as Node;
   const syncedConnectedUI = getNodeFromSyncedNodes(connectedUI, ctx.syncedNodes);
-  const connectedUIMeta = // @todo: implement func to get UI meta, implement func to decide if top level page
 
-  const parentRoute = detectRoute(syncedConnectedUI)
+  if(isCodyError(syncedConnectedUI)) {
+    return syncedConnectedUI;
+  }
 
+  const connectedUIMeta = getUiMetadata(syncedConnectedUI, ctx);
+
+  if(isCodyError(connectedUIMeta)) {
+    return connectedUIMeta;
+  }
+
+  const isConnectedPageTopLevel = isTopLevelPage(syncedConnectedUI, connectedUIMeta, ctx);
+
+  if(isCodyError(isConnectedPageTopLevel)) {
+    return isConnectedPageTopLevel;
+  }
+
+  const connectedPageDefinition = await loadPageDefinition(connectedUI, ctx);
+
+  const parentRoute = await detectRoute(
+    syncedConnectedUI,
+    connectedUIMeta,
+    isConnectedPageTopLevel,
+    ctx,
+    routeParams,
+    isCodyError(connectedPageDefinition)? undefined : connectedPageDefinition
+  );
+
+  if(isCodyError(parentRoute)) {
+    return parentRoute;
+  }
+
+  if(routeParams.length) {
+    let route = parentRoute;
+
+    routeParams.forEach(p => route += `/:${p}`);
+
+    return route;
+  } else {
+    return `${parentRoute}/${names(ui.getName()).fileName}`;
+  }
 }

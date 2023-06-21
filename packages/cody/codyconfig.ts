@@ -3,6 +3,7 @@ import {onCommand} from "./src/lib/hooks/on-command";
 import {onEvent} from "./src/lib/hooks/on-event";
 import {onAggregate} from "./src/lib/hooks/on-aggregate";
 import {onDocument} from "./src/lib/hooks/on-document";
+import {onUi} from "./src/lib/hooks/on-ui";
 
 module.exports = {
   context: {
@@ -38,6 +39,6 @@ module.exports = {
     // onLayer: onLayerHook,
     // onPolicy: onPolicyHook,
     // onRole: onRoleHook,
-    // onUi: onUiHook,
+    onUi: onUi,
   }
 }

@@ -11,7 +11,7 @@ import {isNewFile} from "./fs-tree";
 import {namespaceToFilePath} from "./value-object/namespace";
 
 export const loadDescription = <D extends ProophBoardDescription>(node: Node, ctx: Context, tree: FsTree): D | CodyResponse => {
-  const {sharedSrc} = ctx;
+  const {sharedSrc, feSrc} = ctx;
 
   const service = detectService(node, ctx);
   if(isCodyError(service)) {
@@ -21,7 +21,9 @@ export const loadDescription = <D extends ProophBoardDescription>(node: Node, ct
   const serviceFilename = names(service).fileName;
   let nodeTypeFilename: string;
   let ns = '/';
-  const descFile = names(nodeNameToPascalCase(node)).fileName + '.desc.ts';
+  let descFile = names(nodeNameToPascalCase(node)).fileName + '.desc.ts';
+  let src = sharedSrc;
+  let importNs = '@app/shared';
 
   switch (node.getType()) {
     case NodeType.aggregate:
@@ -48,6 +50,12 @@ export const loadDescription = <D extends ProophBoardDescription>(node: Node, ct
       ns = namespaceToFilePath(voMeta.ns);
       nodeTypeFilename = 'types';
       break;
+    case NodeType.ui:
+      nodeTypeFilename = 'app/pages';
+      descFile = names(nodeNameToPascalCase(node)).fileName + '.ts';
+      src = feSrc;
+      importNs = '@frontend';
+      break;
     default:
       return {
         cody: `I cannot update prooph board info for card type: "${node.getType()}".`,
@@ -58,8 +66,8 @@ export const loadDescription = <D extends ProophBoardDescription>(node: Node, ct
 
   const fullPath = `${nodeTypeFilename}/${serviceFilename}${ns}${descFile}`;
 
-  if(!isNewFile(`${sharedSrc}/${fullPath}`, tree)) {
-    const desc = require(`@app/shared/${fullPath.slice(0,-3)}`);
+  if(!isNewFile(`${src}/${fullPath}`, tree)) {
+    const desc = require(`${importNs}/${fullPath.slice(0,-3)}`);
 
     for (const descKey in desc) {
       if(desc.hasOwnProperty(descKey)) {

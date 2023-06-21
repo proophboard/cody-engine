@@ -21,6 +21,10 @@ const sharedRegistryPath = (registryFilename: string): string => {
   return joinPathFragments('packages', 'shared', 'src', 'lib', registryFilename);
 }
 
+const frontendPagesRegistryPath = (): string => {
+  return joinPathFragments('packages', 'fe', 'src', 'app', 'pages', 'index.ts');
+}
+
 const getFilenameFromPath = (path: string): string => {
   const pathParts = path.split("/");
   if(!pathParts.length) {
@@ -151,6 +155,16 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       entryId = `${serviceNames.className}.${nsClassName}.${voNames.className}`;
       entryValue = importName = `${serviceNames.className}${nsClassName}${voNames.className}VORuntimeInfo`;
       importPath = `@app/shared/types/${serviceNames.fileName}${nsFilename}${voNames.fileName}`;
+      break;
+    case NodeType.ui:
+      const uiNames = names(node.getName());
+
+      registryPath = frontendPagesRegistryPath();
+      registryVarName = 'pages';
+      entryId = `${serviceNames.className}.${uiNames.className}`;
+      entryValue = `${serviceNames.className}${uiNames.className}`;
+      importName = `${uiNames.className} as ${serviceNames.className}${uiNames.className}`;
+      importPath = `@frontend/app/pages/${serviceNames.fileName}/${uiNames.fileName}`;
       break;
     default:
       return {

@@ -1,49 +1,86 @@
-import {CodyHook, NodeType} from "@proophboard/cody-types";
+import {CodyHook, CodyResponseType, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
-import {getSourcesOfType, isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
+import {getSourcesOfType, getTargetsOfType, isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
+import {asyncWithErrorCheck, CodyResponseException, withErrorCheck} from "./utils/error-handling";
+import {getUiMetadata} from "./utils/ui/get-ui-metadata";
 import {getNodeFromSyncedNodes} from "./utils/node-tree";
-import {withErrorCheck} from "./utils/error-handling";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {isQueryableStateDescription} from "@event-engine/descriptions/descriptions";
-import {Rule} from "./utils/rule-engine/configuration";
+import {isTopLevelPage} from "./utils/ui/is-top-level-page";
+import {detectRoute} from "./utils/ui/detect-route";
 import {loadPageDefinition} from "./utils/ui/load-page-definition";
-import {PageDefinition} from "@frontend/app/pages/page-definitions";
-import {makeDefaultPageDefinition} from "./utils/ui/make-default-page-definition";
-
-export interface UiMeta {
-  route?: string;
-  routeParams?: string[];
-  sidebar?: {label?: string; icon?: string; show?: boolean | Rule[]};
-  breadcrumb?: string;
-  dynamicBreadcrumb?: Rule[];
-}
+import {upsertSubLevelPage, upsertTopLevelPage} from "./utils/ui/upsert-page-definition";
+import {flushChanges, FsTree} from "nx/src/generators/tree";
+import {listChangesForCodyResponse} from "./utils/fs-tree";
+import {isSubLevelPage} from "@frontend/app/pages/page-definitions";
+import {formatFiles} from "@nx/devkit";
+import {register} from "./utils/registry";
 
 export const onUi: CodyHook<Context> = async (ui, ctx) => {
-  const uiMeta = withErrorCheck(parseJsonMetadata, [ui]) as UiMeta;
-  let isTopLevelPage = !uiMeta.routeParams;
-  const routeParams: string[] = uiMeta.routeParams || [];
+  try {
 
-  const viewModels = getSourcesOfType(ui, NodeType.document, true, true, true);
+    const uiMeta = withErrorCheck(getUiMetadata, [ui, ctx]);
+    const routeParams: string[] = uiMeta.routeParams || [];
 
-  if(isCodyError(viewModels)) {
-    return viewModels;
-  }
+    const viewModels = withErrorCheck(getSourcesOfType, [ui, NodeType.document, true, true, true]);
 
-  viewModels.forEach(vM => {
-    const syncedVm = withErrorCheck(getNodeFromSyncedNodes, [vM, ctx.syncedNodes]);
-    const vMMeta = withErrorCheck(getVoMetadata, [syncedVm, ctx]);
+    viewModels.forEach(vM => {
+      const syncedVm = withErrorCheck(getNodeFromSyncedNodes, [vM, ctx.syncedNodes]);
+      const vMMeta = withErrorCheck(getVoMetadata, [syncedVm, ctx]);
 
-    if(isQueryableStateDescription(vMMeta)) {
-      isTopLevelPage = false;
-      if(!routeParams.includes(vMMeta.identifier)) {
-        routeParams.push(vMMeta.identifier);
+      if(isQueryableStateDescription(vMMeta)) {
+        if(!routeParams.includes(vMMeta.identifier)) {
+          routeParams.push(vMMeta.identifier);
+        }
       }
+    })
+
+    const commands = withErrorCheck(getTargetsOfType, [ui, NodeType.command, true, true, true]);
+
+    const pageDefinition = await loadPageDefinition(ui, ctx);
+
+    if(!isCodyError(pageDefinition) && isSubLevelPage(pageDefinition)) {
+      pageDefinition.routeParams.reverse().forEach(p => {
+        if(!routeParams.includes(p)) {
+          routeParams.unshift(p);
+        }
+      })
     }
-  })
 
-  const pageDefinitionOrError = await loadPageDefinition(ui, ctx);
-  const existingPageDefinition: PageDefinition | undefined = isCodyError(pageDefinitionOrError) ? undefined : pageDefinitionOrError;
-  const newPageDefinition = makeDefaultPageDefinition(ui, isTopLevelPage);
+    const topLevelPage = withErrorCheck(isTopLevelPage, [ui, uiMeta, ctx]);
+    const route = await asyncWithErrorCheck(detectRoute, [ui, uiMeta, topLevelPage, ctx, routeParams, isCodyError(pageDefinition)? undefined : pageDefinition]);
 
-  if(!isTopLevelPage)
+    const tree = new FsTree(ctx.projectRoot, true);
+
+    if(topLevelPage) {
+      await asyncWithErrorCheck(
+        upsertTopLevelPage,
+        [ui, uiMeta, ctx, tree, commands, viewModels, route, isCodyError(pageDefinition)? undefined : pageDefinition]
+      )
+    } else {
+      await asyncWithErrorCheck(
+        upsertSubLevelPage,
+        [ui, uiMeta, ctx, tree, commands, viewModels, route, routeParams, isCodyError(pageDefinition)? undefined : pageDefinition]
+      );
+    }
+
+    withErrorCheck(register, [ui, ctx, tree]);
+
+    await formatFiles(tree);
+
+    const changes = tree.listChanges();
+
+    flushChanges(ctx.projectRoot, changes);
+
+    return {
+      cody: `The UI page "${ui.getName()}" is added to the app.`,
+      details: listChangesForCodyResponse(tree)
+    }
+  } catch (e) {
+    if(e instanceof CodyResponseException) {
+      return e.codyResponse;
+    }
+
+    throw e;
+  }
 }
