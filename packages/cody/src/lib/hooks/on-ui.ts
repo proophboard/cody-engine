@@ -17,6 +17,7 @@ import {formatFiles} from "@nx/devkit";
 import {register, registerCommandComponent} from "./utils/registry";
 import {upsertCommandComponent} from "./utils/ui/upsert-command-component";
 import {upsertListViewComponent} from "./utils/ui/upsert-list-view-component";
+import {upsertStateViewComponent} from "./utils/ui/upsert-state-view-component";
 
 export const onUi: CodyHook<Context> = async (ui, ctx) => {
   try {
@@ -79,8 +80,9 @@ export const onUi: CodyHook<Context> = async (ui, ctx) => {
         await asyncWithErrorCheck(upsertListViewComponent, [viewModel, viewModelMeta, ctx, tree]);
       }
 
-      // @TODO: upsert state view
-      // @TODO: upsert also on-document, if UI view exists
+      if(isQueryableStateDescription(viewModelMeta)) {
+        await asyncWithErrorCheck(upsertStateViewComponent, [viewModel, viewModelMeta, ctx, tree]);
+      }
     }
 
     await formatFiles(tree);

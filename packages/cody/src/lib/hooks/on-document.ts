@@ -20,6 +20,7 @@ import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {makeQueryResolver} from "./utils/query/make-query-resolver";
 import {voClassNameFromFQCN} from "./utils/value-object/definitions";
 import {upsertListViewComponent} from "./utils/ui/upsert-list-view-component";
+import {upsertStateViewComponent} from "./utils/ui/upsert-state-view-component";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
   try {
@@ -104,6 +105,8 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
       // Upsert View Component
       if(isList) {
         await asyncWithErrorCheck(upsertListViewComponent, [vo, voMeta, ctx, tree]);
+      } else {
+        await asyncWithErrorCheck(upsertStateViewComponent, [vo, voMeta, ctx, tree]);
       }
     }
 
