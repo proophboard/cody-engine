@@ -14,6 +14,8 @@ import {
 import {Rule} from "../rule-engine/configuration";
 import {isListSchema} from "../json-schema/list-schema";
 import {resolveRef} from "../json-schema/resolve-ref";
+import {UiSchema} from "@rjsf/utils";
+import {GridDensity} from "@mui/x-data-grid";
 
 interface ValueObjectMetadataRaw {
   identifier?: string;
@@ -23,6 +25,28 @@ interface ValueObjectMetadataRaw {
   ns?: string;
   collection?: string;
   initialize?: Rule[];
+  uiSchema?: UiSchema & TableUiSchema;
+}
+
+export interface TableColumnUiSchema {
+  field: string;
+  headerName?: string;
+  flex?: string | number;
+  width?: string | number;
+  value?: Rule[];
+  pageLink?: string;
+  link?: string | Rule[];
+}
+
+export interface TableUiSchema {
+  table?: {
+    columns?: TableColumnUiSchema[],
+    pageSize?: number,
+    pageSizeOptions?: number[],
+    density?: GridDensity,
+    // @TODO: show/hide specific grid toolbar options or hide entire grid toolbar
+    // @TODO: support endless scroll, pagination, ... ?
+  }
 }
 
 export interface ValueObjectMetadata extends ValueObjectDescriptionFlags {
@@ -37,6 +61,7 @@ export interface ValueObjectMetadata extends ValueObjectDescriptionFlags {
   collection?: string;
   initialize?: Rule[];
   itemType?: string;
+  uiSchema?: UiSchema & TableUiSchema;
 }
 
 export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | CodyResponse => {
@@ -106,6 +131,10 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
 
   if(meta.initialize) {
     convertedMeta.initialize = meta.initialize;
+  }
+
+  if(meta.uiSchema) {
+    convertedMeta.uiSchema = meta.uiSchema;
   }
 
   if(isListSchema(normalizedSchema)) {

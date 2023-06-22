@@ -179,14 +179,16 @@ const getComponentNames = (viewModels: List<Node>, ctx: Context, existingPageDef
       return voMeta;
     }
 
-    const fqcn = voFQCN(vo, voMeta, ctx);
+    const service = detectService(vo, ctx);
 
-    if(isCodyError(fqcn)) {
-      return fqcn;
+    if(isCodyError(service)) {
+      return service;
     }
 
+
+
     if(isQueryableStateDescription(voMeta) || isQueryableStateListDescription(voMeta)) {
-      componentNames.push(`${fqcn}`);
+      componentNames.push(`${names(service).className}.${names(vo.getName()).className}`);
     }
   }
 

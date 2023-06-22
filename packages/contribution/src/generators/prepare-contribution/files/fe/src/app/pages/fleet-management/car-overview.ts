@@ -7,7 +7,7 @@ export const CarOverview: TopLevelPageWithProophBoardDescription = {
   breadcrumb: staticLabel('Car Overview'),
   route: '/cars',
   sidebar: {label: 'Cars', Icon: CarMultiple},
-  components: ["FleetManagement.Car.CarList"],
+  components: ["FleetManagement.CarList"],
   commands: ["FleetManagement.AddCarToFleet"],
   _pbBoardId: "ba59fb19-4d03-46fe-82a2-2725d61481ae",
   _pbCardId: "aevAyzYQkuebtV8BbiiAfS",

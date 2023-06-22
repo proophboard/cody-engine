@@ -1,6 +1,6 @@
-import {useGetCar} from "@frontend/queries/fleet-management/use-get-car";
+import {useGetCar} from "../../../../../../../../../../../fe/src/queries/fleet-management/use-get-car";
 import {CircularProgress} from "@mui/material";
-import StateView from "@frontend/app/components/core/StateView";
+import StateView from "../../../../../../../../../../../fe/src/app/components/core/StateView";
 import {FleetManagementCarCarVORuntimeInfo} from "@app/shared/types/fleet-management/car/car";
 
 type CarProps = Record<string, string> & {vehicleId: string};

@@ -5,7 +5,7 @@ import {asyncWithErrorCheck, CodyResponseException, withErrorCheck} from "./util
 import {getUiMetadata} from "./utils/ui/get-ui-metadata";
 import {getNodeFromSyncedNodes} from "./utils/node-tree";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
-import {isQueryableStateDescription} from "@event-engine/descriptions/descriptions";
+import {isQueryableStateDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import {isTopLevelPage} from "./utils/ui/is-top-level-page";
 import {detectRoute} from "./utils/ui/detect-route";
 import {loadPageDefinition} from "./utils/ui/load-page-definition";
@@ -16,6 +16,7 @@ import {isSubLevelPage} from "@frontend/app/pages/page-definitions";
 import {formatFiles} from "@nx/devkit";
 import {register, registerCommandComponent} from "./utils/registry";
 import {upsertCommandComponent} from "./utils/ui/upsert-command-component";
+import {upsertListViewComponent} from "./utils/ui/upsert-list-view-component";
 
 export const onUi: CodyHook<Context> = async (ui, ctx) => {
   try {
@@ -69,6 +70,17 @@ export const onUi: CodyHook<Context> = async (ui, ctx) => {
 
     for (const command of commands) {
       await asyncWithErrorCheck(upsertCommandComponent, [command, ctx, tree]);
+    }
+
+    for (const viewModel of viewModels) {
+      const viewModelMeta = withErrorCheck(getVoMetadata, [viewModel, ctx]);
+
+      if(isQueryableStateListDescription(viewModelMeta)) {
+        await asyncWithErrorCheck(upsertListViewComponent, [viewModel, viewModelMeta, ctx, tree]);
+      }
+
+      // @TODO: upsert state view
+      // @TODO: upsert also on-document, if UI view exists
     }
 
     await formatFiles(tree);

@@ -2,7 +2,6 @@ import {useGetCarList} from "@frontend/queries/fleet-management/use-get-car-list
 import {GetCarList} from "@app/shared/queries/fleet-management/get-car-list";
 import {Box, CircularProgress, Typography} from "@mui/material";
 import {DataGrid, GridColDef, GridToolbar} from "@mui/x-data-grid";
-import {Car} from "@app/shared/types/fleet-management/car/car";
 import {CarDetails} from "@frontend/app/pages/fleet-management/car-details";
 import PageLink from "@frontend/app/components/core/PageLink";
 import {useEffect} from "react";

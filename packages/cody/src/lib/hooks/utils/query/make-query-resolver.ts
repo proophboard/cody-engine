@@ -8,7 +8,7 @@ import {
   QueryableStateListDescription
 } from "@event-engine/descriptions/descriptions";
 import {names} from "@event-engine/messaging/helpers";
-import {objectSchema} from "../json-schema/object-schema";
+import {isObjectSchema} from "../json-schema/is-object-schema";
 import {voClassNameFromFQCN} from "../value-object/definitions";
 
 export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
@@ -45,7 +45,7 @@ const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableS
     details: `You can solve the issue by setting querySchema to: \n{\n  ${meta.identifier}: "string"\n}`
   };
 
-  if(!objectSchema(querySchema!)) {
+  if(!isObjectSchema(querySchema!)) {
     return codyQuerySchemaError;
   }
 
@@ -75,7 +75,7 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableSt
     details: `You can solve the issue by setting querySchema to: {}`
   };
 
-  if(!objectSchema(querySchema!)) {
+  if(!isObjectSchema(querySchema!)) {
     return codyQuerySchemaError;
   }
 

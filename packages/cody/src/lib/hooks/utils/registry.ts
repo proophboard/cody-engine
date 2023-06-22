@@ -240,6 +240,31 @@ export const registerCommandComponent = (service: string, command: Node, ctx: Co
   return true;
 }
 
+export const registerViewComponent = (service: string, vo: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const serviceNames = names(service);
+  const voNames = names(vo.getName());
+
+  if(!isNewFile(
+    joinPathFragments('packages', 'fe', 'src', 'app', 'components', serviceNames.fileName, 'views', `${voNames.className}.tsx`),
+    tree
+  )
+  ) {
+    return true;
+  }
+
+  const registryPath = joinPathFragments('packages', 'fe', 'src', 'app', 'components', 'views.ts');
+  const registryVarName = 'views';
+  const entryId = `${serviceNames.className}.${voNames.className}`;
+  const entryValue = `${serviceNames.className}${voNames.className}`;
+  const importName = `${serviceNames.className}${voNames.className}`;
+  const importPath = `@frontend/app/components/${serviceNames.fileName}/views/${voNames.className}`;
+
+
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree, true);
+
+  return true;
+}
+
 export const registerEventReducer = (service: string, event: Node, aggregate: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
   const serviceNames = names(service);
   const eventNames = names(event.getName());

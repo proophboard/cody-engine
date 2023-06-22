@@ -95,12 +95,36 @@ export const convertRuleConfigToValueObjectInitializeRules = (vo: Node, ctx: Con
   return lines.join("\n");
 }
 
-const convertRule = (node: Node, ctx: Context, rule: Rule, lines: string[], indent = ''): boolean | CodyResponse => {
+export const convertRuleConfigToTableColumnValueGetterRules = (vo: Node, ctx: Context, rules: Rule[], indent = '  ') => {
+  const lines: string[] = [];
+
+  for (const rule of rules) {
+    if(!isAssignVariable(rule.then)) {
+      return {
+        cody: `Table column value rule ${JSON.stringify(rule)} of value object: "${vo.getName()}" is not an "assign:variable" rule.`,
+        type: CodyResponseType.Error,
+        details: `Table column value rules should only assign the column "value" variable with data from the row item.`,
+      }
+    }
+
+    lines.push("");
+    const res = convertRule(vo, ctx, rule, lines, indent, true);
+    if(isCodyError(res)) {
+      return res;
+    }
+  }
+
+  lines.push("");
+
+  return lines.join("\n");
+}
+
+const convertRule = (node: Node, ctx: Context, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
   switch (rule.rule) {
     case "always":
-      return convertAlwaysRule(node, ctx, rule, lines, indent);
+      return convertAlwaysRule(node, ctx, rule, lines, indent, evalSync);
     case "condition":
-      return convertConditionRule(node, ctx, rule as ConditionRule, lines, indent);
+      return convertConditionRule(node, ctx, rule as ConditionRule, lines, indent, evalSync);
     default:
       return {
         cody: `I don't know how to handle a rule of type "${rule.rule}".`,
@@ -110,11 +134,11 @@ const convertRule = (node: Node, ctx: Context, rule: Rule, lines: string[], inde
   }
 }
 
-const convertAlwaysRule = (node: Node, ctx: Context, rule: AlwaysRule, lines: string[], indent = ''): boolean | CodyResponse => {
-  return convertThen(node, ctx, rule, lines, indent);
+const convertAlwaysRule = (node: Node, ctx: Context, rule: AlwaysRule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+  return convertThen(node, ctx, rule, lines, indent, evalSync);
 }
 
-const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lines: string[], indent = ''): boolean | CodyResponse => {
+const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
   let ifCondition: string, expr: string;
 
   if(isIfConditionRule(rule)) {
@@ -131,9 +155,9 @@ const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lin
     }
   }
 
-  lines.push(`${indent}${ifCondition}(${wrapExpression(expr)})) {`);
+  lines.push(`${indent}${ifCondition}(${wrapExpression(expr, evalSync)})) {`);
 
-  const then = convertThen(node, ctx, rule, lines, indent + '  ');
+  const then = convertThen(node, ctx, rule, lines, indent + '  ', evalSync);
 
   if(isCodyError(then)) {
     return then;
@@ -148,15 +172,15 @@ const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lin
   return true;
 }
 
-const convertThen = (node: Node, ctx: Context, rule: Rule, lines: string[], indent = ''): boolean | CodyResponse => {
+const convertThen = (node: Node, ctx: Context, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
   const {then} = rule;
   switch (true) {
     case isRecordEvent(then):
-      return convertThenRecordEvent(node, ctx, then as ThenRecordEvent, rule, lines, indent);
+      return convertThenRecordEvent(node, ctx, then as ThenRecordEvent, rule, lines, indent, evalSync);
     case isExecuteRules(then):
-      return convertThenExecuteRules(node, ctx, then as ThenExecuteRules, rule, lines, indent);
+      return convertThenExecuteRules(node, ctx, then as ThenExecuteRules, rule, lines, indent, evalSync);
     case isAssignVariable(then):
-      return convertThenAssignVariable(node, ctx, then as ThenAssignVariable, rule, lines, indent);
+      return convertThenAssignVariable(node, ctx, then as ThenAssignVariable, rule, lines, indent, evalSync);
     default:
       return {
         cody: `I don't know the "then" part of that rule: ${JSON.stringify(rule)}.`,
@@ -166,7 +190,7 @@ const convertThen = (node: Node, ctx: Context, rule: Rule, lines: string[], inde
   }
 }
 
-const convertThenRecordEvent = (node: Node, ctx: Context, then: ThenRecordEvent, rule: Rule, lines: string[], indent = ''): boolean | CodyResponse => {
+const convertThenRecordEvent = (node: Node, ctx: Context, then: ThenRecordEvent, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
   const service = detectService(node, ctx);
   if(isCodyError(service)) {
     return service;
@@ -204,7 +228,7 @@ const convertThenRecordEvent = (node: Node, ctx: Context, then: ThenRecordEvent,
     }
   }
 
-  const mapping = convertMapping(node, ctx, then.record.mapping, rule, indent);
+  const mapping = convertMapping(node, ctx, then.record.mapping, rule, indent, evalSync);
   if(isCodyError(mapping)) {
     return mapping;
   }
@@ -214,9 +238,9 @@ const convertThenRecordEvent = (node: Node, ctx: Context, then: ThenRecordEvent,
   return true;
 }
 
-const convertThenExecuteRules = (node: Node, ctx: Context, then: ThenExecuteRules, rule: Rule, lines: string[], indent = ''): boolean | CodyResponse => {
+const convertThenExecuteRules = (node: Node, ctx: Context, then: ThenExecuteRules, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
   for (const r of then.execute.rules) {
-    const success = convertRule(node, ctx, r, lines, indent);
+    const success = convertRule(node, ctx, r, lines, indent, evalSync);
 
     if(isCodyError(success)) {
       return success;
@@ -226,17 +250,17 @@ const convertThenExecuteRules = (node: Node, ctx: Context, then: ThenExecuteRule
   return true;
 }
 
-const convertThenAssignVariable = (node: Node, ctx: Context, then: ThenAssignVariable, rule: Rule, lines: string[], indent = ''): boolean | CodyResponse => {
-  const valueMapping = convertMapping(node, ctx, then.assign.value, rule, indent);
+const convertThenAssignVariable = (node: Node, ctx: Context, then: ThenAssignVariable, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+  const valueMapping = convertMapping(node, ctx, then.assign.value, rule, indent, evalSync);
 
   lines.push(`ctx['${then.assign.variable}'] = ${valueMapping}`);
 
   return true;
 }
 
-const convertMapping = (node: Node, ctx: Context, mapping: string | PropMapping, rule: Rule, indent = ''): string | CodyResponse => {
+const convertMapping = (node: Node, ctx: Context, mapping: string | PropMapping, rule: Rule, indent = '', evalSync = false): string | CodyResponse => {
   if(typeof mapping === "string") {
-    return wrapExpression(mapping);
+    return wrapExpression(mapping, evalSync);
   }
 
   let propMap = `{\n`;
@@ -248,10 +272,10 @@ const convertMapping = (node: Node, ctx: Context, mapping: string | PropMapping,
         mergeVal = [mergeVal];
       }
       mergeVal.forEach(exp => {
-        propMap += `${indent}  ...${wrapExpression(exp)},\n`
+        propMap += `${indent}  ...${wrapExpression(exp, evalSync)},\n`
       })
     } else {
-      propMap += `${indent}  "${propName}": ${wrapExpression(mapping[propName] as string)},\n`
+      propMap += `${indent}  "${propName}": ${wrapExpression(mapping[propName] as string, evalSync)},\n`
     }
   }
 
@@ -260,6 +284,8 @@ const convertMapping = (node: Node, ctx: Context, mapping: string | PropMapping,
   return propMap;
 }
 
-const wrapExpression = (expr: string): string => {
-  return `await jexl.eval("${expr}", ctx)`;
+const wrapExpression = (expr: string, evalSync = false): string => {
+  return evalSync
+    ? `jexl.evalSync("${expr}", ctx)`
+    : `await jexl.eval("${expr}", ctx)`;
 }
