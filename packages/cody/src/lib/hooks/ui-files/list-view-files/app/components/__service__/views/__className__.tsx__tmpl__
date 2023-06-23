@@ -1,0 +1,40 @@
+import {Box, CircularProgress, Typography} from "@mui/material";
+import {DataGrid, GridColDef, GridToolbar} from "@mui/x-data-grid";
+import {useEffect} from "react";
+import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
+import {Get<%= className %>} from "@app/shared/queries/<%= serviceNames.fileName %>/get-<%= fileName %>";
+import {useGet<%= className %>} from "@frontend/queries/<%= serviceNames.fileName %>/use-get-<%= fileName %>";
+<%- imports %>
+
+const <%= className %> = (params: Get<%= className %>) => {
+  const query = useGet<%= className %>(params);
+
+  useEffect(() => {
+    triggerSideBarAnchorsRendered();
+  }, [params]);
+
+  const columns: GridColDef[] = [
+    <%- columns %>
+  ];
+
+  return (
+    <Box component="div">
+      <Typography variant="h3" className="sidebar-anchor" sx={{padding: (theme) => theme.spacing(4), paddingLeft: 0}} id="component-<%= serviceNames.fileName %>-<%= fileName %>"><%= name %></Typography>
+      {query.isLoading && <CircularProgress />}
+      {query.isSuccess && <DataGrid
+          columns={columns}
+          rows={query.data}
+          getRowId={row => row.<%= identifier %>}
+          sx={{width: "100%"}}
+          slots={{toolbar: GridToolbar}}
+          initialState={
+            {pagination: {paginationModel: {pageSize: 5}}}
+          }
+          pageSizeOptions={[5, 10, 25]}
+          density="comfortable"
+      />}
+    </Box>
+  );
+}
+
+export default <%= className %>;

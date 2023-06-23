@@ -1,5 +1,4 @@
 import {isRefSchema, RefSchema} from "./ref-schema";
-import {JSONSchema7} from "json-schema-to-ts";
 
 export interface ListSchema {
   type: "array";

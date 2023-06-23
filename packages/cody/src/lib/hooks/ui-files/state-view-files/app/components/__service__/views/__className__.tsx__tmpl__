@@ -1,0 +1,17 @@
+import {CircularProgress} from "@mui/material";
+import StateView from "@frontend/app/components/core/StateView";
+import {useGet<%= className %>} from "@frontend/queries/<%= serviceNames.fileName %>/use-get-<%= fileName %>";
+import {<%= serviceNames.className %><%= nsClassName %><%= className %>VORuntimeInfo} from "@app/shared/types/<%= serviceNames.fileName %><%= nsFilename %><%= fileName %>";
+
+type <%= className %>Props = Record<string, string> & {<%= identifier %>: string};
+
+const <%= className %> = (props: <%= className %>Props) => {
+  const query = useGet<%= className %>(props);
+
+  return <>
+    {query.isLoading && <CircularProgress />}
+    {query.isSuccess && <StateView description={<%= serviceNames.className %><%= nsClassName %><%= className %>VORuntimeInfo} state={query.data} />}
+  </>
+}
+
+export default <%= className %>;

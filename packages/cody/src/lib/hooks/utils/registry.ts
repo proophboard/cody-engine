@@ -21,6 +21,10 @@ const sharedRegistryPath = (registryFilename: string): string => {
   return joinPathFragments('packages', 'shared', 'src', 'lib', registryFilename);
 }
 
+const frontendPagesRegistryPath = (): string => {
+  return joinPathFragments('packages', 'fe', 'src', 'app', 'pages', 'index.ts');
+}
+
 const getFilenameFromPath = (path: string): string => {
   const pathParts = path.split("/");
   if(!pathParts.length) {
@@ -30,7 +34,7 @@ const getFilenameFromPath = (path: string): string => {
   return pathParts[pathParts.length - 1];
 }
 
-const addRegistryEntry = (registryPath: string, registryVarName: string, entryId: string, entryValue: string, importName: string, importPath: string, tree: FsTree) => {
+const addRegistryEntry = (registryPath: string, registryVarName: string, entryId: string, entryValue: string, importName: string, importPath: string, tree: FsTree, isDefaultImport?: boolean) => {
   const registryFilename = getFilenameFromPath(registryPath);
   const registryFileContent = tree.read(registryPath)!.toString();
 
@@ -49,10 +53,17 @@ const addRegistryEntry = (registryPath: string, registryVarName: string, entryId
     initializer: entryValue
   });
 
-  registrySource.addImportDeclaration({
-    defaultImport: `{${importName}}`,
-    moduleSpecifier: importPath
-  });
+  if(isDefaultImport) {
+    registrySource.addImportDeclaration({
+      defaultImport: `${importName}`,
+      moduleSpecifier: importPath
+    });
+  } else {
+    registrySource.addImportDeclaration({
+      defaultImport: `{${importName}}`,
+      moduleSpecifier: importPath
+    });
+  }
 
   registrySource.formatText({indentSize: 2});
   tree.write(registryPath, registrySource.getText());
@@ -152,6 +163,16 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       entryValue = importName = `${serviceNames.className}${nsClassName}${voNames.className}VORuntimeInfo`;
       importPath = `@app/shared/types/${serviceNames.fileName}${nsFilename}${voNames.fileName}`;
       break;
+    case NodeType.ui:
+      const uiNames = names(node.getName());
+
+      registryPath = frontendPagesRegistryPath();
+      registryVarName = 'pages';
+      entryId = `${serviceNames.className}.${uiNames.className}`;
+      entryValue = `${serviceNames.className}${uiNames.className}`;
+      importName = `${uiNames.className} as ${serviceNames.className}${uiNames.className}`;
+      importPath = `@frontend/app/pages/${serviceNames.fileName}/${uiNames.fileName}`;
+      break;
     default:
       return {
         cody: `I cannot register an element of type "${node.getType()}". I don't maintain a registry for those types`,
@@ -190,6 +211,56 @@ export const registerCommandHandler = (service: string, aggregate: Node, ctx: Co
 
 
   addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
+
+  return true;
+}
+
+export const registerCommandComponent = (service: string, command: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const serviceNames = names(service);
+  const commandNames = names(command.getName());
+
+  if(!isNewFile(
+    joinPathFragments('packages', 'fe', 'src', 'app', 'components', serviceNames.fileName, 'commands', `${commandNames.className}.tsx`),
+    tree
+  )
+  ) {
+    return true;
+  }
+
+  const registryPath = joinPathFragments('packages', 'fe', 'src', 'app', 'components', 'commands.ts');
+  const registryVarName = 'commands';
+  const entryId = `${serviceNames.className}.${commandNames.className}`;
+  const entryValue = `${serviceNames.className}${commandNames.className}`;
+  const importName = `${serviceNames.className}${commandNames.className}`;
+  const importPath = `@frontend/app/components/${serviceNames.fileName}/commands/${commandNames.className}`;
+
+
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree, true);
+
+  return true;
+}
+
+export const registerViewComponent = (service: string, vo: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const serviceNames = names(service);
+  const voNames = names(vo.getName());
+
+  if(!isNewFile(
+    joinPathFragments('packages', 'fe', 'src', 'app', 'components', serviceNames.fileName, 'views', `${voNames.className}.tsx`),
+    tree
+  )
+  ) {
+    return true;
+  }
+
+  const registryPath = joinPathFragments('packages', 'fe', 'src', 'app', 'components', 'views.ts');
+  const registryVarName = 'views';
+  const entryId = `${serviceNames.className}.${voNames.className}`;
+  const entryValue = `${serviceNames.className}${voNames.className}`;
+  const importName = `${serviceNames.className}${voNames.className}`;
+  const importPath = `@frontend/app/components/${serviceNames.fileName}/views/${voNames.className}`;
+
+
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree, true);
 
   return true;
 }

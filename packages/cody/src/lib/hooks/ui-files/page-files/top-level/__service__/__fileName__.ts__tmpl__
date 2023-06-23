@@ -1,0 +1,22 @@
+import {TopLevelPageWithProophBoardDescription} from "@frontend/app/pages/page-definitions";
+<%- imports %>
+
+export const <%= className %>: TopLevelPageWithProophBoardDescription = {
+  commands: <%- toJSON(commandNames) %>,
+  components: <%- toJSON(componentNames) %>,
+  topLevel: true,
+  route: "<%= route %>",
+  sidebar: {
+    label: "<%= sidebar.label %>",
+    Icon: <%= sidebar.icon %>,
+  },
+  breadcrumb: <%- breadcrumb %>,
+  _pbBoardId: "<%= _pbBoardId %>",
+  _pbCardId: "<%= _pbCardId %>",
+  _pbCreatedBy: "<%= _pbCreatedBy %>",
+  _pbCreatedAt: "<%= _pbCreatedAt %>",
+  _pbLastUpdatedBy: "<%= _pbLastUpdatedBy %>",
+  _pbLastUpdatedAt: "<%= _pbLastUpdatedAt %>",
+  _pbVersion: <%= _pbVersion %>,
+  _pbLink: "<%- _pbLink %>",
+}

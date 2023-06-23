@@ -13,5 +13,5 @@ export const <%= serviceNames.className %><%= className %>AggregateDesc: Aggrega
   _pbLastUpdatedBy: "<%= _pbLastUpdatedBy %>",
   _pbLastUpdatedAt: "<%= _pbLastUpdatedAt %>",
   _pbVersion: <%= _pbVersion %>,
-  _pbLink: "<%= _pbLink %>",
+  _pbLink: "<%- _pbLink %>",
 };

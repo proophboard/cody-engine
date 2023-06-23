@@ -1,0 +1,19 @@
+import {SubLevelPageWithProophBoardDescription} from "@frontend/app/pages/page-definitions";
+<%- breadcrumbImports %>
+
+export const <%= className %>: SubLevelPageWithProophBoardDescription = {
+  commands: <%- toJSON(commandNames) %>,
+  components: <%- toJSON(componentNames) %>,
+  topLevel: false,
+  route: "<%= route %>",
+  routeParams: <%- toJSON(routeParams) %>,
+  breadcrumb: <%- breadcrumb %>,
+  _pbBoardId: "<%= _pbBoardId %>",
+  _pbCardId: "<%= _pbCardId %>",
+  _pbCreatedBy: "<%= _pbCreatedBy %>",
+  _pbCreatedAt: "<%= _pbCreatedAt %>",
+  _pbLastUpdatedBy: "<%= _pbLastUpdatedBy %>",
+  _pbLastUpdatedAt: "<%= _pbLastUpdatedAt %>",
+  _pbVersion: <%= _pbVersion %>,
+  _pbLink: "<%- _pbLink %>",
+}

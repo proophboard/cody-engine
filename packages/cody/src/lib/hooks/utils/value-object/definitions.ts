@@ -4,7 +4,8 @@ import {Context} from "../../context";
 import {CodyResponse, Node} from "@proophboard/cody-types";
 import {detectService} from "../detect-service";
 import {isCodyError} from "@proophboard/cody-utils";
-import {namespaceToFilePath} from "./namespace";
+import {namespaceToFilePath, namespaceToJSONPointer} from "./namespace";
+import {ValueObjectMetadata} from "./get-vo-metadata";
 
 export const definitionId = (vo: Node, ns: string, ctx: Context): string | CodyResponse => {
   const service = detectService(vo, ctx);
@@ -20,6 +21,33 @@ export const definitionId = (vo: Node, ns: string, ctx: Context): string | CodyR
   return `/definitions/${serviceNames.fileName}${nsFilename}${voNames.fileName}`;
 }
 
+export const voFQCN = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
+  const service = detectService(vo, ctx);
+  if(isCodyError(service)) {
+    return service;
+  }
+
+  const nsJsonPointer = namespaceToJSONPointer(voMeta.ns);
+
+  return `${names(service).className}.${nsJsonPointer}.${names(vo.getName()).className}`;
+}
+
+export const voFQCNFromDefinitionId = (definitionId: string): string => {
+  const withoutPrefix = definitionId.replace('/definitions/', '');
+
+  const fqcnParts = withoutPrefix.split("/");
+
+  return fqcnParts.map(p => names(p).className).join(".");
+}
+
+export const splitVOFQCN = (fqcn: string): [string, string, string] => {
+  const service = voServiceFromFQCN(fqcn);
+  const nsJSONPointer = voNamespaceJSONPointerFromFQCN(fqcn);
+  const className = voClassNameFromFQCN(fqcn);
+
+  return [service, nsJSONPointer, className];
+}
+
 export const voClassNameFromFQCN = (fqcn: string): string => {
   const parts = fqcn.split(".");
   return names(parts[parts.length - 1]).className;
@@ -28,6 +56,18 @@ export const voClassNameFromFQCN = (fqcn: string): string => {
 export const voServiceFromFQCN = (fqcn: string): string => {
   const parts = fqcn.split(".");
   return names(parts[0]).className;
+}
+
+export const voNamespaceJSONPointerFromFQCN = (fqcn: string): string => {
+  const parts = fqcn.split(".");
+
+  if(parts.length < 3) {
+    return '';
+  }
+
+  const nsParts = parts.slice(1, -1);
+
+  return nsParts.map(p => names(p).className).join(".");
 }
 
 export const normalizeRefs = (schema: JSONSchema, service: string): JSONSchema => {
