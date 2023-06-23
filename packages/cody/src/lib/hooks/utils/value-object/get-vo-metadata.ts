@@ -33,7 +33,7 @@ export interface TableColumnUiSchema {
   headerName?: string;
   flex?: string | number;
   width?: string | number;
-  value?: Rule[];
+  value?: Rule[] | string;
   pageLink?: string;
   link?: string | Rule[];
 }

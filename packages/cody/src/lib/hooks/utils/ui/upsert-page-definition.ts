@@ -3,7 +3,7 @@ import {Context} from "../../context";
 import {FsTree} from "nx/src/generators/tree";
 import {List} from "immutable";
 import {PageDefinition} from "@frontend/app/pages/page-definitions";
-import {UiMetadata} from "./get-ui-metadata";
+import {isDynamicBreadcrumb, UiMetadata} from "./get-ui-metadata";
 import {updateProophBoardInfo} from "../prooph-board-info";
 import {names} from "@event-engine/messaging/helpers";
 import {detectService} from "../detect-service";
@@ -13,6 +13,8 @@ import {toJSON} from "../to-json";
 import {getVoMetadata} from "../value-object/get-vo-metadata";
 import {isQueryableStateDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import {voFQCN} from "../value-object/definitions";
+import {getVoFromSyncedNodes} from "../value-object/get-vo-from-synced-nodes";
+import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
 
 export const upsertTopLevelPage = async (
   ui: Node,
@@ -196,7 +198,8 @@ const getComponentNames = (viewModels: List<Node>, ctx: Context, existingPageDef
 }
 
 const getBreadcrumb = (ui: Node, uiMeta: UiMetadata, ctx: Context): [string, string[]] | CodyResponse => {
-  const isDynamicLabel = !!uiMeta.dynamicBreadcrumb;
+  const {breadcrumb} = uiMeta;
+  const isDynamicLabel = isDynamicBreadcrumb(breadcrumb);
 
   if(!isDynamicLabel) {
     const label = uiMeta.breadcrumb || uiMeta.sidebar?.label || ui.getName();
@@ -207,8 +210,70 @@ const getBreadcrumb = (ui: Node, uiMeta: UiMetadata, ctx: Context): [string, str
     ]
   }
 
-  return {
-    cody: "Dynamic breadcrumb is not implemented yet",
-    type: CodyResponseType.Error
+  const {data, value} = breadcrumb;
+
+  const vo = getVOFromDataReference(data, ui, ctx);
+
+  if(isCodyError(vo)) {
+    return vo;
   }
+
+  const voNames = names(vo.getName());
+  const service = detectService(vo, ctx);
+
+  if(isCodyError(service)) {
+    return service;
+  }
+
+  const serviceNames = names(service);
+
+  const valueGetterRules = convertRuleConfigToDynamicBreadcrumbValueGetterRules(ui, ctx, value, '    ');
+
+  const valueGetter = `(data) => {
+    const ctx: any = { data, value: '' };
+    
+    ${valueGetterRules}
+    
+    return ctx.value;
+  }`;
+
+
+  return [
+    `dynamicLabel(Get${voNames.className}Desc.name, get${voNames.className}, ${valueGetter}, "${ui.getName()}")`,
+    [
+      'import {dynamicLabel} from "@frontend/util/breadcrumb/dynamic-label"',
+      `import {Get${voNames.className}Desc} from "@app/shared/queries/${serviceNames.fileName}/get-${voNames.fileName}.desc"`,
+      `import {get${voNames.className}} from "@frontend/queries/${serviceNames.fileName}/use-get-${voNames.fileName}"`,
+      'import * as jexl from "jexl"'
+    ]
+  ]
+}
+
+const getVOFromDataReference = (data: string, ui: Node, ctx: Context): Node | CodyResponse => {
+  data = data.replace(".", "/");
+
+  if(data[0] === "/") {
+    data = data.slice(1);
+  }
+
+  const parts = data.split("/");
+
+  if(parts.length < 3) {
+    const service = detectService(ui, ctx);
+
+    if(isCodyError(service)) {
+      return service;
+    }
+
+    const serviceClassName = names(service).className;
+    const firstPart = names(parts[0]).className;
+
+    if(firstPart !== serviceClassName) {
+      parts.unshift(serviceClassName);
+    }
+  }
+
+  data = parts.map(p => names(p).className).join(".");
+
+  return getVoFromSyncedNodes(data, ctx);
 }

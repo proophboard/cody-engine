@@ -95,8 +95,60 @@ export const convertRuleConfigToValueObjectInitializeRules = (vo: Node, ctx: Con
   return lines.join("\n");
 }
 
-export const convertRuleConfigToTableColumnValueGetterRules = (vo: Node, ctx: Context, rules: Rule[], indent = '  ') => {
+export const convertRuleConfigToDynamicBreadcrumbValueGetterRules = (ui: Node, ctx: Context, rules: Rule[] | string, indent = '  ') => {
   const lines: string[] = [];
+
+  if(typeof rules === "string") {
+    rules = [
+      {
+        rule: "always",
+        then: {
+          assign: {
+            variable: "value",
+            value: rules
+          }
+        }
+      }
+    ]
+  }
+
+  for (const rule of rules) {
+    if(!isAssignVariable(rule.then)) {
+      return {
+        cody: `Dynamic breadcrumb value rule ${JSON.stringify(rule)} of UI: "${ui.getName()}" is not an "assign:variable" rule.`,
+        type: CodyResponseType.Error,
+        details: `Dynamic breadcrumb value rules should only assign the "value" variable with data.`,
+      }
+    }
+
+    lines.push("");
+    const res = convertRule(ui, ctx, rule, lines, indent, true);
+    if(isCodyError(res)) {
+      return res;
+    }
+  }
+
+  lines.push("");
+
+  return lines.join("\n");
+}
+
+export const convertRuleConfigToTableColumnValueGetterRules = (vo: Node, ctx: Context, rules: Rule[] | string, indent = '  ') => {
+  const lines: string[] = [];
+
+  if(typeof rules === "string") {
+    rules = [
+      {
+        rule: "always",
+        then: {
+          assign: {
+            variable: "value",
+            value: rules
+          }
+        }
+      }
+    ]
+  }
 
   for (const rule of rules) {
     if(!isAssignVariable(rule.then)) {

@@ -5,15 +5,26 @@ import {parseJsonMetadata} from "@proophboard/cody-utils";
 
 export interface DynamicBreadcrumbMetadata {
   data: string;
-  expressions: Rule[]
+  value: Rule[] | string;
 }
 
 export interface UiMetadata {
   route?: string;
   routeParams?: string[];
   sidebar?: {label?: string; icon?: string; show?: boolean | Rule[]};
-  breadcrumb?: string;
-  dynamicBreadcrumb?: DynamicBreadcrumbMetadata;
+  breadcrumb?: string | DynamicBreadcrumbMetadata;
+}
+
+export const isDynamicBreadcrumb = (breadcrumb: string | DynamicBreadcrumbMetadata | undefined): breadcrumb is DynamicBreadcrumbMetadata => {
+  if(!breadcrumb || typeof breadcrumb === "string") {
+    return false;
+  }
+
+  if(breadcrumb.data && breadcrumb.value) {
+    return true
+  }
+
+  return false;
 }
 
 export const getUiMetadata = (ui: Node, ctx: Context): UiMetadata | CodyResponse => {
