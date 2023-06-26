@@ -21,6 +21,8 @@ import {AxiosResponse} from "axios";
 import {commandTitle} from "@frontend/app/components/core/CommandButton";
 import validator from '@rjsf/validator-ajv8';
 import {IChangeEvent} from "@rjsf/core";
+import {widgets} from "@frontend/app/components/core/form/widgets";
+import {fields} from "@frontend/app/components/core/form/fields";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -115,7 +117,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     formData = submittedFormData;
   }
 
-  const widgets = props.widgets || {};
+  const userWidgets = props.widgets || {};
 
   return (
     <div>
@@ -141,13 +143,16 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
               }}
               widgets={
                 {
-                  // DynamicEnum: Widgets.SelectWidget,
-                  // @ts-ignore
-                  // TextWidget: TextWidget,
-                  ...widgets
+                  ...widgets,
+                  ...userWidgets
                 }
               }
-              fields={props.fields}
+              fields={
+                {
+                  ...fields,
+                  ...props.fields
+                }
+              }
           />}
           {(mutation.isSuccess || mutation.isError) && <div>
             {mutation.isSuccess && <AxiosResponseViewer response={mutation.data as AxiosResponse} successMessageCreated={<Alert severity={'success'}>
