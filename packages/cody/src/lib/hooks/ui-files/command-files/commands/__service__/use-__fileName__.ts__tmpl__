@@ -1,0 +1,18 @@
+import {AxiosResponse} from "axios";
+import {Api} from "@frontend/api";
+import {useMutation} from "@tanstack/react-query";
+import {<%= className %>Desc} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= fileName %>.desc";
+import {<%= className %>} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= fileName %>";
+
+export const <%= propertyName %> = async (params: <%= className %>): Promise<AxiosResponse> => {
+  return await Api.executeCommand(<%= className %>Desc.name, params);
+}
+
+export const use<%= className %> = (params: <%= className %>) => {
+  return useMutation({
+    mutationKey: [<%= className %>Desc.name, params],
+    mutationFn: (): Promise<AxiosResponse> => {
+      return <%= propertyName %>(params);
+    }
+  })
+}

@@ -2,13 +2,12 @@ import {useGetCarList} from "@frontend/queries/fleet-management/use-get-car-list
 import {GetCarList} from "@app/shared/queries/fleet-management/get-car-list";
 import {Box, CircularProgress, Typography} from "@mui/material";
 import {DataGrid, GridColDef, GridToolbar} from "@mui/x-data-grid";
-import {Car} from "@app/shared/types/fleet-management/car/car";
 import {CarDetails} from "@frontend/app/pages/fleet-management/car-details";
 import PageLink from "@frontend/app/components/core/PageLink";
 import {useEffect} from "react";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 
-export function CarList(params: GetCarList) {
+const CarList = (params: GetCarList) => {
   const query = useGetCarList(params);
 
   useEffect(() => {
@@ -53,3 +52,5 @@ export function CarList(params: GetCarList) {
     </Box>
   );
 }
+
+export default CarList;

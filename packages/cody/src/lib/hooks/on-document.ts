@@ -1,15 +1,12 @@
 import {CodyHook, Node} from "@proophboard/cody-types";
 import {Context} from "./context";
-import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
+import {asyncWithErrorCheck, CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {names} from "@event-engine/messaging/helpers";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
 import {generateFiles} from "@nx/devkit";
 import {
   namespaceNames,
-  namespaceToClassName,
-  namespaceToFilePath,
-  namespaceToJSONPointer,
   valueObjectNamespaceFromFQCN
 } from "./utils/value-object/namespace";
 import {voPath} from "./utils/value-object/vo-path";
@@ -22,6 +19,8 @@ import {register, registerQuery, registerQueryResolver, registerValueObjectDefin
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {makeQueryResolver} from "./utils/query/make-query-resolver";
 import {voClassNameFromFQCN} from "./utils/value-object/definitions";
+import {upsertListViewComponent} from "./utils/ui/upsert-list-view-component";
+import {upsertStateViewComponent} from "./utils/ui/upsert-state-view-component";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
   try {
@@ -102,6 +101,13 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
       });
 
       withErrorCheck(registerQueryResolver, [service, vo, ctx, tree]);
+
+      // Upsert View Component
+      if(isList) {
+        await asyncWithErrorCheck(upsertListViewComponent, [vo, voMeta, ctx, tree]);
+      } else {
+        await asyncWithErrorCheck(upsertStateViewComponent, [vo, voMeta, ctx, tree]);
+      }
     }
 
     const changes = tree.listChanges();

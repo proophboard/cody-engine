@@ -13,5 +13,5 @@ export const <%= className %>Desc: AggregateCommandDescription = {
   _pbLastUpdatedBy: "<%= _pbLastUpdatedBy %>",
   _pbLastUpdatedAt: "<%= _pbLastUpdatedAt %>",
   _pbVersion: <%= _pbVersion %>,
-  _pbLink: "<%= _pbLink %>",
+  _pbLink: "<%- _pbLink %>",
 };

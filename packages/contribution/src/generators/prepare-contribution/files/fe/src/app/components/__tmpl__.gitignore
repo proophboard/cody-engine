@@ -1,3 +1,5 @@
 *
 !core
 !core/**/*
+!commands.ts
+!views.ts

@@ -1,0 +1,26 @@
+import * as React from 'react';
+import {useState} from "react";
+import CommandButton from "@frontend/app/components/core/CommandButton";
+import CommandDialog from "@frontend/app/components/core/CommandDialog";
+import {<%= propertyName %>} from "@frontend/commands/<%= serviceNames.fileName %>/use-<%= fileName %>";
+import {<%= serviceNames.className %><%= className %>RuntimeInfo} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= fileName %>";
+
+interface OwnProps {
+
+}
+
+type <%= className %>Props = OwnProps;
+
+const <%= className %> = (props: <%= className %>Props) => {
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const handleOpenDialog = () => {setDialogOpen(true)};
+  const handleCloseDialog = () => {setDialogOpen(false)};
+
+  return <>
+    <CommandButton command={<%= serviceNames.className %><%= className %>RuntimeInfo} onClick={handleOpenDialog} />
+    <CommandDialog open={dialogOpen} onClose={handleCloseDialog} commandDialogCommand={<%= serviceNames.className %><%= className %>RuntimeInfo} commandFn={<%= propertyName %>} />
+  </>
+};
+
+export default <%= className %>;

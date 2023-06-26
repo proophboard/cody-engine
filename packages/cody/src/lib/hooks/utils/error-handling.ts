@@ -19,3 +19,13 @@ export const withErrorCheck = <T extends (...args: any) => any>(func: T, args: P
 
   return res;
 }
+
+export const asyncWithErrorCheck = async <T extends (...args: any) => Promise<any>>(func: T, args: Parameters<T>): Promise<Exclude<Awaited<ReturnType<T>>, CodyResponse>> => {
+  const res = await func.apply(func, args);
+
+  if(isCodyError(res)) {
+    throw new CodyResponseException(res);
+  }
+
+  return res;
+}
