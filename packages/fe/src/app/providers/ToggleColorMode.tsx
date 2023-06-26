@@ -1,5 +1,6 @@
 import React, {ReactNode} from "react";
-import { useTheme, ThemeProvider, createTheme } from '@mui/material/styles';
+import { ThemeProvider } from '@mui/material/styles';
+import {createTheme} from "@frontend/app/layout/theme";
 
 interface Props {
   children: ReactNode
