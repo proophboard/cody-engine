@@ -13,6 +13,8 @@ import {PropsWithChildren, useEffect} from "react";
 import {Form} from "@rjsf/mui";
 import validator from '@rjsf/validator-ajv8';
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
+import {widgets} from "@frontend/app/components/core/form/widgets";
+import {fields} from "@frontend/app/components/core/form/fields";
 
 interface OwnProps {
   state?: Record<string, any>;
@@ -106,7 +108,7 @@ const StateView = (props: StateViewProps) => {
   const theme = useTheme();
   const uiSchema = props.description.uiSchema? {"ui:readonly": true, ...props.description.uiSchema} : {"ui:readonly": true};
 
-  const widgets = props.widgets || {};
+  const userWidgets = props.widgets || {};
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
@@ -133,10 +135,14 @@ const StateView = (props: StateViewProps) => {
                       // LinkedRef: LinkedReferenceWidget,
                       // TextareaWidget: TextareaWidget,
                       // TextWidget: TextWidget,
-                      ...widgets
+                      ...widgets,
+                      ...userWidgets
                     }
                   }
-                  fields={props.fields}
+                  fields={{
+                    ...fields,
+                    ...props.fields
+                  }}
               />
           </CardContent>
         </Card>;
