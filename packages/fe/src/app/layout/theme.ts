@@ -1,4 +1,5 @@
-import {createTheme, SxProps} from "@mui/material";
+import {createTheme as createMuiTheme, SxProps, ThemeOptions} from "@mui/material";
+import {merge} from "lodash";
 
 declare module '@mui/material/styles' {
   interface Theme {
@@ -14,40 +15,47 @@ declare module '@mui/material/styles' {
   }
 }
 
-export const theme = createTheme({
-  stateView: {
-    styleOverrides: {
-      "form.stateview .Mui-disabled": {
-        color: "inherit",
-        WebkitTextFillColor: "inherit",
+export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiTheme> => {
+  options = merge(
+    {
+      stateView: {
+        styleOverrides: {
+          "form.stateview .Mui-disabled": {
+            color: "inherit",
+            WebkitTextFillColor: "inherit",
 
+          },
+          "form.stateview .MuiButton-root.Mui-disabled": {
+            display: "none",
+          },
+          "form.stateview .MuiSelect-icon.Mui-disabled": {
+            display: "none",
+          },
+          "form.stateview .MuiInput-underline.Mui-disabled:before": {
+            borderBottom: "1px solid #eee",
+          }
+        }
       },
-      "form.stateview .MuiButton-root.Mui-disabled": {
-        display: "none",
-      },
-      "form.stateview .MuiSelect-icon.Mui-disabled": {
-        display: "none",
-      },
-      "form.stateview .MuiInput-underline.Mui-disabled:before": {
-        borderBottom: "1px solid #eee",
-      }
-    }
-  },
-  components: {
-    MuiFormControl: {
-      defaultProps: {
-        variant: "standard"
+      components: {
+        MuiFormControl: {
+          defaultProps: {
+            variant: "standard"
+          }
+        },
+        MuiTextField: {
+          defaultProps: {
+            variant: "standard"
+          }
+        },
+        MuiSelect: {
+          defaultProps: {
+            variant: "standard"
+          }
+        }
       }
     },
-    MuiTextField: {
-      defaultProps: {
-        variant: "standard"
-      }
-    },
-    MuiSelect: {
-      defaultProps: {
-        variant: "standard"
-      }
-    }
-  }
-});
+    options
+  );
+
+  return createMuiTheme(options);
+}
