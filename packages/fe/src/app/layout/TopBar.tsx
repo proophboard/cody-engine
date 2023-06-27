@@ -4,6 +4,7 @@ import Breadcrumbs from "@frontend/app/layout/Breadcrumbs";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
+import {environment} from "@frontend/environments/environment";
 
 
 interface OwnProps {
@@ -23,7 +24,7 @@ const TopBar = (props: TopBarProps) => {
     }}>
       <Toolbar>
         <Box component={"div"} sx={{minWidth: {lg: "300px"}}}>
-          <Typography variant={"h3"} sx={{color: (theme) => theme.palette.primary.contrastText}}>Cody Engine</Typography>
+          <Typography variant={"h3"} sx={{color: (theme) => theme.palette.primary.contrastText}}>{environment.appName}</Typography>
         </Box>
         <Breadcrumbs />
         <Box component={"div"} sx={{flexGrow: 1}}/>
