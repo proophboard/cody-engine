@@ -7,7 +7,7 @@ import {getCar} from "@frontend/queries/fleet-management/use-get-car";
 
 export const CarDetails: SubLevelPageWithProophBoardDescription = {
   commands: [],
-  components: ["FleetManagement.Car.Car"],
+  components: ["FleetManagement.Car"],
   topLevel: false,
   route: `/cars/:${CarDesc.identifier}`,
   routeParams: [CarDesc.identifier],

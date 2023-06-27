@@ -1,11 +1,12 @@
-import {useGetCarList} from "@frontend/queries/fleet-management/use-get-car-list";
-import {GetCarList} from "@app/shared/queries/fleet-management/get-car-list";
 import {Box, CircularProgress, Typography} from "@mui/material";
 import {DataGrid, GridColDef, GridToolbar} from "@mui/x-data-grid";
-import {CarDetails} from "@frontend/app/pages/fleet-management/car-details";
-import PageLink from "@frontend/app/components/core/PageLink";
 import {useEffect} from "react";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
+import {GetCarList} from "@app/shared/queries/fleet-management/get-car-list";
+import {useGetCarList} from "@frontend/queries/fleet-management/use-get-car-list";
+import * as jexl from "jexl";
+import PageLink from "@frontend/app/components/core/PageLink";
+import {CarDetails} from "@frontend/app/pages/fleet-management/car-details"
 
 const CarList = (params: GetCarList) => {
   const query = useGetCarList(params);
@@ -15,23 +16,16 @@ const CarList = (params: GetCarList) => {
   }, [params]);
 
   const columns: GridColDef[] = [
-    {
-      field: "vehicleId",
-      headerName: "Vehicle Id",
-      flex: 1,
-      renderCell: params => <PageLink page={CarDetails} params={params.row}>{params.value}</PageLink>
-    },
-    {
-      headerName: "Car",
-      field: "carName",
-      valueGetter: row => row.row.brand + ' ' + row.row.model,
-      flex: 1
-    },
-    {
-      field: "productionYear",
-      headerName: "Production Year",
-      flex: 1
-    }
+    {field: "carName", valueGetter: (params) => {
+      const ctx: any = params;
+      
+      
+ctx['value'] = jexl.evalSync("row.brand + ' ' + row.model", ctx)
+;
+      
+      return ctx.value;
+    },renderCell: params => <PageLink page={CarDetails} params={params.row}>{params.value}</PageLink>, headerName: "Car Name", flex: 1, },
+{field: "productionYear", headerName: "Production Year", flex: 1, }
   ];
 
   return (
@@ -41,7 +35,8 @@ const CarList = (params: GetCarList) => {
       {query.isSuccess && <DataGrid
           columns={columns}
           rows={query.data}
-          getRowId={row => row.vehicleId} sx={{width: "100%"}}
+          getRowId={row => row.vehicleId}
+          sx={{width: "100%"}}
           slots={{toolbar: GridToolbar}}
           initialState={
             {pagination: {paginationModel: {pageSize: 5}}}
