@@ -27,6 +27,11 @@ const regex = /\.cetmpl$/;
 
 fromDir(packagesPath, regex, (pathName) => {
     const newPathName = pathName.replace(regex, '');
+
+    if (fs.existsSync(newPathName)) {
+        console.log('Already exists: ', newPathName);
+        return;
+    }
     
     fs.copyFile(pathName, newPathName, (err: any) => {
         if (err) throw err;
