@@ -4,7 +4,7 @@ import {WRITE_MODEL_STREAM} from "@server/infrastructure/configuredEventStore";
 import {getConfiguredMultiModelStore} from "@server/infrastructure/configuredMultiModelStore";
 import {FleetManagementCarAggregateDesc} from "@app/shared/aggregates/fleet-management/car.desc";
 import {Car, car} from "@app/shared/types/fleet-management/car/car";
-import {eventReducerExtensions} from "@app/extensions/event-reducers";
+import {eventReducerExtensions} from "@app/extensions/be/event-reducers";
 
 const store = getConfiguredMultiModelStore();
 
