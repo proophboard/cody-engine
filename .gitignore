@@ -41,3 +41,18 @@ Thumbs.db
 # Filesystem storage
 data/*
 !data/.gitkeep
+
+# Registry Files
+packages/shared/src/lib/aggregates.ts
+packages/shared/src/lib/commands.ts
+packages/shared/src/lib/events.ts
+packages/shared/src/lib/queries.ts
+packages/shared/src/lib/types.ts
+packages/shared/src/lib/types/definitions.ts
+packages/shared/src/lib/types/references.ts
+packages/be/src/command-handlers/index.ts
+packages/be/src/query-resolvers/index.ts
+packages/be/src/repositories/index.ts
+packages/fe/src/app/pages/index.ts
+packages/fe/src/app/components/commands.ts
+packages/fe/src/app/components/views.ts
