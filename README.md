@@ -36,26 +36,8 @@ Therefor, we've prepared a terminal command that will set up a contribution envi
 
 `npm run prepare-contribution`
 
-Unfortunately, there is no way to tell git via .gitignore to keep an existing file unchanged and ignore local changes.
-So you have to run the following commands to manually tell git to ignore changes in the registry files:
-
-```shell
-git update-index --skip-worktree packages/shared/src/lib/aggregates.ts
-git update-index --skip-worktree packages/shared/src/lib/commands.ts
-git update-index --skip-worktree packages/shared/src/lib/events.ts
-git update-index --skip-worktree packages/shared/src/lib/queries.ts
-git update-index --skip-worktree packages/shared/src/lib/types.ts
-git update-index --skip-worktree packages/shared/src/lib/types/definitions.ts
-git update-index --skip-worktree packages/shared/src/lib/types/references.ts
-git update-index --skip-worktree packages/be/src/command-handlers/index.ts
-git update-index --skip-worktree packages/be/src/query-resolvers/index.ts
-git update-index --skip-worktree packages/be/src/repositories/index.ts
-git update-index --skip-worktree packages/fe/src/app/pages/index.ts
-git update-index --skip-worktree packages/fe/src/app/components/commands.ts
-git update-index --skip-worktree packages/fe/src/app/components/views.ts
-```
-
-*Please Note: If you add a new registry file that should be included in the skeleton, please make sure that changes through contributions are not tracked. 
+*Please Note: If you add a new registry file that should be included in the skeleton, please use the file extension `.ts.cetmpl`. 
+A script will turn that template into a normal TS file on server start up. 
 Ask a maintainer for help, if you're not sure how to do it!*
 
 ## Understand this workspace

@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "serve": "ts-node -r tsconfig-paths/register packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run-many -t serve",
+    "serve": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run-many -t serve",
     "prepare-contribution": "npx nx g @cody-engine/contribution:prepare-contribution"
   },
   "private": false,

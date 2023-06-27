@@ -1,7 +1,7 @@
 import React from "react";
-import FleetManagementCarList from "@frontend/app/components/fleet-management/views/car-list";
-import FleetManagementCar from "@frontend/app/components/fleet-management/views/car";
 import CoreWelcome from "@frontend/app/components/core/welcome";
+import FleetManagementCarList from "@frontend/app/components/fleet-management/views/CarList";
+import FleetManagementCar from "@frontend/app/components/fleet-management/views/Car";
 
 export type ViewRegistry = {[valueObjectName: string]: React.FunctionComponent<any>}
 
