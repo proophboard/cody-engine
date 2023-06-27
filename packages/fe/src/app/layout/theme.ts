@@ -1,5 +1,6 @@
 import {createTheme as createMuiTheme, SxProps, ThemeOptions} from "@mui/material";
 import {merge} from "lodash";
+import overwriteTheme from "@frontend/app/layout/overwriteTheme";
 
 declare module '@mui/material/styles' {
   interface Theme {
@@ -56,6 +57,8 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
     },
     options
   );
+
+  options = merge(overwriteTheme, options);
 
   return createMuiTheme(options);
 }
