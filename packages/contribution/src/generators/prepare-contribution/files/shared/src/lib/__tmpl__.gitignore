@@ -1,0 +1,6 @@
+.gitignore
+aggregates.ts
+commands.ts
+events.ts
+queries.ts
+types.ts
