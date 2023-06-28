@@ -19,3 +19,8 @@ export const isNewFile = (path: string, tree: FsTree): boolean => {
 
   return isNewFile;
 }
+
+export const requireUncached = (module: string) => {
+  delete require.cache[require.resolve(module)];
+  return require(module);
+}
