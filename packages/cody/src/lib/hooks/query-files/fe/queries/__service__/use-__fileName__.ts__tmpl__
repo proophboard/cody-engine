@@ -1,0 +1,26 @@
+import {Api} from "@frontend/api";
+import {AxiosResponse} from "axios";
+import {useQuery} from "@tanstack/react-query";
+import {QueryError} from "@frontend/queries/error/query-error";
+import {<%= className %>} from "@app/shared/queries/<%= serviceNames.fileName %>/<%= fileName %>";
+import {<%= className %>Desc} from "@app/shared/queries/<%= serviceNames.fileName %>/<%= fileName %>.desc";
+import {<%= voNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %><%= ns.fileName %><%= voNames.fileName %>";
+
+export const <%= propertyName %> = async (params: <%= className %>): Promise<<%= voNames.className %>> => {
+  const response: AxiosResponse<<%= voNames.className %>> = await Api.executeQuery(<%= className %>Desc.name, params);
+
+  if(response.status === 200) {
+    return response.data;
+  }
+
+  return Promise.reject(new QueryError(<%= className %>Desc.name));
+}
+
+export const use<%= className %> = (params: <%= className %>) => {
+  return useQuery({
+    queryKey: [<%= className %>Desc.name, params],
+    queryFn: (): Promise<<%= voNames.className %>> => {
+      return <%= propertyName %>(params);
+    }
+  })
+}
