@@ -65,6 +65,10 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
     generateFiles(tree, __dirname + '/command-files/shared', ctx.sharedSrc, {
       'tmpl': '',
       'service': serviceNames.fileName,
+      // Please note: The order of substitutions is important here, because ProophBoardInfo contains "aggregateName"
+      // but it's a combined name of Service.Aggregate. The template itself requires "aggregateName" without Service
+      // which is defined below and therefor has precedence over the variable from ProophBoardInfo
+      ...withErrorCheck(updateProophBoardInfo, [command, ctx, tree]),
       serviceNames,
       isAggregateCommand,
       newAggregate: meta.newAggregate,
@@ -73,7 +77,6 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
       toJSON,
       ...cmdNames,
       schema,
-      ...withErrorCheck(updateProophBoardInfo, [command, ctx, tree])
     });
 
     withErrorCheck(register, [command, ctx, tree]);

@@ -129,7 +129,7 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       registryPath = sharedRegistryPath('aggregates.ts');
       registryVarName = 'aggregates';
       entryId = `${serviceNames.className}.${arNames.className}`;
-      entryValue = importName = `${serviceNames.className}${arNames.className}Desc`;
+      entryValue = importName = `${serviceNames.className}${arNames.className}AggregateDesc`;
       importPath = `@app/shared/aggregates/${serviceNames.fileName}/${arNames.fileName}.desc`;
       break;
     case NodeType.event:
@@ -211,6 +211,31 @@ export const registerCommandHandler = (service: string, aggregate: Node, ctx: Co
 
 
   addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
+
+  return true;
+}
+
+export const registerAggregateRepository = (service: string, aggregate: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const serviceNames = names(service);
+  const aggregateNames = names(aggregate.getName());
+
+  if(!isNewFile(
+    joinPathFragments('packages', 'be', 'src', 'repositories', serviceNames.fileName, aggregateNames.fileName, `repository.ts`),
+    tree
+  )
+  ) {
+    return true;
+  }
+
+  const registryPath = joinPathFragments('packages', 'be', 'src', 'repositories', 'index.ts');
+  const registryVarName = 'repositories';
+  const entryId = `${serviceNames.className}.${aggregateNames.className}`;
+  const entryValue = `${serviceNames.propertyName}${aggregateNames.className}`;
+  const importName = `${serviceNames.propertyName}${aggregateNames.className}`;
+  const importPath = `@server/repositories/${serviceNames.fileName}/${aggregateNames.fileName}/repository`;
+
+
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree, true);
 
   return true;
 }
