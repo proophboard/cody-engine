@@ -2,10 +2,12 @@ import {RefSchema} from "./ref-schema";
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
 import {names} from "@event-engine/messaging/helpers";
-import {types} from "@app/shared/types";
 import {JSONSchema7} from "json-schema-to-ts";
+import {requireUncached} from "../fs-tree";
 
 export const resolveRef = (schema: RefSchema, parentSchema: JSONSchema7, node: Node): ValueObjectRuntimeInfo | CodyResponse => {
+  const {types} = requireUncached('@app/shared/types');
+
   const ref = schema['$ref'].replace('/definitions/', '')
     .split("/")
     .map(r => names(r).className)
