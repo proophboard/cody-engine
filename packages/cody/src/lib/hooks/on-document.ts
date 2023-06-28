@@ -102,6 +102,15 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
 
       withErrorCheck(registerQueryResolver, [service, vo, ctx, tree]);
 
+      generateFiles(tree, __dirname + '/query-files/fe', ctx.feSrc, {
+        tmpl: "",
+        service: serviceNames.fileName,
+        serviceNames,
+        voNames,
+        ns,
+        ...queryNames
+      });
+
       // Upsert View Component
       if(isList) {
         await asyncWithErrorCheck(upsertListViewComponent, [vo, voMeta, ctx, tree]);
