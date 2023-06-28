@@ -10,7 +10,7 @@ import {generateFiles} from "@nx/devkit";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {namespaceToFilePath, namespaceToJSONPointer} from "./utils/value-object/namespace";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
-import {register, registerCommandHandler} from "./utils/registry";
+import {register, registerAggregateRepository, registerCommandHandler} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {alwaysRecordEvent} from "./utils/aggregate/always-record-event";
 import {convertRuleConfigToAggregateBehavior} from "./utils/rule-engine/convert-rule-config-to-behavior";
@@ -91,6 +91,7 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
 
     withErrorCheck(register, [aggregate, ctx, tree]);
     withErrorCheck(registerCommandHandler, [service, aggregate, ctx, tree]);
+    withErrorCheck(registerAggregateRepository, [service, aggregate, ctx, tree]);
 
     const changes = tree.listChanges();
 
