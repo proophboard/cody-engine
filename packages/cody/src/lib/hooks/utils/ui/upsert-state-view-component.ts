@@ -2,7 +2,7 @@ import {CodyResponse, Node} from "@proophboard/cody-types";
 import {ValueObjectMetadata} from "../value-object/get-vo-metadata";
 import {Context} from "../../context";
 import {FsTree} from "nx/src/generators/tree";
-import {namespaceToFilePath, namespaceToJSONPointer} from "../value-object/namespace";
+import {namespaceToClassName, namespaceToFilePath} from "../value-object/namespace";
 import {detectService} from "../detect-service";
 import {isCodyError} from "@proophboard/cody-utils";
 import {names} from "@event-engine/messaging/helpers";
@@ -18,7 +18,7 @@ export const upsertStateViewComponent = async (vo: Node, voMeta: ValueObjectMeta
 
   const serviceNames = names(service);
   const voNames = names(vo.getName());
-  const nsClassName = namespaceToJSONPointer(voMeta.ns);
+  const nsClassName = namespaceToClassName(voMeta.ns);
   const nsFilename = namespaceToFilePath(voMeta.ns);
   const identifier = voMeta.identifier;
 

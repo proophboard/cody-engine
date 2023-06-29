@@ -67,7 +67,7 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
       stream,
       aggregateStateNames: {
         ...aggregateStateNames,
-        classNameWithNamespace: `${namespaceToJSONPointer(aggregateStateMeta.ns)}.${aggregateStateNames.className}`,
+        classNameWithNamespace: `${namespaceToJSONPointer(aggregateStateMeta.ns)}${aggregateStateNames.className}`,
       },
       ...aggregateNames,
       ...withErrorCheck(updateProophBoardInfo, [aggregate, ctx, tree])

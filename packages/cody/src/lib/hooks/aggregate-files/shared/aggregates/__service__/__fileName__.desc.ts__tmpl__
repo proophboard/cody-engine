@@ -5,7 +5,7 @@ export const <%= serviceNames.className %><%= className %>AggregateDesc: Aggrega
   identifier: "<%= aggregateIdentifier %>",
   collection: "<%= collection %>",
   stream: "<%= stream %>",
-  state: "<%= serviceNames.className %>.<%= aggregateStateNames.classNameWithNamespace %>",
+  state: "<%= serviceNames.className %><%= aggregateStateNames.classNameWithNamespace %>",
   _pbBoardId: "<%= _pbBoardId %>",
   _pbCardId: "<%= _pbCardId %>",
   _pbCreatedBy: "<%= _pbCreatedBy %>",

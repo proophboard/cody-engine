@@ -8,7 +8,7 @@ const prepareNs = (ns: string): string => {
   }
 
   if(ns[0] !== "/") {
-    ns = `/${ns};`
+    ns = `/${ns}`;
   }
 
   if(ns[ns.length - 1] !== "/") {
@@ -25,13 +25,13 @@ export const valueObjectNamespaceFromFQCN = (fqcn: string): string => {
 }
 
 export const namespaceToJSONPointer = (ns: string): string => {
-  if(ns.length === 0) {
-    return ns;
-  }
-
   ns = prepareNs(ns);
 
-  return ns.split("/").join(".");
+  if(ns.length === 0) {
+    return '.';
+  }
+
+  return '.' + (ns.split("/").join(".")) + '.';
 }
 
 export const namespaceToFilePath = (ns: string): string => {

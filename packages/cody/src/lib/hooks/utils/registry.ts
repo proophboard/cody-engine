@@ -159,7 +159,7 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
 
       registryPath = sharedRegistryPath('types.ts');
       registryVarName = 'types';
-      entryId = `${serviceNames.className}.${nsClassName}.${voNames.className}`;
+      entryId = `${serviceNames.className}${nsClassName}${voNames.className}`;
       entryValue = importName = `${serviceNames.className}${nsClassName}${voNames.className}VORuntimeInfo`;
       importPath = `@app/shared/types/${serviceNames.fileName}${nsFilename}${voNames.fileName}`;
       break;
