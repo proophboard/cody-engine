@@ -2,7 +2,7 @@ import {CodyHook, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
 import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {names} from "@event-engine/messaging/helpers";
-import {getSingleSource, getTargetsOfType, parseJsonMetadata} from "@proophboard/cody-utils";
+import {getSingleSource, getTargetsOfType, isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {detectService} from "./utils/detect-service";
 import {findAggregateState} from "./utils/aggregate/find-aggregate-state";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
@@ -29,7 +29,7 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
     const aggregateState = withErrorCheck(findAggregateState, [aggregate, ctx]);
     const aggregateStateNames = names(aggregateState.getName());
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
-    const meta = withErrorCheck(parseJsonMetadata, [aggregate]) as AggregateMetadata;
+    const meta = aggregate.getMetadata() ? withErrorCheck(parseJsonMetadata, [aggregate]) as AggregateMetadata : {};
 
     const collection = aggregateStateMeta.collection || aggregateStateNames.constantName.toLowerCase() + '_collection';
     const stream = meta.stream || 'write_model_stream';
