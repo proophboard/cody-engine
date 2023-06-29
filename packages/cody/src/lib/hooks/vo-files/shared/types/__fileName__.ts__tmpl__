@@ -5,6 +5,7 @@ import {Writable} from "json-schema-to-ts/lib/types/type-utils";
 import definitions from "@app/shared/types/definitions";
 import {references} from "@app/shared/types/references";
 import {<%= className %>Schema} from "./<%= fileName %>.schema";
+import {<%= className %>UiSchema} from "./<%= fileName %>.ui-schema";
 import {<%= className %>Desc} from "./<%= fileName %>.desc";
 
 export type <%= className %> = DeepReadonly<FromSchema<
@@ -30,4 +31,5 @@ export const <%= serviceNames.className %><%= ns.className %><%= className %>VOR
   desc: <%= className %>Desc,
   factory: <%= propertyName %>,
   schema: <%= className %>Schema,
+  uiSchema: <%= className %>UiSchema,
 }
