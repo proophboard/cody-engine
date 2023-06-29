@@ -1,0 +1,1 @@
+export const <%= className %>UiSchema = <%- toJSON(uiSchema) %> as const;

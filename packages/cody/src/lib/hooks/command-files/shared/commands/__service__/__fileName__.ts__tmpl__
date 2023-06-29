@@ -5,6 +5,7 @@ import {CommandRuntimeInfo, makeCommand} from "@event-engine/messaging/command";
 import definitions from "@app/shared/types/definitions";
 import {references} from "@app/shared/types/references";
 import {<%= className %>Schema} from "@app/shared/commands/<%= service %>/<%= fileName %>.schema";
+import {<%= className %>UiSchema} from "@app/shared/commands/<%= service %>/<%= fileName %>.ui-schema";
 import {<%= className %>Desc} from "@app/shared/commands/<%= service %>/<%= fileName %>.desc";
 
 export type <%= className %> = DeepReadonly<FromSchema<
@@ -22,4 +23,5 @@ export const <%= serviceNames.className %><%= className %>RuntimeInfo: CommandRu
   desc: <%= className %>Desc,
   factory: <%= propertyName %>,
   schema: <%= className %>Schema,
+  uiSchema: <%= className %>UiSchema,
 }

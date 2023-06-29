@@ -20,13 +20,14 @@ import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {toJSON} from "./utils/to-json";
 import {register} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
-import {Writable} from "json-schema-to-ts/lib/types/type-utils";
+import {UiSchema} from "@rjsf/utils";
 
 interface CommandMeta {
   newAggregate: boolean;
   shorthand: boolean;
   schema: JSONSchema | ShorthandObject;
   service?: string;
+  uiSchema?: UiSchema;
 }
 
 export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) => {
@@ -46,6 +47,8 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
     if(typeof schema === "object" && !schema.hasOwnProperty('$id')) {
       schema['$id'] = `/definitions/${serviceNames.fileName}/commands/${cmdNames.fileName}`;
     }
+
+    const uiSchema = meta.uiSchema || {};
 
     const isAggregateCommand = !isCodyError(aggregate);
 
@@ -77,6 +80,7 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
       toJSON,
       ...cmdNames,
       schema,
+      uiSchema,
     });
 
     withErrorCheck(register, [command, ctx, tree]);
