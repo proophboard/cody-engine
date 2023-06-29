@@ -144,7 +144,7 @@ export const upsertSubLevelPage = async (
 }
 
 const getCommandNames = (commands: List<Node>, ctx: Context, existingPageDefinition?: PageDefinition): string[] | CodyResponse => {
-  const commandNames: string[] = [];
+  const commandNames: string[] = existingPageDefinition?.commands || [];
 
   for (const command of commands) {
     const service = detectService(command, ctx);
@@ -160,19 +160,11 @@ const getCommandNames = (commands: List<Node>, ctx: Context, existingPageDefinit
     }
   }
 
-  if(existingPageDefinition) {
-    existingPageDefinition.commands.forEach(cmdName => {
-      if(!commandNames.includes(cmdName)) {
-        commandNames.push(cmdName);
-      }
-    })
-  }
-
   return commandNames;
 }
 
 const getComponentNames = (viewModels: List<Node>, ctx: Context, existingPageDefinition?: PageDefinition): string[] | CodyResponse => {
-  const componentNames: string[] = [];
+  const componentNames: string[] = existingPageDefinition?.components || [];
 
   for (const vo of viewModels) {
     const voMeta = getVoMetadata(vo, ctx);
@@ -187,10 +179,11 @@ const getComponentNames = (viewModels: List<Node>, ctx: Context, existingPageDef
       return service;
     }
 
-
-
     if(isQueryableStateDescription(voMeta) || isQueryableStateListDescription(voMeta)) {
-      componentNames.push(`${names(service).className}.${names(vo.getName()).className}`);
+      const componentName = `${names(service).className}.${names(vo.getName()).className}`;
+      if(!componentNames.includes(componentName)) {
+        componentNames.push(componentName);
+      }
     }
   }
 

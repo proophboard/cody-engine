@@ -4,6 +4,7 @@ import {PageDefinition} from "@frontend/app/pages/page-definitions";
 import {detectService} from "../detect-service";
 import {isCodyError} from "@proophboard/cody-utils";
 import {names} from "@event-engine/messaging/helpers";
+import {requireUncached} from "../fs-tree";
 
 export const getPageDefinitionPath = (ui: Node, ctx: Context): string | CodyResponse => {
   const service = detectService(ui, ctx);
@@ -35,7 +36,7 @@ export const loadPageDefinition = async (ui: Node, ctx: Context): Promise<PageDe
   const uiNames = names(ui.getName());
 
   try {
-    const module = await import(importPath);
+    const module = requireUncached(importPath);
 
     if(module && module[uiNames.className]) {
       return module[uiNames.className];
