@@ -203,7 +203,7 @@ const getBreadcrumb = (ui: Node, uiMeta: UiMetadata, ctx: Context): [string, str
     ]
   }
 
-  const {data, value} = breadcrumb;
+  const {data, label} = breadcrumb;
 
   const vo = getVOFromDataReference(data, ui, ctx);
 
@@ -220,7 +220,7 @@ const getBreadcrumb = (ui: Node, uiMeta: UiMetadata, ctx: Context): [string, str
 
   const serviceNames = names(service);
 
-  const valueGetterRules = convertRuleConfigToDynamicBreadcrumbValueGetterRules(ui, ctx, value, '    ');
+  const valueGetterRules = convertRuleConfigToDynamicBreadcrumbValueGetterRules(ui, ctx, label, '    ');
 
   const valueGetter = `(data) => {
     const ctx: any = { data, value: '' };

@@ -16,7 +16,11 @@ interface OwnProps {
   variant?: "text" | "outlined" | "contained"
 }
 
-type CommandButtonProps = OwnProps;
+export type CommandButtonProps = OwnProps;
+
+export interface WithCommandButtonProps {
+  buttonProps?: Partial<CommandButtonProps>
+}
 
 export const commandTitle = (cmd: CommandRuntimeInfo): string => {
   let uiTitle;

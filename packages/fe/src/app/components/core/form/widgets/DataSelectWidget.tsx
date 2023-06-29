@@ -8,9 +8,58 @@ import {
   WidgetProps,
 } from '@rjsf/utils';
 import {MenuItem, TextField, TextFieldProps} from "@mui/material";
+import {types} from "@app/shared/types";
+import {isQueryableStateListDescription, QueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {useApiQuery} from "@frontend/queries/use-api-query";
+import * as jexl from "jexl";
+import AddBrand from "@frontend/app/components/fleet-management/commands/AddBrand";
+import {commands} from "@frontend/app/components/commands";
 
 // Copied from: https://github.com/rjsf-team/react-jsonschema-form/blob/main/packages/material-ui/src/SelectWidget/SelectWidget.tsx
 // and modified to use useApiQuery and turn result into select options
+
+interface ParsedUiOptions {
+  data: QueryableStateListDescription,
+  label: string,
+  value: string,
+  addItemCommand: string | null,
+}
+
+const parseOptions = (options: any): ParsedUiOptions => {
+
+  if(!options.data || typeof options.data !== "string") {
+    throw new Error('DataSelect: no "data" attribute configured!');
+  }
+
+  if(!types[options.data]) {
+    throw new Error(`DataSelect: Unknown type "${options.data}"`);
+  }
+
+  const vo = types[options.data];
+
+  if(!isQueryableStateListDescription(vo.desc)) {
+    throw new Error(`DataSelect: Type "${options.data}" is not a queryable list`);
+  }
+
+  if(!options.label || typeof options.label !== "string") {
+    throw new Error(`DataSelect: ui:options "label" is not a string`);
+  }
+
+  if(!options.value || typeof options.value !== "string") {
+    throw new Error(`DataSelect: ui:options "value" is not a string`);
+  }
+
+  if(options.addItemCommand && typeof options.addItemCommand !== "string") {
+    throw new Error(`DataSelect: ui:options "addItemCommand" is not a valid command name`)
+  }
+
+  return {
+    data: vo.desc,
+    label: options.label,
+    value: options.value,
+    addItemCommand: options.addItemCommand || null,
+  }
+}
 
 export default function DataSelectWidget<
   T = any,
@@ -40,13 +89,22 @@ export default function DataSelectWidget<
       ...textFieldProps
     }: WidgetProps<T, S, F>) {
 
-  // @TODO: Make sure that uiSchema is passed to CommandForm and StateView
-  // @TODO: Fetch data using useApiQuery
-  // @TODO: Inject "loading..." option with empty value while query is loading
-  // @TODO: use jexl to get label and value from fetched data
+  const selectOptions: {label: string, value: string, readonly: boolean}[] = [];
+  const parsedOptions = parseOptions(options);
 
-  const selectOptions: {label: string, value: string}[] = [];
+  const query = useApiQuery(parsedOptions.data.query, {});
 
+  if(query.isSuccess) {
+    (query.data as any[]).forEach(item => {
+      selectOptions.push({
+        label: jexl.evalSync(parsedOptions.label, {data: item}),
+        value: jexl.evalSync(parsedOptions.value, {data: item}),
+        readonly: false
+      });
+    })
+  } else {
+    selectOptions.push({label: "Loading ...", value: "", readonly: true});
+  }
 
   multiple = typeof multiple === 'undefined' ? false : !!multiple;
 
@@ -60,41 +118,46 @@ export default function DataSelectWidget<
   const _onFocus = ({ target: { value } }: FocusEvent<HTMLInputElement>) =>
     onFocus(id, value);
 
+  const AddItemCommand = parsedOptions.addItemCommand && commands[parsedOptions.addItemCommand] ? commands[parsedOptions.addItemCommand] : null;
+
   return (
-    <TextField
-      id={id}
-      name={id}
-      label={labelValue(label, hideLabel || !label, false)}
-      value={isEmpty ? emptyValue : value}
-      required={required}
-      disabled={disabled || readonly}
-      autoFocus={autofocus}
-      placeholder={placeholder}
-      error={rawErrors.length > 0}
-      onChange={_onChange}
-      onBlur={_onBlur}
-      onFocus={_onFocus}
-      {...(textFieldProps as TextFieldProps)}
-      select // Apply this and the following props after the potential overrides defined in textFieldProps
-      InputLabelProps={{
-        ...textFieldProps.InputLabelProps,
-        shrink: !isEmpty,
-      }}
-      SelectProps={{
-        ...textFieldProps.SelectProps,
-        multiple,
-      }}
-      aria-describedby={ariaDescribedByIds<T>(id)}
-    >
-      {Array.isArray(selectOptions) &&
-        selectOptions.map(({ value, label }, i: number) => {
-          return (
-            <MenuItem key={i} value={value} disabled={disabled || readonly}>
-              {label}
-            </MenuItem>
-          );
-        })}
-    </TextField>
+    <>
+      <TextField
+        id={id}
+        name={id}
+        label={labelValue(label, hideLabel || !label, false)}
+        value={isEmpty ? emptyValue : value}
+        required={required}
+        disabled={disabled || readonly}
+        autoFocus={autofocus}
+        placeholder={placeholder}
+        error={rawErrors.length > 0}
+        onChange={_onChange}
+        onBlur={_onBlur}
+        onFocus={_onFocus}
+        {...(textFieldProps as TextFieldProps)}
+        select // Apply this and the following props after the potential overrides defined in textFieldProps
+        InputLabelProps={{
+          ...textFieldProps.InputLabelProps,
+          shrink: !isEmpty,
+        }}
+        SelectProps={{
+          ...textFieldProps.SelectProps,
+          multiple,
+        }}
+        aria-describedby={ariaDescribedByIds<T>(id)}
+      >
+        {Array.isArray(selectOptions) &&
+          selectOptions.map(({ value, label, readonly }, i: number) => {
+            return (
+              <MenuItem key={i} value={value} disabled={readonly}>
+                {label}
+              </MenuItem>
+            );
+          })}
+      </TextField>
+      {AddItemCommand && <AddItemCommand buttonProps={{variant: 'text', style: {width: "fit-content", marginLeft: 0}}}/>}
+    </>
   );
 
 };

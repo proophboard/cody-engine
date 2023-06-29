@@ -5,7 +5,7 @@ import {parseJsonMetadata} from "@proophboard/cody-utils";
 
 export interface DynamicBreadcrumbMetadata {
   data: string;
-  value: Rule[] | string;
+  label: Rule[] | string;
 }
 
 export interface UiMetadata {
@@ -20,7 +20,7 @@ export const isDynamicBreadcrumb = (breadcrumb: string | DynamicBreadcrumbMetada
     return false;
   }
 
-  if(breadcrumb.data && breadcrumb.value) {
+  if(breadcrumb.data && breadcrumb.label) {
     return true
   }
 
