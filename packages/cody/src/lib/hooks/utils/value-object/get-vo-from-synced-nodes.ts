@@ -18,7 +18,7 @@ export const getVoFromSyncedNodes = (voFQCN: string, ctx: Context): Node | CodyR
     if(!isCodyError(candidateService) && candidateService === service) {
       const candidateMeta = getVoMetadata(voCandidate, ctx);
 
-      if(!isCodyError(candidateMeta) && namespaceToJSONPointer(candidateMeta.ns) === ns) {
+      if(!isCodyError(candidateMeta) && namespaceToJSONPointer(candidateMeta.ns) === namespaceToJSONPointer(ns)) {
         return voCandidate
       }
     }

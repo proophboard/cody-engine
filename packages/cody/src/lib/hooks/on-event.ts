@@ -72,7 +72,7 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
       aggregateNames,
       aggregateStateNames: {
         ...aggregateStateNames,
-        classNameWithNamespace: `${namespaceToJSONPointer(aggregateStateMeta.ns)}.${aggregateStateNames.className}`,
+        classNameWithNamespace: `${namespaceToJSONPointer(aggregateStateMeta.ns)}${aggregateStateNames.className}`,
       },
       isAggregateEvent,
       aggregateIdentifier: aggregateStateMeta.identifier,

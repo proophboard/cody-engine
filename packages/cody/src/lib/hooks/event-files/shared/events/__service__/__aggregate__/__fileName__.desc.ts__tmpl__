@@ -4,7 +4,7 @@ export const <%= className %>Desc: AggregateEventDescription = {
   name: '<%= serviceNames.className %>.<%= aggregateNames.className %>.<%= className %>',
   aggregateEvent: <%= isAggregateEvent %>,
   public: <%= !isAggregateEvent %>,
-  aggregateState: "<%= serviceNames.className %>.<%= aggregateStateNames.classNameWithNamespace %>",
+  aggregateState: "<%= serviceNames.className %><%= aggregateStateNames.classNameWithNamespace %>",
   aggregateName: "<%= serviceNames.className %>.<%= aggregateNames.className %>",
   aggregateIdentifier: "<%= aggregateIdentifier %>",
   _pbBoardId: "<%= _pbBoardId %>",

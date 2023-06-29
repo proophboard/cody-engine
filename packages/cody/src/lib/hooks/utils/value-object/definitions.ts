@@ -29,7 +29,7 @@ export const voFQCN = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): str
 
   const nsJsonPointer = namespaceToJSONPointer(voMeta.ns);
 
-  return `${names(service).className}.${nsJsonPointer}.${names(vo.getName()).className}`;
+  return `${names(service).className}${nsJsonPointer}${names(vo.getName()).className}`;
 }
 
 export const voFQCNFromDefinitionId = (definitionId: string): string => {

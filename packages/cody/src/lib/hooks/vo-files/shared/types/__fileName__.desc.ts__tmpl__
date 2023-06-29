@@ -1,7 +1,7 @@
 import {<%= descriptionType %>} from "@event-engine/descriptions/descriptions";
 
 export const <%= className %>Desc: <%= descriptionType %> = {
-  name: "<%= serviceNames.className %>.<%= ns.JSONPointer %>.<%= className %>",
+  name: "<%= serviceNames.className %><%= ns.JSONPointer %><%= className %>",
   isList: <%= meta.isList %>,
   hasIdentifier: <%= meta.hasIdentifier %>,
   isQueryable: <%= meta.isQueryable %>,

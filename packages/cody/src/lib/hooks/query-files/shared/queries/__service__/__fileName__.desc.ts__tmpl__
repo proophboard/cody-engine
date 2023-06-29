@@ -2,7 +2,7 @@ import {QueryDescription} from "@event-engine/descriptions/descriptions";
 
 export const <%= className %>Desc: QueryDescription = {
   name: '<%= serviceNames.className %>.<%= className %>',
-  returnType: '<%= serviceNames.className %>.<%= ns.JSONPointer %>.<%= voNames.className %>',
+  returnType: '<%= serviceNames.className %><%= ns.JSONPointer %><%= voNames.className %>',
   _pbBoardId: "<%= _pbBoardId %>",
   _pbCardId: "<%= _pbCardId %>",
   _pbCreatedBy: "<%= _pbCreatedBy %>",
