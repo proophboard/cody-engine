@@ -6,6 +6,7 @@ export const <%= className %>Desc: AggregateCommandDescription = {
   newAggregate: <%= newAggregate %>,
   aggregateName: "<%= serviceNames.className %>.<%= aggregateName %>",
   aggregateIdentifier: "<%= aggregateIdentifier %>",
+  <% if (dependencies) { %>dependencies: <%- toJSON(dependencies) %>,<% } %>
   _pbBoardId: "<%= _pbBoardId %>",
   _pbCardId: "<%= _pbCardId %>",
   _pbCreatedBy: "<%= _pbCreatedBy %>",

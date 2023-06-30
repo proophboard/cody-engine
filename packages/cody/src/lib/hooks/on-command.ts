@@ -4,7 +4,7 @@ import {JSONSchema, JSONSchema7} from "json-schema-to-ts";
 import {convertShorthandObjectToJsonSchema, ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
 import {names} from "@event-engine/messaging/helpers";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
-import {generateFiles} from "@nx/devkit";
+import {formatFiles, generateFiles} from "@nx/devkit";
 import {
   isCodyError,
   nodeNameToPascalCase,
@@ -21,6 +21,7 @@ import {toJSON} from "./utils/to-json";
 import {register} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {UiSchema} from "@rjsf/utils";
+import {DependencyRegistry} from "@event-engine/descriptions/descriptions";
 
 interface CommandMeta {
   newAggregate: boolean;
@@ -28,6 +29,7 @@ interface CommandMeta {
   schema: JSONSchema | ShorthandObject;
   service?: string;
   uiSchema?: UiSchema;
+  dependencies?: DependencyRegistry;
 }
 
 export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) => {
@@ -57,11 +59,10 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
       return aggregate;
     }
 
-    // @TODO: handle command dependencies
-
     const syncedAggregate = withErrorCheck(getNodeFromSyncedNodes, [aggregate, ctx.syncedNodes]);
     const aggregateState = withErrorCheck(findAggregateState, [syncedAggregate, ctx]);
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
+    const dependencies = meta.dependencies;
 
     const tree = new FsTree(ctx.projectRoot, true);
 
@@ -81,9 +82,12 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
       ...cmdNames,
       schema,
       uiSchema,
+      dependencies,
     });
 
     withErrorCheck(register, [command, ctx, tree]);
+
+    await formatFiles(tree);
 
     const changes = tree.listChanges();
 

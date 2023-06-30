@@ -50,7 +50,7 @@ interface OwnProps {
 
 type CommandDialogProps = OwnProps;
 
-interface TransactionState {
+export interface TransactionState {
   isSubmitting: boolean;
   isSubmitted: boolean;
   isError: boolean;
@@ -70,6 +70,7 @@ const CommandDialog = (props: CommandDialogProps) => {
   const snackbar = useSnackbar();
   const commandFormRef = useRef<{submit: () => void}>();
   const [transactionState, setTransactionState] = useState<TransactionState>({...defaultTransactionState});
+  const [tryAgain, setTryAgain] = useState(false);
   const formData: {[prop: string]: any} = props.initialValues || {};
 
   if(props.aggregateIdentifier) {
@@ -93,6 +94,7 @@ const CommandDialog = (props: CommandDialogProps) => {
   const handleExecuteCommand = () => {
     if(transactionState.isError) {
       setTransactionState({...defaultTransactionState})
+      setTryAgain(true);
       return;
     }
 
@@ -103,6 +105,10 @@ const CommandDialog = (props: CommandDialogProps) => {
     }
 
     if(commandFormRef.current) {
+      if(tryAgain) {
+        setTryAgain(false);
+      }
+
       commandFormRef.current.submit();
     }
   };
@@ -150,6 +156,7 @@ const CommandDialog = (props: CommandDialogProps) => {
           formData={formData}
           widgets={props.widgets}
           fields={props.fields}
+          tryAgain={tryAgain}
         />
       </DialogContent>
       <DialogActions>

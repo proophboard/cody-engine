@@ -9,6 +9,16 @@ export interface ProophBoardDescription {
   _pbLink: string;
 }
 
+export type DependencyType = "query" | "service";
+
+export interface Dependency {
+  type: DependencyType,
+  options?: Record<string, any>,
+  alias?: string,
+}
+
+export type DependencyRegistry = {[dependencyName: string]: Dependency}
+
 export interface AggregateDescription extends ProophBoardDescription {
   name: string;
   identifier: string;
@@ -20,6 +30,7 @@ export interface AggregateDescription extends ProophBoardDescription {
 export interface CommandDescription extends ProophBoardDescription {
   name: string;
   aggregateCommand: boolean;
+  dependencies?: DependencyRegistry;
 }
 
 export interface AggregateCommandDescription extends CommandDescription{

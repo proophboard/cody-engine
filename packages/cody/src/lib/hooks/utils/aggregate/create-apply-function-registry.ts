@@ -23,7 +23,7 @@ export const createApplyFunctionRegistryIfNotExists = (aggregate: Node, ctx: Con
     const aggregateStateNames = names(aggregateState.getName());
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
 
-    generateFiles(tree, __dirname + '/../../aggregate-files/be/event-reducers', ctx.beSrc + '/event-reducers', {
+    generateFiles(tree, __dirname + '/../../aggregate-files-only-new/be/event-reducers', ctx.beSrc + '/event-reducers', {
       'tmpl': '',
       'service': serviceNames.fileName,
       'aggregate': aggregateNames.fileName,

@@ -13,7 +13,7 @@ import {getNodeFromSyncedNodes} from "./utils/node-tree";
 import {findAggregateState} from "./utils/aggregate/find-aggregate-state";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
-import {generateFiles} from "@nx/devkit";
+import {formatFiles, generateFiles} from "@nx/devkit";
 import {toJSON} from "./utils/to-json";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {namespaceToFilePath, namespaceToJSONPointer} from "./utils/value-object/namespace";
@@ -106,6 +106,8 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
     });
 
     withErrorCheck(registerEventReducer, [service, event, syncedAggregate, ctx, tree]);
+
+    await formatFiles(tree);
 
     const changes = tree.listChanges();
 

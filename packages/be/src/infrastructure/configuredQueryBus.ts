@@ -1,6 +1,6 @@
 import {Query, QueryResolver} from "@event-engine/messaging/query";
 import {QueryDescription} from "@event-engine/descriptions/descriptions";
-import {queryResolverExtensions} from "@app/extensions/query-resolvers";
+import {queryResolverExtensions} from "@app/extensions/be/query-resolvers";
 import {queryResolvers} from "@server/query-resolvers/index";
 import {Payload} from "@event-engine/messaging/message";
 

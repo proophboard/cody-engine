@@ -35,8 +35,8 @@ const AxiosResponseViewer = (props: AxiosResponseViewerProps) => {
                 </Box>
             </Container>}
             <>
-            {(props.successMessageCreated && props.response.status === 201) && <>{props.successMessageCreated}</>}
-            {(!props.successMessageCreated || props.response.status !== 201) && <Editor
+            {(props.successMessageCreated && (props.response.status === 201 || props.response.status === 200)) && <>{props.successMessageCreated}</>}
+            {(props.response.status >= 400) && <Editor
                 value={JSON.stringify(props.response.data, null, 2)}
                 height={'450px'}
                 language={'json'}

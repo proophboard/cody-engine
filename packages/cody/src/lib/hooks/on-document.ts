@@ -4,7 +4,7 @@ import {asyncWithErrorCheck, CodyResponseException, withErrorCheck} from "./util
 import {names} from "@event-engine/messaging/helpers";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
-import {generateFiles} from "@nx/devkit";
+import {formatFiles, generateFiles} from "@nx/devkit";
 import {
   namespaceNames,
   valueObjectNamespaceFromFQCN
@@ -118,6 +118,8 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
         await asyncWithErrorCheck(upsertStateViewComponent, [vo, voMeta, ctx, tree]);
       }
     }
+
+    await formatFiles(tree);
 
     const changes = tree.listChanges();
 

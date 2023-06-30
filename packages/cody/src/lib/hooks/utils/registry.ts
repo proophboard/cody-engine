@@ -154,12 +154,13 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
         return voMeta;
       }
 
-      const nsClassName = namespaceToJSONPointer(voMeta.ns);
+      const nsJSONPointer = namespaceToJSONPointer(voMeta.ns);
+      const nsClassName = namespaceToClassName(voMeta.ns);
       const nsFilename = namespaceToFilePath(voMeta.ns);
 
       registryPath = sharedRegistryPath('types.ts');
       registryVarName = 'types';
-      entryId = `${serviceNames.className}${nsClassName}${voNames.className}`;
+      entryId = `${serviceNames.className}${nsJSONPointer}${voNames.className}`;
       entryValue = importName = `${serviceNames.className}${nsClassName}${voNames.className}VORuntimeInfo`;
       importPath = `@app/shared/types/${serviceNames.fileName}${nsFilename}${voNames.fileName}`;
       break;

@@ -5,12 +5,12 @@ import {
   isExecuteRules,
   isIfConditionRule,
   isIfNotConditionRule,
-  isRecordEvent,
+  isRecordEvent, isThrowError,
   PropMapping,
   Rule,
   ThenAssignVariable,
   ThenExecuteRules,
-  ThenRecordEvent
+  ThenRecordEvent, ThenThrowError
 } from "./configuration";
 import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
 import {getTargetsOfType, isCodyError} from "@proophboard/cody-utils";
@@ -30,7 +30,7 @@ export const convertRuleConfigToAggregateBehavior = (aggregate: Node, ctx: Conte
 
   const lines: string[] = [];
 
-  lines.push(`${indent}const ctx: any = {};`);
+  lines.push(`${indent}const ctx: any = deps;`);
 
   initialVariables.forEach(variable => lines.push(`${indent}ctx['${variable.name}'] = ${variable.initializer};`));
 
@@ -233,6 +233,8 @@ const convertThen = (node: Node, ctx: Context, rule: Rule, lines: string[], inde
       return convertThenExecuteRules(node, ctx, then as ThenExecuteRules, rule, lines, indent, evalSync);
     case isAssignVariable(then):
       return convertThenAssignVariable(node, ctx, then as ThenAssignVariable, rule, lines, indent, evalSync);
+    case isThrowError(then):
+      return convertThenThrowError(node, ctx, then as ThenThrowError, rule, lines, indent, evalSync);
     default:
       return {
         cody: `I don't know the "then" part of that rule: ${JSON.stringify(rule)}.`,
@@ -306,6 +308,12 @@ const convertThenAssignVariable = (node: Node, ctx: Context, then: ThenAssignVar
   const valueMapping = convertMapping(node, ctx, then.assign.value, rule, indent, evalSync);
 
   lines.push(`ctx['${then.assign.variable}'] = ${valueMapping}`);
+
+  return true;
+}
+
+const convertThenThrowError = (node: Node, ctx: Context, then: ThenThrowError, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+  lines.push(`throw new Error("" + (${wrapExpression(then.throw.error, evalSync)}))`);
 
   return true;
 }
