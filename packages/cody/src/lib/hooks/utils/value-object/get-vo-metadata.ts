@@ -16,6 +16,7 @@ import {isListSchema} from "../json-schema/list-schema";
 import {resolveRef} from "../json-schema/resolve-ref";
 import {UiSchema} from "@rjsf/utils";
 import {GridDensity} from "@mui/x-data-grid";
+import {addSchemaTitles} from "../json-schema/add-schema-titles";
 
 interface ValueObjectMetadataRaw {
   identifier?: string;
@@ -106,7 +107,7 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     return service;
   }
 
-  const normalizedSchema = normalizeRefs(meta.schema, service) as JSONSchema7;
+  const normalizedSchema = normalizeRefs(addSchemaTitles(vo.getName(), meta.schema), service) as JSONSchema7;
 
   const hasIdentifier = !!meta.identifier;
   const isQueryable = !!meta.querySchema;
