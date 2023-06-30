@@ -4,22 +4,37 @@ import CommandButton, {WithCommandButtonProps} from '@frontend/app/components/co
 import CommandDialog from "@frontend/app/components/core/CommandDialog";
 import {<%= propertyName %>} from "@frontend/commands/<%= serviceNames.fileName %>/use-<%= fileName %>";
 import {<%= serviceNames.className %><%= className %>RuntimeInfo} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= fileName %>";
+<% if (!newAggregate) { %>
+import {useGet<%= stateNames.className %>} from "@frontend/queries/<%= serviceNames.fileName %>/use-get-<%= stateNames.fileName %>";
+import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
+import {<%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeInfo} from "@app/shared/queries/<%= serviceNames.fileName %>/get-<%= stateNames.fileName %>";
+<% } %>
 
 interface OwnProps {
-
+<% if (!newAggregate && identifier) { %>
+  <%= identifier %>: string;
+<% } %>
 }
 
 type <%= className %>Props = OwnProps & WithCommandButtonProps;
 
 const <%= className %> = (props: <%= className %>Props) => {
   const [dialogOpen, setDialogOpen] = useState(false);
-
+<% if (!newAggregate) { %>
+  const query = useGet<%= stateNames.className %>(determineQueryPayload(props, <%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeInfo));
+<% } %>
   const handleOpenDialog = () => {setDialogOpen(true)};
   const handleCloseDialog = () => {setDialogOpen(false)};
 
   return <>
     <CommandButton command={<%= serviceNames.className %><%= className %>RuntimeInfo} onClick={handleOpenDialog} {...props.buttonProps} />
-    <CommandDialog open={dialogOpen} onClose={handleCloseDialog} commandDialogCommand={<%= serviceNames.className %><%= className %>RuntimeInfo} commandFn={<%= propertyName %>} />
+    <CommandDialog
+      open={dialogOpen}
+      onClose={handleCloseDialog}
+      commandDialogCommand={<%= serviceNames.className %><%= className %>RuntimeInfo}
+      commandFn={<%= propertyName %>}
+      <% if (!newAggregate) { %>aggregateState={query.isSuccess? query.data : {}}<% } %>
+    />
   </>
 };
 

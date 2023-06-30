@@ -23,7 +23,7 @@ import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {UiSchema} from "@rjsf/utils";
 import {DependencyRegistry} from "@event-engine/descriptions/descriptions";
 
-interface CommandMeta {
+export interface CommandMeta {
   newAggregate: boolean;
   shorthand: boolean;
   schema: JSONSchema | ShorthandObject;
