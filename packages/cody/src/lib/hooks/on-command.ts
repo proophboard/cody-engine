@@ -22,6 +22,7 @@ import {register} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {UiSchema} from "@rjsf/utils";
 import {DependencyRegistry} from "@event-engine/descriptions/descriptions";
+import {addSchemaTitles} from "./utils/json-schema/add-schema-titles";
 
 export interface CommandMeta {
   newAggregate: boolean;
@@ -49,6 +50,8 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
     if(typeof schema === "object" && !schema.hasOwnProperty('$id')) {
       schema['$id'] = `/definitions/${serviceNames.fileName}/commands/${cmdNames.fileName}`;
     }
+
+    schema = addSchemaTitles(command.getName(), schema);
 
     const uiSchema = meta.uiSchema || {};
 
