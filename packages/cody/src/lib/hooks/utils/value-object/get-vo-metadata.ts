@@ -29,13 +29,24 @@ interface ValueObjectMetadataRaw {
   uiSchema?: UiSchema & TableUiSchema;
 }
 
+export interface RefTableColumn {
+  data: string;
+  value: Rule[] | string;
+}
+
+export interface PageLinkTableColumn {
+  page: string;
+  mapping: Record<string, string>;
+}
+
 export interface TableColumnUiSchema {
   field: string;
   headerName?: string;
   flex?: string | number;
   width?: string | number;
   value?: Rule[] | string;
-  pageLink?: string;
+  pageLink?: string | PageLinkTableColumn;
+  ref?: {data: string; value: string};
   link?: string | Rule[];
 }
 
