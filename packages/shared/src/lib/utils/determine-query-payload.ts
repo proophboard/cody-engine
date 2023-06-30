@@ -8,9 +8,10 @@ export const determineQueryPayload = <P extends Payload>(payload: Record<string,
     const cleanedPayload: Record<string, any> = {};
     Object.keys(schema.properties).forEach(key => {
 
-      if((payload as P)[key]) {
-        const mappedKey = mapping && mapping[key]? mapping[key] : key;
-        cleanedPayload[mappedKey] = (payload as P)[key];
+      const mappedKey = mapping && mapping[key]? mapping[key] : key;
+
+      if((payload as P)[mappedKey]) {
+        cleanedPayload[key] = (payload as P)[mappedKey];
       }
     })
     payload = cleanedPayload;

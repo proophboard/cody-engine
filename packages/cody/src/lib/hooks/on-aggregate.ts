@@ -6,12 +6,12 @@ import {getSingleSource, getTargetsOfType, isCodyError, parseJsonMetadata} from 
 import {detectService} from "./utils/detect-service";
 import {findAggregateState} from "./utils/aggregate/find-aggregate-state";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
-import {generateFiles} from "@nx/devkit";
+import {formatFiles, generateFiles} from "@nx/devkit";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {namespaceToFilePath, namespaceToJSONPointer} from "./utils/value-object/namespace";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {register, registerAggregateRepository, registerCommandHandler} from "./utils/registry";
-import {listChangesForCodyResponse} from "./utils/fs-tree";
+import {isNewFile, listChangesForCodyResponse} from "./utils/fs-tree";
 import {alwaysRecordEvent} from "./utils/aggregate/always-record-event";
 import {convertRuleConfigToAggregateBehavior} from "./utils/rule-engine/convert-rule-config-to-behavior";
 import {AggregateMetadata} from "./utils/aggregate/metadata";
@@ -29,7 +29,7 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
     const aggregateState = withErrorCheck(findAggregateState, [aggregate, ctx]);
     const aggregateStateNames = names(aggregateState.getName());
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
-    const meta = aggregate.getMetadata() ? withErrorCheck(parseJsonMetadata, [aggregate]) as AggregateMetadata : {};
+    const meta = aggregate.getMetadata()? withErrorCheck(parseJsonMetadata, [aggregate]) as AggregateMetadata : {};
 
     const collection = aggregateStateMeta.collection || aggregateStateNames.constantName.toLowerCase() + '_collection';
     const stream = meta.stream || 'write_model_stream';
@@ -89,9 +89,25 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
       ...aggregateNames,
     });
 
+    if(isNewFile(`${ctx.sharedSrc}/aggregates/${serviceNames.fileName}/${aggregateNames.fileName}.desc.ts`, tree)) {
+      generateFiles(tree, __dirname + '/aggregate-files-only-new/be', ctx.beSrc, {
+        'tmpl': '',
+        'service': serviceNames.fileName,
+        'aggregate': aggregateNames.fileName,
+        serviceNames,
+        aggregateStateNames: {
+          ...aggregateStateNames,
+          fileNameWithNamespace: `${namespaceToFilePath(aggregateStateMeta.ns)}${aggregateStateNames.fileName}`,
+        },
+        ...aggregateNames,
+      });
+    }
+
     withErrorCheck(register, [aggregate, ctx, tree]);
     withErrorCheck(registerCommandHandler, [service, aggregate, ctx, tree]);
     withErrorCheck(registerAggregateRepository, [service, aggregate, ctx, tree]);
+
+    await formatFiles(tree);
 
     const changes = tree.listChanges();
 

@@ -5,7 +5,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {Context} from "../context";
 
 export const detectService = (node: Node, ctx: Context): string | CodyResponse => {
-  const meta = parseJsonMetadata<{service?: string}>(node);
+  const meta = node.getMetadata() ? parseJsonMetadata<{service?: string}>(node) : {};
 
   if(isCodyError(meta)) {
     return meta;

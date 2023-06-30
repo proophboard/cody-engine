@@ -17,12 +17,13 @@ import {v4} from "uuid";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import {Alert, AlertTitle, Container} from "@mui/material";
 import AxiosResponseViewer from "@frontend/app/components/core/AxiosResponseViewer";
-import {AxiosResponse} from "axios";
+import {AxiosError, AxiosResponse} from "axios";
 import {commandTitle} from "@frontend/app/components/core/CommandButton";
 import validator from '@rjsf/validator-ajv8';
 import {IChangeEvent} from "@rjsf/core";
 import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
+import {TransactionState} from "@frontend/app/components/core/CommandDialog";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -39,6 +40,7 @@ interface OwnProps {
   fieldTemplate?: React.FunctionComponent<FieldTemplateProps>;
   widgets?: {[name: string]: Widget};
   fields?: {[name: string]: Field};
+  tryAgain?: boolean;
 }
 
 type CommandFormProps = OwnProps;
@@ -65,6 +67,12 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     mutation.reset();
     setSubmittedFormData(undefined);
   }, [props.command]);
+
+  useEffect(() => {
+    if(props.tryAgain) {
+      mutation.reset();
+    }
+  }, [props.tryAgain]);
 
   useEffect(() => {
     if(mutation.isError && props.onBackendErrorReceived) {
@@ -164,6 +172,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
                   <AlertTitle>{(mutation.error as Error).name || 'Error'}</AlertTitle>
                   {(mutation.error as Error).message}
                 </Alert>
+                {(mutation.error as AxiosError).response && <AxiosResponseViewer response={(mutation.error as AxiosError).response as AxiosResponse}/>}
               </Container>
             )}
           </div>}

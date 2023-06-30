@@ -18,14 +18,14 @@ type CommandHandler = ProcessingFunction | ProcessingFunctionWithDeps;
 
 class CommandBus {
   public async dispatch (command: Command, desc: CommandDescription): Promise<boolean> {
-    // @TODO: check deps config and load deps
     const handler = this.getHandler(desc);
+    const dependencies = await this.loadDependencies(command, desc);
 
     if(isAggregateCommandDescription(desc)) {
-      return this.dispatchAggregateCommand(command, handler, desc, {});
+      return this.dispatchAggregateCommand(command, handler, desc, dependencies);
     }
 
-    return this.dispatchNonAggregateCommand(command, handler, desc, {});
+    return this.dispatchNonAggregateCommand(command, handler, desc, dependencies);
   }
 
   private async dispatchAggregateCommand(command: Command, handler: CommandHandler, desc: AggregateCommandDescription, deps: any): Promise<boolean> {
@@ -80,7 +80,7 @@ class CommandBus {
 
       switch (dep.type) {
         case "query":
-          loadedDependencies[depName] = await this.loadQueryDependency(dependencyKey, command);
+          loadedDependencies[depName] = await this.loadQueryDependency(dependencyKey, command, dep.options);
           break;
         case "service":
           loadedDependencies[depName] = this.loadServiceDependency(dependencyKey, command, dep.options);
@@ -90,7 +90,7 @@ class CommandBus {
       }
     }
 
-    return {};
+    return loadedDependencies;
   }
 
   private async loadQueryDependency(queryName: string, command: Command, options: any): Promise<any> {

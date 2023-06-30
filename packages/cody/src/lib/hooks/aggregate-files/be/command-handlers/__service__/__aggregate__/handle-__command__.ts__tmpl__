@@ -6,6 +6,6 @@ import {<%= commandNames.className %>} from "@app/shared/commands/<%= serviceNam
 <% events.forEach(function(event) { %>import {<%= event.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= fileName %>/<%= event.fileName %>";
 <% }) %>
 
-export const handle<%= commandNames.className %> = async function* (<%= aggregateStateNames.propertyName %>: Partial<<%= aggregateStateNames.className %>>, command: Command<<%= commandNames.className %>>): AsyncGenerator<Event> {
+export const handle<%= commandNames.className %> = async function* (<%= aggregateStateNames.propertyName %>: Partial<<%= aggregateStateNames.className %>>, command: Command<<%= commandNames.className %>>, deps: object): AsyncGenerator<Event> {
 <%- behavior %>
 }
