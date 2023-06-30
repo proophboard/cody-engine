@@ -18,7 +18,7 @@ export const StandardPage = (props: Props) => {
     }
 
     const Command = commandComponents[commandName];
-    return <Command key={commandName}/>
+    return <Command key={commandName} {...routeParams} />
   });
 
   const commandBar = cmdBtns.length ? <Grid2 xs={12}><CommandBar>{cmdBtns}</CommandBar></Grid2> : <></>;

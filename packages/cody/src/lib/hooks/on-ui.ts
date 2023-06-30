@@ -1,4 +1,4 @@
-import {CodyHook, CodyResponseType, NodeType} from "@proophboard/cody-types";
+import {CodyHook, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
 import {getSourcesOfType, getTargetsOfType, isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {asyncWithErrorCheck, CodyResponseException, withErrorCheck} from "./utils/error-handling";
@@ -14,7 +14,7 @@ import {flushChanges, FsTree} from "nx/src/generators/tree";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {isSubLevelPage} from "@frontend/app/pages/page-definitions";
 import {formatFiles} from "@nx/devkit";
-import {register, registerCommandComponent} from "./utils/registry";
+import {register} from "./utils/registry";
 import {upsertCommandComponent} from "./utils/ui/upsert-command-component";
 import {upsertListViewComponent} from "./utils/ui/upsert-list-view-component";
 import {upsertStateViewComponent} from "./utils/ui/upsert-state-view-component";
@@ -38,7 +38,8 @@ export const onUi: CodyHook<Context> = async (ui, ctx) => {
       }
     })
 
-    const commands = withErrorCheck(getTargetsOfType, [ui, NodeType.command, true, true, true]);
+    const commands = withErrorCheck(getTargetsOfType, [ui, NodeType.command, true, true, true])
+      .map(cmd => withErrorCheck(getNodeFromSyncedNodes, [cmd, ctx.syncedNodes]));
 
     const pageDefinition = await loadPageDefinition(ui, ctx);
 
