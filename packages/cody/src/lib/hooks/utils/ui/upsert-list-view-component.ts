@@ -4,9 +4,14 @@ import {FsTree} from "nx/src/generators/tree";
 import {detectService} from "../detect-service";
 import {isCodyError} from "@proophboard/cody-utils";
 import {names} from "@event-engine/messaging/helpers";
-import {getVoMetadata, TableColumnUiSchema, ValueObjectMetadata} from "../value-object/get-vo-metadata";
+import {
+  getVoMetadata,
+  PageLinkTableColumn,
+  RefTableColumn,
+  TableColumnUiSchema,
+  ValueObjectMetadata
+} from "../value-object/get-vo-metadata";
 import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
-import {isRefSchema} from "../json-schema/ref-schema";
 import {voFQCNFromDefinitionId} from "../value-object/definitions";
 import {getVoFromSyncedNodes} from "../value-object/get-vo-from-synced-nodes";
 import {isObjectSchema} from "../json-schema/is-object-schema";
@@ -57,7 +62,7 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
     return columnsResponse;
   }
 
-  const [columns, imports] = columnsResponse;
+  const [columns, imports, hooks] = columnsResponse;
 
   // @todo: handle render cell with Rule[]
   // @see: car-list.tsx
@@ -69,6 +74,7 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
     identifier,
     columns: `${columns.join(",\n")}`,
     imports: imports.join(";\n"),
+    hooks: hooks.join(";\n"),
     ...voNames
   })
 
@@ -77,9 +83,10 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
   return true;
 }
 
-const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node, itemVOMeta: ValueObjectMetadata, ctx: Context): [string[], string[]] | CodyResponse => {
+const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node, itemVOMeta: ValueObjectMetadata, ctx: Context): [string[], string[], string[]] | CodyResponse => {
   const columns = getColumns(vo, voMeta, itemVO, itemVOMeta, ctx);
   let imports: string[] = [];
+  let hooks: string[] = [];
 
   if(isCodyError(columns)) {
     return columns;
@@ -98,7 +105,8 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
       column['flex'] = 1;
     }
 
-    let objStr = '{';
+    let objStr = "{\n";
+    const indent = "    ";
 
     let cKey: keyof(TableColumnUiSchema);
 
@@ -107,7 +115,9 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
 
       switch (cKey) {
         case "pageLink":
-          const preparedLink = preparePageLink(cValue as string, vo, ctx);
+          const pageLinkConfig: PageLinkTableColumn = typeof cValue === "string" ? {page: cValue, mapping: {}} : cValue as PageLinkTableColumn;
+
+          const preparedLink = preparePageLink(pageLinkConfig, vo, ctx);
           if(isCodyError(preparedLink)) {
             return preparedLink;
           }
@@ -115,31 +125,55 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
           const [pageName, pageImport] = preparedLink;
 
           imports = addImport('import PageLink from "@frontend/app/components/core/PageLink"', imports);
+          imports = addImport('import {mapProperties} from "@app/shared/utils/map-properties"', imports);
           imports = addImport(pageImport, imports);
-          objStr += `renderCell: params => <PageLink page={${pageName}} params={params.row}>{params.value}</PageLink>, `
+          objStr += `${indent}renderCell: params => <PageLink page={${pageName}} params={mapProperties(params.row, ${JSON.stringify(pageLinkConfig.mapping)})}>{params.value}</PageLink>,\n`
           break;
         case "value":
           imports = addImport('import * as jexl from "jexl"', imports);
-          const valueGetter = prepareValueGetter(vo, cValue as Rule[], ctx);
+          const valueGetter = prepareValueGetter(vo, cValue as Rule[], ctx, indent);
           if(isCodyError(valueGetter)) {
             return valueGetter;
           }
 
-          objStr += `valueGetter: ${valueGetter},`
+          objStr += `${indent}valueGetter: ${valueGetter},\n`
+          break;
+        case "ref":
+          imports = addImport('import * as jexl from "jexl"', imports);
+          imports = addImport('import {dataValueGetter} from "@frontend/util/table/data-value-getter"', imports);
+          imports = addImport('import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";', imports);
+
+          const listVO = getVoFromSyncedNodes((cValue as RefTableColumn).data, ctx);
+
+          if(isCodyError(listVO)) {
+            return listVO;
+          }
+
+          const dataValueGetterResult = prepareDataValueGetter(column.field, vo, listVO, (cValue as RefTableColumn).value, ctx, imports, indent);
+
+          if(isCodyError(dataValueGetterResult)) {
+            return dataValueGetterResult;
+          }
+
+          const [updatedImports, hook, dataValueGetter] = dataValueGetterResult;
+
+          imports = updatedImports;
+          hooks.push(hook);
+          objStr += `${indent}valueGetter: ${dataValueGetter},\n`
           break;
         default:
-          objStr += `${cKey}: ${JSON.stringify(cValue)}, `
+          objStr += `${indent}${cKey}: ${JSON.stringify(cValue)},\n`
       }
 
     }
 
-    objStr += "}";
+    objStr += `${indent}}`;
 
     strColumns.push(objStr);
   }
 
 
-  return [strColumns, imports];
+  return [strColumns, imports, hooks];
 }
 
 const getColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node, itemVOMeta: ValueObjectMetadata, ctx: Context): TableColumnUiSchema[] | CodyResponse => {
@@ -187,8 +221,8 @@ const deriveColumnsFromSchema = (vo: Node, voMeta: ValueObjectMetadata, itemVO: 
   return columns;
 }
 
-const preparePageLink = (linkedPage: string, vo: Node, ctx: Context): [string, string] | CodyResponse => {
-  const parts = linkedPage.split(".");
+const preparePageLink = (linkedPage: PageLinkTableColumn, vo: Node, ctx: Context): [string, string] | CodyResponse => {
+  const parts = linkedPage.page.split(".");
   let service: string, pageName: string;
 
   if(parts.length === 2) {
@@ -201,20 +235,67 @@ const preparePageLink = (linkedPage: string, vo: Node, ctx: Context): [string, s
     }
 
     service = serviceOrError;
-    pageName = linkedPage;
+    pageName = linkedPage.page;
   }
 
   return [names(pageName).className, `import {${names(pageName).className}} from "@frontend/app/pages/${names(service).fileName}/${names(pageName).fileName}"`]
 }
 
-const prepareValueGetter = (vo: Node, valueGetter: Rule[], ctx: Context): string | CodyResponse => {
-  const expr = convertRuleConfigToTableColumnValueGetterRules(vo, ctx, valueGetter, '      ');
+const prepareValueGetter = (vo: Node, valueGetter: Rule[], ctx: Context, indent: string): string | CodyResponse => {
+  const expr = convertRuleConfigToTableColumnValueGetterRules(vo, ctx, valueGetter, indent + '  ');
 
   return `(params) => {
-      const ctx: any = params;
-      
-      ${expr};
-      
-      return ctx.value;
-    }`;
+${indent}  const ctx: any = params;
+${indent}      
+${indent}  ${expr};
+${indent}
+${indent}  return ctx.value;
+${indent}}`;
+}
+
+const prepareDataValueGetter = (columnName: string, vo: Node, listVo: Node, valueGetter: Rule[] | string, ctx: Context, imports: string[], indent: string): [string[], string, string] | CodyResponse => {
+  const listVoMeta = getVoMetadata(listVo, ctx);
+
+  if(isCodyError(listVoMeta)) {
+    return listVoMeta;
+  }
+
+  const listVoService = detectService(listVo, ctx);
+
+  if(isCodyError(listVoService)) {
+    return listVoService;
+  }
+
+  if(!isQueryableStateListDescription(listVoMeta)) {
+    return {
+      cody: `Data of a column reference needs to be a queryable state list, but column "${columnName}" references data type "${listVo.getName()}", which is not a list or not queryable.`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  const serviceNames = names(listVoService);
+  const listVoNames = names(listVo.getName());
+  const columnNames = names(columnName);
+
+  imports = addImport(`import {useGet${listVoNames.className}} from "@frontend/queries/${serviceNames.fileName}/use-get-${listVoNames.fileName}"`, imports);
+  imports = addImport(`import {${serviceNames.className}Get${listVoNames.className}QueryRuntimeInfo} from "@app/shared/queries/${serviceNames.fileName}/get-${listVoNames.fileName}"`, imports);
+
+  const hook = `  const ${columnNames.propertyName}ColumnQuery = useGet${listVoNames.className}(determineQueryPayload(params, ${serviceNames.className}Get${listVoNames.className}QueryRuntimeInfo));`
+
+  const expr = convertRuleConfigToTableColumnValueGetterRules(vo, ctx, valueGetter, indent + '  ');
+
+  const valueGetterFn = `(params) => {
+${indent}  return dataValueGetter(
+${indent}    ${columnNames.propertyName}ColumnQuery,
+${indent}    "${listVoMeta.identifier}",
+${indent}    params.value,
+${indent}    (data) => {
+${indent}      const ctx: any = {data};
+${indent}      ${expr};
+${indent}      return ctx.value;
+${indent}    }
+${indent}  )
+${indent}}`;
+
+  return [imports, hook, valueGetterFn];
 }

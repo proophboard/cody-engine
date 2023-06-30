@@ -8,6 +8,7 @@ import {useGet<%= className %>} from "@frontend/queries/<%= serviceNames.fileNam
 
 const <%= className %> = (params: Get<%= className %>) => {
   const query = useGet<%= className %>(params);
+  <%- hooks %>
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
