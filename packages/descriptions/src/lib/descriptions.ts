@@ -60,6 +60,11 @@ export interface QueryDescription extends ProophBoardDescription {
   returnType: string;
 }
 
+export interface PolicyDescription extends ProophBoardDescription {
+  name: string;
+  dependencies?: DependencyRegistry;
+}
+
 export interface ValueObjectDescriptionFlags {
   isList: boolean;
   hasIdentifier: boolean;

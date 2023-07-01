@@ -9,14 +9,13 @@ import {
   CommandDescription,
   isAggregateCommandDescription
 } from "@event-engine/descriptions/descriptions";
-import {queries} from "@app/shared/queries";
-import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
-import {getConfiguredQueryBus} from "@server/infrastructure/configuredQueryBus";
-import {services} from "@app/extensions/be/services";
+import {MessageBus} from "@server/infrastructure/MessageBus";
+
+export const SERVICE_NAME_COMMAND_BUS = '$CommandBus';
 
 type CommandHandler = ProcessingFunction | ProcessingFunctionWithDeps;
 
-class CommandBus {
+class CommandBus extends MessageBus {
   public async dispatch (command: Command, desc: CommandDescription): Promise<boolean> {
     const handler = this.getHandler(desc);
     const dependencies = await this.loadDependencies(command, desc);
@@ -65,60 +64,7 @@ class CommandBus {
     return commandHandlers[desc.name];
   }
 
-  private async loadDependencies(command: Command, desc: CommandDescription): Promise<any> {
 
-    const {dependencies} = desc;
-    const loadedDependencies: Record<string, any> = {};
-
-    if(!dependencies) {
-      return loadedDependencies;
-    }
-
-    for (const dependencyKey in dependencies) {
-      const dep = dependencies[dependencyKey];
-      const depName = dep.alias || dependencyKey;
-
-      switch (dep.type) {
-        case "query":
-          loadedDependencies[depName] = await this.loadQueryDependency(dependencyKey, command, dep.options);
-          break;
-        case "service":
-          loadedDependencies[depName] = this.loadServiceDependency(dependencyKey, command, dep.options);
-          break;
-        default:
-          throw new Error(`Unknown dependency type detected for command "${command.name}". Supported dependency types are: "query", "service". But the configured type is "${dep.type}"`);
-      }
-    }
-
-    return loadedDependencies;
-  }
-
-  private async loadQueryDependency(queryName: string, command: Command, options: any): Promise<any> {
-    if(!queries[queryName]) {
-      throw new Error(`Query with name "${queryName}" cannot be found, but is configured as a dependency for command "${command.name}"`);
-    }
-
-    const queryRuntimeInfo = queries[queryName];
-    const keyMapping = options?.mapping || {};
-
-    const query = queryRuntimeInfo.factory(determineQueryPayload(command.payload, queryRuntimeInfo, keyMapping), command.meta);
-
-    return await getConfiguredQueryBus().dispatch(query, queryRuntimeInfo.desc);
-  }
-
-  private loadServiceDependency(serviceName: string, command: Command, options?: any): any {
-    if(!services[serviceName]) {
-      throw new Error(`Service factory for service with name "${serviceName}" not found in @extensions/be/services registry. The service is configured as dependency for command "${command.name}".`);
-    }
-
-    const serviceFactory = services[serviceName];
-
-    if(typeof serviceFactory !== "function") {
-      throw new Error(`Service factory for service with name "${serviceName}" is not a function. Please check registry in @extensions/be/services. The service is configured as dependency for command "${command.name}".`);
-    }
-
-    return serviceFactory(options);
-  }
 }
 
 let commandBus: CommandBus;

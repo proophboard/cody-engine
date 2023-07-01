@@ -5,12 +5,12 @@ import {
   isExecuteRules,
   isIfConditionRule,
   isIfNotConditionRule,
-  isRecordEvent, isThrowError,
+  isRecordEvent, isThrowError, isTriggerCommand,
   PropMapping,
   Rule,
   ThenAssignVariable,
   ThenExecuteRules,
-  ThenRecordEvent, ThenThrowError
+  ThenRecordEvent, ThenThrowError, ThenTriggerCommand
 } from "./configuration";
 import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
 import {getTargetsOfType, isCodyError} from "@proophboard/cody-utils";
@@ -61,6 +61,30 @@ export const convertRuleConfigToEventReducerRules = (event: Node, ctx: Context, 
 
     lines.push("");
     const res = convertRule(event, ctx, rule, lines, indent);
+    if(isCodyError(res)) {
+      return res;
+    }
+  }
+
+  lines.push("");
+
+  return lines.join("\n");
+}
+
+export const convertRuleConfigToPolicyRules = (policy: Node, ctx: Context, rules: Rule[], initialVariables: Variable[], indent = '  '): string | CodyResponse => {
+  if(!rules.length) {
+    return '';
+  }
+
+  const lines: string[] = [];
+
+  lines.push(`${indent}const ctx: any = deps;`);
+
+  initialVariables.forEach(variable => lines.push(`${indent}ctx['${variable.name}'] = ${variable.initializer};`));
+
+  for (const rule of rules) {
+    lines.push("");
+    const res = convertRule(policy, ctx, rule, lines, indent);
     if(isCodyError(res)) {
       return res;
     }
@@ -235,6 +259,8 @@ const convertThen = (node: Node, ctx: Context, rule: Rule, lines: string[], inde
       return convertThenAssignVariable(node, ctx, then as ThenAssignVariable, rule, lines, indent, evalSync);
     case isThrowError(then):
       return convertThenThrowError(node, ctx, then as ThenThrowError, rule, lines, indent, evalSync);
+    case isTriggerCommand(then):
+      return convertThenTriggerCommand(node, ctx, then as ThenTriggerCommand, rule, lines, indent, evalSync);
     default:
       return {
         cody: `I don't know the "then" part of that rule: ${JSON.stringify(rule)}.`,
@@ -288,6 +314,22 @@ const convertThenRecordEvent = (node: Node, ctx: Context, then: ThenRecordEvent,
   }
 
   lines.push(`${indent}yield ${eventNames.propertyName}(${mapping});`);
+
+  return true;
+}
+
+const convertThenTriggerCommand = (node: Node, ctx: Context, then: ThenTriggerCommand, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+  const mapping = convertMapping(node, ctx, then.trigger.mapping, rule, indent, evalSync);
+  if(isCodyError(mapping)) {
+    return mapping;
+  }
+
+  const meta = then.trigger.meta? convertMapping(node, ctx, then.trigger.meta, rule, indent, evalSync) : 'event.meta';
+  if(isCodyError(meta)) {
+    return meta;
+  }
+
+  lines.push(`${indent}messageBox.dispatch("${then.trigger.command}", ${mapping}, ${meta}).catch(e => console.error(e));`);
 
   return true;
 }

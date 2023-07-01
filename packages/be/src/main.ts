@@ -1,8 +1,6 @@
-import express, {ErrorRequestHandler, json, NextFunction} from 'express';
+import express, {ErrorRequestHandler, json} from 'express';
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
-import {getConfiguredCommandBus} from "@server/infrastructure/configuredCommandBus";
 import {names} from "@event-engine/messaging/helpers";
-import {getConfiguredQueryBus} from "@server/infrastructure/configuredQueryBus";
 import {ValidationError} from "ajv";
 import 'express-async-errors';
 import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
@@ -12,8 +10,6 @@ const port = process.env.PORT ? Number(process.env.PORT) : 4100;
 
 const app = express();
 const messageBox = getConfiguredMessageBox();
-const commandBus = getConfiguredCommandBus();
-const queryBus = getConfiguredQueryBus();
 
 app.use(json());
 
@@ -41,12 +37,36 @@ app.post('/api/:module/messages/:name', async (req, res) => {
   if(messageBox.isCommand(fqcn)) {
     const cmdInfo = messageBox.getCommandInfo(fqcn);
     const cmd = cmdInfo.factory(req.body);
-    const success = await commandBus.dispatch(cmd, cmdInfo.desc);
+    const success = await messageBox.commandBus.dispatch(cmd, cmdInfo.desc);
     res.json({success});
     return;
   }
 
-  // @TODO implement event handling
+  if(messageBox.isEvent(fqcn)) {
+    const evtInfo = messageBox.getEventInfo(fqcn);
+    const evt = evtInfo.factory(req.body);
+    const success = await messageBox.eventBus.on(evt);
+    res.json({success});
+    return;
+  }
+
+  throw new Error(`Unknown message received: "${fqcn}"`);
+})
+
+app.post('/api/:module/messages/:aggregate/:name', async (req, res) => {
+  const module = names(req.params.module).className;
+  const aggregate = names(req.params.aggregate).className;
+  const messageName = names(req.params.name).className;
+  const fqcn = `${module}.${aggregate}.${messageName}`;
+
+
+  if(messageBox.isEvent(fqcn)) {
+    const evtInfo = messageBox.getEventInfo(fqcn);
+    const evt = evtInfo.factory(req.body);
+    const success = await messageBox.eventBus.on(evt);
+    res.json({success});
+    return;
+  }
 
   throw new Error(`Unknown message received: "${fqcn}"`);
 })
@@ -63,7 +83,7 @@ app.get('/api/:module/messages/:name', async (req, res) => {
   const queryInfo = messageBox.getQueryInfo(fqcn);
   const query = queryInfo.factory(req.query);
 
-  res.json(await queryBus.dispatch(query, queryInfo.desc));
+  res.json(await messageBox.queryBus.dispatch(query, queryInfo.desc));
 });
 
 app.get('/health', (req, res) => {

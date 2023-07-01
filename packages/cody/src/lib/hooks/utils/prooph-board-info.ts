@@ -11,7 +11,7 @@ import {isNewFile, requireUncached} from "./fs-tree";
 import {namespaceToFilePath} from "./value-object/namespace";
 
 export const loadDescription = <D extends ProophBoardDescription>(node: Node, ctx: Context, tree: FsTree): D | CodyResponse => {
-  const {sharedSrc, feSrc} = ctx;
+  const {sharedSrc, feSrc, beSrc} = ctx;
 
   const service = detectService(node, ctx);
   if(isCodyError(service)) {
@@ -55,6 +55,11 @@ export const loadDescription = <D extends ProophBoardDescription>(node: Node, ct
       descFile = names(nodeNameToPascalCase(node)).fileName + '.ts';
       src = feSrc;
       importNs = '@frontend';
+      break;
+    case NodeType.policy:
+      nodeTypeFilename = 'policies';
+      src = beSrc;
+      importNs = '@server';
       break;
     default:
       return {

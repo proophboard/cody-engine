@@ -3,11 +3,16 @@ import {PostgresEventStore} from "@event-engine/infrastructure/EventStore/Postgr
 import {getConfiguredDB} from "@server/infrastructure/configuredDB";
 import {InMemoryEventStore} from "@event-engine/infrastructure/EventStore/InMemoryEventStore";
 import {InMemoryStreamListenerQueue} from "@event-engine/infrastructure/Queue/InMemoryStreamListenerQueue";
-import {EventDispatcher} from "@event-engine/infrastructure/EventDispatcher";
 import {env} from "@server/environments/environment.current";
+import {EventQueue} from "@event-engine/infrastructure/EventQueue";
+import {getExternalService} from "@app/shared/utils/get-external-service";
+import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 
 export const WRITE_MODEL_STREAM = 'write_model_stream';
 export const PUBLIC_STREAM = 'public_stream';
+export const SERVICE_NAME_WRITE_MODEL_STREAM_LISTENER_QUEUE = '$write_model_steam_listener_queue';
+export const SERVICE_NAME_PUBLIC_STREAM_LISTENER_QUEUE = '$public_stream_listener_queue';
+export const SERVICE_OPTION_EVENT_STORE = 'eventStore';
 
 export const PERSISTENT_STREAMS_FILE = process.cwd() + '/data/persistent-streams.json';
 
@@ -27,10 +32,26 @@ export const getConfiguredEventStore = (): EventStore => {
     }
 
     // Avoid circular deps in listeners
-    const streamListener = new InMemoryStreamListenerQueue(es, PUBLIC_STREAM);
+    const publicStreamListener = getExternalService<EventQueue>(SERVICE_NAME_PUBLIC_STREAM_LISTENER_QUEUE, {eventStore: es})
+      || makeDefaultStreamListener(es, PUBLIC_STREAM);
 
-    streamListener.startProcessing();
+    publicStreamListener.startProcessing();
+
+    const writeModelStreamListener = getExternalService<EventQueue>(SERVICE_NAME_WRITE_MODEL_STREAM_LISTENER_QUEUE, {eventStore: es})
+      || makeDefaultStreamListener(es, WRITE_MODEL_STREAM);
+
+    writeModelStreamListener.startProcessing();
   }
 
   return es;
+}
+
+const makeDefaultStreamListener = (es: EventStore, stream: string): EventQueue => {
+  const streamListener = new InMemoryStreamListenerQueue(es, stream);
+
+  streamListener.attachConsumer((event) => {
+    return getConfiguredMessageBox().eventBus.on(event);
+  })
+
+  return streamListener;
 }

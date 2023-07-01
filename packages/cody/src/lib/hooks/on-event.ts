@@ -20,29 +20,21 @@ import {namespaceToFilePath, namespaceToJSONPointer} from "./utils/value-object/
 import {register, registerEventReducer} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {createApplyFunctionRegistryIfNotExists} from "./utils/aggregate/create-apply-function-registry";
-import {Rule} from "./utils/rule-engine/configuration";
 import {alwaysMapPayload} from "./utils/event/always-map-payload";
 import {convertRuleConfigToEventReducerRules} from "./utils/rule-engine/convert-rule-config-to-behavior";
+import {EventMeta, getEventMetadata} from "./utils/event/get-event-metadata";
+import {getOriginalNode} from "./utils/get-original-node";
 
-interface EventMeta {
-  shorthand: boolean;
-  schema: JSONSchema | ShorthandObject;
-  service?: string;
-  applyRules?: Rule[];
-}
+
 
 export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
   try {
+    event = getOriginalNode(event, ctx);
     const eventNames = names(event.getName());
     const aggregate = getSingleSource(event, NodeType.aggregate);
     const service = withErrorCheck(detectService, [event, ctx]);
     const serviceNames = names(service);
-    const meta = withErrorCheck(parseJsonMetadata, [event]) as EventMeta;
-
-    let schema: any = meta.schema || {};
-    if(meta.shorthand) {
-      schema = withErrorCheck(convertShorthandObjectToJsonSchema, [schema as ShorthandObject]);
-    }
+    const meta = withErrorCheck(getEventMetadata, [event, ctx]) as EventMeta;
 
     const isAggregateEvent = !isCodyError(aggregate);
 
@@ -52,10 +44,6 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
     }
 
     const aggregateNames = names(aggregate.getName());
-
-    if(!schema.hasOwnProperty('$id')) {
-      schema['$id'] = `/definitions/${serviceNames.fileName}/${aggregateNames.fileName}/${eventNames.fileName}`;
-    }
 
     const syncedAggregate = withErrorCheck(getNodeFromSyncedNodes, [aggregate, ctx.syncedNodes]);
     const aggregateState = withErrorCheck(findAggregateState, [syncedAggregate, ctx]);
@@ -78,7 +66,7 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
       aggregateIdentifier: aggregateStateMeta.identifier,
       toJSON,
       ...eventNames,
-      schema,
+      schema: meta.schema,
       ...withErrorCheck(updateProophBoardInfo, [event, ctx, tree])
     });
 

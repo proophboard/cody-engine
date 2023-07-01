@@ -2,14 +2,31 @@ import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-
 import {Context} from "../context";
 import {FsTree} from "nx/src/generators/tree";
 import {loadDescription} from "./prooph-board-info";
-import {getSingleSource, isCodyError, nodeNameToPascalCase} from "@proophboard/cody-utils";
-import {ObjectLiteralExpression, Project, ScriptTarget, SyntaxKind, TupleTypeNode} from "ts-morph";
+import {
+  getSingleSource,
+  getSourcesOfType,
+  isCodyError,
+  nodeNameToPascalCase
+} from "@proophboard/cody-utils";
+import {
+  ObjectLiteralExpression,
+  Project,
+  PropertyAssignment,
+  ScriptTarget,
+  SourceFile,
+  SyntaxKind,
+  TupleTypeNode
+} from "ts-morph";
 import {joinPathFragments} from "nx/src/utils/path";
 import {detectService} from "./detect-service";
 import {names} from "@event-engine/messaging/helpers";
-import {isNewFile} from "./fs-tree";
+import {isNewFile, requireUncached} from "./fs-tree";
 import {getVoMetadata, ValueObjectMetadata} from "./value-object/get-vo-metadata";
 import {namespaceToClassName, namespaceToFilePath, namespaceToJSONPointer} from "./value-object/namespace";
+import {PolicyRegistry} from "@server/policies";
+import {getOriginalNode} from "./get-original-node";
+import {getEventMetadata} from "./event/get-event-metadata";
+import {getNodeFromSyncedNodes} from "./node-tree";
 
 const project = new Project({
   compilerOptions: {
@@ -23,6 +40,10 @@ const sharedRegistryPath = (registryFilename: string): string => {
 
 const frontendPagesRegistryPath = (): string => {
   return joinPathFragments('packages', 'fe', 'src', 'app', 'pages', 'index.ts');
+}
+
+const backendRegistryPath = (registryFilename: string): string => {
+  return joinPathFragments('packages', 'be', 'src', registryFilename);
 }
 
 const getFilenameFromPath = (path: string): string => {
@@ -183,6 +204,97 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
   }
 
   addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
+  return true;
+}
+
+export const registerPolicy = (service: string, policy: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const events = getSourcesOfType(policy, NodeType.event);
+
+  if(isCodyError(events)) {
+    return events;
+  }
+
+  if(events.count() === 0) {
+    return true;
+  }
+
+  const policyName = `${names(service).className}.${names(policy.getName()).className}`;
+
+  const registryPath = ctx.beSrc + '/policies/index.ts'
+
+  const registryFileContent = tree.read(registryPath)!.toString();
+  const registrySource = project.createSourceFile('index.ts', registryFileContent, {overwrite: true});
+
+  for (const event of events) {
+    const result = registerPolicyForEvent(service, policyName, policy, event, ctx, registrySource);
+
+    if(isCodyError(result)) {
+      return result;
+    }
+  }
+
+  const policyNames = names(policy.getName());
+  const  serviceNames = names(service);
+
+  if(!registrySource.getImportDeclaration(dec => dec.getModuleSpecifier().getLiteralValue() === `@server/policies/${serviceNames.fileName}/${policyNames.fileName}`)) {
+
+    registrySource.addImportDeclaration({
+      defaultImport: `{${policyNames.propertyName} as ${serviceNames.propertyName}${policyNames.className}}`,
+      moduleSpecifier: `@server/policies/${serviceNames.fileName}/${policyNames.fileName}`
+    });
+
+    registrySource.addImportDeclaration({
+      defaultImport: `{${serviceNames.className}${policyNames.className}PolicyDesc}`,
+      moduleSpecifier: `@server/policies/${serviceNames.fileName}/${policyNames.fileName}.desc`
+    });
+  }
+
+  registrySource.formatText({indentSize: 2});
+  tree.write(registryPath, registrySource.getText());
+
+  return true;
+}
+
+const registerPolicyForEvent = (service: string, policyFQCN: string, policy: Node, event: Node, ctx: Context, registrySource: SourceFile): boolean | CodyResponse => {
+  const syncedEvent = getNodeFromSyncedNodes(event, ctx.syncedNodes);
+
+  if(isCodyError(syncedEvent)) {
+    return syncedEvent;
+  }
+
+  const originalEvent = getOriginalNode(syncedEvent, ctx);
+  const eventMeta = getEventMetadata(originalEvent, ctx);
+  const policyNames = names(policy.getName());
+  const serviceNames = names(service);
+
+  if(isCodyError(eventMeta)) {
+    return eventMeta;
+  }
+
+  const registryVar = registrySource.getVariableDeclaration('policies');
+  const registryObject = registryVar!.getInitializerIfKindOrThrow(
+    SyntaxKind.ObjectLiteralExpression
+  ) as ObjectLiteralExpression;
+
+  if(!registryObject.getProperty(`'${eventMeta.fqcn}'`)) {
+    registryObject.addPropertyAssignment({
+      name: `'${eventMeta.fqcn}'`,
+      initializer: `{}`
+    });
+  }
+
+  const eventPolicesObject = registryObject.getProperty(`'${eventMeta.fqcn}'`) as PropertyAssignment;
+  const eventPoliciesInitializer = eventPolicesObject.getInitializerIfKindOrThrow(
+    SyntaxKind.ObjectLiteralExpression
+  ) as ObjectLiteralExpression;
+
+  if(!eventPoliciesInitializer.getProperty(`'${policyFQCN}'`)) {
+    eventPoliciesInitializer.addPropertyAssignment({
+      name: `'${policyFQCN}'`,
+      initializer: `{ policy: ${serviceNames.propertyName}${policyNames.className}, desc: ${serviceNames.className}${policyNames.className}PolicyDesc }`
+    })
+  }
+
   return true;
 }
 

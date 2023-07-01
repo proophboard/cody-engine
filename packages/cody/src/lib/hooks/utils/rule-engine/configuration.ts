@@ -35,9 +35,18 @@ export interface ValidateRule extends Rule {
   validate: JSONSchema7;
 }
 
-export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenPerformQuery | ThenExecuteRules;
+export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenPerformQuery | ThenExecuteRules;
 
 export type PropMapping = {[name: string]: string | string[]};
+
+export interface ThenForEach {
+  forEach: {
+    variable: string;
+    then: ThenType;
+  }
+}
+
+export const isForeach = (then: any): then is ThenForEach => typeof then.forEach !== 'undefined';
 
 export interface ThenRecordEvent {
   record: {
@@ -69,10 +78,25 @@ export interface ThenTriggerCommand {
   trigger: {
     command: string;
     mapping: string | PropMapping;
+    meta?: string | PropMapping;
   }
 }
 
 export const isTriggerCommand = (then: any): then is ThenTriggerCommand => typeof then.trigger !== 'undefined';
+
+export interface ThenCallService {
+  call: {
+    service: string;
+    arguments: PropMapping;
+    method?: string;
+    result: {
+      variable: string;
+      mapping: string | PropMapping;
+    }
+  }
+}
+
+export const isCallService = (then: any): then is ThenCallService => typeof then.call !== 'undefined';
 
 export interface ThenPerformQuery {
   perform: {
