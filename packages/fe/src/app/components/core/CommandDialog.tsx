@@ -122,7 +122,7 @@ const CommandDialog = (props: CommandDialogProps) => {
     }, 10);
   }
   return (
-    <Dialog open={props.open} fullWidth={true} maxWidth={'lg'} onClose={handleCancel}>
+    <Dialog open={props.open} fullWidth={true} maxWidth={'lg'} onClose={handleCancel} sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}>
       <DialogTitle>
         <IconButton sx={{
           position: 'absolute',
@@ -132,6 +132,7 @@ const CommandDialog = (props: CommandDialogProps) => {
         }} onClick={handleCancel}>
           <Close />
         </IconButton>
+        {commandTitle(props.commandDialogCommand)}
       </DialogTitle>
       <DialogContent sx={{ padding: '24px 24px' }}>
         <CommandForm

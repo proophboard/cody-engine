@@ -35,7 +35,7 @@ export interface ValidateRule extends Rule {
   validate: JSONSchema7;
 }
 
-export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenPerformQuery | ThenExecuteRules;
+export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenPerformQuery | ThenExecuteRules | ThenForEach;
 
 export type PropMapping = {[name: string]: string | string[]};
 
@@ -46,7 +46,7 @@ export interface ThenForEach {
   }
 }
 
-export const isForeach = (then: any): then is ThenForEach => typeof then.forEach !== 'undefined';
+export const isForEach = (then: any): then is ThenForEach => typeof then.forEach !== 'undefined';
 
 export interface ThenRecordEvent {
   record: {

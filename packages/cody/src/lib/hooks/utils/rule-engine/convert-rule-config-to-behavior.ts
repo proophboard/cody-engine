@@ -2,15 +2,15 @@ import {
   AlwaysRule,
   ConditionRule,
   isAssignVariable,
-  isExecuteRules,
+  isExecuteRules, isForEach,
   isIfConditionRule,
   isIfNotConditionRule,
   isRecordEvent, isThrowError, isTriggerCommand,
   PropMapping,
   Rule,
   ThenAssignVariable,
-  ThenExecuteRules,
-  ThenRecordEvent, ThenThrowError, ThenTriggerCommand
+  ThenExecuteRules, ThenForEach,
+  ThenRecordEvent, ThenThrowError, ThenTriggerCommand, ThenType
 } from "./configuration";
 import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
 import {getTargetsOfType, isCodyError} from "@proophboard/cody-utils";
@@ -211,7 +211,7 @@ const convertRule = (node: Node, ctx: Context, rule: Rule, lines: string[], inde
 }
 
 const convertAlwaysRule = (node: Node, ctx: Context, rule: AlwaysRule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  return convertThen(node, ctx, rule, lines, indent, evalSync);
+  return convertThen(node, ctx, rule.then, rule, lines, indent, evalSync);
 }
 
 const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
@@ -233,7 +233,7 @@ const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lin
 
   lines.push(`${indent}${ifCondition}(${wrapExpression(expr, evalSync)})) {`);
 
-  const then = convertThen(node, ctx, rule, lines, indent + '  ', evalSync);
+  const then = convertThen(node, ctx, rule.then, rule, lines, indent + '  ', evalSync);
 
   if(isCodyError(then)) {
     return then;
@@ -248,8 +248,7 @@ const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lin
   return true;
 }
 
-const convertThen = (node: Node, ctx: Context, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const {then} = rule;
+const convertThen = (node: Node, ctx: Context, then: ThenType, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
   switch (true) {
     case isRecordEvent(then):
       return convertThenRecordEvent(node, ctx, then as ThenRecordEvent, rule, lines, indent, evalSync);
@@ -261,11 +260,13 @@ const convertThen = (node: Node, ctx: Context, rule: Rule, lines: string[], inde
       return convertThenThrowError(node, ctx, then as ThenThrowError, rule, lines, indent, evalSync);
     case isTriggerCommand(then):
       return convertThenTriggerCommand(node, ctx, then as ThenTriggerCommand, rule, lines, indent, evalSync);
+    case isForEach(then):
+      return convertThenForEach(node, ctx, then as ThenForEach, rule, lines, indent, evalSync);
     default:
       return {
         cody: `I don't know the "then" part of that rule: ${JSON.stringify(rule)}.`,
         type: CodyResponseType.Error,
-        details: `Looks like a typo on your side. I can only perform the actions: record: event, throw: error, assign: variable, trigger: command, perform: query, execute: rules`,
+        details: `Looks like a typo on your side. I can only perform the actions: record: event, throw: error, assign: variable, trigger: command, perform: query, execute: rules, call: service, forEach: variable`,
       }
   }
 }
@@ -319,12 +320,12 @@ const convertThenRecordEvent = (node: Node, ctx: Context, then: ThenRecordEvent,
 }
 
 const convertThenTriggerCommand = (node: Node, ctx: Context, then: ThenTriggerCommand, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const mapping = convertMapping(node, ctx, then.trigger.mapping, rule, indent, evalSync);
+  const mapping = convertMapping(node, ctx, then.trigger.mapping, rule, indent, true);
   if(isCodyError(mapping)) {
     return mapping;
   }
 
-  const meta = then.trigger.meta? convertMapping(node, ctx, then.trigger.meta, rule, indent, evalSync) : 'event.meta';
+  const meta = then.trigger.meta? convertMapping(node, ctx, then.trigger.meta, rule, indent, true) : 'ctx["eventMeta"]';
   if(isCodyError(meta)) {
     return meta;
   }
@@ -357,6 +358,21 @@ const convertThenAssignVariable = (node: Node, ctx: Context, then: ThenAssignVar
 const convertThenThrowError = (node: Node, ctx: Context, then: ThenThrowError, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
   lines.push(`throw new Error("" + (${wrapExpression(then.throw.error, evalSync)}))`);
 
+  return true;
+}
+
+const convertThenForEach = (node: Node, ctx: Context, then: ThenForEach, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+
+  lines.push(`${indent}ctx['${then.forEach.variable}'].forEach((item: any) => {`);
+  lines.push(`${indent}  ctx['item'] = item;`)
+
+  const result = convertThen(node, ctx, then.forEach.then, rule, lines, indent + '  ', evalSync);
+
+  if(isCodyError(result)) {
+    return result;
+  }
+
+  lines.push(`${indent}})`)
   return true;
 }
 
