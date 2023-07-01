@@ -34,8 +34,6 @@ export async function handle<C extends Payload = any, E extends Payload = any, S
     const events = [];
     let result: IteratorResult<Event<E>, Event<E>>;
 
-    console.log("command handling deps: ", dependencies);
-
     const processing = process(state as S, command, dependencies || ({} as D));
 
     // eslint-disable-next-line no-cond-assign

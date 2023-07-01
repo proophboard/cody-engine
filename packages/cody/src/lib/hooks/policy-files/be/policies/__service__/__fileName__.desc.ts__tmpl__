@@ -1,0 +1,14 @@
+import {PolicyDescription} from "@event-engine/descriptions/descriptions";
+
+export const <%= serviceNames.className %><%= className %>PolicyDesc: PolicyDescription = {
+  name: '<%= serviceNames.className %>.<%= className %>',
+  <% if (dependencies) { %>dependencies: <%- toJSON(dependencies) %>,<% } %>
+  _pbBoardId: "<%= _pbBoardId %>",
+  _pbCardId: "<%= _pbCardId %>",
+  _pbCreatedBy: "<%= _pbCreatedBy %>",
+  _pbCreatedAt: "<%= _pbCreatedAt %>",
+  _pbLastUpdatedBy: "<%= _pbLastUpdatedBy %>",
+  _pbLastUpdatedAt: "<%= _pbLastUpdatedAt %>",
+  _pbVersion: <%= _pbVersion %>,
+  _pbLink: "<%- _pbLink %>",
+}

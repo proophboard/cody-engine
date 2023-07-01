@@ -4,6 +4,8 @@ import {queryResolverExtensions} from "@app/extensions/be/query-resolvers";
 import {queryResolvers} from "@server/query-resolvers/index";
 import {Payload} from "@event-engine/messaging/message";
 
+export const SERVICE_NAME_QUERY_BUS = '$QueryBus';
+
 class QueryBus {
   public async dispatch<S extends Payload = any>(query: Query, desc: QueryDescription): Promise<S> {
     const resolver = this.getResolver<S>(desc);

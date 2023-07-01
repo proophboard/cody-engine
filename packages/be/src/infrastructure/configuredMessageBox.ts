@@ -4,18 +4,58 @@ import {CommandRuntimeInfo} from "@event-engine/messaging/command";
 import {EventRuntimeInfo} from "@event-engine/messaging/event";
 import {queries} from "@app/shared/queries";
 import {QueryRuntimeInfo} from "@event-engine/messaging/query";
+import {CommandBus, EventBus, QueryBus} from "@server/infrastructure/types";
+import {getExternalService} from "@app/shared/utils/get-external-service";
+import {getConfiguredCommandBus, SERVICE_NAME_COMMAND_BUS} from "@server/infrastructure/configuredCommandBus";
+import {getConfiguredQueryBus, SERVICE_NAME_QUERY_BUS} from "@server/infrastructure/configuredQueryBus";
+import {getConfiguredEventBus, SERVICE_NAME_EVENT_BUS} from "@server/infrastructure/configuredEventBus";
+import {Meta, Payload} from "@event-engine/messaging/message";
 
 class MessageBox {
+
+  public commandBus: CommandBus;
+  public eventBus: EventBus;
+  public queryBus: QueryBus;
+
+
+  constructor() {
+    this.commandBus = getExternalService<CommandBus>(SERVICE_NAME_COMMAND_BUS) || getConfiguredCommandBus();
+    this.queryBus = getExternalService<QueryBus>(SERVICE_NAME_QUERY_BUS) || getConfiguredQueryBus();
+    this.eventBus = getExternalService<EventBus>(SERVICE_NAME_EVENT_BUS) || getConfiguredEventBus();
+  }
+
+  public async dispatch(messageName: string, payload: Payload, meta?: Meta): Promise<any> {
+    if(this.isCommand(messageName)) {
+      const cmdInfo = this.getCommandInfo(messageName);
+
+      return this.commandBus.dispatch(cmdInfo.factory(payload, meta), cmdInfo.desc);
+    }
+
+    if(this.isEvent(messageName)) {
+      const eventInfo = this.getEventInfo(messageName);
+
+      return this.eventBus.on(eventInfo.factory(payload, meta));
+    }
+
+    if(this.isQuery(messageName)) {
+      const queryInfo = this.getQueryInfo(messageName);
+
+      return this.queryBus.dispatch(queryInfo.factory(payload, meta), queryInfo.desc);
+    }
+
+    throw new Error(`Unknown message received: "${messageName}"`);
+  }
+
   public isCommand (name: string): boolean {
-    return typeof commands[name] !== undefined;
+    return typeof commands[name] !== 'undefined';
   }
 
   public isEvent (name: string): boolean {
-    return typeof events[name] !== undefined;
+    return typeof events[name] !== 'undefined';
   }
 
   public isQuery (name: string): boolean {
-    return typeof queries[name] !== undefined;
+    return typeof queries[name] !== 'undefined';
   }
 
   public getCommandInfo(name: string): CommandRuntimeInfo {

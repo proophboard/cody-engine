@@ -32,7 +32,7 @@ export const voFQCN = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): str
   return `${names(service).className}${nsJsonPointer}${names(vo.getName()).className}`;
 }
 
-export const voFQCNFromDefinitionId = (definitionId: string): string => {
+export const FQCNFromDefinitionId = (definitionId: string): string => {
   const withoutPrefix = definitionId.replace('/definitions/', '');
 
   const fqcnParts = withoutPrefix.split("/");

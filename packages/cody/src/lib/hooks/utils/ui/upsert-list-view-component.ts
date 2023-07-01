@@ -12,7 +12,7 @@ import {
   ValueObjectMetadata
 } from "../value-object/get-vo-metadata";
 import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
-import {voFQCNFromDefinitionId} from "../value-object/definitions";
+import {FQCNFromDefinitionId} from "../value-object/definitions";
 import {getVoFromSyncedNodes} from "../value-object/get-vo-from-synced-nodes";
 import {isObjectSchema} from "../json-schema/is-object-schema";
 import {JSONSchema7} from "json-schema-to-ts";
@@ -191,7 +191,7 @@ const getItemVO = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): Node | 
     }
   }
 
-  const itemFQCN = voFQCNFromDefinitionId(schema.items.$ref);
+  const itemFQCN = FQCNFromDefinitionId(schema.items.$ref);
   return getVoFromSyncedNodes(itemFQCN, ctx);
 }
 
