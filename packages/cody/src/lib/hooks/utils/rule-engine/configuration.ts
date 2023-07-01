@@ -88,6 +88,7 @@ export interface ThenCallService {
   call: {
     service: string;
     arguments: PropMapping;
+    method?: string;
     result: {
       variable: string;
       mapping: string | PropMapping;

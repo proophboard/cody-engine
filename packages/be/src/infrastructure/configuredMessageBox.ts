@@ -19,9 +19,9 @@ class MessageBox {
 
 
   constructor() {
-    this.commandBus = getExternalService<CommandBus>(SERVICE_NAME_COMMAND_BUS) || getConfiguredCommandBus();
-    this.queryBus = getExternalService<QueryBus>(SERVICE_NAME_QUERY_BUS) || getConfiguredQueryBus();
-    this.eventBus = getExternalService<EventBus>(SERVICE_NAME_EVENT_BUS) || getConfiguredEventBus();
+    this.commandBus = getExternalService<CommandBus>(SERVICE_NAME_COMMAND_BUS, {}) || getConfiguredCommandBus();
+    this.queryBus = getExternalService<QueryBus>(SERVICE_NAME_QUERY_BUS, {}) || getConfiguredQueryBus();
+    this.eventBus = getExternalService<EventBus>(SERVICE_NAME_EVENT_BUS, {}) || getConfiguredEventBus();
   }
 
   public async dispatch(messageName: string, payload: Payload, meta?: Meta): Promise<any> {
