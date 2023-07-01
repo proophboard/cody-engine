@@ -208,7 +208,7 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
 }
 
 export const registerPolicy = (service: string, policy: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
-  const events = getSourcesOfType(policy, NodeType.event);
+  const events = getSourcesOfType(policy, NodeType.event, true);
 
   if(isCodyError(events)) {
     return events;

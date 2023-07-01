@@ -5,7 +5,7 @@ import {<%= voNames.propertyName %>, <%= voNames.className %>} from "@app/shared
 import {<%= voNames.className %>Desc} from "@app/shared/types/<%= serviceNames.fileName %><%= ns.fileName %><%= voNames.fileName %>.desc";
 <% if (!isList) { %>import {NotFoundError} from "@event-engine/messaging/error/not-found-error";<% } %>
 <% if (isList) { %>import {<%= itemNames.propertyName %>, <%= itemNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %><%= itemNS.fileName %><%= itemNames.fileName %>";<% } %>
-<% if (isList) { %>import {AnyFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AnyFilter";<% } %>
+<% if (isList) { %>import {filters} from "@event-engine/infrastructure/DocumentStore/Filter/index";<% } %>
 <% if (isList) { %>import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";<% } %>
 <% if (isList) { %>import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";<% } %>
 

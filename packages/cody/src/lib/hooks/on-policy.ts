@@ -4,7 +4,7 @@ import {DependencyRegistry} from "@event-engine/descriptions/descriptions";
 import {Rule} from "./utils/rule-engine/configuration";
 import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {names} from "@event-engine/messaging/helpers";
-import {getSingleTarget, getTargetsOfType, parseJsonMetadata} from "@proophboard/cody-utils";
+import {getTargetsOfType, parseJsonMetadata} from "@proophboard/cody-utils";
 import {detectService} from "./utils/detect-service";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
 import {formatFiles, generateFiles} from "@nx/devkit";
@@ -13,6 +13,7 @@ import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {registerPolicy} from "./utils/registry";
 import {alwaysTriggerCommand} from "./utils/policy/always-trigger-command";
 import {convertRuleConfigToPolicyRules} from "./utils/rule-engine/convert-rule-config-to-behavior";
+import {toJSON} from "./utils/to-json";
 
 interface PolicyMeta {
   service?: string;
@@ -61,6 +62,7 @@ export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): P
       dependencies,
       ...policyNames,
       behavior,
+      toJSON,
     });
 
     withErrorCheck(registerPolicy, [service, policy, ctx, tree]);
