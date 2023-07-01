@@ -8,8 +8,9 @@ import {
   QueryableStateListDescription
 } from "@event-engine/descriptions/descriptions";
 import {names} from "@event-engine/messaging/helpers";
-import {isObjectSchema} from "../json-schema/is-object-schema";
+import {isObjectSchema, ObjectSchema} from "../json-schema/is-object-schema";
 import {voClassNameFromFQCN} from "../value-object/definitions";
+import {JSONSchema7} from "json-schema-to-ts";
 
 export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
   if(!voMeta.isQueryable) {
@@ -70,7 +71,7 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableSt
   const querySchema = meta.querySchema;
 
   const codyQuerySchemaError = {
-    cody: `Value object "${vo.getName()}" represents a list of queryable state objects: "${vo.getName()}", but the querySchema is not supported. At the moment you can only use an empty query schema.`,
+    cody: `Value object "${vo.getName()}" represents a list of queryable state objects: "${vo.getName()}", but the querySchema is not an object schema of filter properties.`,
     type: CodyResponseType.Error,
     details: `You can solve the issue by setting querySchema to: {}`
   };
@@ -79,17 +80,40 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableSt
     return codyQuerySchemaError;
   }
 
-  if(Object.keys(querySchema.properties).length !== 0) {
-    return codyQuerySchemaError;
-  }
+  const filters = makeFiltersFromQuerySchema(querySchema);
 
   const itemClassName = voClassNameFromFQCN(meta.itemType);
 
   return `const cursor = await ds.findDocs<{state: ${itemClassName}}>(
     ${voNames.className}Desc.collection,
-    new AnyFilter()
+    ${filters}
   );
   
   return asyncIteratorToArray(asyncMap(cursor, ([,d]) => ${names(itemClassName).propertyName}(d.state)));
 `
+}
+
+const makeFiltersFromQuerySchema = (querySchema: ObjectSchema): string => {
+  const properties = Object.keys(querySchema.properties);
+
+  if(properties.length === 0) {
+    return 'new filters.AnyFilter()';
+  }
+
+  if(properties.length === 1) {
+    const propName = properties[0];
+    return makeEqFilterFromPropertySchema(propName, querySchema.properties[propName]);
+  }
+
+  let andFilter = "new filters.AndFilter(\n";
+  properties.forEach(prop => {
+    andFilter += makeEqFilterFromPropertySchema(prop, querySchema.properties[prop], '    ') + "\n";
+  })
+  andFilter += ")"
+
+  return andFilter;
+}
+
+const makeEqFilterFromPropertySchema = (prop: string, schema: JSONSchema7, indent = ''): string => {
+  return `${indent}new filters.EqFilter("state.${prop}", query.payload.${prop})`;
 }
