@@ -1,7 +1,3 @@
-import {Event} from "@event-engine/messaging/event";
-import {PolicyDescription} from "@event-engine/descriptions/descriptions";
-import {PolicyRegistry} from "../../../contribution/src/generators/prepare-contribution/files/be/src/policies";
-
-export type Policy = (event: Event, deps: any) => Promise<void>;
+import {PolicyRegistry} from "@event-engine/infrastructure/PolicyRegistry";
 
 export const policies: PolicyRegistry = {};
