@@ -102,7 +102,8 @@ const addArrayRegistryItem = (registryPath: string, registryVarName: string, ent
   if(tuple.getText() === '[]') {
     tupleText = tuple.getText().replace("]", `\n  ${entryValue}\n]`);
   } else {
-    tupleText = tuple.getText().replace("\n]", `,\n  ${entryValue}\n]`);
+    const searchVal = tuple.getText().indexOf("\n]") !== -1 ? "\n]" : "]";
+    tupleText = tuple.getText().replace(searchVal, `,\n  ${entryValue}\n]`);
   }
 
   tuple.replaceWithText(tupleText);
