@@ -1,5 +1,5 @@
 import React from "react";
 
-export type CommandComponentRegistry = {[commandName: string]: React.FunctionComponent};
+export type CommandComponentRegistry = {[commandName: string]: React.FunctionComponent<any & WithCommandButtonProps>};
 
 export const commands: CommandComponentRegistry = {};
