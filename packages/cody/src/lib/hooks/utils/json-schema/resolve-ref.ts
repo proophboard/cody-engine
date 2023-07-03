@@ -3,10 +3,10 @@ import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
 import {names} from "@event-engine/messaging/helpers";
 import {JSONSchema7} from "json-schema-to-ts";
-import {requireUncached} from "../fs-tree";
+import {requireUncachedTypes} from "../value-object/require-uncached-types";
 
 export const resolveRef = (schema: RefSchema, parentSchema: JSONSchema7, node: Node): ValueObjectRuntimeInfo | CodyResponse => {
-  const {types} = requireUncached('@app/shared/types');
+  const types = requireUncachedTypes();
 
   const ref = schema['$ref'].replace('/definitions/', '')
     .split("/")

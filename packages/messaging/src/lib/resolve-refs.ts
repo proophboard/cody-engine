@@ -12,6 +12,11 @@ export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: Dee
     if(definitions[schema['$ref']]) {
       let resolvedSchema = cloneSchema(definitions[schema['$ref']] as Writable<JSONSchema7>);
 
+      // Remove $id from resolved schema to avoid ajv complaining about ambiguous schemas
+      if(typeof resolvedSchema['$id'] !== 'undefined') {
+        delete resolvedSchema['$id'];
+      }
+
       if(resolvedSchema.type && (resolvedSchema.type === 'object' || resolvedSchema.type === 'array')) {
         resolvedSchema = resolveRefs(resolvedSchema, definitions);
       }

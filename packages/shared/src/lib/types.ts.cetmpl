@@ -1,6 +1,4 @@
-import { ValueObjectRuntimeInfo } from "@event-engine/messaging/value-object";
-
-type TypeRegistry = { [valueObjectName: string]: ValueObjectRuntimeInfo };
+import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 
 export const types: TypeRegistry = {
 }
