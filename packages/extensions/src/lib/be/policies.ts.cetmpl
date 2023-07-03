@@ -1,4 +1,3 @@
-import {PolicyRegistry} from "@server/policies";
-
+import {PolicyRegistry} from "../../../../contribution/src/generators/prepare-contribution/files/be/src/policies";
 // Register custom policies for events
 export const policies: PolicyRegistry = {}
