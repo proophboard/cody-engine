@@ -366,7 +366,7 @@ const convertThenForEach = (node: Node, ctx: Context, then: ThenForEach, rule: R
   lines.push(`${indent}ctx['${then.forEach.variable}'].forEach((item: any) => {`);
   lines.push(`${indent}  ctx['item'] = item;`)
 
-  const result = convertThen(node, ctx, then.forEach.then, rule, lines, indent + '  ', evalSync);
+  const result = convertThen(node, ctx, then.forEach.then, rule, lines, indent + '  ', true);
 
   if(isCodyError(result)) {
     return result;

@@ -7,7 +7,7 @@ export const <%= className %>Desc: <%= descriptionType %> = {
   isQueryable: <%= meta.isQueryable %>,
 <% if (meta.hasIdentifier && !meta.isList) {%>  identifier: "<%= meta.identifier %>",<% } %>
 <% if (meta.hasIdentifier && meta.isList) {%>  itemIdentifier: "<%= meta.identifier %>",<% } %>
-<% if (meta.isList) {%>  itemType: "<%= meta.itemType %>",<% } %>
+<% if (meta.hasIdentifier && meta.isList) {%>  itemType: "<%= meta.itemType %>",<% } %>
 <% if (meta.isQueryable) {%>  query: "<%= serviceNames.className %>.<%= queryNames.className %>",<% } %>
 <% if (meta.isQueryable) {%>  collection: "<%= meta.collection %>",<% } %>
   _pbBoardId: "<%= _pbBoardId %>",
