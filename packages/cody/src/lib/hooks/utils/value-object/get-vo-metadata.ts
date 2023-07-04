@@ -2,7 +2,7 @@ import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
 import {Context} from "../../context";
 import {isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {JSONSchema7} from "json-schema-to-ts";
-import {convertShorthandObjectToJsonSchema, ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
+import {ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
 import {detectService} from "../detect-service";
 import {definitionId, normalizeRefs} from "./definitions";
 import {names} from "@event-engine/messaging/helpers";
@@ -17,6 +17,7 @@ import {resolveRef} from "../json-schema/resolve-ref";
 import {UiSchema} from "@rjsf/utils";
 import {GridDensity} from "@mui/x-data-grid";
 import {addSchemaTitles} from "../json-schema/add-schema-titles";
+import {jsonSchemaFromShorthand} from "../json-schema/json-schema-from-shorthand";
 
 interface ValueObjectMetadataRaw {
   identifier?: string;
@@ -91,7 +92,7 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
   }
 
   if(meta.shorthand) {
-    const jsonSchema = convertShorthandObjectToJsonSchema(meta.schema as ShorthandObject, ns);
+    const jsonSchema = jsonSchemaFromShorthand(meta.schema as ShorthandObject, ns);
 
     if(isCodyError(jsonSchema)) {
       return jsonSchema;
@@ -99,10 +100,8 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
 
     meta.schema = jsonSchema;
 
-    meta.schema['$id'] = definitionId(vo, ns, ctx);
-
     if(meta.querySchema) {
-      const queryJsonSchema = convertShorthandObjectToJsonSchema(meta.querySchema as ShorthandObject, ns);
+      const queryJsonSchema = jsonSchemaFromShorthand(meta.querySchema as ShorthandObject, ns);
 
       if(isCodyError(queryJsonSchema)) {
         return queryJsonSchema;
@@ -112,10 +111,16 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     }
   }
 
+  meta.schema['$id'] = definitionId(vo, ns, ctx);
+
   const service = detectService(vo, ctx);
 
   if(isCodyError(service)) {
     return service;
+  }
+
+  if(meta.querySchema) {
+    meta.querySchema = normalizeRefs(addSchemaTitles('Get ' + vo.getName(), meta.querySchema), service);
   }
 
   const normalizedSchema = normalizeRefs(addSchemaTitles(vo.getName(), meta.schema), service) as JSONSchema7;

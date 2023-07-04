@@ -23,7 +23,8 @@ import validator from '@rjsf/validator-ajv8';
 import {IChangeEvent} from "@rjsf/core";
 import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
-import {TransactionState} from "@frontend/app/components/core/CommandDialog";
+import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
+import definitions from "@app/shared/types/definitions";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -127,12 +128,14 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
 
   const userWidgets = props.widgets || {};
 
+  const schema = resolveRefs(cloneSchema(props.command.schema as any), definitions) as RJSFSchema;
+
   return (
     <div>
       <Grid2 container={true} spacing={3}>
         <Grid2 md={12}>
           {!mutation.isSuccess && !mutation.isError && <Form
-              schema={props.command.schema as RJSFSchema}
+              schema={schema}
               children={<></>}
             // @ts-ignore
               ref={(form) => formRef = form}

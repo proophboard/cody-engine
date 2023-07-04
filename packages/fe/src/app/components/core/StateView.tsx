@@ -15,6 +15,8 @@ import validator from '@rjsf/validator-ajv8';
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
+import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
+import definitions from "@app/shared/types/definitions";
 
 interface OwnProps {
   state?: Record<string, any>;
@@ -114,10 +116,12 @@ const StateView = (props: StateViewProps) => {
     triggerSideBarAnchorsRendered();
   }, [props.state]);
 
+  const schema = resolveRefs(cloneSchema(props.description.schema as any), definitions) as RJSFSchema;
+
   return <Card>
           <CardContent sx={theme.stateView.styleOverrides}>
               <Form
-                  schema={props.description.schema as RJSFSchema}
+                  schema={schema}
                   validator={validator}
                   children={<></>}
                   formData={props.state}

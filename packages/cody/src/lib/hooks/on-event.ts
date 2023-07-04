@@ -1,10 +1,5 @@
 import {CodyHook, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
-import {JSONSchema} from "json-schema-to-ts";
-import {
-  convertShorthandObjectToJsonSchema,
-  ShorthandObject
-} from "@proophboard/schema-to-typescript/lib/jsonschema";
 import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {names} from "@event-engine/messaging/helpers";
 import {getSingleSource, isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";

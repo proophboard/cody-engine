@@ -107,6 +107,7 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
 
     let objStr = "{\n";
     const indent = "    ";
+    let hasValueGetter = false;
 
     let cKey: keyof(TableColumnUiSchema);
 
@@ -136,7 +137,8 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
             return valueGetter;
           }
 
-          objStr += `${indent}valueGetter: ${valueGetter},\n`
+          objStr += `${indent}valueGetter: ${valueGetter},\n`;
+          hasValueGetter = true;
           break;
         case "ref":
           imports = addImport('import * as jexl from "jexl"', imports);
@@ -159,12 +161,18 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
 
           imports = updatedImports;
           hooks.push(hook);
-          objStr += `${indent}valueGetter: ${dataValueGetter},\n`
+          objStr += `${indent}valueGetter: ${dataValueGetter},\n`;
+          hasValueGetter = true;
           break;
         default:
           objStr += `${indent}${cKey}: ${JSON.stringify(cValue)},\n`
       }
 
+    }
+
+    if(!hasValueGetter) {
+      objStr += `${indent}valueGetter: params => stringify(params.value),\n`;
+      imports = addImport('import {stringify} from "@app/shared/utils/stringify"', imports);
     }
 
     objStr += `${indent}}`;

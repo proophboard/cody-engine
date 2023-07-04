@@ -1,12 +1,14 @@
 import {CodyResponse, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "../../context";
 import {JSONSchema} from "json-schema-to-ts";
-import {convertShorthandObjectToJsonSchema, ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
+import {ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
 import {Rule} from "../rule-engine/configuration";
 import {getSingleSource, isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {detectService} from "../detect-service";
 import {names} from "@event-engine/messaging/helpers";
-import {FQCNFromDefinitionId} from "../value-object/definitions";
+import {FQCNFromDefinitionId, normalizeRefs} from "../value-object/definitions";
+import {addSchemaTitles} from "../json-schema/add-schema-titles";
+import {jsonSchemaFromShorthand} from "../json-schema/json-schema-from-shorthand";
 
 interface EventMetaRaw {
   shorthand?: boolean;
@@ -41,28 +43,28 @@ export const getEventMetadata = (event: Node, ctx: Context): EventMeta | CodyRes
 
   let schema: any = meta.schema || {};
   if(meta.shorthand) {
-    schema = convertShorthandObjectToJsonSchema(schema as ShorthandObject);
+    schema = jsonSchemaFromShorthand(schema as ShorthandObject, '/events');
 
     if(isCodyError(schema)) {
       return schema;
     }
   }
 
-  if(!schema.hasOwnProperty('$id')) {
-    if(meta.public) {
-      schema['$id'] = `/definitions/${serviceNames.fileName}/${eventNames.fileName}`;
-    } else {
-      const aggregate = getSingleSource(event, NodeType.aggregate);
+  if(meta.public) {
+    schema['$id'] = `/definitions/${serviceNames.fileName}/${eventNames.fileName}`;
+  } else {
+    const aggregate = getSingleSource(event, NodeType.aggregate);
 
-      if(isCodyError(aggregate)) {
-        return aggregate;
-      }
-
-      const aggregateNames = names(aggregate.getName());
-
-      schema['$id'] = `/definitions/${serviceNames.fileName}/${aggregateNames.fileName}/${eventNames.fileName}`;
+    if(isCodyError(aggregate)) {
+      return aggregate;
     }
+
+    const aggregateNames = names(aggregate.getName());
+
+    schema['$id'] = `/definitions/${serviceNames.fileName}/${aggregateNames.fileName}/${eventNames.fileName}`;
   }
+
+  schema = normalizeRefs(addSchemaTitles(event.getName(), schema), service);
 
   const parsedMeta: EventMeta = {
     "public": !!meta.public,

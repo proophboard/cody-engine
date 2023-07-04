@@ -108,7 +108,7 @@ export const convertRuleConfigToValueObjectInitializeRules = (vo: Node, ctx: Con
     }
 
     lines.push("");
-    const res = convertRule(vo, ctx, rule, lines, indent);
+    const res = convertRule(vo, ctx, rule, lines, indent, true);
     if(isCodyError(res)) {
       return res;
     }
