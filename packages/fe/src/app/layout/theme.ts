@@ -1,6 +1,6 @@
 import {createTheme as createMuiTheme, SxProps, ThemeOptions} from "@mui/material";
 import {merge} from "lodash";
-import overwriteTheme from "../../../../extensions/src/lib/fe/app/layout/theme";
+import overwriteTheme from "@app/extensions/fe/app/layout/theme";
 
 declare module '@mui/material/styles' {
   interface Theme {
