@@ -1,10 +1,10 @@
 import {Event} from "@event-engine/messaging/event";
-import {Policy} from "@server/policies";
+import {Policy} from "@event-engine/infrastructure/PolicyRegistry";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 import {getExternalServiceOrThrow} from "@app/shared/utils/get-external-service";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 
-export const <%= propertyName %>: Policy = async (event: Event, deps) => {
+export const <%= propertyName %>: Policy = async (event: Event, deps: any) => {
   const messageBox = getConfiguredMessageBox();
 
   <%- behavior %>
