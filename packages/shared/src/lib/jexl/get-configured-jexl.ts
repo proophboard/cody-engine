@@ -2,10 +2,15 @@ import * as jexl from "jexl";
 
 export type Jexl = typeof jexl;
 
-const getConfiguredJexl = (): Jexl => {
-  jexl.addFunction('count', count);
+let configuredJexl: Jexl;
 
-  return jexl;
+const getConfiguredJexl = (): Jexl => {
+  if(!configuredJexl) {
+    jexl.addFunction('count', count);
+    configuredJexl = jexl;
+  }
+
+  return configuredJexl;
 }
 
 const count = (val: any) => {
@@ -28,4 +33,4 @@ const count = (val: any) => {
   return val ? 1 : 0;
 }
 
-export default jexl;
+export default getConfiguredJexl();
