@@ -6,7 +6,11 @@ import {extendJexlConfiguration} from "@app/extensions/shared/jexl/get-configure
 let configuredJexl: Jexl;
 
 const getConfiguredJexl = (): Jexl => {
-  if(!configuredJexl) {
+  // @TODO: Jexl is loaded by Cody, too (f.e. in VO list hook)
+  // but somehow the jexl context is different in that scenario (different module loading behavior)
+  // we need to find out why that happens, but for now we just check if jexl.addFunction is available
+  // it works in fe and be and is ignored in the Cody server (jexl is not really used there anyway)
+  if(!configuredJexl && jexl.addFunction) {
     jexl.addFunction('count', count);
     jexl.addFunction('uuid', generateUuuid);
     configuredJexl = extendJexlConfiguration(jexl);
