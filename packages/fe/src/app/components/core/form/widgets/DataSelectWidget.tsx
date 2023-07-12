@@ -11,7 +11,7 @@ import {MenuItem, TextField, TextFieldProps} from "@mui/material";
 import {types} from "@app/shared/types";
 import {isQueryableStateListDescription, QueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import {useApiQuery} from "@frontend/queries/use-api-query";
-import * as jexl from "jexl";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 import {commands} from "@frontend/app/components/commands";
 
 // Copied from: https://github.com/rjsf-team/react-jsonschema-form/blob/main/packages/material-ui/src/SelectWidget/SelectWidget.tsx

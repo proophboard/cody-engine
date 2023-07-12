@@ -1,7 +1,7 @@
 import {<%= aggregateStateNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %><%= aggregateStateNames.fileNameWithNamespace %>";
 import {Command} from "@event-engine/messaging/command";
 import {Event} from "@event-engine/messaging/event";
-import * as jexl from "jexl";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 import {<%= commandNames.className %>} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= commandNames.fileName %>";
 <% events.forEach(function(event) { %>import {<%= event.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= fileName %>/<%= event.fileName %>";
 <% }) %>

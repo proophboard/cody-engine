@@ -237,7 +237,7 @@ const getBreadcrumb = (ui: Node, uiMeta: UiMetadata, ctx: Context): [string, str
       'import {dynamicLabel} from "@frontend/util/breadcrumb/dynamic-label"',
       `import {Get${voNames.className}Desc} from "@app/shared/queries/${serviceNames.fileName}/get-${voNames.fileName}.desc"`,
       `import {get${voNames.className}} from "@frontend/queries/${serviceNames.fileName}/use-get-${voNames.fileName}"`,
-      'import * as jexl from "jexl"'
+      'import jexl from "@app/shared/jexl/get-configured-jexl"'
     ]
   ]
 }

@@ -1,5 +1,5 @@
 import {Event} from "@event-engine/messaging/event";
-import * as jexl from "jexl";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 import {Car} from "@app/shared/types/fleet-management/car/car";
 import {CarAdded} from "@app/shared/events/fleet-management/car/car-added";
 

@@ -4,7 +4,7 @@ import {useEffect} from "react";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 import {GetCarList} from "@app/shared/queries/fleet-management/get-car-list";
 import {useGetCarList} from "@frontend/queries/fleet-management/use-get-car-list";
-import * as jexl from "jexl";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 import PageLink from "@frontend/app/components/core/PageLink";
 import {CarDetails} from "@frontend/app/pages/fleet-management/car-details"
 

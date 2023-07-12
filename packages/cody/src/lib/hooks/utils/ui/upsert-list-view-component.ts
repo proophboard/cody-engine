@@ -131,7 +131,7 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
           objStr += `${indent}renderCell: params => <PageLink page={${pageName}} params={mapProperties(params.row, ${JSON.stringify(pageLinkConfig.mapping)})}>{params.value}</PageLink>,\n`
           break;
         case "value":
-          imports = addImport('import * as jexl from "jexl"', imports);
+          imports = addImport('import jexl from "@app/shared/jexl/get-configured-jexl"', imports);
           const valueGetter = prepareValueGetter(vo, cValue as Rule[], ctx, indent);
           if(isCodyError(valueGetter)) {
             return valueGetter;
@@ -141,7 +141,7 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
           hasValueGetter = true;
           break;
         case "ref":
-          imports = addImport('import * as jexl from "jexl"', imports);
+          imports = addImport('import jexl from "@app/shared/jexl/get-configured-jexl"', imports);
           imports = addImport('import {dataValueGetter} from "@frontend/util/table/data-value-getter"', imports);
           imports = addImport('import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";', imports);
 
