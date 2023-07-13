@@ -6,7 +6,9 @@ import {env} from "@server/environments/environment.current";
 
 let store: DocumentStore;
 
-export const PERSISTENT_COLLECTION_FILE = process.cwd() + '/../../data/persistent-collections.json';
+const path = process.cwd() === '/app' ? '/data' : '/../../data';
+
+export const PERSISTENT_COLLECTION_FILE = process.cwd() + path + '/persistent-collections.json';
 
 export const getConfiguredDocumentStore = (): DocumentStore => {
   if(!store) {

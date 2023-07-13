@@ -1,7 +1,7 @@
 import { Car } from '@app/shared/types/fleet-management/car/car';
 import { Command } from '@event-engine/messaging/command';
 import { Event } from '@event-engine/messaging/event';
-import * as jexl from 'jexl';
+import jexl from "@app/shared/jexl/get-configured-jexl";
 import { UpdateCar } from '@app/shared/commands/fleet-management/update-car';
 import { carUpdated } from '@app/shared/events/fleet-management/car/car-updated';
 import { carAddedToFleet } from '@app/shared/events/fleet-management/car/car-added-to-fleet';
