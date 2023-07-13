@@ -57,6 +57,7 @@
     "jest-environment-node": "^29.4.1",
     "json-schema-to-ts": "^2.8.2",
     "jsonc-eslint-parser": "^2.1.0",
+    "nodemon": "^3.0.1",
     "nx": "16.0.3",
     "prettier": "^2.6.2",
     "react-refresh": "^0.10.0",

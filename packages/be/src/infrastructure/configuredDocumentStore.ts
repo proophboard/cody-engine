@@ -6,7 +6,7 @@ import {env} from "@server/environments/environment.current";
 
 let store: DocumentStore;
 
-export const PERSISTENT_COLLECTION_FILE = process.cwd() + '/data/persistent-collections.json';
+export const PERSISTENT_COLLECTION_FILE = process.cwd() + '/../../data/persistent-collections.json';
 
 export const getConfiguredDocumentStore = (): DocumentStore => {
   if(!store) {

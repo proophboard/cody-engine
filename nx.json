@@ -9,6 +9,11 @@
       }
     }
   },
+  "pluginsConfig": {
+    "@nx/js": {
+      "analyzeSourceFiles": false
+    }
+  },
   "targetDefaults": {
     "build": {
       "dependsOn": ["^build"],

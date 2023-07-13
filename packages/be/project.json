@@ -38,9 +38,12 @@
       }
     },
     "serve": {
-      "executor": "@nx/js:node",
+      "executor": "nx:run-commands",
       "defaultConfiguration": "development",
       "options": {
+        "cwd": "packages/be",
+        "color": true,
+        "command": "nodemon",
         "buildTarget": "be:build"
       },
       "configurations": {

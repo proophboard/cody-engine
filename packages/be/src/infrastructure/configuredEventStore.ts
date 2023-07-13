@@ -14,7 +14,7 @@ export const SERVICE_NAME_WRITE_MODEL_STREAM_LISTENER_QUEUE = '$write_model_stea
 export const SERVICE_NAME_PUBLIC_STREAM_LISTENER_QUEUE = '$public_stream_listener_queue';
 export const SERVICE_OPTION_EVENT_STORE = 'eventStore';
 
-export const PERSISTENT_STREAMS_FILE = process.cwd() + '/data/persistent-streams.json';
+export const PERSISTENT_STREAMS_FILE = process.cwd() + '/../../data/persistent-streams.json';
 
 let es: EventStore;
 
