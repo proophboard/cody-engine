@@ -10,7 +10,11 @@ import {
   valueObjectNamespaceFromFQCN
 } from "./utils/value-object/namespace";
 import {voPath} from "./utils/value-object/vo-path";
-import {detectDescriptionType, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {
+  detectDescriptionType,
+  isQueryableStateListDescription,
+  isQueryableValueObjectDescription
+} from "@event-engine/descriptions/descriptions";
 import {detectService} from "./utils/detect-service";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {toJSON} from "./utils/to-json";
@@ -79,12 +83,14 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
 
       withErrorCheck(registerQuery, [service, vo, voMeta, ctx, tree]);
 
-      let itemNames, itemNS, isList = false;
+      let itemNames, itemNS, isList = false, isSingleVOQuery = false;
 
       if(isQueryableStateListDescription(voMeta)) {
         itemNames = names(voClassNameFromFQCN(voMeta.itemType));
         itemNS = namespaceNames(valueObjectNamespaceFromFQCN(voMeta.itemType));
         isList = true;
+      } else if (isQueryableValueObjectDescription(voMeta)) {
+        isSingleVOQuery = true;
       }
 
       generateFiles(tree, __dirname + '/query-files/be', ctx.beSrc, {
@@ -94,6 +100,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
         voNames,
         ns,
         isList,
+        isSingleVOQuery,
         itemNames,
         itemNS,
         ...queryNames,
@@ -114,7 +121,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
       // Upsert View Component
       if(isList) {
         await asyncWithErrorCheck(upsertListViewComponent, [vo, voMeta, ctx, tree]);
-      } else {
+      } else if (!isSingleVOQuery /* aka isState */) {
         await asyncWithErrorCheck(upsertStateViewComponent, [vo, voMeta, ctx, tree]);
       }
     }
@@ -128,7 +135,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
     return {
       cody: `The data type (value object) "${vo.getName()}" is added to the app.`,
       details: `You can reference the data type in commands, events, queries and other data type using "${voMeta.ns}${voNames.className}".\n\n`
-                + listChangesForCodyResponse(tree)
+        + listChangesForCodyResponse(tree)
     }
   } catch (e) {
     if(e instanceof CodyResponseException) {

@@ -3,9 +3,9 @@ import {ValueObjectMetadata} from "../value-object/get-vo-metadata";
 import {Context} from "../../context";
 import {
   isQueryableStateDescription,
-  isQueryableStateListDescription,
+  isQueryableStateListDescription, isQueryableValueObjectDescription,
   QueryableStateDescription,
-  QueryableStateListDescription
+  QueryableStateListDescription, QueryableValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
 import {names} from "@event-engine/messaging/helpers";
 import {isObjectSchema, ObjectSchema} from "../json-schema/is-object-schema";
@@ -29,11 +29,45 @@ export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Co
     return makeListQueryResolver(vo, voMeta, ctx);
   }
 
+  if(isQueryableValueObjectDescription(voMeta)) {
+    return makeSingleValueObjectQueryResolver(vo, voMeta, ctx);
+  }
+
   return {
     cody: `Oh, something went wrong. A queryable value object is passed to makeQueryResolver, but it is neither queryable state nor queryable state list. The value object node is: "${vo.getName()}"`,
     type: CodyResponseType.Error,
     details: `This seems to be a developer bug and should not happen. Please contact the prooph board team to let them fix the problem!`
   }
+}
+
+const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableValueObjectDescription, ctx: Context): string | CodyResponse => {
+  const voNames = names(vo.getName());
+  const querySchema = meta.querySchema;
+
+  const codyQuerySchemaError = {
+    cody: `Value object "${vo.getName()}" represents a queryable value object, but the querySchema does not match.`,
+    type: CodyResponseType.Error,
+    details: `You can solve the issue by using properties of the value object within the querySchema.`
+  };
+
+  if(!isObjectSchema(querySchema!)) {
+    return codyQuerySchemaError;
+  }
+
+  const filters = makeFiltersFromQuerySchema(querySchema);
+
+  return `const cursor = await ds.findDocs<{state: ${voNames.className}}>(
+    ${voNames.className}Desc.collection,
+    ${filters}
+  );
+  
+  const result = await asyncIteratorToArray(asyncMap(cursor, ([,d]) => ${names(voNames.className).propertyName}(d.state)));
+  if(result.length !== 1) {
+    throw new NotFoundError(\`${voNames.className} with "\${JSON.stringify(query.payload)}" not found!\`);
+  }
+  
+  return result[0];
+`
 }
 
 const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableStateDescription, ctx: Context): string | CodyResponse => {

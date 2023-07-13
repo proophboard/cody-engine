@@ -75,6 +75,15 @@ export interface ValueObjectDescription extends ProophBoardDescription, ValueObj
   name: string;
 }
 
+export interface QueryableValueObjectDescription extends ValueObjectDescription {
+  query: string;
+  collection: string;
+}
+
+export const isQueryableValueObjectDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableValueObjectDescription => {
+  return desc.isQueryable && !desc.hasIdentifier && !desc.isList;
+}
+
 export interface StateDescription extends ValueObjectDescription {
   identifier: string;
 }
@@ -110,7 +119,7 @@ export const isQueryableStateListDescription = (desc: ValueObjectDescriptionFlag
   return isStateListDescription(desc) && desc.isQueryable;
 }
 
-export type ValueObjectDescriptionType = "ValueObjectDescription" | "StateDescription" | "StateListDescription" | "QueryableStateDescription" | "QueryableStateListDescription";
+export type ValueObjectDescriptionType = "ValueObjectDescription" | "StateDescription" | "StateListDescription" | "QueryableValueObjectDescription" | "QueryableStateDescription" | "QueryableStateListDescription";
 
 export const detectDescriptionType = (desc: ValueObjectDescriptionFlags): ValueObjectDescriptionType => {
   switch (true) {
@@ -122,6 +131,8 @@ export const detectDescriptionType = (desc: ValueObjectDescriptionFlags): ValueO
       return "StateListDescription";
     case isStateDescription(desc):
       return "StateDescription";
+    case isQueryableValueObjectDescription(desc):
+      return "QueryableValueObjectDescription";
     default:
       return "ValueObjectDescription";
   }
