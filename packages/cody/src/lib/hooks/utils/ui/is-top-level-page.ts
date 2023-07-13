@@ -11,6 +11,10 @@ export const isTopLevelPage = (ui: Node, uiMeta: UiMetadata, ctx: Context): bool
     return true;
   }
 
+  if(uiMeta.routeParams) {
+    return false
+  }
+
   const viewModels = getSourcesOfType(ui, NodeType.document, true, true, true);
 
   if(isCodyError(viewModels)) {
