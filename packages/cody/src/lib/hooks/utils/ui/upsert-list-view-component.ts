@@ -128,7 +128,7 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
           imports = addImport('import PageLink from "@frontend/app/components/core/PageLink"', imports);
           imports = addImport('import {mapProperties} from "@app/shared/utils/map-properties"', imports);
           imports = addImport(pageImport, imports);
-          objStr += `${indent}renderCell: params => <PageLink page={${pageName}} params={mapProperties(params.row, ${JSON.stringify(pageLinkConfig.mapping)})}>{params.value}</PageLink>,\n`
+          objStr += `${indent}renderCell: rowParams => <PageLink page={${pageName}} params={mapProperties({...rowParams.row, ...params}, ${JSON.stringify(pageLinkConfig.mapping)})}>{rowParams.value}</PageLink>,\n`
           break;
         case "value":
           imports = addImport('import jexl from "@app/shared/jexl/get-configured-jexl"', imports);
