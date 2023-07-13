@@ -61,6 +61,15 @@ You can also build a docker image with:
 The frontend build can be served by a reverse proxy like Nginx. The reverse proxy should forward all requests to `/api/*`
 to the backend service.
 
+## Prototype Mode
+
+By default, Cody Engine runs in a prototyping mode. This means, that the app is not secured by authentication and data is
+only written to json files located in the `data` directory.
+
+The mode can be changed. Cody Engine also ships with `Postgres` adapters and will include `Keycloak` for authentication soon.
+For now, start with the prototyping mode and watch the `cody-engine` repo for updates. We will provide guidance for switching
+to production mode in the next weeks.
+
 ## Extension Points
 
 Cody will generate fully working source code for frontend and backend. However, we are aware that a lowcode platform has its
@@ -116,3 +125,7 @@ The Cody Engine app skeleton makes use of a bunch of awesome open source librari
 ## Further help
 
 Visit the [Nx Documentation](https://nx.dev) to learn more.
+
+## License
+
+[MIT](LICENSE)
