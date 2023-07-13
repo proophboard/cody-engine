@@ -25,6 +25,7 @@ import {makeQueryResolver} from "./utils/query/make-query-resolver";
 import {voClassNameFromFQCN} from "./utils/value-object/definitions";
 import {upsertListViewComponent} from "./utils/ui/upsert-list-view-component";
 import {upsertStateViewComponent} from "./utils/ui/upsert-state-view-component";
+import {ensureAllRefsAreKnown} from "./utils/json-schema/ensure-all-refs-are-known";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
   try {
@@ -50,6 +51,8 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
       initializeRules = withErrorCheck(convertRuleConfigToValueObjectInitializeRules, [vo, ctx, voMeta.initialize]);
     }
 
+    withErrorCheck(ensureAllRefsAreKnown, [vo, voMeta.schema]);
+
     generateFiles(tree, __dirname + '/vo-files/shared/types', withErrorCheck(voPath, [vo, voMeta, ctx]), {
       tmpl: "",
       "descriptionType": detectDescriptionType(voMeta),
@@ -69,6 +72,9 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
     // Register Query if VO is queryable
 
     if(voMeta.isQueryable) {
+
+      withErrorCheck(ensureAllRefsAreKnown, [vo, voMeta.querySchema!]);
+
       generateFiles(tree, __dirname + '/query-files/shared', ctx.sharedSrc, {
         tmpl: "",
         service: serviceNames.fileName,

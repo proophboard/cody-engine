@@ -25,6 +25,7 @@ import {DependencyRegistry} from "@event-engine/descriptions/descriptions";
 import {addSchemaTitles} from "./utils/json-schema/add-schema-titles";
 import {normalizeRefs} from "./utils/value-object/definitions";
 import {jsonSchemaFromShorthand} from "./utils/json-schema/json-schema-from-shorthand";
+import {ensureAllRefsAreKnown} from "./utils/json-schema/ensure-all-refs-are-known";
 
 export interface CommandMeta {
   newAggregate: boolean;
@@ -65,6 +66,8 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
     const aggregateState = withErrorCheck(findAggregateState, [syncedAggregate, ctx]);
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
     const dependencies = meta.dependencies;
+
+    withErrorCheck(ensureAllRefsAreKnown, [command, schema]);
 
     const tree = new FsTree(ctx.projectRoot, true);
 

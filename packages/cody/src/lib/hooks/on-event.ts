@@ -19,6 +19,7 @@ import {alwaysMapPayload} from "./utils/event/always-map-payload";
 import {convertRuleConfigToEventReducerRules} from "./utils/rule-engine/convert-rule-config-to-behavior";
 import {EventMeta, getEventMetadata} from "./utils/event/get-event-metadata";
 import {getOriginalNode} from "./utils/get-original-node";
+import {ensureAllRefsAreKnown} from "./utils/json-schema/ensure-all-refs-are-known";
 
 
 
@@ -44,6 +45,8 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
     const aggregateState = withErrorCheck(findAggregateState, [syncedAggregate, ctx]);
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
     const aggregateStateNames = names(aggregateState.getName());
+
+    withErrorCheck(ensureAllRefsAreKnown, [event, meta.schema]);
 
     const tree = new FsTree(ctx.projectRoot, true);
 
