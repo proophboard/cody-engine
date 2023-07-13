@@ -6,13 +6,8 @@ import {Jexl} from "@event-engine/infrastructure/jexl/jexl";
 let configuredJexl: Jexl;
 
 const getConfiguredJexl = (): Jexl => {
-  // @TODO: Jexl is loaded by Cody, too (f.e. in VO list hook)
-  // but somehow the jexl context is different in that scenario (different module loading behavior)
-  // we need to find out why that happens, but for now we just check if jexl.addFunction is available
-  // it works in fe and be and is ignored in the Cody server (jexl is not really used there anyway)
   if(!configuredJexl) {
     configuredJexl = new jexl.Jexl() as Jexl;
-    console.log("jexl add function is called");
     configuredJexl.addFunction('count', count);
     configuredJexl.addFunction('uuid', generateUuuid);
     configuredJexl = extendJexlConfiguration(configuredJexl);
