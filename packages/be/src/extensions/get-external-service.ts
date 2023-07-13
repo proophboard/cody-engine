@@ -1,4 +1,4 @@
-import {services} from "@app/extensions/be/services";
+import {services} from "@server/extensions/services";
 
 export const getExternalService = <T>(name: string, options: Record<string, any>): T | undefined => {
   const serviceFactory = services[name];

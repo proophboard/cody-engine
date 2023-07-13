@@ -1,9 +1,9 @@
 import {Event} from "@event-engine/messaging/event";
-import {policies as extensionPolicies} from "@app/extensions/be/policies";
+import {policies as extensionPolicies} from "@server/extensions/policies";
 import {policies} from "@server/policies/index";
 import {MessageBus} from "@server/infrastructure/MessageBus";
 import {getConfiguredCommandBus, SERVICE_NAME_COMMAND_BUS} from "@server/infrastructure/configuredCommandBus";
-import {services} from "@app/extensions/be/services";
+import {services} from "@server/extensions/services";
 
 export const SERVICE_NAME_EVENT_BUS = '$EventBus';
 

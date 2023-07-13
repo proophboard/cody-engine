@@ -1,6 +1,6 @@
 import {Command} from "@event-engine/messaging/command";
 import {commandHandlers} from "@server/command-handlers/index";
-import {commandHandlerExtensions} from "@app/extensions/be/command-handlers";
+import {commandHandlerExtensions} from "@server/extensions/command-handlers";
 import {handle, ProcessingFunction, ProcessingFunctionWithDeps} from "@event-engine/infrastructure/commandHandling";
 import {repositories} from "@server/repositories/index";
 import {Event} from "@event-engine/messaging/event";

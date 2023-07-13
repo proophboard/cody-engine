@@ -1,7 +1,7 @@
 import * as jexl from "jexl";
 import {v4} from "uuid";
-import {extendJexlConfiguration} from "@app/extensions/shared/jexl/get-configured-jexl";
 import {Jexl} from "@event-engine/infrastructure/jexl/jexl";
+import {extendJexlConfiguration} from "@app/shared/extensions/get-configured-jexl";
 
 let configuredJexl: Jexl;
 

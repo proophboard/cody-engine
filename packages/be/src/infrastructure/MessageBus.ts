@@ -1,7 +1,7 @@
 import {CommandDescription, PolicyDescription} from "@event-engine/descriptions/descriptions";
 import {queries} from "@app/shared/queries";
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
-import {services} from "@app/extensions/be/services";
+import {services} from "@server/extensions/services";
 import {Message} from "@event-engine/messaging/message";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 

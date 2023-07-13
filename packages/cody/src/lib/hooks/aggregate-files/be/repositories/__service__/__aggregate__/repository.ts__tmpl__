@@ -4,7 +4,7 @@ import {WRITE_MODEL_STREAM} from "@server/infrastructure/configuredEventStore";
 import {getConfiguredMultiModelStore} from "@server/infrastructure/configuredMultiModelStore";
 import {<%= serviceNames.className %><%= className %>AggregateDesc} from "@app/shared/aggregates/<%= serviceNames.fileName %>/<%= fileName %>.desc";
 import {<%= aggregateStateNames.className %>, <%= aggregateStateNames.propertyName %>} from "@app/shared/types/<%= serviceNames.fileName %><%= aggregateStateNames.fileNameWithNamespace %>";
-import {eventReducerExtensions} from "@app/extensions/be/event-reducers";
+import {eventReducerExtensions} from "@server/extensions/event-reducers";
 
 const store = getConfiguredMultiModelStore();
 

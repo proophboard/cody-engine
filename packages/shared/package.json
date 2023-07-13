@@ -2,5 +2,9 @@
   "name": "@app/shared",
   "version": "0.0.1",
   "dependencies": {
+    "@event-engine/messaging": "*",
+    "@event-engine/descriptions": "*",
+    "@event-engine/infrastructure": "*",
+    "@app/extensions": "*"
   }
 }

@@ -7,8 +7,8 @@
 ## Installation 
 
 ```
-git clone https://github.com/proophboard/cody-engine.git
-cd cody-engine
+git clone https://github.com/proophboard/cody-engine.git my-app
+cd my-app
 npm install
 ```
 
@@ -21,6 +21,54 @@ This will start:
 - NodeJS backend (API + biz logic) on: [http://localhost:4100](http://localhost:4100)
 - Webpack Dev Server + API Proxy serving React Frontend on: [http://localhost:4200](http://localhost:4200)
 - Cody Server on default port: [http://localhost:3311](http://localhost:3311)
+
+## Push to your own repo
+
+If you want to keep a connection to the upstream repo `cody-engine` you can do:
+
+```
+git remote rename origin cody-engine
+git remote add origin my-app-repo
+```
+
+*This allows you to still pull changes like Cody bugfixes or new features with `git pull cody-engine main`*
+
+Otherwise, just delete the `.git` folder in the project root and start with a fresh `git init`
+
+## Production Build
+
+Cody Engine works with packages insight a mono repo. The packages you'll likely deploy to production are:
+
+- `packages/be`
+- `packages/fe`
+- `packages/shared`
+
+The shared package is used in the frontend as well as in the backend. Cody generates most of the type classes and interfaces (e.g. for commands, queries, events, value objects)
+into this shared package. Frontend and Backend include the shared package in their respective builds.
+
+### Backend Build
+
+`npx nx build be` -> builds into `dist/packages/be`
+
+You can also build a docker image with:
+
+`npx nx run be:docker-build`
+
+### Frontend Build
+
+`npx nx build fe` -> builds into `dist/packages/fe`
+
+The frontend build can be served by a reverse proxy like Nginx. The reverse proxy should forward all requests to `/api/*`
+to the backend service.
+
+## Extension Points
+
+Cody will generate fully working source code for frontend and backend. However, we are aware that a lowcode platform has its
+limitations. At some point you'll hit a use case that can't be handled without some custom development be it in the frontend or backend.
+Therefor, Cody Engine ships with many extension points to let you override code generated behavior.
+
+You'll find `extensions` directories in all main packages (fe, be, shared) with annotated files to guide you how to inject your own logic.
+As long as you only modify or add files in the `extensions` directories, you should be able to pull updates from the `cody-engine` upstream repository.
 
 ## Contribution
 

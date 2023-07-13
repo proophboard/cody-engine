@@ -5,7 +5,7 @@ import {InMemoryEventStore} from "@event-engine/infrastructure/EventStore/InMemo
 import {InMemoryStreamListenerQueue} from "@event-engine/infrastructure/Queue/InMemoryStreamListenerQueue";
 import {env} from "@server/environments/environment.current";
 import {EventQueue} from "@event-engine/infrastructure/EventQueue";
-import {getExternalService} from "@app/shared/utils/get-external-service";
+import {getExternalService} from "@server/extensions/get-external-service";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 
 export const WRITE_MODEL_STREAM = 'write_model_stream';
@@ -14,7 +14,9 @@ export const SERVICE_NAME_WRITE_MODEL_STREAM_LISTENER_QUEUE = '$write_model_stea
 export const SERVICE_NAME_PUBLIC_STREAM_LISTENER_QUEUE = '$public_stream_listener_queue';
 export const SERVICE_OPTION_EVENT_STORE = 'eventStore';
 
-export const PERSISTENT_STREAMS_FILE = process.cwd() + '/../../data/persistent-streams.json';
+const path = process.cwd() === '/app' ? '/data' : '/../../data';
+
+export const PERSISTENT_STREAMS_FILE = process.cwd() + path + '/persistent-streams.json';
 
 let es: EventStore;
 

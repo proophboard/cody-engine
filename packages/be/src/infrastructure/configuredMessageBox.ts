@@ -5,7 +5,7 @@ import {EventRuntimeInfo} from "@event-engine/messaging/event";
 import {queries} from "@app/shared/queries";
 import {QueryRuntimeInfo} from "@event-engine/messaging/query";
 import {CommandBus, EventBus, QueryBus} from "@server/infrastructure/types";
-import {getExternalService} from "@app/shared/utils/get-external-service";
+import {getExternalService} from "@server/extensions/get-external-service";
 import {getConfiguredCommandBus, SERVICE_NAME_COMMAND_BUS} from "@server/infrastructure/configuredCommandBus";
 import {getConfiguredQueryBus, SERVICE_NAME_QUERY_BUS} from "@server/infrastructure/configuredQueryBus";
 import {getConfiguredEventBus, SERVICE_NAME_EVENT_BUS} from "@server/infrastructure/configuredEventBus";

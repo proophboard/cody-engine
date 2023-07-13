@@ -18,7 +18,6 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@app/extensions/*": ["packages/extensions/src/lib/*"],
       "@app/shared/*": ["packages/shared/src/lib/*"],
       "@cody-engine/cody": ["packages/cody/src/index.ts"],
       "@cody-engine/contribution": ["packages/contribution/src/index.ts"],

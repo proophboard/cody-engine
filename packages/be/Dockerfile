@@ -15,7 +15,10 @@ RUN addgroup --system be && \
           adduser --system -G be be
 
 COPY dist/packages/be be
+RUN mkdir "data"
 RUN chown -R be:be .
+
+
 
 # You can remove this install step if you build with `--bundle` option.
 # The bundled output will include external dependencies.
