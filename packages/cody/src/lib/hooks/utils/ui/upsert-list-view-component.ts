@@ -23,6 +23,8 @@ import {registerViewComponent} from "../registry";
 import {isListSchema} from "../json-schema/list-schema";
 import {Rule} from "../rule-engine/configuration";
 import {convertRuleConfigToTableColumnValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
+import {toJSON} from "../to-json";
+import {GridDensity} from "@mui/x-data-grid";
 
 export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetadata, ctx: Context, tree: FsTree): Promise<boolean|CodyResponse> => {
   const service = detectService(vo, ctx);
@@ -64,6 +66,10 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
 
   const [columns, imports, hooks] = columnsResponse;
 
+  const pageSizeConfig = getTablePageSizeConfig(voMeta);
+  const density = getTableDensity(voMeta);
+  const hideToolbar = !!voMeta?.uiSchema?.table?.hideToolbar;
+
   // @todo: handle render cell with Rule[]
   // @see: car-list.tsx
 
@@ -73,14 +79,43 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
     serviceNames,
     identifier,
     columns: `${columns.join(",\n")}`,
+    pageSizeConfig,
+    density,
+    hideToolbar,
     imports: imports.join(";\n"),
     hooks: hooks.join(";\n"),
-    ...voNames
+    ...voNames,
+    toJSON,
   })
 
   registerViewComponent(service, vo, ctx, tree);
 
   return true;
+}
+
+const getTablePageSizeConfig = (voMeta: ValueObjectMetadata): {pageSize: number, pageSizeOptions: number[]} => {
+  let pageSize: number, pageSizeOptions: number[];
+
+  if(!voMeta.uiSchema || !voMeta.uiSchema.table || !voMeta.uiSchema.table.pageSize) {
+    pageSize = 5;
+  } else {
+    pageSize = voMeta.uiSchema.table.pageSize;
+  }
+
+  if(!voMeta.uiSchema || !voMeta.uiSchema.table || !voMeta.uiSchema.table.pageSizeOptions) {
+    pageSizeOptions = [5, 10, 25];
+  } else {
+    pageSizeOptions = voMeta.uiSchema.table.pageSizeOptions;
+  }
+
+  return {
+    pageSize,
+    pageSizeOptions
+  }
+}
+
+const getTableDensity = (voMeta: ValueObjectMetadata): GridDensity => {
+  return voMeta?.uiSchema?.table?.density || 'comfortable';
 }
 
 const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node, itemVOMeta: ValueObjectMetadata, ctx: Context): [string[], string[], string[]] | CodyResponse => {

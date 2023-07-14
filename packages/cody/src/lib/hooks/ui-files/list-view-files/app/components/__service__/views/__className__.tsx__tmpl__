@@ -27,12 +27,12 @@ const <%= className %> = (params: Get<%= className %>) => {
           rows={query.data}
           getRowId={row => row.<%= identifier %>}
           sx={{width: "100%"}}
-          slots={{toolbar: GridToolbar}}
+          <% if (!hideToolbar) { %>slots={{toolbar: GridToolbar}}<% } %>
           initialState={
-            {pagination: {paginationModel: {pageSize: 5}}}
+            {pagination: {paginationModel: {pageSize: <%= pageSizeConfig.pageSize %>}}}
           }
-          pageSizeOptions={[5, 10, 25]}
-          density="comfortable"
+          pageSizeOptions={<%- toJSON(pageSizeConfig.pageSizeOptions) %>}
+          density="<%= density %>"
       />}
     </Box>
   );
