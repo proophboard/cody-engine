@@ -4,6 +4,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {ValidationError} from "ajv";
 import 'express-async-errors';
 import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
+import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 4100;
@@ -81,7 +82,7 @@ app.get('/api/:module/messages/:name', async (req, res) => {
   }
 
   const queryInfo = messageBox.getQueryInfo(fqcn);
-  const query = queryInfo.factory(req.query);
+  const query = queryInfo.factory(determineQueryPayload(req.query, queryInfo));
 
   res.json(await messageBox.queryBus.dispatch(query, queryInfo.desc));
 });
