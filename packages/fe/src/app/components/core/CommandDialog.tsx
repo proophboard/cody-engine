@@ -20,7 +20,7 @@ import {useSnackbar} from "notistack";
 import {Close, Send} from "mdi-material-ui";
 import CommandForm from "@frontend/app/components/core/CommandForm";
 import {AxiosResponse} from "axios";
-import {Logger} from "@frontend/util/Logger";
+import {useParams} from "react-router-dom";
 
 export interface AggregateIdentifier {
   identifier: string;
@@ -68,10 +68,11 @@ const CommandDialog = (props: CommandDialogProps) => {
   const queryClient = useQueryClient();
   const theme = useTheme();
   const snackbar = useSnackbar();
+  const routeParams = useParams();
   const commandFormRef = useRef<{submit: () => void}>();
   const [transactionState, setTransactionState] = useState<TransactionState>({...defaultTransactionState});
   const [tryAgain, setTryAgain] = useState(false);
-  const formData: {[prop: string]: any} = props.initialValues || {};
+  const formData: {[prop: string]: any} = {...routeParams, ...props.initialValues};
 
   if(props.aggregateIdentifier) {
     formData[props.aggregateIdentifier.identifier] = props.aggregateIdentifier.value;
