@@ -132,7 +132,6 @@ const CommandDialog = (props: CommandDialogProps) => {
         }} onClick={handleCancel}>
           <Close />
         </IconButton>
-        {commandTitle(props.commandDialogCommand)}
       </DialogTitle>
       <DialogContent sx={{ padding: '24px 24px' }}>
         <CommandForm
