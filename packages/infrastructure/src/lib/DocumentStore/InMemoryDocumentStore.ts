@@ -179,8 +179,6 @@ export class InMemoryDocumentStore implements DocumentStore {
           const bDocVal: any = getValueFromPath(sort.prop, bResult[1]);
           const sortNumber = sort.sort === 'asc'? -1 : 1;
 
-          console.log(aDocVal, bDocVal, sortNumber, aDocVal < bDocVal);
-
           if(typeof aDocVal === 'undefined' && typeof bDocVal !== 'undefined') {
             return 1;
           }
