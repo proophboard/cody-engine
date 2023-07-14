@@ -13,6 +13,7 @@ import {isQueryableStateListDescription, QueryableStateListDescription} from "@e
 import {useApiQuery} from "@frontend/queries/use-api-query";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {commands} from "@frontend/app/components/commands";
+import {useParams} from "react-router-dom";
 
 // Copied from: https://github.com/rjsf-team/react-jsonschema-form/blob/main/packages/material-ui/src/SelectWidget/SelectWidget.tsx
 // and modified to use useApiQuery and turn result into select options
@@ -90,8 +91,9 @@ export default function DataSelectWidget<
 
   const selectOptions: {label: string, value: string, readonly: boolean}[] = [];
   const parsedOptions = parseOptions(options);
+  const routeParams = useParams();
 
-  const query = useApiQuery(parsedOptions.data.query, {});
+  const query = useApiQuery(parsedOptions.data.query, routeParams);
 
   if(query.isSuccess) {
     (query.data as any[]).forEach(item => {
