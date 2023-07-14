@@ -72,7 +72,19 @@ const CommandDialog = (props: CommandDialogProps) => {
   const commandFormRef = useRef<{submit: () => void}>();
   const [transactionState, setTransactionState] = useState<TransactionState>({...defaultTransactionState});
   const [tryAgain, setTryAgain] = useState(false);
-  const formData: {[prop: string]: any} = {...routeParams, ...props.initialValues};
+
+  const filteredRouteParams: Record<string, string> = {};
+
+  if(routeParams) {
+    for (const routeParamKey in routeParams) {
+      if(props.commandDialogCommand.schema.properties
+        && Object.keys(props.commandDialogCommand.schema.properties).includes(routeParamKey)) {
+        filteredRouteParams[routeParamKey] = routeParams[routeParamKey] as string;
+      }
+    }
+  }
+
+  const formData: {[prop: string]: any} = {...filteredRouteParams, ...props.initialValues};
 
   if(props.aggregateIdentifier) {
     formData[props.aggregateIdentifier.identifier] = props.aggregateIdentifier.value;
