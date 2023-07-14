@@ -37,6 +37,11 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
           }
         }
       },
+      typography: {
+        h3: {
+          fontSize: '2rem'
+        }
+      },
       components: {
         MuiFormControl: {
           defaultProps: {
