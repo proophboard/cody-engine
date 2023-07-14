@@ -5,6 +5,7 @@ import {DocumentStore, PartialSelect, SortOrder} from "@event-engine/infrastruct
 import {asyncEmptyIterator} from "@event-engine/infrastructure/helpers/async-empty-iterator";
 import {InMemoryFilterProcessor} from "@event-engine/infrastructure/DocumentStore/InMemory/InMemoryFilterProcessor";
 import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
+import {getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
 
 export class InMemoryDocumentStore implements DocumentStore {
   private readonly documents: {[collectionName: string]: {[docId: string]: object}} = {};
@@ -169,6 +170,32 @@ export class InMemoryDocumentStore implements DocumentStore {
       if(limit && (count - skip) > limit) break;
 
       resultSet.push([docId, doc]);
+    }
+
+    if(orderBy) {
+      orderBy.forEach(sort => {
+        resultSet.sort((aResult, bResult) => {
+          const aDocVal: any = getValueFromPath(sort.prop, aResult[1]);
+          const bDocVal: any = getValueFromPath(sort.prop, bResult[1]);
+          const sortNumber = sort.sort === 'asc'? -1 : 1;
+
+          console.log(aDocVal, bDocVal, sortNumber, aDocVal < bDocVal);
+
+          if(typeof aDocVal === 'undefined' && typeof bDocVal !== 'undefined') {
+            return 1;
+          }
+
+          if(typeof aDocVal !== 'undefined' && typeof bDocVal === 'undefined' ) {
+            return -1
+          }
+
+          if(typeof aDocVal === 'undefined' && typeof bDocVal === 'undefined') {
+            return 0;
+          }
+
+          return aDocVal < bDocVal ? sortNumber : sortNumber * -1;
+        })
+      })
     }
 
     const iter = async function *() {
