@@ -4,6 +4,7 @@ import {useEffect} from "react";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 import {Get<%= className %>} from "@app/shared/queries/<%= serviceNames.fileName %>/get-<%= fileName %>";
 import {useGet<%= className %>} from "@frontend/queries/<%= serviceNames.fileName %>/use-get-<%= fileName %>";
+import NoRowsOverlay from "@frontend/app/components/core/table/NoRowsOverlay";
 <%- imports %>
 
 const <%= className %> = (params: Get<%= className %>) => {
@@ -27,7 +28,10 @@ const <%= className %> = (params: Get<%= className %>) => {
           rows={query.data}
           getRowId={row => row.<%= identifier %>}
           sx={{width: "100%"}}
-          <% if (!hideToolbar) { %>slots={{toolbar: GridToolbar}}<% } %>
+          slots={{
+            <% if (!hideToolbar) { %>toolbar: GridToolbar,<% } %>
+            noRowsOverlay: NoRowsOverlay,
+          }}
           initialState={
             {pagination: {paginationModel: {pageSize: <%= pageSizeConfig.pageSize %>}}}
           }

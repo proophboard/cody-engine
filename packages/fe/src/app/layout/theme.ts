@@ -52,6 +52,16 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
           defaultProps: {
             variant: "standard"
           }
+        },
+        // Fix: No Rows Overlay not visible in empty table
+        MuiGrid2: {
+          styleOverrides: {
+            root: {
+              "& .MuiDataGrid-overlayWrapper": {
+                minHeight: "250px"
+              }
+            }
+          }
         }
       }
     },
