@@ -6,7 +6,9 @@
     {
       "files": ["*.ts", "*.tsx"],
       "extends": ["plugin:@nx/typescript"],
-      "rules": {}
+      "rules": {
+        "no-case-declarations": "off"
+      }
     },
     {
       "files": ["*.js", "*.jsx"],

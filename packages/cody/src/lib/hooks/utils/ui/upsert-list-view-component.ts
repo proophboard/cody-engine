@@ -7,7 +7,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {
   getVoMetadata,
   PageLinkTableColumn,
-  RefTableColumn,
+  RefTableColumn, StringOrTableColumnUiSchema,
   TableColumnUiSchema,
   ValueObjectMetadata
 } from "../value-object/get-vo-metadata";
@@ -86,7 +86,7 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
 const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node, itemVOMeta: ValueObjectMetadata, ctx: Context): [string[], string[], string[]] | CodyResponse => {
   const columns = getColumns(vo, voMeta, itemVO, itemVOMeta, ctx);
   let imports: string[] = [];
-  let hooks: string[] = [];
+  const hooks: string[] = [];
 
   if(isCodyError(columns)) {
     return columns;
@@ -94,8 +94,14 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
 
   const strColumns: string[] = [];
 
-  for (const column of columns) {
+  for (let column of columns) {
     // @TODO: Validate column
+
+    if(typeof column === "string") {
+      column = {
+        field: column
+      }
+    }
 
     if(!column['headerName']) {
       column['headerName'] = camelCaseToTitle(column['field']);
@@ -184,7 +190,7 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
   return [strColumns, imports, hooks];
 }
 
-const getColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node, itemVOMeta: ValueObjectMetadata, ctx: Context): TableColumnUiSchema[] | CodyResponse => {
+const getColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node, itemVOMeta: ValueObjectMetadata, ctx: Context): StringOrTableColumnUiSchema[] | CodyResponse => {
   return voMeta.uiSchema?.table?.columns || deriveColumnsFromSchema(vo, voMeta, itemVO, itemVOMeta, ctx);
 }
 

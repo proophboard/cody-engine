@@ -51,9 +51,12 @@ export interface TableColumnUiSchema {
   link?: string | Rule[];
 }
 
+export type StringOrTableColumnUiSchema = string | TableColumnUiSchema;
+
+
 export interface TableUiSchema {
   table?: {
-    columns?: TableColumnUiSchema[],
+    columns?: StringOrTableColumnUiSchema[],
     pageSize?: number,
     pageSizeOptions?: number[],
     density?: GridDensity,
