@@ -18,16 +18,23 @@ import {UiSchema} from "@rjsf/utils";
 import {GridDensity} from "@mui/x-data-grid";
 import {addSchemaTitles} from "../json-schema/add-schema-titles";
 import {jsonSchemaFromShorthand} from "../json-schema/json-schema-from-shorthand";
+import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 
 interface ValueObjectMetadataRaw {
   identifier?: string;
   shorthand?: boolean;
   schema: any;
   querySchema?: any;
+  resolve?: ResolveConfig;
   ns?: string;
   collection?: string;
   initialize?: Rule[];
   uiSchema?: UiSchema & TableUiSchema;
+}
+
+export interface ResolveConfig {
+  where?: Rule,
+  orderBy?: SortOrderItem | SortOrder
 }
 
 export interface RefTableColumn {
@@ -78,6 +85,7 @@ export interface ValueObjectMetadata extends ValueObjectDescriptionFlags {
   collection?: string;
   initialize?: Rule[];
   itemType?: string;
+  resolve?: ResolveConfig;
   uiSchema?: UiSchema & TableUiSchema;
 }
 
@@ -156,6 +164,10 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
 
   if(meta.uiSchema) {
     convertedMeta.uiSchema = meta.uiSchema;
+  }
+
+  if(meta.resolve) {
+    convertedMeta.resolve = meta.resolve;
   }
 
   if(isListSchema(normalizedSchema)) {

@@ -245,6 +245,18 @@ const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lin
 
   lines.push(`${indent}}`);
 
+  if(rule.else) {
+    lines.push(`${indent}else {`);
+
+    const elseThen = convertThen(node, ctx, rule.else, rule, lines, indent + '  ', evalSync);
+
+    if(isCodyError(elseThen)) {
+      return elseThen;
+    }
+
+    lines.push(`${indent}}`);
+  }
+
   return true;
 }
 
@@ -402,7 +414,7 @@ const convertMapping = (node: Node, ctx: Context, mapping: string | PropMapping,
   return propMap;
 }
 
-const wrapExpression = (expr: string, evalSync = false): string => {
+export const wrapExpression = (expr: string, evalSync = false): string => {
   return evalSync
     ? `jexl.evalSync("${expr}", ctx)`
     : `await jexl.eval("${expr}", ctx)`;

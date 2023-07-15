@@ -3,10 +3,11 @@ import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
 
 export type Sort = 'asc' | 'desc';
 export type PartialSelect = Array<string|[string, string]>;
-export type SortOrder = Array<{
+export interface SortOrderItem {
   prop: string;
   sort: Sort;
-}>
+}
+export type SortOrder = Array<SortOrderItem>;
 
 export interface DocumentStore {
   addCollection: (collectionName: string, index?: Index) => Promise<void>;
