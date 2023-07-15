@@ -1,16 +1,47 @@
 import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
-import {ValueObjectMetadata} from "../value-object/get-vo-metadata";
+import {ResolveConfig, ValueObjectMetadata} from "../value-object/get-vo-metadata";
 import {Context} from "../../context";
 import {
   isQueryableStateDescription,
-  isQueryableStateListDescription, isQueryableValueObjectDescription,
+  isQueryableStateListDescription,
+  isQueryableValueObjectDescription,
   QueryableStateDescription,
-  QueryableStateListDescription, QueryableValueObjectDescription
+  QueryableStateListDescription,
+  QueryableValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
 import {names} from "@event-engine/messaging/helpers";
 import {isObjectSchema, ObjectSchema} from "../json-schema/is-object-schema";
 import {voClassNameFromFQCN} from "../value-object/definitions";
 import {JSONSchema7} from "json-schema-to-ts";
+import {isFilter, isIfConditionRule, isIfNotConditionRule} from "../rule-engine/configuration";
+import {wrapExpression} from "../rule-engine/convert-rule-config-to-behavior";
+import {
+  AnyOfDocIdFilter,
+  AnyOfFilter,
+  DocIdFilter,
+  EqFilter,
+  ExistsFilter,
+  Filter,
+  GteFilter,
+  GtFilter,
+  InArrayFilter,
+  isAndFilter,
+  isAnyFilter,
+  isAnyOfDocIdFilter,
+  isAnyOfFilter,
+  isDocIdFilter,
+  isEqFilter,
+  isExistsFilter,
+  isGteFilter,
+  isGtFilter,
+  isInArrayFilter, isLikeFilter, isLteFilter, isLtFilter,
+  isNotFilter,
+  isOrFilter,
+  LikeFilter,
+  LteFilter,
+  LtFilter
+} from "../value-object/query/filter-types";
+import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 
 export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
   if(!voMeta.isQueryable) {
@@ -114,29 +145,183 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableSt
     return codyQuerySchemaError;
   }
 
-  const filters = makeFiltersFromQuerySchema(querySchema);
+  const filters = meta.resolve?.where ? makeFiltersFromResolveConfig(vo, meta.resolve) : makeFiltersFromQuerySchema(querySchema);
 
   const itemClassName = voClassNameFromFQCN(meta.itemType);
 
-  return `const cursor = await ds.findDocs<{state: ${itemClassName}}>(
+  let jexlInit = '';
+  let orderBy = 'undefined';
+
+  if(meta.resolve) {
+    if(meta.resolve.where) {
+      jexlInit = `const ctx: any = {query: query.payload, queryMeta: query.meta}\n\n  `;
+    }
+
+    if(meta.resolve.orderBy) {
+      orderBy = typeof meta.resolve.orderBy === 'object'
+        ? JSON.stringify([mapOrderByProp(meta.resolve.orderBy as SortOrderItem)])
+        : JSON.stringify((meta.resolve.orderBy as SortOrder).map(orderBy => mapOrderByProp(orderBy)));
+    }
+  }
+
+  return `${jexlInit}const cursor = await ds.findDocs<{state: ${itemClassName}}>(
     ${voNames.className}Desc.collection,
-    ${filters}
+    ${filters},
+    undefined,
+    undefined,
+    ${orderBy}
   );
   
   return asyncIteratorToArray(asyncMap(cursor, ([,d]) => ${names(itemClassName).propertyName}(d.state)));
 `
 }
 
+const mapOrderByProp = (orderBy: SortOrderItem): SortOrderItem => {
+  return {
+    prop: `state.${orderBy.prop}`,
+    sort: orderBy.sort
+  }
+}
+
+const makeFiltersFromResolveConfig = (vo: Node, resolveConfig: ResolveConfig): string | CodyResponse => {
+  const lines: string[] = [];
+
+  const rule = resolveConfig.where;
+
+  if(!rule) {
+    return makeAnyFilter();
+  }
+
+  if(!isFilter(rule.then)) {
+    return  {
+      cody: `A resolve configuration should only contain a single filter rule. Please check resolve of Card "${vo.getName()}".`,
+      type: CodyResponseType.Error,
+      details: `An example of a filter rule is: { rule: "always", then: { filter: { any: true } } }`
+    }
+  }
+
+  if(isIfConditionRule(rule) || isIfNotConditionRule(rule)) {
+    if(rule.else && !isFilter(rule.else)) {
+      return  {
+        cody: `The "else" part of a conditional resolve configuration should only contain a single filter rule. Please check resolve of Card "${vo.getName()}".`,
+        type: CodyResponseType.Error,
+        details: `An example of a filter rule is: {\n  rule: "condition",\n  if: "query.optionalProperty",\n  then: {\n    filter: { eq: { prop: "optionalProperty", value: "query.optionalProperty"}\n }\n    }\n  else: { filter: { any: true } }\n}`
+      }
+    }
+  }
+
+  if(isIfConditionRule(rule)) {
+
+    const expr = rule.if;
+
+    lines.push(`  (${wrapExpression(expr)}) ?`);
+
+    makeFilter(rule.then.filter, lines, '    ');
+
+    lines.push(`  :`);
+
+    if(rule.else && isFilter(rule.else)) {
+      makeFilter(rule.else.filter, lines, '    ');
+    } else {
+      lines.push(`    ${makeAnyFilter()}`)
+    }
+
+  } else if(isIfNotConditionRule(rule)) {
+    const ifNotexpr = rule.if_not;
+
+    lines.push(`  (${wrapExpression(ifNotexpr)}) ?`);
+
+    makeFilter(rule.then.filter, lines, '    ');
+
+    lines.push(`  :`);
+
+    if(rule.else && isFilter(rule.else)) {
+      makeFilter(rule.else.filter, lines, '    ');
+    } else {
+      lines.push(`    ${makeAnyFilter()}`)
+    }
+  } else {
+    makeFilter(rule.then.filter, lines, '  ');
+  }
+
+  return lines.join("\n");
+}
+
+const makeFilter = (filter: Filter, lines: string[], indent = '') => {
+  if (isAndFilter(filter)) {
+    lines.push(`${indent}new filters.AndFilter(`);
+
+    filter.and.forEach(f => makeFilter(f, lines, indent + '  '));
+
+    lines.push(`${indent})`);
+
+  } else if (isOrFilter(filter)) {
+    lines.push(`${indent}new filters.OrFilter(`);
+
+    filter.or.forEach(f => makeFilter(f, lines, indent + '  '));
+
+    lines.push(`${indent})`);
+
+  } else if (isNotFilter(filter)) {
+    lines.push(`${indent}new filters.NotFilter(`);
+
+    makeFilter(filter.not, lines, indent + '  ');
+
+    lines.push(`${indent})`);
+  } else if (isAnyOfDocIdFilter(filter)) {
+    lines.push(`${indent}${makeAnyOfDocIdFilter(filter)}`);
+
+  } else if (isAnyOfFilter(filter)) {
+    lines.push(`${indent}${makeAnyOfFilter(filter)}`);
+
+  } else if (isDocIdFilter(filter)) {
+    lines.push(`${indent}${makeDocIdFilter(filter)}`);
+
+  } else if (isEqFilter(filter)) {
+    lines.push(`${indent}${makeEqFilter(filter)}`);
+
+  } else if (isExistsFilter(filter)) {
+    lines.push(`${indent}${makeExistsFilter(filter)}`);
+
+  } else if (isGteFilter(filter)) {
+    lines.push(`${indent}${makeGteFilter(filter)}`);
+
+  } else if (isGtFilter(filter)) {
+    lines.push(`${indent}${makeGtFilter(filter)}`);
+
+  } else if (isInArrayFilter(filter)) {
+    lines.push(`${indent}${makeInArrayFilter(filter)}`);
+
+  } else if (isLikeFilter(filter)) {
+    lines.push(`${indent}${makeLikeFilter(filter)}`);
+
+  } else if (isLteFilter(filter)) {
+    lines.push(`${indent}${makeLteFilter(filter)}`);
+
+  } else if (isLtFilter(filter)) {
+    lines.push(`${indent}${makeLtFilter(filter)}`);
+
+  } else {
+    lines.push(`${indent}${makeAnyFilter()}`);
+  }
+}
+
 const makeFiltersFromQuerySchema = (querySchema: ObjectSchema): string => {
   const properties = Object.keys(querySchema.properties);
 
   if(properties.length === 0) {
-    return 'new filters.AnyFilter()';
+    return makeAnyFilter();
   }
 
   if(properties.length === 1) {
     const propName = properties[0];
-    return makeEqFilterFromPropertySchema(propName, querySchema.properties[propName]);
+    const eqFilter = makeEqFilterFromPropertySchema(propName, querySchema.properties[propName]);
+
+    if(!querySchema.required.includes(propName)) {
+      return `typeof query.payload.${propName} !== 'undefined' ? ${eqFilter} : ${makeAnyFilter()}`
+    } else {
+      return eqFilter;
+    }
   }
 
   let andFilter = "new filters.AndFilter(\n";
@@ -148,6 +333,55 @@ const makeFiltersFromQuerySchema = (querySchema: ObjectSchema): string => {
   return andFilter;
 }
 
+const makeAnyFilter = (): string => {
+  return 'new filters.AnyFilter()';
+}
+
+const makeAnyOfDocIdFilter = (filter: AnyOfDocIdFilter): string => {
+  return `new filters.AnyOfDocIdFilter(${wrapExpression(filter.anyOfDocId)})`;
+}
+
+const makeAnyOfFilter = (filter: AnyOfFilter): string => {
+  return `new filters.AnyOfFilter('state.${filter.anyOf.prop}', ${wrapExpression(filter.anyOf.valueList)})`;
+}
+
+const makeDocIdFilter = (filter: DocIdFilter): string => {
+  return `new filters.DocIdFilter(${wrapExpression(filter.docId)})`;
+}
+
+const makeEqFilter = (filter: EqFilter): string => {
+  return `new filters.EqFilter('state.${filter.eq.prop}', ${wrapExpression(filter.eq.value)})`
+}
+
+const makeExistsFilter = (filter: ExistsFilter): string => {
+  return `new filters.ExistsFilter('state.${filter.exists}')`;
+}
+
+const makeGteFilter = (filter: GteFilter): string => {
+  return `new filters.GteFilter('state.${filter.gte.prop}', ${wrapExpression(filter.gte.value)})`;
+}
+
+const makeGtFilter = (filter: GtFilter): string => {
+  return `new filters.GtFilter('state.${filter.gt.prop}', ${wrapExpression(filter.gt.value)})`;
+}
+
+const makeInArrayFilter = (filter: InArrayFilter): string => {
+  return `new filters.InArrayFilter('state.${filter.inArray.prop}', ${wrapExpression(filter.inArray.value)})`;
+}
+
+const makeLikeFilter = (filter: LikeFilter): string => {
+  return `new filters.LikeFilter('state.${filter.like.prop}', ${wrapExpression(filter.like.value)})`;
+}
+
+const makeLteFilter = (filter: LteFilter): string => {
+  return `new filters.LteFilter('state.${filter.lte.prop}', ${wrapExpression(filter.lte.value)})`;
+}
+
+const makeLtFilter = (filter: LtFilter): string => {
+  return `new filters.LtFilter('state.${filter.lt.prop}', ${wrapExpression(filter.lt.value)})`;
+}
+
 const makeEqFilterFromPropertySchema = (prop: string, schema: JSONSchema7, indent = ''): string => {
+
   return `${indent}new filters.EqFilter("state.${prop}", query.payload.${prop})`;
 }

@@ -1,4 +1,5 @@
 import {JSONSchema7} from "json-schema-to-ts";
+import {Filter} from "../value-object/query/filter-types";
 
 export type RuleType = 'always' | 'condition' | 'validate';
 
@@ -7,14 +8,13 @@ export interface Rule {
   then: ThenType;
 }
 
-export interface AlwaysRule extends Rule {
-
-}
+export type AlwaysRule = Rule
 
 export type ConditionRule = IfConditionRule | IfNotConditionRule;
 
 export interface IfConditionRule extends Rule {
   if: string;
+  else?: ThenType;
   stop?: boolean;
 }
 
@@ -24,6 +24,7 @@ export const isIfConditionRule = (rule: any): rule is IfConditionRule => {
 
 export interface IfNotConditionRule extends Rule {
   if_not: string;
+  else?: ThenType;
   stop?: boolean;
 }
 
@@ -35,9 +36,15 @@ export interface ValidateRule extends Rule {
   validate: JSONSchema7;
 }
 
-export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenPerformQuery | ThenExecuteRules | ThenForEach;
+export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenPerformQuery | ThenExecuteRules | ThenForEach | ThenFilter;
 
 export type PropMapping = {[name: string]: string | string[]};
+
+export interface ThenFilter {
+  filter: Filter;
+}
+
+export const isFilter = (then: any): then is ThenFilter => typeof then.filter !== "undefined";
 
 export interface ThenForEach {
   forEach: {
