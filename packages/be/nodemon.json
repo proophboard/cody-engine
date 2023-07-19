@@ -1,6 +1,6 @@
 {
-    "watch": ["src"],
+    "watch": ["src", "../shared"],
     "ext": "ts,json",
-    "ignore": ["src/**/*.spec.ts"],
+    "ignore": ["src/**/*.spec.ts", "../shared/**/*.spec.ts"],
     "exec": "npx ts-node -r tsconfig-paths/register src/main.ts"
 }
