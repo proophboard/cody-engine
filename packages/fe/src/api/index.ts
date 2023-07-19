@@ -1,6 +1,6 @@
 import {AxiosRequestConfig, AxiosResponse} from "axios";
 import {Logger} from "../util/Logger";
-import {configuredAxios} from "../http/configured-axios";
+import {configuredAxios} from "../extensions/http/configured-axios";
 import {kebabCase} from "lodash";
 
 configuredAxios.interceptors.request.use((requestConfig: any) => {
