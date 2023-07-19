@@ -1,4 +1,4 @@
-import {Box, CircularProgress, Typography} from "@mui/material";
+  import {Box, CircularProgress, Typography} from "@mui/material";
 import {DataGrid, GridColDef, GridToolbar} from "@mui/x-data-grid";
 import {useEffect} from "react";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
@@ -7,6 +7,7 @@ import {useGetCarList} from "@frontend/queries/fleet-management/use-get-car-list
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import PageLink from "@frontend/app/components/core/PageLink";
 import {CarDetails} from "@frontend/app/pages/fleet-management/car-details"
+import NoRowsOverlay from "@frontend/app/components/core/table/NoRowsOverlay";
 
 const CarList = (params: GetCarList) => {
   const query = useGetCarList(params);
@@ -18,11 +19,11 @@ const CarList = (params: GetCarList) => {
   const columns: GridColDef[] = [
     {field: "carName", valueGetter: (params) => {
       const ctx: any = params;
-      
-      
+
+
 ctx['value'] = jexl.evalSync("row.brand + ' ' + row.model", ctx)
 ;
-      
+
       return ctx.value;
     },renderCell: params => <PageLink page={CarDetails} params={params.row}>{params.value}</PageLink>, headerName: "Car Name", flex: 1, },
 {field: "productionYear", headerName: "Production Year", flex: 1, }
@@ -37,7 +38,10 @@ ctx['value'] = jexl.evalSync("row.brand + ' ' + row.model", ctx)
           rows={query.data}
           getRowId={row => row.vehicleId}
           sx={{width: "100%"}}
-          slots={{toolbar: GridToolbar}}
+          slots={{
+            toolbar: GridToolbar,
+            noRowsOverlay: NoRowsOverlay,
+          }}
           initialState={
             {pagination: {paginationModel: {pageSize: 5}}}
           }
