@@ -29,7 +29,7 @@ export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): P
     const serviceNames = names(service);
     const dependencies = meta.dependencies;
 
-    let rules = meta.rules || [];
+    const rules = meta.rules || [];
 
     if(rules.length === 0) {
       const commands = withErrorCheck(getTargetsOfType, [policy, NodeType.command, true, false, true]);

@@ -2,13 +2,9 @@ import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-
 import {Context} from "../context";
 import {FsTree} from "nx/src/generators/tree";
 import {loadDescription} from "./prooph-board-info";
+import {getSingleSource, getSourcesOfType, isCodyError, nodeNameToPascalCase} from "@proophboard/cody-utils";
 import {
-  getSingleSource,
-  getSourcesOfType,
-  isCodyError,
-  nodeNameToPascalCase
-} from "@proophboard/cody-utils";
-import {
+  ArrayLiteralExpression, AsExpression,
   ObjectLiteralExpression,
   Project,
   PropertyAssignment,
@@ -89,6 +85,36 @@ const addRegistryEntry = (registryPath: string, registryVarName: string, entryId
   tree.write(registryPath, registrySource.getText());
 }
 
+const addConstArrayItem = (registryPath: string, registryVarName: string, entryValue: string, importName: string, importPath: string, tree: FsTree) => {
+  const registryFilename = getFilenameFromPath(registryPath);
+  const registryFileContent = tree.read(registryPath)!.toString();
+
+  const registrySource = project.createSourceFile(registryFilename, registryFileContent, {overwrite: true});
+
+  const registryVar = registrySource.getVariableDeclarationOrThrow(registryVarName);
+  const tuple = registryVar.getInitializerIfKindOrThrow(SyntaxKind.AsExpression) as AsExpression;
+
+  let tupleText = '';
+  if(tuple.getText() === '[]') {
+    tupleText = tuple.getText().replace("]", `\n  ${entryValue}\n]`);
+  } else {
+    const searchVal = tuple.getText().indexOf("\n]") !== -1 ? "\n]" : "]";
+    tupleText = tuple.getText().replace(searchVal, `,\n  ${entryValue}\n]`);
+  }
+
+  tuple.replaceWithText(tupleText);
+
+  if(importName.length && importPath.length) {
+    registrySource.addImportDeclaration({
+      defaultImport: `{${importName}}`,
+      moduleSpecifier: importPath
+    });
+  }
+
+  registrySource.formatText({indentSize: 2});
+  tree.write(registryPath, registrySource.getText());
+}
+
 const addArrayRegistryItem = (registryPath: string, registryVarName: string, entryValue: string, importName: string, importPath: string, tree: FsTree) => {
   const registryFilename = getFilenameFromPath(registryPath);
   const registryFileContent = tree.read(registryPath)!.toString();
@@ -108,10 +134,12 @@ const addArrayRegistryItem = (registryPath: string, registryVarName: string, ent
 
   tuple.replaceWithText(tupleText);
 
-  registrySource.addImportDeclaration({
-    defaultImport: `{${importName}}`,
-    moduleSpecifier: importPath
-  });
+  if(importName.length && importPath.length) {
+    registrySource.addImportDeclaration({
+      defaultImport: `{${importName}}`,
+      moduleSpecifier: importPath
+    });
+  }
 
   registrySource.formatText({indentSize: 2});
   tree.write(registryPath, registrySource.getText());
@@ -195,12 +223,27 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       importName = `${uiNames.className} as ${serviceNames.className}${uiNames.className}`;
       importPath = `@frontend/app/pages/${serviceNames.fileName}/${uiNames.fileName}`;
       break;
+    case NodeType.role:
+      const roleNames = names(node.getName());
+
+      registryPath = sharedRegistryPath('types/core/user/user-role.ts');
+      registryVarName = 'UserRoles';
+      entryId = '';
+      entryValue = `'${roleNames.className}'`;
+      importName = '';
+      importPath = '';
+      break;
     default:
       return {
         cody: `I cannot register an element of type "${node.getType()}". I don't maintain a registry for those types`,
         type: CodyResponseType.Error,
         details: `Please contact the prooph board team. This seems to be a bug in the system.`
       }
+  }
+
+  if(entryId.length === 0) {
+    addConstArrayItem(registryPath, registryVarName, entryValue, importName, importPath, tree);
+    return true;
   }
 
   addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);

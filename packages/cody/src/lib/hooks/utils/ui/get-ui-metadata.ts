@@ -1,7 +1,8 @@
 import {CodyResponse, Node} from "@proophboard/cody-types";
 import {Context} from "../../context";
 import {Rule} from "../rule-engine/configuration";
-import {parseJsonMetadata} from "@proophboard/cody-utils";
+import {isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
+import {names} from "@event-engine/messaging/helpers";
 
 export interface DynamicBreadcrumbMetadata {
   data: string;
@@ -29,5 +30,15 @@ export const isDynamicBreadcrumb = (breadcrumb: string | DynamicBreadcrumbMetada
 
 export const getUiMetadata = (ui: Node, ctx: Context): UiMetadata | CodyResponse => {
   // @todo: validate ui meta
-  return parseJsonMetadata(ui);
+  const meta = parseJsonMetadata(ui) as UiMetadata;
+
+  if(isCodyError(meta)) {
+    return meta;
+  }
+
+  if(meta && meta.sidebar?.icon) {
+    meta.sidebar.icon = names(meta.sidebar.icon).className;
+  }
+
+  return meta;
 }

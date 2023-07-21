@@ -4,6 +4,9 @@ import {camelCaseToTitle} from "@frontend/util/string";
 import {Button, SxProps} from "@mui/material";
 import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
 import {Plus} from "mdi-material-ui";
+import jexl from "@app/shared/jexl/get-configured-jexl";
+import {User} from "@app/shared/types/core/user/user";
+import {useUser} from "@frontend/hooks/use-user";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -13,7 +16,9 @@ interface OwnProps {
   buttonColor?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | undefined;
   style?: SxProps;
   disabled?: boolean;
-  variant?: "text" | "outlined" | "contained"
+  hidden?: boolean;
+  variant?: "text" | "outlined" | "contained";
+  formData?: {[prop: string]: any};
 }
 
 export type CommandButtonProps = OwnProps;
@@ -45,20 +50,83 @@ export const commandTitle = (cmd: CommandRuntimeInfo): string => {
   return title as string;
 }
 
+const determineButtonConfig = (props: CommandButtonProps, user: User):
+  {
+    variant: "text" | "outlined" | "contained",
+    color: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+    disabled: boolean,
+    style: SxProps,
+    hidden: boolean
+  } => {
+  const uiSchema = props.command.uiSchema || {};
+
+  const uiButtonConfig = uiSchema['ui:button'] || {};
+
+  const variant = props.variant || uiButtonConfig['variant'] || 'contained';
+  const color = props.buttonColor || uiButtonConfig['color'] || 'primary';
+  const style = props.style || uiButtonConfig['style'] || undefined;
+
+  let disabled = false;
+
+  if(props.disabled) {
+    disabled = true;
+  } else if (uiButtonConfig['disabled']) {
+    const btnCDisabled = uiButtonConfig['disabled'];
+
+    if(typeof btnCDisabled === "boolean") {
+      disabled = btnCDisabled;
+    }
+
+    if(typeof btnCDisabled === "string") {
+      disabled = jexl.evalSync(btnCDisabled, {data: {...props.formData}, user});
+    }
+  }
+
+  let hidden = false;
+
+  if(props.hidden) {
+    hidden = true;
+  } else if (uiButtonConfig['hidden']) {
+    const btnCHidden = uiButtonConfig['hidden'];
+
+    if(typeof btnCHidden === "boolean") {
+      hidden = btnCHidden;
+    }
+
+    if(typeof btnCHidden === "string") {
+      hidden = jexl.evalSync(btnCHidden, {data: {...props.formData}, user});
+    }
+  }
+
+  return {
+    variant,
+    color,
+    style,
+    disabled,
+    hidden,
+  }
+}
+
 const CommandButton = (props: CommandButtonProps) => {
   const {desc} = props.command;
+  const [user,] = useUser();
+  const {variant, color, disabled, style, hidden} = determineButtonConfig(props, user);
   const newAggregate = isAggregateCommandDescription(desc) && desc.newAggregate;
+
+  if(hidden) {
+    return <></>
+  }
 
   return (
     <Button
       key={desc.name}
-      variant={props.variant || 'contained'}
-      sx={{ textTransform: 'none', margin: '5px', ...props.style }}
-      color={props.buttonColor? props.buttonColor : 'primary'}
+      variant={variant}
+      sx={{ textTransform: 'none', margin: '5px', ...style }}
+      color={color}
       startIcon={props.startIcon? props.startIcon : newAggregate ? <Plus /> : undefined}
       children={props.label? props.label : commandTitle(props.command)}
       onClick={props.onClick}
-      disabled={!!props.disabled}
+      disabled={disabled}
     />
   );
 };

@@ -25,6 +25,8 @@ import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import definitions from "@app/shared/types/definitions";
+import {useUser} from "@frontend/hooks/use-user";
+import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -51,6 +53,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   let formData: {[prop: string]: any} = {};
   const [liveValidate, setLiveValidate] = useState(false);
   const [submittedFormData, setSubmittedFormData] = useState<{[prop: string]: any}>();
+  const [user,] = useUser();
   const mutation = useMutation({
     mutationKey: [props.command.desc.name],
     mutationFn: props.commandFn,
@@ -129,6 +132,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   const userWidgets = props.widgets || {};
 
   const schema = resolveRefs(cloneSchema(props.command.schema as any), definitions) as RJSFSchema;
+  const uiSchema = props.command.uiSchema ? normalizeUiSchema(props.command.uiSchema, {data: formData, user}) : undefined;
 
   return (
     <div>
@@ -142,7 +146,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
               onSubmit={handleSubmit}
               formData={formData}
               formContext={formData}
-              uiSchema={props.command.uiSchema}
+              uiSchema={uiSchema}
               liveValidate={liveValidate}
               showErrorList={false}
               onError={handleValidationError}

@@ -19,18 +19,21 @@ import {pages} from "@frontend/app/pages";
 import {SnackbarProvider} from "notistack";
 import ScrollToTop from "@frontend/app/components/core/ScrollToTop";
 import ToggleColorMode from "@frontend/app/providers/ToggleColorMode";
+import User from "@frontend/app/providers/User";
 
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
-      <ToggleColorMode>
-        <SnackbarProvider maxSnack={3} >
-          <MainLayout>
-            <ScrollToTop />
-            <Outlet />
-          </MainLayout>
-        </SnackbarProvider>
-      </ToggleColorMode>
+      <User>
+        <ToggleColorMode>
+          <SnackbarProvider maxSnack={3} >
+            <MainLayout>
+              <ScrollToTop />
+              <Outlet />
+            </MainLayout>
+          </SnackbarProvider>
+        </ToggleColorMode>
+      </User>
     </>
   };
 

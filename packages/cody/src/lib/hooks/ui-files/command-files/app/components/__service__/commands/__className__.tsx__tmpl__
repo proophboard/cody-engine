@@ -9,6 +9,7 @@ import {useGet<%= stateNames.className %>} from "@frontend/queries/<%= serviceNa
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {<%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeInfo} from "@app/shared/queries/<%= serviceNames.fileName %>/get-<%= stateNames.fileName %>";
 <% } %>
+<% if (buttonIcon) { %>import {<%= buttonIcon %>} from "mdi-material-ui";<% } %>
 
 interface OwnProps {
 <% if (!newAggregate && identifier) { %>
@@ -27,7 +28,7 @@ const <%= className %> = (props: <%= className %>Props) => {
   const handleCloseDialog = () => {setDialogOpen(false)};
 
   return <>
-    <CommandButton command={<%= serviceNames.className %><%= className %>RuntimeInfo} onClick={handleOpenDialog} {...props.buttonProps} />
+    <CommandButton command={<%= serviceNames.className %><%= className %>RuntimeInfo} onClick={handleOpenDialog} {...{<% if (buttonIcon) { %>startIcon: <<%= buttonIcon %> />, <% } %>...props.buttonProps}} />
     <CommandDialog
       open={dialogOpen}
       onClose={handleCloseDialog}

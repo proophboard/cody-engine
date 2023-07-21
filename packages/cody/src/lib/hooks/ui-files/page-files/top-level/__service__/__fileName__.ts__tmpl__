@@ -9,6 +9,7 @@ export const <%= className %>: TopLevelPageWithProophBoardDescription = {
   sidebar: {
     label: "<%= sidebar.label %>",
     Icon: <%= sidebar.icon %>,
+    <% if (typeof sidebar.invisible !== "undefined") { %>invisible: <%- toJSON(sidebar.invisible) %>,<% } %>
   },
   breadcrumb: <%- breadcrumb %>,
   _pbBoardId: "<%= _pbBoardId %>",

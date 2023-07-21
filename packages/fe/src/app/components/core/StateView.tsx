@@ -17,6 +17,8 @@ import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import definitions from "@app/shared/types/definitions";
+import {useUser} from "@frontend/hooks/use-user";
+import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 
 interface OwnProps {
   state?: Record<string, any>;
@@ -108,7 +110,13 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
 
 const StateView = (props: StateViewProps) => {
   const theme = useTheme();
-  const uiSchema = props.description.uiSchema? {"ui:readonly": true, ...props.description.uiSchema} : {"ui:readonly": true};
+  const [user,] = useUser();
+  const uiSchema = props.description.uiSchema
+    ? {
+        "ui:readonly": true,
+        ...normalizeUiSchema(props.description.uiSchema, {data: props.state, user})
+      }
+    : {"ui:readonly": true};
 
   const userWidgets = props.widgets || {};
 

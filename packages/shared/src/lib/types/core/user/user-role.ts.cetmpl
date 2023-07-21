@@ -1,0 +1,7 @@
+const UserRoles = [
+  'Anyone'
+] as const;
+
+export type UserRole = typeof UserRole[number];
+
+

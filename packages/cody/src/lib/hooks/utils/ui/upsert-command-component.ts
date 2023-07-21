@@ -19,6 +19,8 @@ export const upsertCommandComponent = async (command: Node, ctx: Context, tree: 
     const service = withErrorCheck(detectService, [command, ctx]);
     const aggregate = getSingleTarget(command, NodeType.aggregate);
     const commandMeta = withErrorCheck(parseJsonMetadata, [command]) as CommandMeta;
+    const uiSchema = commandMeta.uiSchema || {};
+    const buttonIcon = uiSchema['ui:button']?.icon ? names(uiSchema['ui:button'].icon).className : undefined;
 
     const isAggregateCommand = !isCodyError(aggregate);
 
@@ -45,6 +47,7 @@ export const upsertCommandComponent = async (command: Node, ctx: Context, tree: 
       stateNsNames,
       identifier,
       newAggregate: commandMeta.newAggregate,
+      buttonIcon,
       ...commandNames
     });
 

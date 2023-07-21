@@ -5,6 +5,7 @@ import {onAggregate} from "./src/lib/hooks/on-aggregate";
 import {onDocument} from "./src/lib/hooks/on-document";
 import {onUi} from "./src/lib/hooks/on-ui";
 import {onPolicy} from "./src/lib/hooks/on-policy";
+import {onRole} from "./src/lib/hooks/on-role";
 
 module.exports = {
   context: {
@@ -39,7 +40,7 @@ module.exports = {
     // onHotSpot: onHotSpotHook,
     // onLayer: onLayerHook,
     onPolicy: onPolicy,
-    // onRole: onRoleHook,
+    onRole: onRole,
     onUi: onUi,
   }
 }
