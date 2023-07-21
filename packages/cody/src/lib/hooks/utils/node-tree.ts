@@ -1,4 +1,12 @@
-import {CodyResponse, CodyResponseType, Node, NodeMap, NodeType} from "@proophboard/cody-types";
+import {
+  CodyResponse,
+  CodyResponseType,
+  Node,
+  NodeMap,
+  NodeType
+} from "@proophboard/cody-types";
+import {List} from "immutable";
+import {getAbsoluteGraphPoint} from "@proophboard/cody-utils";
 
 type Success = Node;
 type Error = CodyResponse;
@@ -15,6 +23,20 @@ export const findParentByType = (node: Node | null, type: NodeType): Node | null
   return findParentByType(node.getParent(), type);
 }
 
+export const getNodesOfTypeNearby = (node: Node, type: NodeType, nearbyPadding: number, syncedNodes: NodeMap): List<Node> => {
+  const point = getAbsoluteGraphPoint(node);
+  const mostLeft = point.x - nearbyPadding;
+  const mostRight = point.x + nearbyPadding;
+  const mostTop = point.y + nearbyPadding;
+  const mostBottom = point.y - nearbyPadding;
+
+  return syncedNodes.filter(n => n.getType() === type).filter(n => {
+    const nPoint = getAbsoluteGraphPoint(n);
+
+    return nPoint.x > mostLeft && nPoint.x < mostRight && nPoint.y < mostTop && nPoint.y > mostBottom;
+  }).toList();
+}
+
 export const getNodeFromSyncedNodes = (node: Node, syncedNodes: NodeMap): Success | Error => {
   const filteredNodes = syncedNodes.filter(otherNode => otherNode.getId() === node.getId());
 
@@ -28,3 +50,5 @@ export const getNodeFromSyncedNodes = (node: Node, syncedNodes: NodeMap): Succes
     type: CodyResponseType.Error
   }
 }
+
+

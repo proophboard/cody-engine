@@ -15,7 +15,7 @@ export interface PageDefinition {
 }
 
 export interface TopLevelPage extends PageDefinition {
-  sidebar: {label: string, Icon: typeof SvgIcon}
+  sidebar: {label: string, Icon: typeof SvgIcon, invisible?: string | boolean}
 }
 
 export type TopLevelPageWithProophBoardDescription = TopLevelPage & ProophBoardDescription;

@@ -5,6 +5,8 @@ import {NavLink} from "react-router-dom";
 import {isTopLevelPage, TopLevelPage} from "@frontend/app/pages/page-definitions";
 import SidebarSubMenu from "@frontend/app/layout/SidebarSubMenu";
 import {usePageMatch} from "@frontend/util/hook/use-page-match";
+import jexl from "@app/shared/jexl/get-configured-jexl";
+import {useUser} from "@frontend/hooks/use-user";
 
 interface OwnProps {
   open: boolean;
@@ -17,51 +19,62 @@ const Sidebar = (props: SidebarProps) => {
 
   const theme = useTheme();
   const pageMatch = usePageMatch();
+  const [user,] = useUser();
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
 
   const topLevelPages: TopLevelPage[] = Object.values(pages).filter(p => isTopLevelPage(p)) as TopLevelPage[];
-  const topLevelPageItems = topLevelPages.map(({route, sidebar: {label, Icon}}) => <div key={route}><ListItem
-    key={route}
-    disableGutters={true}
-    sx={{
-      display: 'flex',
-      paddingTop: 0,
-      paddingBottom: 0,
-    }}
-  >
-    <Button
+  const topLevelPageItems = topLevelPages.map(({route, sidebar: {label, Icon, invisible}}) => {
+    if(typeof invisible === "boolean" && invisible) {
+      return <></>
+    }
+
+    if(typeof invisible === "string" && jexl.evalSync(invisible, {user})) {
+      return <></>
+    }
+
+    return <div key={route}><ListItem
+      key={route}
+      disableGutters={true}
       sx={{
-        color: 'inherit',
-        padding: '10px 8px',
-        justifyContent: 'flex-start',
-        textTransform: 'none',
-        letterSpacing: 0,
-        width: '100%',
-        fontWeight: theme.typography.fontWeightMedium,
-        "&.active": {
-          color: theme.palette.primary.main,
-          fontWeight: theme.typography.fontWeightMedium,
-        }
-      }}
-      component={NavLink}
-      to={route}
-    >
-      <Box component={"div"} sx={{
-        width: 24,
-        height: 24,
         display: 'flex',
-        alignItems: 'center',
-        marginRight: theme.spacing(1),
-      }}>
-        <Icon />
-      </Box>
-      {label}
-    </Button>
-  </ListItem>
-  {pageMatch.pathname.includes(route) && <SidebarSubMenu />}
-  </div>);
+        paddingTop: 0,
+        paddingBottom: 0,
+      }}
+    >
+      <Button
+        sx={{
+          color: 'inherit',
+          padding: '10px 8px',
+          justifyContent: 'flex-start',
+          textTransform: 'none',
+          letterSpacing: 0,
+          width: '100%',
+          fontWeight: theme.typography.fontWeightMedium,
+          "&.active": {
+            color: theme.palette.primary.main,
+            fontWeight: theme.typography.fontWeightMedium,
+          }
+        }}
+        component={NavLink}
+        to={route}
+      >
+        <Box component={"div"} sx={{
+          width: 24,
+          height: 24,
+          display: 'flex',
+          alignItems: 'center',
+          marginRight: theme.spacing(1),
+        }}>
+          <Icon/>
+        </Box>
+        {label}
+      </Button>
+    </ListItem>
+      {pageMatch.pathname.includes(route) && <SidebarSubMenu/>}
+    </div>
+  });
 
   return <Drawer
     open={props.open || sideBarPersistent}

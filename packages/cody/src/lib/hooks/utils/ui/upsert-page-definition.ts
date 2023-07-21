@@ -1,4 +1,4 @@
-import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
+import {CodyResponse, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "../../context";
 import {FsTree} from "nx/src/generators/tree";
 import {List} from "immutable";
@@ -7,14 +7,14 @@ import {isDynamicBreadcrumb, UiMetadata} from "./get-ui-metadata";
 import {updateProophBoardInfo} from "../prooph-board-info";
 import {names} from "@event-engine/messaging/helpers";
 import {detectService} from "../detect-service";
-import {isCodyError} from "@proophboard/cody-utils";
+import {getSourcesOfType, isCodyError} from "@proophboard/cody-utils";
 import {generateFiles} from "@nx/devkit";
 import {toJSON} from "../to-json";
 import {getVoMetadata} from "../value-object/get-vo-metadata";
 import {isQueryableStateDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
-import {voFQCN} from "../value-object/definitions";
 import {getVoFromSyncedNodes} from "../value-object/get-vo-from-synced-nodes";
 import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
+import {getNodesOfTypeNearby} from "../node-tree";
 
 export const upsertTopLevelPage = async (
   ui: Node,
@@ -57,13 +57,22 @@ export const upsertTopLevelPage = async (
 
   const [breadcrumb, imports] = breadcrumbInfo;
 
+  const allowedRoles = getAllowedRoles(ui, ctx);
+
+  if(isCodyError(allowedRoles)) {
+    return allowedRoles;
+  }
+
+  const invisible = allowedRoles.count() ? convertToRoleCheck(allowedRoles): undefined;
+
   const sidebarIcon = uiMeta.sidebar?.icon || 'SquareRoundedOutline';
 
   imports.push(`import {${sidebarIcon}} from "mdi-material-ui"`)
 
   const sidebar = {
     label: uiMeta.sidebar?.label || uiNames.name,
-    icon: sidebarIcon
+    icon: sidebarIcon,
+    invisible,
   };
 
   generateFiles(tree, __dirname + '/../../ui-files/page-files/top-level', ctx.feSrc + '/app/pages', {
@@ -141,6 +150,35 @@ export const upsertSubLevelPage = async (
   })
 
   return true;
+}
+
+const getAllowedRoles = (ui: Node, ctx: Context): List<Node> | CodyResponse => {
+  const connectedRoles = getSourcesOfType(ui, NodeType.role, true, false, true);
+
+  if(isCodyError(connectedRoles)) {
+    return connectedRoles;
+  }
+
+  const connectedRolesNames = connectedRoles.map(r => r.getName());
+
+  const rolesNearby = getNodesOfTypeNearby(ui, NodeType.role, 200, ctx.syncedNodes)
+    .filter(r => !connectedRolesNames.contains(r.getName()));
+
+  return connectedRoles.merge(rolesNearby);
+}
+
+const convertToRoleCheck = (roles: List<Node>): string => {
+  let check = '';
+  let firstCheck = true;
+
+  roles.forEach(role => {
+    const roleName = names(role.getName()).className;
+    const roleCheck = `!isRole(user, '${roleName}')`;
+    check += firstCheck ? roleCheck : ' && ' + roleCheck;
+    firstCheck = false;
+  })
+
+  return check;
 }
 
 const getCommandNames = (commands: List<Node>, ctx: Context, existingPageDefinition?: PageDefinition): string[] | CodyResponse => {

@@ -14,7 +14,7 @@ import {
 import {detectService} from "./utils/detect-service";
 import {findAggregateState} from "./utils/aggregate/find-aggregate-state";
 import {getNodeFromSyncedNodes} from "./utils/node-tree";
-import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
+import {asyncWithErrorCheck, CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {toJSON} from "./utils/to-json";
@@ -26,6 +26,7 @@ import {addSchemaTitles} from "./utils/json-schema/add-schema-titles";
 import {normalizeRefs} from "./utils/value-object/definitions";
 import {jsonSchemaFromShorthand} from "./utils/json-schema/json-schema-from-shorthand";
 import {ensureAllRefsAreKnown} from "./utils/json-schema/ensure-all-refs-are-known";
+import {upsertCommandComponent} from "./utils/ui/upsert-command-component";
 
 export interface CommandMeta {
   newAggregate: boolean;
@@ -91,6 +92,7 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
     });
 
     withErrorCheck(register, [command, ctx, tree]);
+    await asyncWithErrorCheck(upsertCommandComponent, [command, ctx, tree]);
 
     await formatFiles(tree);
 
