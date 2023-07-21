@@ -66,9 +66,10 @@ to the backend service.
 By default, Cody Engine runs in a prototyping mode. This means, that the app is not secured by authentication and data is
 only written to json files located in the `data` directory.
 
-The mode can be changed. Cody Engine also ships with `Postgres` adapters and will include `Keycloak` for authentication soon.
-For now, start with the prototyping mode and watch the `cody-engine` repo for updates. We will provide guidance for switching
-to production mode in the next weeks.
+The mode can be changed so that Cody Engine connects to a `Postgres` database and uses an authentication server like `Keycloak`.
+
+However, the needed extensions are not part of the Open Source Cody Engine. If you're interested in running Cody Engine as a
+production system, please get in touch with the [prooph board team](https://prooph-software.de/#board).
 
 ## Extension Points
 
