@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Persona} from "@app/shared/extensions/personas";
+import {Persona, PERSONA_STORAGE_KEY} from "@app/shared/extensions/personas";
 import {Box, Button, Card, CardActions, CardContent, Typography} from "@mui/material";
 import UserAvatar from "@frontend/app/components/core/UserAvatar";
 import Grid2 from "@mui/material/Unstable_Grid2";
@@ -18,6 +18,7 @@ const PersonaCard = (props: PersonaCardProps) => {
 
   const handleSignIn = () => {
     setCurrentUser(persona);
+    sessionStorage.setItem(PERSONA_STORAGE_KEY, JSON.stringify(persona));
   }
 
   return <Grid2 xs={12} sm={6} md={4}>

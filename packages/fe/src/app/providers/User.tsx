@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {User as AppUser} from "@app/shared/types/core/user/user";
 import {PropsWithChildren, useState} from "react";
+import {PERSONA_STORAGE_KEY} from "@app/shared/extensions/personas";
 
 const Anyone: AppUser = {
   displayName: 'Anyone',
@@ -16,11 +17,15 @@ interface OwnProps {
 
 type UserProps = OwnProps & PropsWithChildren;
 
+const sessionPersonaStr = sessionStorage.getItem(PERSONA_STORAGE_KEY);
+
+const defaultPersona = sessionPersonaStr ? JSON.parse(sessionPersonaStr) : Anyone;
+
 // eslint-disable-next-line @typescript-eslint/no-empty-function
-export const UserContext = React.createContext({user: Anyone, setUser: (user: AppUser) => {}})
+export const UserContext = React.createContext({user: defaultPersona, setUser: (user: AppUser) => {}})
 
 const User = (props: UserProps) => {
-  const [user, setUser] = useState(Anyone);
+  const [user, setUser] = useState(defaultPersona);
 
   return <UserContext.Provider value={{user, setUser}}>
     {props.children}
