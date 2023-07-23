@@ -1,4 +1,4 @@
-const UserRoles = [
+export const UserRoles = [
   'Anyone'
 ] as const;
 
