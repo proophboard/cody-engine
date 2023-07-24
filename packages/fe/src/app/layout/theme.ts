@@ -40,6 +40,12 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
       typography: {
         h3: {
           fontSize: '2rem'
+        },
+        h4: {
+          fontSize: '1.5rem'
+        },
+        h5: {
+          fontSize: '1.3rem'
         }
       },
       components: {
