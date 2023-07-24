@@ -103,6 +103,7 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
 
   return <div>
     <Typography id={props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}</Typography>
+    {!props.items.length && <Box className={'array-element-wrapper'} key={'array_ele_wrapper_empty'}><Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Box> }
     {props.items.map((element, index) => <Box className={'array-element-wrapper'} key={'array_ele_wrapper_' + index}>{element.children}</Box>)}
   </div>
     ;
