@@ -88,7 +88,7 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
   }
 
   return <div>
-    <Typography id={props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className="sidebar-anchor" sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>
+    <Typography id={props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>
     {props.description}
     {props.properties.map(element => <Box component="div" key={'ele_wrapper_' + element.name} sx={{marginBottom: '10px'}}>{element.content}</Box>)}
   </div>
@@ -102,7 +102,7 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
   }
 
   return <div>
-    <Typography id={props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className="sidebar-anchor" sx={getObjPropTitleStyle(headingVariant)}>{props.title}</Typography>
+    <Typography id={props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}</Typography>
     {props.items.map((element, index) => <Box className={'array-element-wrapper'} key={'array_ele_wrapper_' + index}>{element.children}</Box>)}
   </div>
     ;
