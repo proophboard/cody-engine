@@ -19,10 +19,10 @@ import {GridDensity} from "@mui/x-data-grid";
 import {addSchemaTitles} from "../json-schema/add-schema-titles";
 import {jsonSchemaFromShorthand} from "../json-schema/json-schema-from-shorthand";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
+import {isShorthand} from "../json-schema/shorthand";
 
 interface ValueObjectMetadataRaw {
   identifier?: string;
-  shorthand?: boolean;
   schema: any;
   querySchema?: any;
   resolve?: ResolveConfig;
@@ -103,7 +103,7 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     ns += '/';
   }
 
-  if(meta.shorthand) {
+  if(isShorthand(meta.schema)) {
     const jsonSchema = jsonSchemaFromShorthand(meta.schema as ShorthandObject, ns);
 
     if(isCodyError(jsonSchema)) {
@@ -111,16 +111,6 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     }
 
     meta.schema = jsonSchema;
-
-    if(meta.querySchema) {
-      const queryJsonSchema = jsonSchemaFromShorthand(meta.querySchema as ShorthandObject, ns);
-
-      if(isCodyError(queryJsonSchema)) {
-        return queryJsonSchema;
-      }
-
-      meta.querySchema = queryJsonSchema;
-    }
   }
 
   meta.schema['$id'] = definitionId(vo, ns, ctx);
@@ -132,6 +122,16 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
   }
 
   if(meta.querySchema) {
+    if(isShorthand(meta.querySchema)) {
+      const queryJsonSchema = jsonSchemaFromShorthand(meta.querySchema as ShorthandObject, ns);
+
+      if(isCodyError(queryJsonSchema)) {
+        return queryJsonSchema;
+      }
+
+      meta.querySchema = queryJsonSchema;
+    }
+
     meta.querySchema = normalizeRefs(addSchemaTitles('Get ' + vo.getName(), meta.querySchema), service);
   }
 

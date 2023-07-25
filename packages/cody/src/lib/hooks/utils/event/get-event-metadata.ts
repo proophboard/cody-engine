@@ -9,9 +9,9 @@ import {names} from "@event-engine/messaging/helpers";
 import {FQCNFromDefinitionId, normalizeRefs} from "../value-object/definitions";
 import {addSchemaTitles} from "../json-schema/add-schema-titles";
 import {jsonSchemaFromShorthand} from "../json-schema/json-schema-from-shorthand";
+import {isShorthand} from "../json-schema/shorthand";
 
 interface EventMetaRaw {
-  shorthand?: boolean;
   schema: any;
   service?: string;
   public?: boolean;
@@ -42,7 +42,7 @@ export const getEventMetadata = (event: Node, ctx: Context): EventMeta | CodyRes
   const eventNames = names(event.getName());
 
   let schema: any = meta.schema || {};
-  if(meta.shorthand) {
+  if(isShorthand(schema)) {
     schema = jsonSchemaFromShorthand(schema as ShorthandObject, '/events');
 
     if(isCodyError(schema)) {

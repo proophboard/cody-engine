@@ -27,6 +27,7 @@ import {normalizeRefs} from "./utils/value-object/definitions";
 import {jsonSchemaFromShorthand} from "./utils/json-schema/json-schema-from-shorthand";
 import {ensureAllRefsAreKnown} from "./utils/json-schema/ensure-all-refs-are-known";
 import {upsertCommandComponent} from "./utils/ui/upsert-command-component";
+import {isShorthand} from "./utils/json-schema/shorthand";
 
 export interface CommandMeta {
   newAggregate: boolean;
@@ -47,7 +48,7 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
     const meta = withErrorCheck(parseJsonMetadata, [command]) as CommandMeta;
 
     let schema: any = meta.schema || {};
-    if(meta.shorthand) {
+    if(isShorthand(schema)) {
       schema = withErrorCheck(jsonSchemaFromShorthand, [schema as ShorthandObject, '/commands']);
     }
 
