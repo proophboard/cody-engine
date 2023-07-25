@@ -23,10 +23,11 @@ import validator from '@rjsf/validator-ajv8';
 import {IChangeEvent} from "@rjsf/core";
 import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
-import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
+import {cloneSchema, resolveRefs, resolveUiSchema} from "@event-engine/messaging/resolve-refs";
 import definitions from "@app/shared/types/definitions";
 import {useUser} from "@frontend/hooks/use-user";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
+import {types} from "@app/shared/types";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -131,8 +132,11 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
 
   const userWidgets = props.widgets || {};
 
+  const mainUiSchema = props.command.uiSchema ? props.command.uiSchema : undefined;
+  const resolvedUiSchema = resolveUiSchema(props.command.schema as any, types);
+  const uiSchema = normalizeUiSchema({...resolvedUiSchema, ...mainUiSchema}, {data: formData, user});
+
   const schema = resolveRefs(cloneSchema(props.command.schema as any), definitions) as RJSFSchema;
-  const uiSchema = props.command.uiSchema ? normalizeUiSchema(props.command.uiSchema, {data: formData, user}) : undefined;
 
   return (
     <div>

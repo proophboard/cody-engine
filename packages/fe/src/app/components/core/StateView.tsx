@@ -15,10 +15,11 @@ import validator from '@rjsf/validator-ajv8';
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
-import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
+import {cloneSchema, resolveRefs, resolveUiSchema} from "@event-engine/messaging/resolve-refs";
 import definitions from "@app/shared/types/definitions";
 import {useUser} from "@frontend/hooks/use-user";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
+import {types} from "@app/shared/types";
 
 interface OwnProps {
   state?: Record<string, any>;
@@ -112,10 +113,14 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
 const StateView = (props: StateViewProps) => {
   const theme = useTheme();
   const [user,] = useUser();
-  const uiSchema = props.description.uiSchema
+
+  const resolvedUiSchema = resolveUiSchema(props.description.schema as any, types);
+  const mainUiSchema = props.description.uiSchema;
+  const mergedUiSchema = {...resolvedUiSchema, ...mainUiSchema};
+  const uiSchema = Object.keys(mergedUiSchema).length > 0
     ? {
         "ui:readonly": true,
-        ...normalizeUiSchema(props.description.uiSchema, {data: props.state, user})
+        ...normalizeUiSchema(mergedUiSchema, {data: props.state, user})
       }
     : {"ui:readonly": true};
 

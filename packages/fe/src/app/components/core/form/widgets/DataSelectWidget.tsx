@@ -14,9 +14,14 @@ import {useApiQuery} from "@frontend/queries/use-api-query";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {commands} from "@frontend/app/components/commands";
 import {useParams} from "react-router-dom";
+import {JSONSchema7} from "json-schema-to-ts";
+import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
+import {names} from "@event-engine/messaging/helpers";
 
 // Copied from: https://github.com/rjsf-team/react-jsonschema-form/blob/main/packages/material-ui/src/SelectWidget/SelectWidget.tsx
 // and modified to use useApiQuery and turn result into select options
+
+type JSONSchemaWithId = JSONSchema7 & {$id: string};
 
 interface ParsedUiOptions {
   data: QueryableStateListDescription,
@@ -25,23 +30,33 @@ interface ParsedUiOptions {
   addItemCommand: string | null,
 }
 
-const parseOptions = (options: any): ParsedUiOptions => {
+const getVOFromTypes = (refOrFQCN: string, rootSchema: JSONSchemaWithId): ValueObjectRuntimeInfo => {
+  if(refOrFQCN[0] === "/") {
+    const rootId = rootSchema.$id || '';
+    const definitionIdParts = rootId.replace('/definitions/', '').split('/');
+    const service = names(definitionIdParts[0] || '').className;
+    refOrFQCN = (service + refOrFQCN).split("/").join(".");
+  }
 
+  if(!types[refOrFQCN]) {
+    throw new Error(`DataSelect: Unknown type "${refOrFQCN}"`);
+  }
+
+  return types[refOrFQCN];
+}
+
+const parseOptions = (options: any, rootSchema: JSONSchemaWithId): ParsedUiOptions => {
   if(!options.data || typeof options.data !== "string") {
     throw new Error('DataSelect: no "data" attribute configured!');
   }
 
-  if(!types[options.data]) {
-    throw new Error(`DataSelect: Unknown type "${options.data}"`);
-  }
-
-  const vo = types[options.data];
+  const vo = getVOFromTypes(options.data, rootSchema);
 
   if(!isQueryableStateListDescription(vo.desc)) {
     throw new Error(`DataSelect: Type "${options.data}" is not a queryable list`);
   }
 
-  if(!options.label || typeof options.label !== "string") {
+  if((!options.label || typeof options.label !== "string") && (!options.text || typeof options.text !== "string")) {
     throw new Error(`DataSelect: ui:options "label" is not a string`);
   }
 
@@ -55,7 +70,7 @@ const parseOptions = (options: any): ParsedUiOptions => {
 
   return {
     data: vo.desc,
-    label: options.label,
+    label: options.label || options.text,
     value: options.value,
     addItemCommand: options.addItemCommand || null,
   }
@@ -90,7 +105,7 @@ export default function DataSelectWidget<
     }: WidgetProps<T, S, F>) {
 
   const selectOptions: {label: string, value: string, readonly: boolean}[] = [];
-  const parsedOptions = parseOptions(options);
+  const parsedOptions = parseOptions(options, registry.rootSchema as JSONSchemaWithId);
   const routeParams = useParams();
 
   const query = useApiQuery(parsedOptions.data.query, routeParams);

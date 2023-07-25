@@ -1,10 +1,52 @@
 import {JSONSchema7} from "json-schema";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {Writable} from "json-schema-to-ts/lib/types/type-utils";
+import {UiSchema} from "@rjsf/utils";
+import {names} from "@event-engine/messaging/helpers";
+import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 
+const FQCNFromDefinitionId = (definitionId: string): string => {
+  const withoutPrefix = definitionId.replace('/definitions/', '');
+
+  const fqcnParts = withoutPrefix.split("/");
+
+  return fqcnParts.map(p => names(p).className).join(".");
+}
 
 export const cloneSchema = (schema: JSONSchema7): JSONSchema7 => {
   return JSON.parse(JSON.stringify(schema));
+}
+
+export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: string]: ValueObjectRuntimeInfo }): UiSchema | undefined => {
+  if(schema['$ref']) {
+    const fqcn = FQCNFromDefinitionId(schema['$ref']);
+
+    const refUiSchema = types[fqcn]?.uiSchema;
+
+    return refUiSchema && Object.keys(refUiSchema).length > 0 ? refUiSchema : undefined;
+  }
+
+  const uiSchema: UiSchema = {};
+
+  if(schema && schema.properties) {
+    for (const prop in schema.properties) {
+      const propUiSchema = resolveUiSchema(schema.properties[prop] as JSONSchema7, types);
+
+      if(propUiSchema) {
+        uiSchema[prop] = propUiSchema;
+      }
+    }
+  }
+
+  if(schema && schema.items) {
+    const itemsUiSchema = resolveUiSchema(schema.items as JSONSchema7, types);
+
+    if(itemsUiSchema) {
+      uiSchema['items'] = itemsUiSchema;
+    }
+  }
+
+  return Object.keys(uiSchema).length > 0 ? uiSchema : undefined;
 }
 
 export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: DeepReadonly<JSONSchema7>}): JSONSchema7 => {
