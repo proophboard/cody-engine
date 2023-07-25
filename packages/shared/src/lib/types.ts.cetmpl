@@ -1,4 +1,8 @@
 import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
+import {CoreImageImageVORuntimeInfo} from "@app/shared/types/core/image/image";
+import {CoreImageImageListVORuntimeInfo} from "@app/shared/types/core/image/image-list";
 
 export const types: TypeRegistry = {
+  'Core.Image.Image': CoreImageImageVORuntimeInfo,
+  'Core.Image.ImageList': CoreImageImageListVORuntimeInfo,
 }

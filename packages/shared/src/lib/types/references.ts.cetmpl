@@ -1,3 +1,8 @@
+import {ImageSchema} from "@app/shared/types/core/image/image.schema";
+import {ImageListSchema} from "@app/shared/types/core/image/image-list.schema";
 
-export type references = [];
+export type references = [
+  typeof ImageSchema,
+  typeof ImageListSchema
+];
 

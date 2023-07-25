@@ -1,5 +1,9 @@
+import {ImageSchema} from "@app/shared/types/core/image/image.schema";
+import {ImageListSchema} from "@app/shared/types/core/image/image-list.schema";
 
 const definitions = {
+  '/definitions/core/image/image': ImageSchema,
+  '/definitions/core/image/image-list': ImageListSchema,
 };
 
 export default definitions;
