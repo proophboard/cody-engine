@@ -2,7 +2,7 @@ import {PageDefinition} from "@frontend/app/pages/page-definitions";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import {useParams} from "react-router-dom";
 import CommandBar from "@frontend/app/layout/CommandBar";
-import {commands as commandComponents} from "@frontend/app/components/commands";
+import {loadCommandComponent} from "@frontend/util/components/load-command-components";
 import {views as viewComponents} from "@frontend/app/components/views";
 
 interface Props {
@@ -13,11 +13,7 @@ export const StandardPage = (props: Props) => {
   const routeParams = useParams();
 
   const cmdBtns = props.page.commands.map((commandName,index) => {
-    if(!commandComponents[commandName]) {
-      throw new Error(`No command component registered for command: "${commandName}". Please check the registry file: packages/fe/src/app/components/commands.ts!`);
-    }
-
-    const Command = commandComponents[commandName];
+    const Command = loadCommandComponent(commandName);
     return <Command key={commandName} {...routeParams} />
   });
 
