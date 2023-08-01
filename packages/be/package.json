@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "cucumber": "cucumber-js -p default"
+  },
     "dependencies": {
         "@app/shared": "file:be/packages/shared",
         "@event-engine/infrastructure": "file:be/packages/infrastructure",

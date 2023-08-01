@@ -9,7 +9,8 @@
     "test": "npx nx run-many -t test -p be fe shared",
     "test-be": "npx nx run be:test",
     "test-fe": "npx nx run fe:test",
-    "test-shared": "npx nx run shared:test"
+    "test-shared": "npx nx run shared:test",
+    "test-scenarios": "npx nx run be:cucumber"
   },
   "private": false,
   "devDependencies": {
