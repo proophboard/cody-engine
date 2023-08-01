@@ -80,6 +80,32 @@ Therefor, Cody Engine ships with many extension points to let you override code 
 You'll find `extensions` directories in all main packages (fe, be, shared) with annotated files to guide you how to inject your own logic.
 As long as you only modify or add files in the `extensions` directories, you should be able to pull updates from the `cody-engine` upstream repository.
 
+## Testing
+
+Run tests of all 3 main packages in parallel:
+
+```shell
+npm run test
+```
+
+### Backend Testing
+
+```shell
+npm run test-be
+```
+
+### Frontend Testing
+
+```shell
+npm run test-fe
+```
+
+### Shared Library Testing
+
+```shell
+npm run test-shared
+```
+
 ## Contribution
 
 This repository is a skeleton for a Cody Engine app that has batteries included. This means, that Cody will
