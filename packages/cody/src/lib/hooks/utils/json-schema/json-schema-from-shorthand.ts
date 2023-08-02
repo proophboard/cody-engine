@@ -25,39 +25,6 @@ const normalizeShorthandObject = (shorthand: ShorthandObject): ShorthandObject =
   return shorthand;
 }
 
-const normalizeDataReference = (schema: any): JSONSchema | CodyResponse => {
-  if(isCodyError(schema)) {
-    return schema;
-  }
-
-  if(schema.type && schema.type === "object" && schema.properties) {
-    for (const propertiesKey in schema.properties) {
-      schema.properties[propertiesKey] = normalizeDataReference(schema.properties[propertiesKey]);
-    }
-
-    return schema as JSONSchema;
-  }
-
-  if(schema.type && schema.type === "array" && schema.items) {
-    schema.items = normalizeDataReference(schema.items);
-
-    return schema as JSONSchema;
-  }
-
-  for (const schemaKey in schema) {
-    if(schemaKey === "$ref" || schemaKey === "$id") {
-      continue;
-    }
-
-    if(schemaKey[0] === "$") {
-      schema[schemaKey.slice(1)] = {$data: schema[schemaKey]};
-      delete schema[schemaKey];
-    }
-  }
-
-  return schema as JSONSchema;
-}
-
 export const jsonSchemaFromShorthand = (shorthand: string | ShorthandObject, namespace: string): JSONSchema | CodyResponse => {
   if(typeof shorthand === "string") {
     return convertShorthandStringToJsonSchema(normalizeShorthandString(shorthand), namespace);
