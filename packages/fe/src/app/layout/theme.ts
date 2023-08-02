@@ -17,6 +17,8 @@ declare module '@mui/material/styles' {
 }
 
 export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiTheme> => {
+  const defaultTheme = createMuiTheme(options);
+
   options = merge(
     {
       stateView: {
@@ -72,8 +74,8 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
                 minHeight: "250px"
               },
               "& .MuiDataGrid-cell a": {
-                color: '#497ad2',
-                fontWeight: 600,
+                color: defaultTheme.palette.primary.main,
+                fontWeight: 500,
                 textDecoration: 'none'
               }
             }
@@ -100,7 +102,9 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
     options
   );
 
-  options = merge(options, overwriteTheme);
+  const codyEngineTheme = createMuiTheme(defaultTheme, options);
 
-  return createMuiTheme(options);
+  options = merge(options, overwriteTheme(codyEngineTheme));
+
+  return createMuiTheme(codyEngineTheme, options);
 }
