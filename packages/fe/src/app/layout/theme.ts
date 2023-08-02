@@ -70,6 +70,27 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
             root: {
               "& .MuiDataGrid-overlayWrapper": {
                 minHeight: "250px"
+              },
+              "& .MuiDataGrid-cell a": {
+                color: '#497ad2',
+                fontWeight: 600,
+                textDecoration: 'none'
+              }
+            }
+          }
+        },
+        MuiPaper: {
+          styleOverrides: {
+            root: {
+              boxShadow: "none"
+            }
+          }
+        },
+        MuiAvatar: {
+          styleOverrides: {
+            root: {
+              "& .MuiAvatar-img": {
+                objectFit: 'contain'
               }
             }
           }
