@@ -1,5 +1,5 @@
 import {JSONSchema7TypeName} from "json-schema";
-import {PRIMITIVE_SCHEMA_TYPES} from "./schema-types";
+import {PRIMITIVE_SCHEMA_TYPES, SCHEMA_TYPES} from "./schema-types";
 
 export interface ShorthandObject {
   [prop: string]: string | ShorthandObject;
@@ -13,6 +13,10 @@ export const isShorthand = (schema: any): schema is Shorthand => {
   }
 
   if(typeof schema === "object") {
+    if(schema.type && SCHEMA_TYPES.includes(schema.type)) {
+      return false;
+    }
+
     return isObject(schema) || isList(schema) || isPrimitive(schema);
   }
 

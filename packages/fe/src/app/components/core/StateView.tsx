@@ -11,7 +11,6 @@ import {
 import {Box, Card, CardContent, CircularProgress, SxProps, Typography, useTheme} from "@mui/material";
 import {PropsWithChildren, useEffect} from "react";
 import {Form} from "@rjsf/mui";
-import validator from '@rjsf/validator-ajv8';
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
@@ -20,6 +19,7 @@ import definitions from "@app/shared/types/definitions";
 import {useUser} from "@frontend/hooks/use-user";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {types} from "@app/shared/types";
+import {getRjsfValidator} from "@frontend/util/rjsf-validator";
 
 interface OwnProps {
   state?: Record<string, any>;
@@ -119,9 +119,9 @@ const StateView = (props: StateViewProps) => {
   const mergedUiSchema = {...resolvedUiSchema, ...mainUiSchema};
   const uiSchema = Object.keys(mergedUiSchema).length > 0
     ? {
-        "ui:readonly": true,
-        ...normalizeUiSchema(mergedUiSchema, {data: props.state, user})
-      }
+      "ui:readonly": true,
+      ...normalizeUiSchema(mergedUiSchema, {data: props.state, user})
+    }
     : {"ui:readonly": true};
 
   const userWidgets = props.widgets || {};
@@ -133,37 +133,37 @@ const StateView = (props: StateViewProps) => {
   const schema = resolveRefs(cloneSchema(props.description.schema as any), definitions) as RJSFSchema;
 
   return <Card>
-          <CardContent sx={theme.stateView.styleOverrides}>
-              <Form
-                  schema={schema}
-                  validator={validator}
-                  children={<></>}
-                  formData={props.state}
-                  uiSchema={uiSchema}
-                  className="stateview"
-                  templates={
-                    {
-                      ObjectFieldTemplate: props.objectFieldTemplate || ObjectFieldTemplate,
-                      ArrayFieldTemplate: props.arrayFieldTemplate || ArrayFieldTemplate,
-                      ...(props.fieldTemplate ? {FieldTemplate: props.fieldTemplate} : {})
-                    }
-                  }
-                  widgets={
-                    {
-                      // LinkedRef: LinkedReferenceWidget,
-                      // TextareaWidget: TextareaWidget,
-                      // TextWidget: TextWidget,
-                      ...widgets,
-                      ...userWidgets
-                    }
-                  }
-                  fields={{
-                    ...fields,
-                    ...props.fields
-                  }}
-              />
-          </CardContent>
-        </Card>;
+    <CardContent sx={theme.stateView.styleOverrides}>
+      <Form
+        schema={schema}
+        validator={getRjsfValidator()}
+        children={<></>}
+        formData={props.state}
+        uiSchema={uiSchema}
+        className="stateview"
+        templates={
+          {
+            ObjectFieldTemplate: props.objectFieldTemplate || ObjectFieldTemplate,
+            ArrayFieldTemplate: props.arrayFieldTemplate || ArrayFieldTemplate,
+            ...(props.fieldTemplate ? {FieldTemplate: props.fieldTemplate} : {})
+          }
+        }
+        widgets={
+          {
+            // LinkedRef: LinkedReferenceWidget,
+            // TextareaWidget: TextareaWidget,
+            // TextWidget: TextWidget,
+            ...widgets,
+            ...userWidgets
+          }
+        }
+        fields={{
+          ...fields,
+          ...props.fields
+        }}
+      />
+    </CardContent>
+  </Card>;
 };
 
 export default StateView;

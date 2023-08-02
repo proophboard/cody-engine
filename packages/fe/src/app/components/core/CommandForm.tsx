@@ -19,7 +19,6 @@ import {Alert, AlertTitle, Container} from "@mui/material";
 import AxiosResponseViewer from "@frontend/app/components/core/AxiosResponseViewer";
 import {AxiosError, AxiosResponse} from "axios";
 import {commandTitle} from "@frontend/app/components/core/CommandButton";
-import validator from '@rjsf/validator-ajv8';
 import {IChangeEvent} from "@rjsf/core";
 import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
@@ -28,6 +27,7 @@ import definitions from "@app/shared/types/definitions";
 import {useUser} from "@frontend/hooks/use-user";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {types} from "@app/shared/types";
+import {getRjsfValidator} from "@frontend/util/rjsf-validator";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -155,7 +155,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
               showErrorList={false}
               onError={handleValidationError}
               onChange={handleChange}
-              validator={validator}
+              validator={getRjsfValidator()}
               templates={{
                 ...(props.objectFieldTemplate? {ObjectFieldTemplate: props.objectFieldTemplate} : {}),
                 ...(props.arrayFieldTemplate? {ArrayFieldTemplate: props.arrayFieldTemplate} : {}),
