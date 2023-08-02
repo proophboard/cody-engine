@@ -29,7 +29,7 @@
     "@proophboard/cody-server": "^0.4.3",
     "@proophboard/cody-types": "^0.3.2",
     "@proophboard/cody-utils": "^0.2.0",
-    "@proophboard/schema-to-typescript": "^0.3.0",
+    "@proophboard/schema-to-typescript": "^0.3.1",
     "@svgr/webpack": "^6.1.2",
     "@swc-node/register": "~1.4.2",
     "@swc/cli": "~0.1.62",
