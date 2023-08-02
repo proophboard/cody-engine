@@ -154,7 +154,7 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableSt
 
   if(meta.resolve) {
     if(meta.resolve.where) {
-      jexlInit = `const ctx: any = {query: query.payload, queryMeta: query.meta}\n\n  `;
+      jexlInit = `const ctx: any = {query: query.payload, meta: query.meta}\n\n  `;
     }
 
     if(meta.resolve.orderBy) {

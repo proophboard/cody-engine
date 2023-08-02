@@ -5,6 +5,8 @@ import {ValidationError} from "ajv";
 import 'express-async-errors';
 import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
+import {extractMetadataFromHeaders} from "@server/infrastructure/extractMetadataFromHeaders";
+import {ensureCEUserIsNotSetInProductionMode} from "@server/infrastructure/ensureCEUserIsNotSetInProductionMode";
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 4100;
@@ -13,6 +15,7 @@ const app = express();
 const messageBox = getConfiguredMessageBox();
 
 app.use(json());
+app.use(ensureCEUserIsNotSetInProductionMode);
 
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   if(err instanceof ValidationError) {
@@ -37,7 +40,7 @@ app.post('/api/:module/messages/:name', async (req, res) => {
 
   if(messageBox.isCommand(fqcn)) {
     const cmdInfo = messageBox.getCommandInfo(fqcn);
-    const cmd = cmdInfo.factory(req.body);
+    const cmd = cmdInfo.factory(req.body, extractMetadataFromHeaders(req));
     const success = await messageBox.commandBus.dispatch(cmd, cmdInfo.desc);
     res.json({success});
     return;
@@ -45,7 +48,7 @@ app.post('/api/:module/messages/:name', async (req, res) => {
 
   if(messageBox.isEvent(fqcn)) {
     const evtInfo = messageBox.getEventInfo(fqcn);
-    const evt = evtInfo.factory(req.body);
+    const evt = evtInfo.factory(req.body, extractMetadataFromHeaders(req));
     const success = await messageBox.eventBus.on(evt);
     res.json({success});
     return;
@@ -63,7 +66,7 @@ app.post('/api/:module/messages/:aggregate/:name', async (req, res) => {
 
   if(messageBox.isEvent(fqcn)) {
     const evtInfo = messageBox.getEventInfo(fqcn);
-    const evt = evtInfo.factory(req.body);
+    const evt = evtInfo.factory(req.body, extractMetadataFromHeaders(req));
     const success = await messageBox.eventBus.on(evt);
     res.json({success});
     return;
@@ -82,7 +85,7 @@ app.get('/api/:module/messages/:name', async (req, res) => {
   }
 
   const queryInfo = messageBox.getQueryInfo(fqcn);
-  const query = queryInfo.factory(determineQueryPayload(req.query, queryInfo));
+  const query = queryInfo.factory(determineQueryPayload(req.query, queryInfo), extractMetadataFromHeaders(req));
 
   res.json(await messageBox.queryBus.dispatch(query, queryInfo.desc));
 });

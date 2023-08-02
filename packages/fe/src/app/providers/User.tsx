@@ -2,6 +2,8 @@ import * as React from 'react';
 import {User as AppUser} from "@app/shared/types/core/user/user";
 import {PropsWithChildren, useState} from "react";
 import {PERSONA_STORAGE_KEY} from "@app/shared/extensions/personas";
+import {environment} from "@frontend/environments/environment";
+import {setPrototypePersonaHeader} from "@frontend/extensions/http/configured-axios";
 
 const Anyone: AppUser = {
   displayName: 'Anyone',
@@ -23,6 +25,10 @@ const defaultPersona = sessionPersonaStr ? JSON.parse(sessionPersonaStr) : Anyon
 
 // eslint-disable-next-line @typescript-eslint/no-empty-function
 export const UserContext = React.createContext({user: defaultPersona, setUser: (user: AppUser) => {}})
+
+if (environment.mode === "prototype") {
+  setPrototypePersonaHeader(defaultPersona);
+}
 
 const User = (props: UserProps) => {
   const [user, setUser] = useState(defaultPersona);

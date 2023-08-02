@@ -5,6 +5,7 @@ import {Environment} from "./environment.schema";
 
 export const env: Environment = {
   production: false,
+  mode: "prototype",
   keycloak: {
     baseUrl: 'http://localhost:8080',
     realm: 'app'

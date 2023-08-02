@@ -51,6 +51,10 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
         {
           name: 'command',
           initializer: 'command.payload',
+        },
+        {
+          name: 'meta',
+          initializer: 'command.meta',
         }
       ]
     ]);
