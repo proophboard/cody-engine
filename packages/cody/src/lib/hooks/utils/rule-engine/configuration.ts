@@ -36,7 +36,7 @@ export interface ValidateRule extends Rule {
   validate: JSONSchema7;
 }
 
-export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenPerformQuery | ThenExecuteRules | ThenForEach | ThenFilter;
+export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenFetchData | ThenExecuteRules | ThenForEach | ThenFilter;
 
 export type PropMapping = {[name: string]: string | string[]};
 
@@ -94,29 +94,30 @@ export const isTriggerCommand = (then: any): then is ThenTriggerCommand => typeo
 export interface ThenCallService {
   call: {
     service: string;
-    arguments: PropMapping;
+    arguments?: PropMapping;
     method?: string;
+    async?: boolean;
     result: {
       variable: string;
-      mapping: string | PropMapping;
+      mapping?: string | PropMapping;
     }
   }
 }
 
 export const isCallService = (then: any): then is ThenCallService => typeof then.call !== 'undefined';
 
-export interface ThenPerformQuery {
-  perform: {
+export interface ThenFetchData {
+  fetch: {
     query: string;
-    mapping: string | PropMapping;
+    mapping?: string | PropMapping;
     result: {
       variable: string;
-      mapping: string | PropMapping;
+      mapping?: string | PropMapping;
     }
   }
 }
 
-export const isPerformQuery = (then: any): then is ThenPerformQuery => typeof then.perform !== 'undefined';
+export const isFetchData = (then: any): then is ThenFetchData => typeof then.fetch !== 'undefined';
 
 export interface ThenExecuteRules {
   execute: {
