@@ -71,7 +71,7 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
 
     withErrorCheck(ensureAllRefsAreKnown, [command, schema]);
 
-    const tree = new FsTree(ctx.projectRoot, true);
+    const {tree} = ctx;
 
     generateFiles(tree, __dirname + '/command-files/shared', ctx.sharedSrc, {
       'tmpl': '',

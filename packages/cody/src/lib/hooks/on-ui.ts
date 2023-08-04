@@ -54,7 +54,7 @@ export const onUi: CodyHook<Context> = async (ui, ctx) => {
     const topLevelPage = withErrorCheck(isTopLevelPage, [ui, uiMeta, ctx]);
     const route = await asyncWithErrorCheck(detectRoute, [ui, uiMeta, topLevelPage, ctx, routeParams, isCodyError(pageDefinition)? undefined : pageDefinition]);
 
-    const tree = new FsTree(ctx.projectRoot, true);
+    const {tree} = ctx;
 
     if(topLevelPage) {
       await asyncWithErrorCheck(

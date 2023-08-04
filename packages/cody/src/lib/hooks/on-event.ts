@@ -48,7 +48,7 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
 
     withErrorCheck(ensureAllRefsAreKnown, [event, meta.schema]);
 
-    const tree = new FsTree(ctx.projectRoot, true);
+    const {tree} = ctx;
 
     generateFiles(tree, __dirname + '/event-files/shared', ctx.sharedSrc, {
       'tmpl': '',

@@ -14,7 +14,7 @@ export const onRole: CodyHook<Context> = async (role: Node, ctx: Context): Promi
 
     const {UserRoles} = requireUncached('@app/shared/types/core/user/user-role');
 
-    const tree = new FsTree(ctx.projectRoot, true);
+    const {tree} = ctx;
 
     if(!UserRoles.includes(roleNames.className)) {
       withErrorCheck(register, [role, ctx, tree]);

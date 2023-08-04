@@ -60,7 +60,7 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
     ]);
 
 
-    const tree = new FsTree(ctx.projectRoot, true);
+    const {tree} = ctx;
 
     generateFiles(tree, __dirname + '/aggregate-files/shared', ctx.sharedSrc, {
       'tmpl': '',

@@ -39,7 +39,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
       queryNames = names('Get' + voNames.className);
     }
 
-    const tree = new FsTree(ctx.projectRoot, true);
+    const {tree} = ctx;
 
     const ns = namespaceNames(voMeta.ns);
 

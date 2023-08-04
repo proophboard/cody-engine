@@ -6,6 +6,7 @@ import {onDocument} from "./src/lib/hooks/on-document";
 import {onUi} from "./src/lib/hooks/on-ui";
 import {onPolicy} from "./src/lib/hooks/on-policy";
 import {onRole} from "./src/lib/hooks/on-role";
+import {FsTree} from "nx/src/generators/tree";
 
 module.exports = {
   context: {
@@ -22,6 +23,7 @@ module.exports = {
     boardId: '',
     boardName: '',
     userId: '',
+    tree: new FsTree(__dirname + '/../..', true)
   },
   hooks: {
     /**
