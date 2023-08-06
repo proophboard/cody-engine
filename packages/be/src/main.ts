@@ -94,6 +94,10 @@ app.get('/health', (req, res) => {
   res.send({ message: "It Works" });
 });
 
+app.get('/api/health', (req, res) => {
+  res.send({ message: "It Works" });
+});
+
 app.use(errorHandler);
 
 app.listen(port, host, () => {
