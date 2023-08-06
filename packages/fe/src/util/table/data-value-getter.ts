@@ -8,6 +8,10 @@ export const dataValueGetter = (query: UseQueryResult, itemIdentifier: string, c
 
     const matchingItem = query.data.find(item => item[itemIdentifier] === cellValue);
 
+    if(!matchingItem && !cellValue) {
+      return '-';
+    }
+
     if(!matchingItem) {
       return '⚠ Error: Not found!'
     }

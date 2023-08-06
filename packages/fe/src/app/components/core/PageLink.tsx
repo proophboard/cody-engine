@@ -11,14 +11,19 @@ interface OwnProps {
 type PageLinkProps = OwnProps & PropsWithChildren;
 
 const PageLink = (props: PageLinkProps) => {
-  let path: string = '/';
+  let path = '/';
 
   if(isTopLevelPage(props.page)) {
     path = props.page.route;
   }
 
   if(isSubLevelPage(props.page)) {
-    path = generatePath(props.page.route, props.params);
+    try {
+      path = generatePath(props.page.route, props.params);
+    } catch (e) {
+      console.error("[PageLink] Failed to generate path: ", e);
+      return <>{props.children}</>
+    }
   }
 
   return <Link to={path}>{props.children}</Link>
