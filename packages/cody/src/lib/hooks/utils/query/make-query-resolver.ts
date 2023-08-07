@@ -13,7 +13,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {isObjectSchema, ObjectSchema} from "../json-schema/is-object-schema";
 import {voClassNameFromFQCN} from "../value-object/definitions";
 import {JSONSchema7} from "json-schema-to-ts";
-import {isFilter, isIfConditionRule, isIfNotConditionRule} from "../rule-engine/configuration";
+import {isExecuteRules, isFilter, isIfConditionRule, isIfNotConditionRule} from "../rule-engine/configuration";
 import {wrapExpression} from "../rule-engine/convert-rule-config-to-behavior";
 import {
   AnyOfDocIdFilter,
@@ -42,6 +42,7 @@ import {
   LtFilter
 } from "../value-object/query/filter-types";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
+import {isCodyError} from "@proophboard/cody-utils";
 
 export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
   if(!voMeta.isQueryable) {
@@ -201,7 +202,7 @@ const mapOrderByProp = (orderBy: SortOrderItem): SortOrderItem => {
   }
 }
 
-const makeFiltersFromResolveConfig = (vo: Node, resolveConfig: ResolveConfig): string | CodyResponse => {
+const makeFiltersFromResolveConfig = (vo: Node, resolveConfig: ResolveConfig, indent = '  '): string | CodyResponse => {
   const lines: string[] = [];
 
   const rule = resolveConfig.where;
@@ -219,7 +220,7 @@ const makeFiltersFromResolveConfig = (vo: Node, resolveConfig: ResolveConfig): s
   }
 
   if(isIfConditionRule(rule) || isIfNotConditionRule(rule)) {
-    if(rule.else && !isFilter(rule.else)) {
+    if(rule.else && !isFilter(rule.else) && (!isExecuteRules(rule.else) || rule.else.execute.rules.length !== 1)) {
       return  {
         cody: `The "else" part of a conditional resolve configuration should only contain a single filter rule. Please check resolve of Card "${vo.getName()}".`,
         type: CodyResponseType.Error,
@@ -232,34 +233,50 @@ const makeFiltersFromResolveConfig = (vo: Node, resolveConfig: ResolveConfig): s
 
     const expr = rule.if;
 
-    lines.push(`  (${wrapExpression(expr)}) ?`);
+    lines.push(`${indent}(${wrapExpression(expr)}) ?`);
 
-    makeFilter(rule.then.filter, lines, '    ');
+    makeFilter(rule.then.filter, lines, indent + '  ');
 
-    lines.push(`  :`);
+    lines.push(`${indent}:`);
 
     if(rule.else && isFilter(rule.else)) {
-      makeFilter(rule.else.filter, lines, '    ');
+      makeFilter(rule.else.filter, lines, indent + '  ');
+    } else if (rule.else && isExecuteRules(rule.else)) {
+      const ifElseFilters = makeFiltersFromResolveConfig(vo, {where: rule.else.execute.rules[0]}, indent + '  ');
+
+      if(isCodyError(ifElseFilters)) {
+        return ifElseFilters;
+      }
+
+      lines.push(ifElseFilters);
     } else {
-      lines.push(`    ${makeAnyFilter()}`)
+      lines.push(`${indent}  ${makeAnyFilter()}`)
     }
 
   } else if(isIfNotConditionRule(rule)) {
     const ifNotexpr = rule.if_not;
 
-    lines.push(`  (${wrapExpression(ifNotexpr)}) ?`);
+    lines.push(`${indent}!(${wrapExpression(ifNotexpr)}) ?`);
 
-    makeFilter(rule.then.filter, lines, '    ');
+    makeFilter(rule.then.filter, lines, indent + '  ');
 
-    lines.push(`  :`);
+    lines.push(`${indent}:`);
 
     if(rule.else && isFilter(rule.else)) {
-      makeFilter(rule.else.filter, lines, '    ');
-    } else {
-      lines.push(`    ${makeAnyFilter()}`)
+      makeFilter(rule.else.filter, lines, indent + '  ');
+    } else if (rule.else && isExecuteRules(rule.else)) {
+      const ifNotElseFilters = makeFiltersFromResolveConfig(vo, {where: rule.else.execute.rules[0]}, indent + '  ');
+
+      if(isCodyError(ifNotElseFilters)) {
+        return ifNotElseFilters;
+      }
+
+      lines.push(ifNotElseFilters);
+    }else {
+      lines.push(`${indent}  ${makeAnyFilter()}`)
     }
   } else {
-    makeFilter(rule.then.filter, lines, '  ');
+    makeFilter(rule.then.filter, lines, indent);
   }
 
   return lines.join("\n");
