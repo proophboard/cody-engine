@@ -227,7 +227,17 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
 }
 
 const getColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node, itemVOMeta: ValueObjectMetadata, ctx: Context): StringOrTableColumnUiSchema[] | CodyResponse => {
-  return voMeta.uiSchema?.table?.columns || deriveColumnsFromSchema(vo, voMeta, itemVO, itemVOMeta, ctx);
+  if(voMeta.uiSchema) {
+    if(voMeta.uiSchema['ui:table'] && voMeta.uiSchema['ui:table'].columns) {
+      return voMeta.uiSchema['ui:table'].columns;
+    }
+
+    if(voMeta.uiSchema.table && voMeta.uiSchema.table.columns) {
+      return voMeta.uiSchema.table.columns;
+    }
+  }
+
+  return deriveColumnsFromSchema(vo, voMeta, itemVO, itemVOMeta, ctx);
 }
 
 const getItemVO = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): Node | CodyResponse => {

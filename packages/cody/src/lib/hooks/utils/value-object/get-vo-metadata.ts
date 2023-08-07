@@ -60,17 +60,19 @@ export interface TableColumnUiSchema {
 
 export type StringOrTableColumnUiSchema = string | TableColumnUiSchema;
 
+interface TableProps {
+  columns?: StringOrTableColumnUiSchema[],
+  pageSize?: number,
+  pageSizeOptions?: number[],
+  density?: GridDensity,
+  hideToolbar?: boolean,
+  // @TODO: show/hide specific grid toolbar options or hide entire grid toolbar
+  // @TODO: support endless scroll, pagination, ... ?
+}
 
 export interface TableUiSchema {
-  table?: {
-    columns?: StringOrTableColumnUiSchema[],
-    pageSize?: number,
-    pageSizeOptions?: number[],
-    density?: GridDensity,
-    hideToolbar?: boolean,
-    // @TODO: show/hide specific grid toolbar options or hide entire grid toolbar
-    // @TODO: support endless scroll, pagination, ... ?
-  }
+  "ui:table"?: TableProps;
+  table?: TableProps;
 }
 
 export interface ValueObjectMetadata extends ValueObjectDescriptionFlags {
