@@ -35,7 +35,7 @@ export const isAnyFilter = (filter: any): filter is AnyFilter => {
 }
 
 export interface AnyOfDocIdFilter {
-  anyOfDocId: string[];
+  anyOfDocId: string;
 }
 
 export const isAnyOfDocIdFilter = (filter: any): filter is AnyOfDocIdFilter => {
