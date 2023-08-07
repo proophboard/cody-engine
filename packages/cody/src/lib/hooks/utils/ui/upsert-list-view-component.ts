@@ -25,6 +25,7 @@ import {Rule} from "../rule-engine/configuration";
 import {convertRuleConfigToTableColumnValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
 import {toJSON} from "../to-json";
 import {GridDensity} from "@mui/x-data-grid";
+import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference";
 
 export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetadata, ctx: Context, tree: FsTree): Promise<boolean|CodyResponse> => {
   const service = detectService(vo, ctx);
@@ -186,13 +187,13 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
           imports = addImport('import {dataValueGetter} from "@frontend/util/table/data-value-getter"', imports);
           imports = addImport('import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";', imports);
 
-          const listVO = getVoFromSyncedNodes((cValue as RefTableColumn).data, ctx);
+          const refListVo = getVOFromDataReference((cValue as RefTableColumn).data, vo, ctx);
 
-          if(isCodyError(listVO)) {
-            return listVO;
+          if(isCodyError(refListVo)) {
+            return refListVo;
           }
 
-          const dataValueGetterResult = prepareDataValueGetter(column.field, vo, listVO, (cValue as RefTableColumn).value, ctx, imports, indent);
+          const dataValueGetterResult = prepareDataValueGetter(column.field, vo, refListVo, (cValue as RefTableColumn).value, ctx, imports, indent);
 
           if(isCodyError(dataValueGetterResult)) {
             return dataValueGetterResult;

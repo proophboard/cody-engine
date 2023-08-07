@@ -15,6 +15,7 @@ import {isQueryableStateDescription, isQueryableStateListDescription} from "@eve
 import {getVoFromSyncedNodes} from "../value-object/get-vo-from-synced-nodes";
 import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
 import {getNodesOfTypeNearby} from "../node-tree";
+import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference";
 
 export const upsertTopLevelPage = async (
   ui: Node,
@@ -278,33 +279,4 @@ const getBreadcrumb = (ui: Node, uiMeta: UiMetadata, ctx: Context): [string, str
       'import jexl from "@app/shared/jexl/get-configured-jexl"'
     ]
   ]
-}
-
-const getVOFromDataReference = (data: string, ui: Node, ctx: Context): Node | CodyResponse => {
-  data = data.replace(".", "/");
-
-  if(data[0] === "/") {
-    data = data.slice(1);
-  }
-
-  const parts = data.split("/");
-
-  if(parts.length < 3) {
-    const service = detectService(ui, ctx);
-
-    if(isCodyError(service)) {
-      return service;
-    }
-
-    const serviceClassName = names(service).className;
-    const firstPart = names(parts[0]).className;
-
-    if(firstPart !== serviceClassName) {
-      parts.unshift(serviceClassName);
-    }
-  }
-
-  data = parts.map(p => names(p).className).join(".");
-
-  return getVoFromSyncedNodes(data, ctx);
 }
