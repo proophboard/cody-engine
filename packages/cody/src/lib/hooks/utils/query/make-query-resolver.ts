@@ -85,11 +85,29 @@ const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata 
     return codyQuerySchemaError;
   }
 
-  const filters = makeFiltersFromQuerySchema(querySchema);
+  const filters = meta.resolve?.where ? makeFiltersFromResolveConfig(vo, meta.resolve) : makeFiltersFromQuerySchema(querySchema);
 
-  return `const cursor = await ds.findDocs<{state: ${voNames.className}}>(
+  let jexlInit = '';
+  let orderBy = 'undefined';
+
+  if(meta.resolve) {
+    if(meta.resolve.where) {
+      jexlInit = `const ctx: any = {query: query.payload, meta: query.meta}\n\n  `;
+    }
+
+    if(meta.resolve.orderBy) {
+      orderBy = typeof meta.resolve.orderBy === 'object'
+        ? JSON.stringify([mapOrderByProp(meta.resolve.orderBy as SortOrderItem)])
+        : JSON.stringify((meta.resolve.orderBy as SortOrder).map(orderBy => mapOrderByProp(orderBy)));
+    }
+  }
+
+  return `${jexlInit}const cursor = await ds.findDocs<{state: ${voNames.className}}>(
     ${voNames.className}Desc.collection,
-    ${filters}
+    ${filters},
+    undefined,
+    1,
+    ${orderBy}
   );
   
   const result = await asyncIteratorToArray(asyncMap(cursor, ([,d]) => ${names(voNames.className).propertyName}(d.state)));
