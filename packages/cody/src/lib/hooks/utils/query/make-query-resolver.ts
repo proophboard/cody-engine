@@ -389,7 +389,7 @@ const makeEqFilter = (filter: EqFilter): string => {
 }
 
 const makeExistsFilter = (filter: ExistsFilter): string => {
-  return `new filters.ExistsFilter('state.${filter.exists}')`;
+  return `new filters.ExistsFilter('state.${filter.exists.prop}')`;
 }
 
 const makeGteFilter = (filter: GteFilter): string => {
