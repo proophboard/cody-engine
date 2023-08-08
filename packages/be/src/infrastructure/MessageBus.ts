@@ -4,9 +4,12 @@ import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {services} from "@server/extensions/services";
 import {Message} from "@event-engine/messaging/message";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
+import jexl from "@app/shared/jexl/get-configured-jexl";
+
+export type MessageType = 'command' | 'event' | 'query';
 
 export class MessageBus {
-  protected async loadDependencies(message: Message, desc: CommandDescription | PolicyDescription): Promise<any> {
+  protected async loadDependencies(message: Message, desc: CommandDescription | PolicyDescription, type: MessageType): Promise<any> {
 
     const {dependencies} = desc;
     const loadedDependencies: Record<string, any> = {};
@@ -18,6 +21,16 @@ export class MessageBus {
     for (const dependencyKey in dependencies) {
       const dep = dependencies[dependencyKey];
       const depName = dep.alias || dependencyKey;
+
+      if(dep.if) {
+        const ctx: any = {meta: message.meta, name: message.name};
+
+        ctx[type] = message.payload;
+
+        if(! await jexl.eval(dep.if, ctx)) {
+          continue;
+        }
+      }
 
       switch (dep.type) {
         case "query":

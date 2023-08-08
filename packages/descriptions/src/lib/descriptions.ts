@@ -15,6 +15,7 @@ export interface Dependency {
   type: DependencyType,
   options?: Record<string, any>,
   alias?: string,
+  if?: string,
 }
 
 export type DependencyRegistry = {[dependencyName: string]: Dependency}

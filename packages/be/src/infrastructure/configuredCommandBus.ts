@@ -18,7 +18,7 @@ type CommandHandler = ProcessingFunction | ProcessingFunctionWithDeps;
 class CommandBus extends MessageBus {
   public async dispatch (command: Command, desc: CommandDescription): Promise<boolean> {
     const handler = this.getHandler(desc);
-    const dependencies = await this.loadDependencies(command, desc);
+    const dependencies = await this.loadDependencies(command, desc, 'command');
 
     if(isAggregateCommandDescription(desc)) {
       return this.dispatchAggregateCommand(command, handler, desc, dependencies);

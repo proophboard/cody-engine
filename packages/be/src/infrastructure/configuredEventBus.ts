@@ -17,7 +17,7 @@ class EventBus extends MessageBus {
     console.log("[EventBus] Policies for event: ", event.name, eventPolicies);
 
     for (const {policy, desc} of Object.values(eventPolicies)) {
-      const dependencies = await this.loadDependencies(event, desc);
+      const dependencies = await this.loadDependencies(event, desc, 'event');
 
       dependencies[SERVICE_NAME_COMMAND_BUS] = services[SERVICE_NAME_COMMAND_BUS]? services[SERVICE_NAME_COMMAND_BUS]({}) : getConfiguredCommandBus();
 
