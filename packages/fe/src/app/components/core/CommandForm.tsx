@@ -145,7 +145,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
           {!mutation.isSuccess && !mutation.isError && <Form
               schema={schema}
               children={<></>}
-            // @ts-ignore
+              // @ts-ignore
               ref={(form) => formRef = form}
               onSubmit={handleSubmit}
               formData={formData}
@@ -156,6 +156,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
               onError={handleValidationError}
               onChange={handleChange}
               validator={getRjsfValidator()}
+              // default browser validation needs to be turned off, otherwise optional objects with required props don't work
               noHtml5Validate={true}
               templates={{
                 ...(props.objectFieldTemplate? {ObjectFieldTemplate: props.objectFieldTemplate} : {}),
