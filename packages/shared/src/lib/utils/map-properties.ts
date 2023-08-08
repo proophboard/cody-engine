@@ -5,7 +5,7 @@ export const mapProperties = (source: Record<string, any>, mapping: Record<strin
   Object.keys(source).forEach(key => {
     const mappedKey = mapping && mapping[key]? mapping[key] : key;
 
-    if((source)[key]) {
+    if((source)[key] && mappedKey !== "$not") {
       mappedPayload[mappedKey] = (source)[key];
     }
   })

@@ -17,6 +17,7 @@ import {useParams} from "react-router-dom";
 import {JSONSchema7} from "json-schema-to-ts";
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {names} from "@event-engine/messaging/helpers";
+import {mapProperties} from "@app/shared/utils/map-properties";
 
 // Copied from: https://github.com/rjsf-team/react-jsonschema-form/blob/main/packages/material-ui/src/SelectWidget/SelectWidget.tsx
 // and modified to use useApiQuery and turn result into select options
@@ -28,6 +29,7 @@ interface ParsedUiOptions {
   label: string,
   value: string,
   addItemCommand: string | null,
+  query: Record<string, string>,
 }
 
 const getVOFromTypes = (refOrFQCN: string, rootSchema: JSONSchemaWithId): ValueObjectRuntimeInfo => {
@@ -73,6 +75,7 @@ const parseOptions = (options: any, rootSchema: JSONSchemaWithId): ParsedUiOptio
     label: options.label || options.text,
     value: options.value,
     addItemCommand: options.addItemCommand || null,
+    query: options.query || {},
   }
 }
 
@@ -108,7 +111,7 @@ export default function DataSelectWidget<
   const parsedOptions = parseOptions(options, registry.rootSchema as JSONSchemaWithId);
   const routeParams = useParams();
 
-  const query = useApiQuery(parsedOptions.data.query, routeParams);
+  const query = useApiQuery(parsedOptions.data.query, mapProperties(routeParams, parsedOptions.query));
 
   if(query.isSuccess) {
     (query.data as any[]).forEach(item => {
