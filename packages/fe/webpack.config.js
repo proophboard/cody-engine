@@ -7,7 +7,12 @@ module.exports = composePlugins(withNx(), withReact(), (config) => {
   // e.g. `config.plugins.push(new MyPlugin())`
   config.devServer = {
     ...config.devServer,
-    port: 4200
+    port: 4200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+      "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization, Ce-User"
+    }
   };
   return config;
 });
