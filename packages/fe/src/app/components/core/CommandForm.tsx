@@ -156,6 +156,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
               onError={handleValidationError}
               onChange={handleChange}
               validator={getRjsfValidator()}
+              noHtml5Validate={true}
               templates={{
                 ...(props.objectFieldTemplate? {ObjectFieldTemplate: props.objectFieldTemplate} : {}),
                 ...(props.arrayFieldTemplate? {ArrayFieldTemplate: props.arrayFieldTemplate} : {}),
