@@ -30,7 +30,10 @@ export const detectService = (node: Node, ctx: Context): string | CodyResponse =
   const bc = findParentByType(node, NodeType.boundedContext);
 
   if(bc) {
-    return names(nodeNameToPascalCase(bc)).className;
+    const bcMeta = parseJsonMetadata<{service?: string}>(bc);
+    if(!isCodyError(bcMeta) && bcMeta.service) {
+      return names(bcMeta.service).className;
+    }
   }
 
   return names(ctx.boardName).className;
