@@ -12,7 +12,7 @@ export const detectService = (node: Node, ctx: Context): string | CodyResponse =
   }
 
   if(meta.service && typeof meta.service === 'string') {
-    return meta.service;
+    return names(meta.service).className;
   }
 
   const feature = findParentByType(node, NodeType.feature);
