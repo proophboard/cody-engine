@@ -1,7 +1,8 @@
-import {AxiosRequestConfig, AxiosResponse} from "axios";
+import {AxiosError, AxiosRequestConfig, AxiosResponse} from "axios";
 import {Logger} from "../util/Logger";
 import {configuredAxios} from "../extensions/http/configured-axios";
 import {kebabCase} from "lodash";
+import {enqueueSnackbar} from "notistack";
 
 configuredAxios.interceptors.request.use((requestConfig: any) => {
     requestConfig.metadata = { startTime: new Date() };
@@ -67,14 +68,28 @@ const executeEvent = async (eventName: string, payload: any): Promise<AxiosRespo
 async function executeQuery<T = any>(queryName: string, payload: any): Promise<AxiosResponse<T>> {
     const [service, query] = queryName.split(".");
 
-    return await sendApiRequest({
-        url: `/api/${kebabCase(service)}/messages/${kebabCase(query)}`,
-        method: 'get',
-        params: payload,
-        headers: {
-            'Accept': 'application/json',
-        },
-    });
+    try {
+        const response = await sendApiRequest({
+            url: `/api/${kebabCase(service)}/messages/${kebabCase(query)}`,
+            method: 'get',
+            params: payload,
+            headers: {
+                'Accept': 'application/json',
+            },
+        });
+
+        if(response.status >= 400) {
+            enqueueSnackbar(`Query "${queryName}" failed with status: ${response.status}`, {variant: "error"});
+        }
+
+        return response;
+    } catch (e) {
+        if(e instanceof AxiosError) {
+            enqueueSnackbar(`Query "${queryName}" failed with status: ${e.response?.status || 500}. See browser logs for details`, {variant: "error"});
+        }
+
+        throw e;
+    }
 }
 
 export const Api = {
