@@ -37,6 +37,7 @@ export interface EventStore {
     deleteStream: (streamName: string) => Promise<boolean>;
     appendTo: (streamName: string, events: Event[], metadataMatcher?: MetadataMatcher, expectedVersion?: number) => Promise<boolean>;
     load: <P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number) => Promise<AsyncIterable<Event<P,M>>>;
+    delete: (streamName: string, metadataMatcher: MetadataMatcher) => Promise<number>;
     attachAppendToListener: (listener: AppendToListener) => void;
     detachAppendToListener: (listener: AppendToListener) => void;
 }

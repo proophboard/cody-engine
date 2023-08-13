@@ -163,6 +163,22 @@ export class InMemoryEventStore implements EventStore {
     });
   }
 
+  public delete(streamName: string, metadataMatcher: MetadataMatcher): Promise<number> {
+    return new Promise<number>(resolve => {
+      if(!this.streams.hasOwnProperty(streamName)) {
+        throw Error(`Stream "${ streamName }" not found`);
+      }
+
+      const deletedEvents = this.streams[streamName].filter(evt => matchMetadata(evt, metadataMatcher));
+
+      this.streams[streamName] = this.streams[streamName].filter(evt => !matchMetadata(evt, metadataMatcher));
+
+      this.persistOnDiskIfEnabled();
+
+      resolve(deletedEvents.length);
+    });
+  }
+
   public attachAppendToListener(listener: AppendToListener): void {
     if(!this.appendToListeners.includes(listener)) {
       this.appendToListeners.push(listener);

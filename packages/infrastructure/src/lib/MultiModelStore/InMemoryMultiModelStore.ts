@@ -37,11 +37,15 @@ export class InMemoryMultiModelStore implements MultiModelStore {
       task.expectedVersion
     ));
 
+    session.getDeleteEventsTasks().forEach(task => this.eventStore.delete(task.streamName, task.metadataMatcher));
+
     session.getUpsertDocumentTasks().forEach(task => this.documentStore.upsertDoc(
       task.collectionName,
       task.docId,
       task.doc
     ));
+
+    session.getDeleteDocumentTasks().forEach(task => this.documentStore.deleteDoc(task.collectionName, task.docId));
 
     return true;
   }

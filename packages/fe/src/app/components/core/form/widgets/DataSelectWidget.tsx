@@ -178,6 +178,5 @@ export default function DataSelectWidget<
       {AddItemCommand && <AddItemCommand buttonProps={{variant: 'text', style: {width: "fit-content", marginLeft: 0}}}/>}
     </>
   );
-
-};
+}
 

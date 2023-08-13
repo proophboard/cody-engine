@@ -32,6 +32,8 @@ export interface EventMetadata {
     causationName: string;
     visibility: EventVisibility;
     version: string;
+    ceDeleteState?: boolean;
+    ceDeleteHistory?: boolean;
 }
 
 export type ApplyFunction<S> = (aggregateState: S, event: Event) => Promise<S>;
@@ -87,6 +89,8 @@ export class AggregateRepository<T extends {} = any> {
 
         const arId = aggregateState[this.aggregateIdentifier];
         let aggregateEventsCount = 0;
+        let deleteState = false;
+        let deleteHistory = false;
 
         const writeModelEvents: Event[] = [];
         const publicEvents: Event[] = [];
@@ -97,6 +101,14 @@ export class AggregateRepository<T extends {} = any> {
                 evt = setMessageMetadata(evt, AggregateMeta.TYPE, this.aggregateType);
                 evt = setMessageMetadata(evt, AggregateMeta.VERSION, expectedVersion + aggregateEventsCount + 1);
                 aggregateEventsCount++;
+
+                if(evt.meta.ceDeleteState) {
+                    deleteState = true;
+                }
+
+                if(evt.meta.ceDeleteHistory) {
+                    deleteHistory = true;
+                }
             }
             evt = setMessageMetadata(evt, 'causationId', command.uuid);
             evt = setMessageMetadata(evt, 'causationName', command.name);
@@ -123,15 +135,26 @@ export class AggregateRepository<T extends {} = any> {
         this.nextSession = undefined;
 
         if(writeModelEvents.length) {
-            session.appendEventsTo(this.eventStream, writeModelEvents, {
-                'aggregateId': arId,
-                'aggregateType': this.aggregateType,
-            }, expectedVersion)
+            if(deleteHistory) {
+                session.deleteEventsFrom(this.eventStream, {
+                    'aggregateId': arId,
+                    'aggregateType': this.aggregateType,
+                });
+            } else {
+                session.appendEventsTo(this.eventStream, writeModelEvents, {
+                    'aggregateId': arId,
+                    'aggregateType': this.aggregateType,
+                }, expectedVersion)
+            }
 
-            session.upsertDocument(this.aggregateCollection, arId, {
-                state: aggregateState,
-                version: expectedVersion + events.length,
-            });
+            if(deleteState) {
+                session.deleteDocument(this.aggregateCollection, arId);
+            } else {
+                session.upsertDocument(this.aggregateCollection, arId, {
+                    state: aggregateState,
+                    version: expectedVersion + events.length,
+                });
+            }
         }
 
         if(publicEvents.length) {
@@ -192,7 +215,8 @@ export class AggregateRepository<T extends {} = any> {
             const applyFunc: ApplyFunction<T> = this.applyFunctions[evt.name];
 
             arState = await applyFunc(arState, evt) as T;
-            arVersion = evt.meta.aggregateVersion;
+            // This will trigger a not found error if this is the last event
+            arVersion = evt.meta.ceDeleteState ? 0 : evt.meta.aggregateVersion;
         }
 
         return [arState, arVersion];

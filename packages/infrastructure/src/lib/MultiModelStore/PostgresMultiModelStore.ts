@@ -51,11 +51,19 @@ export class PostgresMultiModelStore implements MultiModelStore {
       }
     });
 
+    session.getDeleteEventsTasks().forEach(task => {
+      queries.push(this.eventStore.makeDeleteFromQuery(task.streamName, task.metadataMatcher));
+    })
+
     session.getUpsertDocumentTasks().forEach(task => queries.push(this.queryBuilder.makeUpsertDocQuery(
       task.collectionName,
       task.docId,
       task.doc
     )));
+
+    session.getDeleteDocumentTasks().forEach(task => queries.push(this.queryBuilder.makeDeleteDocQuery(
+      task.collectionName,
+      task.docId)));
 
     await this.db.transaction(function* (): Generator<Query, void, QueryResult> {
       for (const query of queries) {

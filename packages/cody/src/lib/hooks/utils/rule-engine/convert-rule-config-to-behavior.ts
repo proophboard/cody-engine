@@ -326,7 +326,7 @@ const convertThenRecordEvent = (node: Node, ctx: Context, then: ThenRecordEvent,
     return mapping;
   }
 
-  lines.push(`${indent}yield ${eventNames.propertyName}(${mapping});`);
+  lines.push(`${indent}yield ${eventNames.propertyName}(${mapping}, ctx.meta);`);
 
   return true;
 }

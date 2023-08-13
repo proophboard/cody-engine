@@ -145,6 +145,22 @@ export class PostgresEventStore implements EventStore {
     return [query, bindings];
   }
 
+  makeDeleteFromQuery(streamName: string, metadataMatcher: MetadataMatcher): [string, any[]] {
+    let valuePos = 1;
+    let where = '';
+    const bindings = [];
+    for(const prop in metadataMatcher) {
+      const [matchWhere, value] = this.matchObjectToWhereClause(prop, valuePos, metadataMatcher[prop]);
+      where += matchWhere + ' AND ';
+      bindings.push(value);
+      valuePos++;
+    }
+
+    const query = `DELETE FROM ${streamName} WHERE ${where};`;
+
+    return [query, bindings];
+  }
+
   triggerAppendToListeners(streamName: string, events: Event[]): void {
     this.appendToListeners.forEach(l => l(streamName, events));
   }
@@ -187,6 +203,14 @@ export class PostgresEventStore implements EventStore {
       meta: row.meta,
       createdAt: row.created_at
     })));
+  }
+
+  async delete(streamName: string, metadataMatcher: MetadataMatcher): Promise<number> {
+    const [query, bindings] = this.makeDeleteFromQuery(streamName, metadataMatcher);
+
+    const result = await this.db.query(query, bindings);
+
+    return result.rowCount;
   }
 
   public attachAppendToListener(listener: AppendToListener): void {

@@ -39,6 +39,7 @@ class CommandBus extends MessageBus {
     let result: IteratorResult<Event, Event>;
     const processing = handler({}, command, deps);
     const events: Event[] = [];
+    // eslint-disable-next-line no-cond-assign
     while(result = await processing.next()) {
       if(!result.value) {
         break;
