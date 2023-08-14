@@ -38,6 +38,7 @@ export interface CommandMeta {
   dependencies?: DependencyRegistry;
   deleteState?: boolean;
   deleteHistory?: boolean;
+  uiDisableFetchState?: boolean;
 }
 
 export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) => {

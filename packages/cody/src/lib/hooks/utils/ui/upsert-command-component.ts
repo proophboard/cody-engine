@@ -48,7 +48,8 @@ export const upsertCommandComponent = async (command: Node, ctx: Context, tree: 
       identifier,
       newAggregate: commandMeta.newAggregate,
       buttonIcon,
-      ...commandNames
+      ...commandNames,
+      uiDisableFetchState: commandMeta.uiDisableFetchState,
     });
 
     return registerCommandComponent(service, command, ctx, tree);

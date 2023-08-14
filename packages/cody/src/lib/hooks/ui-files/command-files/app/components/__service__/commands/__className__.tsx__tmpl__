@@ -21,7 +21,7 @@ type <%= className %>Props = OwnProps & WithCommandButtonProps;
 
 const <%= className %> = (props: <%= className %>Props) => {
   const [dialogOpen, setDialogOpen] = useState(false);
-<% if (!newAggregate) { %>
+<% if (!newAggregate && !uiDisableFetchState) { %>
   const query = useGet<%= stateNames.className %>(determineQueryPayload(props, <%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeInfo));
 <% } %>
   const handleOpenDialog = () => {setDialogOpen(true)};
@@ -34,7 +34,7 @@ const <%= className %> = (props: <%= className %>Props) => {
       onClose={handleCloseDialog}
       commandDialogCommand={<%= serviceNames.className %><%= className %>RuntimeInfo}
       commandFn={<%= propertyName %>}
-      <% if (!newAggregate) { %>aggregateState={query.isSuccess? query.data : {}}<% } %>
+      <% if (!newAggregate  && !uiDisableFetchState) { %>aggregateState={query.isSuccess? query.data : {}}<% } %>
     />
   </>
 };
