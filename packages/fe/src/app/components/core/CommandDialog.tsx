@@ -20,7 +20,8 @@ import {useSnackbar} from "notistack";
 import {Close, Send} from "mdi-material-ui";
 import CommandForm from "@frontend/app/components/core/CommandForm";
 import {AxiosResponse} from "axios";
-import {useParams} from "react-router-dom";
+import {useLocation, useNavigate, useParams} from "react-router-dom";
+import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
 
 export interface AggregateIdentifier {
   identifier: string;
@@ -69,6 +70,8 @@ const CommandDialog = (props: CommandDialogProps) => {
   const theme = useTheme();
   const snackbar = useSnackbar();
   const routeParams = useParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const commandFormRef = useRef<{submit: () => void}>();
   const [transactionState, setTransactionState] = useState<TransactionState>({...defaultTransactionState});
   const [tryAgain, setTryAgain] = useState(false);
@@ -129,9 +132,20 @@ const CommandDialog = (props: CommandDialogProps) => {
   const handleResponseReceived = () => {
     setTransactionState({...defaultTransactionState});
     snackbar.enqueueSnackbar(commandTitle(props.commandDialogCommand) + ' was successful', {variant: "success"});
-    queryClient.invalidateQueries();
+    if(!isAggregateCommandDescription(props.commandDialogCommand.desc) || !props.commandDialogCommand.desc.deleteState) {
+      queryClient.invalidateQueries();
+    }
     window.setTimeout(() => {
       props.onClose();
+
+      if(isAggregateCommandDescription(props.commandDialogCommand.desc) && props.commandDialogCommand.desc.deleteState) {
+        const routeParts = location.pathname.split("/");
+        routeParts.pop();
+        if(routeParts.length < 2) {
+          routeParts.push("");
+        }
+        navigate(routeParts.join("/"));
+      }
     }, 10);
   }
   return (
