@@ -38,6 +38,8 @@ export interface AggregateCommandDescription extends CommandDescription{
   newAggregate: boolean;
   aggregateName: string;
   aggregateIdentifier: string;
+  deleteState?: boolean;
+  deleteHistory?: boolean;
 }
 
 export function isAggregateCommandDescription (desc: CommandDescription | AggregateCommandDescription): desc is AggregateCommandDescription {

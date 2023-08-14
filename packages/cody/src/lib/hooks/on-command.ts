@@ -36,6 +36,8 @@ export interface CommandMeta {
   service?: string;
   uiSchema?: UiSchema;
   dependencies?: DependencyRegistry;
+  deleteState?: boolean;
+  deleteHistory?: boolean;
 }
 
 export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) => {
@@ -68,6 +70,8 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
     const aggregateState = withErrorCheck(findAggregateState, [syncedAggregate, ctx]);
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
     const dependencies = meta.dependencies;
+    const deleteState = meta.deleteState;
+    const deleteHistory = meta.deleteHistory;
 
     withErrorCheck(ensureAllRefsAreKnown, [command, schema]);
 
@@ -90,6 +94,8 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
       schema,
       uiSchema,
       dependencies,
+      deleteState,
+      deleteHistory,
     });
 
     withErrorCheck(register, [command, ctx, tree]);

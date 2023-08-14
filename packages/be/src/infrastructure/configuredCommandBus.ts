@@ -10,6 +10,8 @@ import {
   isAggregateCommandDescription
 } from "@event-engine/descriptions/descriptions";
 import {MessageBus} from "@server/infrastructure/MessageBus";
+import {setMessageMetadata} from "@event-engine/messaging/message";
+import {META_KEY_DELETE_HISTORY, META_KEY_DELETE_STATE} from "@event-engine/infrastructure/AggregateRepository";
 
 export const SERVICE_NAME_COMMAND_BUS = '$CommandBus';
 
@@ -30,6 +32,14 @@ class CommandBus extends MessageBus {
   private async dispatchAggregateCommand(command: Command, handler: CommandHandler, desc: AggregateCommandDescription, deps: any): Promise<boolean> {
     if(!repositories[desc.aggregateName]) {
       throw new Error(`Cannot handle command "${command.name}". The repository for aggregate "${desc.aggregateName}" is not registered.`);
+    }
+
+    if(desc.deleteState) {
+      command = setMessageMetadata(command, META_KEY_DELETE_STATE, true);
+    }
+
+    if(desc.deleteHistory) {
+      command = setMessageMetadata(command, META_KEY_DELETE_HISTORY, true);
     }
 
     return handle(command, handler, repositories[desc.aggregateName], desc.newAggregate, deps);

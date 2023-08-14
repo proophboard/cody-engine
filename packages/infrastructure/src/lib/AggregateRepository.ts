@@ -24,6 +24,9 @@ export interface AggregateStateDocument<S = any> {
     version: number;
 }
 
+export const META_KEY_DELETE_STATE = 'ceDeleteState';
+export const META_KEY_DELETE_HISTORY = 'ceDeleteHistory';
+
 export interface EventMetadata {
     aggregateType: string;
     aggregateId: string;

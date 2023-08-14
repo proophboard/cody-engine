@@ -7,6 +7,8 @@ export const <%= className %>Desc: AggregateCommandDescription = {
   aggregateName: "<%= serviceNames.className %>.<%= aggregateName %>",
   aggregateIdentifier: "<%= aggregateIdentifier %>",
   <% if (dependencies) { %>dependencies: <%- toJSON(dependencies) %>,<% } %>
+  <% if (deleteState) { %>deleteState: true,<% } %>
+  <% if (deleteHistory) { %>deleteHistory: true,<% } %>
   _pbBoardId: "<%= _pbBoardId %>",
   _pbCardId: "<%= _pbCardId %>",
   _pbCreatedBy: "<%= _pbCreatedBy %>",
