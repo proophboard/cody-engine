@@ -3,7 +3,7 @@ import {AggregateCommandDescription} from "@event-engine/descriptions/descriptio
 export const <%= className %>Desc: AggregateCommandDescription = {
   name: '<%= serviceNames.className %>.<%= className %>',
   aggregateCommand: <%= isAggregateCommand %>,
-  newAggregate: <%= newAggregate %>,
+  newAggregate: <% if (newAggregate) { %>true<% } else { %>false<% } %>,
   aggregateName: "<%= serviceNames.className %>.<%= aggregateName %>",
   aggregateIdentifier: "<%= aggregateIdentifier %>",
   <% if (dependencies) { %>dependencies: <%- toJSON(dependencies) %>,<% } %>
