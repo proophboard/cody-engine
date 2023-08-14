@@ -106,5 +106,5 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
 
   options = merge(options, overwriteTheme(codyEngineTheme));
 
-  return createMuiTheme(codyEngineTheme, options);
+  return createMuiTheme(options);
 }
