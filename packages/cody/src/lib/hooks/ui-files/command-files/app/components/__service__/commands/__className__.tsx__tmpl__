@@ -4,7 +4,7 @@ import CommandButton, {WithCommandButtonProps} from '@frontend/app/components/co
 import CommandDialog from "@frontend/app/components/core/CommandDialog";
 import {<%= propertyName %>} from "@frontend/commands/<%= serviceNames.fileName %>/use-<%= fileName %>";
 import {<%= serviceNames.className %><%= className %>RuntimeInfo} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= fileName %>";
-<% if (!newAggregate) { %>
+<% if (!newAggregate  && !uiDisableFetchState) { %>
 import {useGet<%= stateNames.className %>} from "@frontend/queries/<%= serviceNames.fileName %>/use-get-<%= stateNames.fileName %>";
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {<%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeInfo} from "@app/shared/queries/<%= serviceNames.fileName %>/get-<%= stateNames.fileName %>";
@@ -12,7 +12,7 @@ import {<%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeI
 <% if (buttonIcon) { %>import {<%= buttonIcon %>} from "mdi-material-ui";<% } %>
 
 interface OwnProps {
-<% if (!newAggregate && identifier) { %>
+<% if (!newAggregate && !uiDisableFetchState && identifier) { %>
   <%= identifier %>: string;
 <% } %>
 }
