@@ -3,8 +3,10 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "serve": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run-many -t serve",
-    "prepare-contribution": "npx nx g @cody-engine/contribution:prepare-contribution"
+    "serve": "npm run create-registry-files && npx nx run-many -t serve",
+    "create-registry-files": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts",
+    "prepare-contribution": "npx nx g @cody-engine/contribution:prepare-contribution",
+    "reset-contribution": "git clean -dfX data/ packages/ dist/ tmp/ && npm run create-registry-files"
   },
   "private": false,
   "devDependencies": {
