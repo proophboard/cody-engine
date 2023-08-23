@@ -3,13 +3,13 @@ import jexl from "@app/shared/jexl/get-configured-jexl";
 import {<%= aggregateStateNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %><%= aggregateStateNames.fileNameWithNamespace %>";
 import {<%= className %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= aggregateNames.fileName %>/<%= fileName %>";
 
-export const apply<%= className %> = async (<%= aggregateStateNames.propertyName %>: <%= aggregateStateNames.className %>, event: Event<<%= className %>>): Promise<<%= aggregateStateNames.className %>> => {
+export const apply<%= className %> = async (information: <%= aggregateStateNames.className %>, event: Event<<%= className %>>): Promise<<%= aggregateStateNames.className %>> => {
   const ctx: any = {};
-  ctx['<%= aggregateStateNames.propertyName %>'] = <%= aggregateStateNames.propertyName %>;
+  ctx['information'] = information;
   ctx['event'] = event.payload;
   ctx['meta'] = event.meta;
 
   <%- rules %>
 
-  return ctx['<%= aggregateStateNames.propertyName %>'];
+  return ctx['information'];
 }
