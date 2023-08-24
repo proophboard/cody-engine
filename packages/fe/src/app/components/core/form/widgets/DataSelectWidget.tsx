@@ -121,6 +121,14 @@ export default function DataSelectWidget<
         readonly: false
       });
     })
+
+    if(!required) {
+      selectOptions.push({
+        label: "- Empty -",
+        value: "",
+        readonly: false
+      })
+    }
   } else {
     selectOptions.push({label: "Loading ...", value: "", readonly: true});
   }
@@ -169,7 +177,7 @@ export default function DataSelectWidget<
         {Array.isArray(selectOptions) &&
           selectOptions.map(({ value, label, readonly }, i: number) => {
             return (
-              <MenuItem key={i} value={value} disabled={readonly}>
+              <MenuItem key={i} value={value} disabled={readonly} sx={label === '- Empty -'? {color: theme => theme.palette.text.disabled} : {}}>
                 {label}
               </MenuItem>
             );
