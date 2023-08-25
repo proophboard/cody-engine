@@ -1,14 +1,14 @@
 import {
   AlwaysRule,
   ConditionRule,
-  isAssignVariable,
+  isAssignVariable, isCallService,
   isExecuteRules, isForEach,
   isIfConditionRule,
   isIfNotConditionRule,
   isRecordEvent, isThrowError, isTriggerCommand,
   PropMapping,
   Rule,
-  ThenAssignVariable,
+  ThenAssignVariable, ThenCallService,
   ThenExecuteRules, ThenForEach,
   ThenRecordEvent, ThenThrowError, ThenTriggerCommand, ThenType
 } from "./configuration";
@@ -17,6 +17,7 @@ import {getTargetsOfType, isCodyError} from "@proophboard/cody-utils";
 import {names} from "@event-engine/messaging/helpers";
 import {detectService} from "../detect-service";
 import {Context} from "../../context";
+import {withErrorCheck} from "../error-handling";
 
 export interface Variable {
   name: string;
@@ -274,6 +275,8 @@ const convertThen = (node: Node, ctx: Context, then: ThenType, rule: Rule, lines
       return convertThenTriggerCommand(node, ctx, then as ThenTriggerCommand, rule, lines, indent, evalSync);
     case isForEach(then):
       return convertThenForEach(node, ctx, then as ThenForEach, rule, lines, indent, evalSync);
+    case isCallService(then):
+      return convertThenCallService(node, ctx, then as ThenCallService, rule, lines, indent, evalSync);
     default:
       return {
         cody: `I don't know the "then" part of that rule: ${JSON.stringify(rule)}.`,
@@ -385,6 +388,27 @@ const convertThenForEach = (node: Node, ctx: Context, then: ThenForEach, rule: R
   }
 
   lines.push(`${indent}})`)
+  return true;
+}
+
+const convertThenCallService = (node: Node, ctx: Context, then: ThenCallService, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+  const awaitStr = then.call.async ? 'await ' : '';
+  const invokeService = `${awaitStr}ctx['${then.call.service}']${(then.call.method? '.'+then.call.method : '')}`
+    + (then.call.arguments? '(' + withErrorCheck(convertMapping, [node, ctx, then.call.arguments, rule, indent + '  ', evalSync]) +')' : '()') + ';';
+
+
+  if(then.call.result.mapping) {
+    lines.push(`${indent}ctx['${then.call.service}__Result'] = ${invokeService}`);
+    lines.push(`${indent}ctx['__data'] = ctx['data'];`);
+    lines.push(`${indent}ctx['data'] = ctx['${then.call.service}__Result'];`);
+    lines.push(`${indent}ctx['${then.call.result.variable}'] = ${withErrorCheck(convertMapping, [node, ctx, then.call.result.mapping, rule, indent + '  ', evalSync])};`);
+    lines.push(`${indent}ctx['data'] = ctx['__data'];`);
+    lines.push(`${indent}delete ctx['__data'];`);
+    lines.push(`${indent}delete ctx['${then.call.service}__Result'];`)
+  } else {
+    lines.push(`${indent}ctx['${then.call.result.variable}'] = ${invokeService}`);
+  }
+
   return true;
 }
 
