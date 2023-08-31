@@ -28,7 +28,7 @@ const PersonaCard = (props: PersonaCardProps) => {
         <Box component="div" sx={{display: 'inline-block', paddingRight: "20px", paddingBottom: "20px", float: "left"}}>
           <UserAvatar user={persona} color={persona.color} sx={{width: "100px", height: "100px"}} badgeOverlap="circular" showBadge={currentUser.userId === persona.userId} />
         </Box>
-        <Typography component="span" sx={{display: "inline"}}>{persona.description}</Typography>
+        <Typography component="span" sx={{display: "inline", whiteSpace: 'pre-line'}}>{persona.description}</Typography>
       </CardContent>
       <CardActions>
         <Button startIcon={<Login />} variant="text" disabled={currentUser.userId === persona.userId} onClick={handleSignIn}>Sign In</Button>
