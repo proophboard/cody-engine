@@ -224,12 +224,10 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       importPath = `@frontend/app/pages/${serviceNames.fileName}/${uiNames.fileName}`;
       break;
     case NodeType.role:
-      const roleNames = names(node.getName());
-
       registryPath = sharedRegistryPath('types/core/user/user-role.ts');
       registryVarName = 'UserRoles';
       entryId = '';
-      entryValue = `'${roleNames.className}'`;
+      entryValue = `'${node.getName()}'`;
       importName = '';
       importPath = '';
       break;

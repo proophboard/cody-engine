@@ -1,22 +1,20 @@
 import {CodyHook, CodyResponse, Node} from "@proophboard/cody-types";
 import {Context} from "./context";
 import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
-import {names} from "@event-engine/messaging/helpers";
 import {listChangesForCodyResponse, requireUncached} from "./utils/fs-tree";
-import {flushChanges, FsTree} from "nx/src/generators/tree";
+import {flushChanges} from "nx/src/generators/tree";
 import {register} from "./utils/registry";
 import {formatFiles} from "@nx/devkit";
-import {UserRoles} from "@app/shared/types/core/user/user-role";
 
 export const onRole: CodyHook<Context> = async (role: Node, ctx: Context): Promise<CodyResponse> => {
   try {
-    const roleNames = names(role.getName());
+    const roleName = role.getName();
 
     const {UserRoles} = requireUncached('@app/shared/types/core/user/user-role');
 
     const {tree} = ctx;
 
-    if(!UserRoles.includes(roleNames.className)) {
+    if(!UserRoles.includes(roleName)) {
       withErrorCheck(register, [role, ctx, tree]);
     }
 
