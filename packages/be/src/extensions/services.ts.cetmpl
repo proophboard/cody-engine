@@ -1,3 +1,6 @@
 import {ServiceRegistry} from "@event-engine/infrastructure/ServiceRegistry";
+import {authServiceFactory} from "@server/infrastructure/auth-service/auth-service-factory";
 
-export const services: ServiceRegistry = {};
+export const services: ServiceRegistry = {
+  'AuthService': authServiceFactory
+};

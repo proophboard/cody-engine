@@ -1,0 +1,9 @@
+import {User} from "@app/shared/types/core/user/user";
+
+export type Persona = User & {description: string, color?: string};
+
+export const PERSONA_STORAGE_KEY = 'ce_persona';
+/**
+ * Here you can define Personas used in the Prototyping Mode to simulate different user roles
+ */
+export const Personas: Persona[] = <%- toJSON(personas) %>;
