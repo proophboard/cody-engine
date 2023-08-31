@@ -118,9 +118,6 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
 
   const {desc} = props.command;
 
-  if(isAggregateCommandDescription(desc) && desc.newAggregate && desc.aggregateIdentifier) {
-    formData[desc.aggregateIdentifier] = v4();
-  }
 
   if(props.formData) {
     formData = {...formData, ...props.formData};
@@ -137,6 +134,13 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   const uiSchema = normalizeUiSchema({...resolvedUiSchema, ...mainUiSchema}, {data: formData, user});
 
   const schema = resolveRefs(cloneSchema(props.command.schema as any), definitions) as RJSFSchema;
+
+  if(
+    isAggregateCommandDescription(desc) && desc.newAggregate && desc.aggregateIdentifier
+    && schema.properties && schema.properties[desc.aggregateIdentifier]
+  ) {
+    formData[desc.aggregateIdentifier] = v4();
+  }
 
   return (
     <div>
