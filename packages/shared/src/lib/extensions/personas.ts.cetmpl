@@ -1,4 +1,6 @@
 import {User} from "@app/shared/types/core/user/user";
+// Ensure that webpack recompile is triggered when Cody adds a new role, see: https://github.com/TypeStrong/ts-loader/issues/697#issuecomment-433018970
+import '@app/shared/types/core/user/user-role';
 
 export type Persona = User & {description: string, color?: string};
 
