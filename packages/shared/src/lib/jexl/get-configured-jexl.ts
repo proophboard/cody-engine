@@ -4,6 +4,7 @@ import {Jexl} from "@event-engine/infrastructure/jexl/jexl";
 import {extendJexlConfiguration} from "@app/shared/extensions/get-configured-jexl";
 import {User} from "@app/shared/types/core/user/user";
 import {UserRole} from "@app/shared/types/core/user/user-role";
+import {registerArrayExtensions} from "@app/shared/jexl/array-extension/register";
 
 let configuredJexl: Jexl;
 
@@ -13,6 +14,9 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addFunction('count', count);
     configuredJexl.addFunction('uuid', generateUuuid);
     configuredJexl.addFunction('isRole', isRole);
+
+    registerArrayExtensions(configuredJexl);
+
     configuredJexl = extendJexlConfiguration(configuredJexl);
   }
 
