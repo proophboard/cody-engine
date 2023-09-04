@@ -26,13 +26,15 @@ export const registerDateTimeExtensions = (jexl: Jexl) => {
   jexl.addTransform('milliseconds', d => (new Date(d)).getMilliseconds());
   jexl.addTransform('utcMilliseconds', d => (new Date(d)).getUTCMilliseconds());
 
-  jexl.addTransform('2Digit', numberOrStr => {
+  jexl.addTransform('twoDigit', numberOrStr => {
     if(typeof numberOrStr === 'string') {
       numberOrStr = parseInt(numberOrStr);
     }
 
     if(numberOrStr < 10) {
       return '0' + numberOrStr;
+    } else {
+      return ''+numberOrStr;
     }
   })
 }
