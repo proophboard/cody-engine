@@ -180,18 +180,16 @@ export class InMemoryDocumentStore implements DocumentStore {
             return 0;
           }
 
-          comparedSorts.push(sort);
-
           const aDocVal: any = getValueFromPath(sort.prop, aResult[1]);
           const bDocVal: any = getValueFromPath(sort.prop, bResult[1]);
           const sortNumber = sort.sort === 'asc'? -1 : 1;
 
           if(typeof aDocVal === 'undefined' && typeof bDocVal !== 'undefined') {
-            return 1;
+            return sortNumber * -1;
           }
 
           if(typeof aDocVal !== 'undefined' && typeof bDocVal === 'undefined' ) {
-            return -1
+            return sortNumber
           }
 
           if(typeof aDocVal === 'undefined' && typeof bDocVal === 'undefined') {
@@ -200,6 +198,8 @@ export class InMemoryDocumentStore implements DocumentStore {
 
           return aDocVal < bDocVal ? sortNumber : sortNumber * -1;
         })
+
+        comparedSorts.push(sort);
       })
     }
 
