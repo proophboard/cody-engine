@@ -173,8 +173,7 @@ const convertToRoleCheck = (roles: List<Node>): string => {
   let firstCheck = true;
 
   roles.forEach(role => {
-    const roleName = names(role.getName()).className;
-    const roleCheck = `!isRole(user, '${roleName}')`;
+    const roleCheck = `!isRole(user, '${role.getName()}')`;
     check += firstCheck ? roleCheck : ' && ' + roleCheck;
     firstCheck = false;
   })
