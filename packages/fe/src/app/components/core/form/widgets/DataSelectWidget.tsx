@@ -165,6 +165,7 @@ export default function DataSelectWidget<
         {...(textFieldProps as TextFieldProps)}
         select // Apply this and the following props after the potential overrides defined in textFieldProps
         InputLabelProps={{
+          required: !hideLabel && required,
           ...textFieldProps.InputLabelProps,
           shrink: !isEmpty,
         }}
