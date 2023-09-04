@@ -177,9 +177,9 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableSt
     }
 
     if(meta.resolve.orderBy) {
-      orderBy = typeof meta.resolve.orderBy === 'object'
-        ? JSON.stringify([mapOrderByProp(meta.resolve.orderBy as SortOrderItem)])
-        : JSON.stringify((meta.resolve.orderBy as SortOrder).map(orderBy => mapOrderByProp(orderBy)));
+      orderBy = Array.isArray(meta.resolve.orderBy)
+        ? JSON.stringify((meta.resolve.orderBy as SortOrder).map(orderBy => mapOrderByProp(orderBy)))
+        : JSON.stringify([mapOrderByProp(meta.resolve.orderBy as SortOrderItem)]);
     }
   }
 
