@@ -5,6 +5,7 @@ import {extendJexlConfiguration} from "@app/shared/extensions/get-configured-jex
 import {User} from "@app/shared/types/core/user/user";
 import {UserRole} from "@app/shared/types/core/user/user-role";
 import {registerArrayExtensions} from "@app/shared/jexl/array-extension/register";
+import {registerDateTimeExtensions} from "@app/shared/jexl/datetime-extension/register";
 
 let configuredJexl: Jexl;
 
@@ -16,6 +17,7 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addFunction('isRole', isRole);
 
     registerArrayExtensions(configuredJexl);
+    registerDateTimeExtensions(configuredJexl);
 
     configuredJexl = extendJexlConfiguration(configuredJexl);
   }
