@@ -18,6 +18,7 @@ import {JSONSchema7} from "json-schema-to-ts";
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {names} from "@event-engine/messaging/helpers";
 import {mapProperties} from "@app/shared/utils/map-properties";
+import {useUser} from "@frontend/hooks/use-user";
 
 // Copied from: https://github.com/rjsf-team/react-jsonschema-form/blob/main/packages/material-ui/src/SelectWidget/SelectWidget.tsx
 // and modified to use useApiQuery and turn result into select options
@@ -110,8 +111,29 @@ export default function DataSelectWidget<
   const selectOptions: {label: string, value: string, readonly: boolean}[] = [];
   const parsedOptions = parseOptions(options, registry.rootSchema as JSONSchemaWithId);
   const routeParams = useParams();
+  const [user,] = useUser();
 
-  const query = useApiQuery(parsedOptions.data.query, mapProperties(routeParams, parsedOptions.query));
+  const hasQueryMapping = Object.keys(parsedOptions.query).length > 0;
+
+  const mappedParams: Record<string, any> = hasQueryMapping ? {} : routeParams;
+  const propertyMapping: Record<string, string> = {};
+
+  if(hasQueryMapping) {
+    const mappingCtx = {...routeParams, user};
+
+    for (const mappedKey in parsedOptions.query) {
+      const mappingExpr = parsedOptions.query[mappedKey];
+
+      if(mappedKey === '$not') {
+        propertyMapping[mappedKey] = mappingExpr;
+        continue;
+      }
+
+      mappedParams[mappedKey] = jexl.evalSync(mappingExpr, mappingCtx);
+    }
+  }
+
+  const query = useApiQuery(parsedOptions.data.query, mapProperties(mappedParams, propertyMapping));
 
   if(query.isSuccess) {
     (query.data as any[]).forEach(item => {
