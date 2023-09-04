@@ -1,3 +1,5 @@
+import {SortOrder} from "@event-engine/infrastructure/DocumentStore";
+
 export function getValueFromPath <V = any>(path: string, doc: object, defaultValue?: V): V | undefined {
     const pathKeys = path.split('.');
 
@@ -25,4 +27,17 @@ const hasOwnProperty = (doc: {[prop: string]: any}, prop: string): boolean => {
 
 const getOwnProperty = (doc: {[prop: string]: any}, prop: string): any => {
     return doc[prop];
+}
+
+export const areValuesEqualForAllSorts = (sorting: SortOrder, a: object, b: object): boolean => {
+    for (const sortItem of sorting) {
+        const aVal = getValueFromPath(sortItem.prop, a, null);
+        const bVal = getValueFromPath(sortItem.prop, b, null);
+
+        if(aVal !== bVal) {
+            return false;
+        }
+    }
+
+    return true;
 }
