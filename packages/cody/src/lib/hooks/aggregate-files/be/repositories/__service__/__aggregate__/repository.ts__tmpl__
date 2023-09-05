@@ -5,8 +5,11 @@ import {getConfiguredMultiModelStore} from "@server/infrastructure/configuredMul
 import {<%= serviceNames.className %><%= className %>AggregateDesc} from "@app/shared/aggregates/<%= serviceNames.fileName %>/<%= fileName %>.desc";
 import {<%= aggregateStateNames.className %>, <%= aggregateStateNames.propertyName %>} from "@app/shared/types/<%= serviceNames.fileName %><%= aggregateStateNames.fileNameWithNamespace %>";
 import {eventReducerExtensions} from "@server/extensions/event-reducers";
+import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 
 const store = getConfiguredMultiModelStore();
+const authService = getExternalServiceOrThrow<AuthService>('AuthService', {});
 
 const repository = new AggregateRepository<<%= aggregateStateNames.className %>>(
   store,
@@ -15,7 +18,8 @@ const repository = new AggregateRepository<<%= aggregateStateNames.className %>>
   <%= serviceNames.className %><%= className %>AggregateDesc.name,
   <%= serviceNames.className %><%= className %>AggregateDesc.identifier,
   {...applyFunctions, ...eventReducerExtensions},
-  <%= aggregateStateNames.propertyName %>
+  <%= aggregateStateNames.propertyName %>,
+  authService
 );
 
 export default repository;

@@ -5,8 +5,11 @@ import {getConfiguredMultiModelStore} from "@server/infrastructure/configuredMul
 import {FleetManagementCarAggregateDesc} from "@app/shared/aggregates/fleet-management/car.desc";
 import {Car, car} from "@app/shared/types/fleet-management/car/car";
 import {eventReducerExtensions} from "@server/extensions/event-reducers";
+import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 
 const store = getConfiguredMultiModelStore();
+const authService = getExternalServiceOrThrow<AuthService>('AuthService', {});
 
 const repository = new AggregateRepository<Car>(
   store,
@@ -15,7 +18,8 @@ const repository = new AggregateRepository<Car>(
   FleetManagementCarAggregateDesc.name,
   FleetManagementCarAggregateDesc.identifier,
   {...applyFunctions, ...eventReducerExtensions},
-  car
+  car,
+  authService
 );
 
 export default repository;

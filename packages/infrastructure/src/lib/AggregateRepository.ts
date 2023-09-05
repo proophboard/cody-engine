@@ -7,6 +7,7 @@ import {MatchOperator, MetadataMatcher} from "@event-engine/infrastructure/Event
 import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
 import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {makeValueObject} from "@event-engine/messaging/value-object";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 
 interface AggregateState {
     [prop: string]: any;
@@ -26,6 +27,7 @@ export interface AggregateStateDocument<S = any> {
 
 export const META_KEY_DELETE_STATE = 'ceDeleteState';
 export const META_KEY_DELETE_HISTORY = 'ceDeleteHistory';
+export const META_KEY_USER = 'user';
 
 export interface EventMetadata {
     aggregateType: string;
@@ -57,6 +59,7 @@ export class AggregateRepository<T extends {} = any> {
     protected readonly aggregateCollection: string;
     protected readonly applyFunctions: ApplyFunctionRegistry<T>;
     protected readonly stateFactory: AggregateStateFactory<T>;
+    protected readonly authService: AuthService;
     protected readonly publicStream: string;
     protected nextSession: Session | undefined;
 
@@ -68,6 +71,7 @@ export class AggregateRepository<T extends {} = any> {
         aggregateIdentifier: string,
         applyFunctions: {[eventName: string]: ApplyFunction<T>},
         stateFactory: AggregateStateFactory<T>,
+        authService: AuthService,
         publicStream = "public_stream"
     ) {
         this.store = store;
@@ -77,6 +81,7 @@ export class AggregateRepository<T extends {} = any> {
         this.aggregateIdentifier = aggregateIdentifier;
         this.applyFunctions = applyFunctions;
         this.stateFactory = stateFactory;
+        this.authService = authService;
         this.publicStream = publicStream;
     }
 
@@ -113,6 +118,11 @@ export class AggregateRepository<T extends {} = any> {
                     deleteHistory = true;
                 }
             }
+
+            if(evt.meta.user && typeof evt.meta.user === 'object' && evt.meta.user.userId) {
+                evt = setMessageMetadata(evt, META_KEY_USER, evt.meta.user.userId);
+            }
+
             evt = setMessageMetadata(evt, 'causationId', command.uuid);
             evt = setMessageMetadata(evt, 'causationName', command.name);
 
@@ -190,7 +200,7 @@ export class AggregateRepository<T extends {} = any> {
                 'aggregateType': this.aggregateType,
                 ...maybeVersionMatcher
             }).then(async (eventsItr) => {
-                const events = await asyncIteratorToArray(eventsItr);
+                const events = await this.mapMetadataFromStore(await asyncIteratorToArray(eventsItr));
 
                 const [finalState, finalVersion] = await this.applyEvents(aggregateState as T, aggregateVersion, events);
 
@@ -223,5 +233,19 @@ export class AggregateRepository<T extends {} = any> {
         }
 
         return [arState, arVersion];
+    }
+
+    protected async mapMetadataFromStore(events: Event[]): Promise<Event[]> {
+        const mappedEvents: Event[] = [];
+
+        for (let event of events) {
+            if(event.meta.user && typeof event.meta.user === 'string') {
+                event = setMessageMetadata(event, META_KEY_USER, await this.authService.get(event.meta.user));
+            }
+
+            mappedEvents.push(event);
+        }
+
+        return mappedEvents;
     }
 }

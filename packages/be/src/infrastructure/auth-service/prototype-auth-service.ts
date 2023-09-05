@@ -3,6 +3,7 @@ import {Persona} from "@app/shared/extensions/personas";
 import {v4} from "uuid";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
 import {formatFiles, generateFiles} from "@nx/devkit";
+import {User} from "@app/shared/types/core/user/user";
 
 export class PrototypeAuthService implements AuthService {
   private personas: Persona[];
@@ -31,6 +32,21 @@ export class PrototypeAuthService implements AuthService {
     await this.savePersonas();
 
     return userId;
+  }
+
+  public async get(userId: string): Promise<User> {
+    const matchingPersonas = this.personas.filter(p => p.userId === userId);
+
+    if(matchingPersonas.length) {
+      return matchingPersonas[0];
+    }
+
+    return {
+      userId,
+      displayName: 'Unknown',
+      email: 'unknown@anonymous.local',
+      roles: []
+    }
   }
 
   private async savePersonas(): Promise<void> {
