@@ -282,18 +282,18 @@ const makeFiltersFromResolveConfig = (vo: Node, resolveConfig: ResolveConfig, in
   return lines.join("\n");
 }
 
-const makeFilter = (filter: Filter, lines: string[], indent = '') => {
+const makeFilter = (filter: Filter, lines: string[], indent = '', endOfLine = '') => {
   if (isAndFilter(filter)) {
     lines.push(`${indent}new filters.AndFilter(`);
 
-    filter.and.forEach(f => makeFilter(f, lines, indent + '  '));
+    filter.and.forEach(f => makeFilter(f, lines, indent + '  ', ','));
 
     lines.push(`${indent})`);
 
   } else if (isOrFilter(filter)) {
     lines.push(`${indent}new filters.OrFilter(`);
 
-    filter.or.forEach(f => makeFilter(f, lines, indent + '  '));
+    filter.or.forEach(f => makeFilter(f, lines, indent + '  ', ','));
 
     lines.push(`${indent})`);
 
@@ -304,40 +304,40 @@ const makeFilter = (filter: Filter, lines: string[], indent = '') => {
 
     lines.push(`${indent})`);
   } else if (isAnyOfDocIdFilter(filter)) {
-    lines.push(`${indent}${makeAnyOfDocIdFilter(filter)}`);
+    lines.push(`${indent}${makeAnyOfDocIdFilter(filter)}${endOfLine}`);
 
   } else if (isAnyOfFilter(filter)) {
-    lines.push(`${indent}${makeAnyOfFilter(filter)}`);
+    lines.push(`${indent}${makeAnyOfFilter(filter)}${endOfLine}`);
 
   } else if (isDocIdFilter(filter)) {
-    lines.push(`${indent}${makeDocIdFilter(filter)}`);
+    lines.push(`${indent}${makeDocIdFilter(filter)}${endOfLine}`);
 
   } else if (isEqFilter(filter)) {
-    lines.push(`${indent}${makeEqFilter(filter)}`);
+    lines.push(`${indent}${makeEqFilter(filter)}${endOfLine}`);
 
   } else if (isExistsFilter(filter)) {
-    lines.push(`${indent}${makeExistsFilter(filter)}`);
+    lines.push(`${indent}${makeExistsFilter(filter)}${endOfLine}`);
 
   } else if (isGteFilter(filter)) {
-    lines.push(`${indent}${makeGteFilter(filter)}`);
+    lines.push(`${indent}${makeGteFilter(filter)}${endOfLine}`);
 
   } else if (isGtFilter(filter)) {
-    lines.push(`${indent}${makeGtFilter(filter)}`);
+    lines.push(`${indent}${makeGtFilter(filter)}${endOfLine}`);
 
   } else if (isInArrayFilter(filter)) {
-    lines.push(`${indent}${makeInArrayFilter(filter)}`);
+    lines.push(`${indent}${makeInArrayFilter(filter)}${endOfLine}`);
 
   } else if (isLikeFilter(filter)) {
-    lines.push(`${indent}${makeLikeFilter(filter)}`);
+    lines.push(`${indent}${makeLikeFilter(filter)}${endOfLine}`);
 
   } else if (isLteFilter(filter)) {
-    lines.push(`${indent}${makeLteFilter(filter)}`);
+    lines.push(`${indent}${makeLteFilter(filter)}${endOfLine}`);
 
   } else if (isLtFilter(filter)) {
-    lines.push(`${indent}${makeLtFilter(filter)}`);
+    lines.push(`${indent}${makeLtFilter(filter)}${endOfLine}`);
 
   } else {
-    lines.push(`${indent}${makeAnyFilter()}`);
+    lines.push(`${indent}${makeAnyFilter()}${endOfLine}`);
   }
 }
 
@@ -361,7 +361,7 @@ const makeFiltersFromQuerySchema = (querySchema: ObjectSchema): string => {
 
   let andFilter = "new filters.AndFilter(\n";
   properties.forEach(prop => {
-    andFilter += makeEqFilterFromPropertySchema(prop, querySchema.properties[prop], '    ') + "\n";
+    andFilter += makeEqFilterFromPropertySchema(prop, querySchema.properties[prop], '    ') + ",\n";
   })
   andFilter += ")"
 
