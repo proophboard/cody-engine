@@ -39,7 +39,6 @@
     },
     "cucumber": {
       "executor": "nx:run-commands",
-      "outputs": ["{options.outputFile}"],
       "defaultConfiguration": "development",
       "options": {
         "cwd": "packages/be",
