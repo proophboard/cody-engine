@@ -6,8 +6,6 @@ Looking for a way to bridge the gap between Event Storming and prototyping or ev
 
 We've got you covered! 💪
 
-## Built on the shoulders of giants
-
 Cody Engine is a **ready-to-use** Open Source solution to transform an [Event Map]({{site.baseUrl}}/continuous_event_storming/event-map-design.html)
 into a prototype and if you want also into a production-ready system.
 
