@@ -5,7 +5,7 @@ import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 
 export const CE_HEADER_PREFIX = 'Ce-';
 
-export const extractMetadataFromHeaders = <M extends Meta = any>(req: IncomingMessage, authService: AuthService): M => {
+export const extractMetadataFromHeaders = async <M extends Meta = any>(req: IncomingMessage, authService: AuthService): Promise<M> => {
   const meta: Record<string, any> = {};
 
   for (const headerKey in req.headers) {
@@ -13,7 +13,7 @@ export const extractMetadataFromHeaders = <M extends Meta = any>(req: IncomingMe
       const metaKey = names(headerKey.replace('ce-', '')).propertyName;
 
       if(metaKey === 'user') {
-        meta[metaKey] = authService.get(req.headers[headerKey] as string);
+        meta[metaKey] = await authService.get(req.headers[headerKey] as string);
       } else {
         meta[metaKey] = req.headers[headerKey];
       }
