@@ -119,15 +119,15 @@ export class AggregateRepository<T extends {} = any> {
                 }
             }
 
-            if(evt.meta.user && typeof evt.meta.user === 'object' && evt.meta.user.userId) {
-                evt = setMessageMetadata(evt, META_KEY_USER, evt.meta.user.userId);
-            }
-
             evt = setMessageMetadata(evt, 'causationId', command.uuid);
             evt = setMessageMetadata(evt, 'causationName', command.name);
 
             for (const k in command.meta) {
                 evt = setMessageMetadata(evt, k, command.meta[k]);
+            }
+
+            if(evt.meta.user && typeof evt.meta.user === 'object' && evt.meta.user.userId) {
+                evt = setMessageMetadata(evt, META_KEY_USER, evt.meta.user.userId);
             }
 
             if(evt.meta.visibility === "service") {
