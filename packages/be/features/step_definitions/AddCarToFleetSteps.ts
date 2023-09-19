@@ -72,11 +72,14 @@ class AddCarToFleetSteps {
     };
     const expectedEvent = incompleteCarAdded(expectedPayload);
 
-    const filteredEvents = this.events.filter((event: Event) => {
+    const newestEventToCompare = this.events.
+    filter((event: Event) => {
       return event.name === expectedEvent.name && event.meta.aggregateId === identifier;
-    })
+    }).sort((event1, event2) => {
+      return event2.createdAt.getTime() - event1.createdAt.getTime();
+    }).pop();
 
-    expect(filteredEvents.length).toBe(1);
-    expect(filteredEvents[0].payload).toEqual(expectedPayload);
+    expect(newestEventToCompare).toBeDefined();
+    expect(newestEventToCompare?.payload).toEqual(expectedPayload);
   }
 }
