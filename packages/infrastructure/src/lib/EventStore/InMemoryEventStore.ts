@@ -109,8 +109,9 @@ export class InMemoryEventStore implements EventStore {
 
 
       if(existingEvts.length !== expectedVersion) {
-        throw Error(`Concurrency exception. Expected stream version does not match. Expected ${expectedVersion} for stream ${streamName} with metadata matcher ${JSON.stringify(metadataMatcher)}. But current version is ${existingEvts.length}`);
+        const exceptionMessage = `Concurrency exception. Expected stream version does not match. Expected ${expectedVersion} for stream ${streamName} with metadata matcher ${JSON.stringify(metadataMatcher)}. But current version is ${existingEvts.length}`;
 
+        throw Error(exceptionMessage);
       }
     }
 
