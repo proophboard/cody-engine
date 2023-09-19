@@ -10,7 +10,7 @@
     "test-be": "npx nx run be:test",
     "test-fe": "npx nx run fe:test",
     "test-shared": "npx nx run shared:test",
-    "test-scenarios": "npx nx run be:cucumber"
+    "test-scenarios": "NODE_ENV=test npx nx run be:cucumber"
   },
   "private": false,
   "devDependencies": {
@@ -60,6 +60,7 @@
     "eslint-plugin-jsx-a11y": "6.7.1",
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-react-hooks": "4.6.0",
+    "expect": "^29.7.0",
     "jest": "^29.4.1",
     "jest-environment-jsdom": "^29.4.1",
     "jest-environment-node": "^29.4.1",
