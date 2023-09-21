@@ -3,8 +3,6 @@ import * as ReactDOM from 'react-dom/client';
 import App from './app/app';
 import {environment} from "@cody-play/environments/environment";
 import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-model-store/configured-document-store";
-import {injectCustomApiQuery} from "@frontend/queries/use-api-query";
-import {localApiQuery} from "@cody-play/queries/local-api-query";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
 import {Documents} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
 
@@ -84,8 +82,6 @@ const docs: Documents = {
     }
   }
 };
-
-injectCustomApiQuery(localApiQuery);
 
 (async () => {
   await getConfiguredPlayDocumentStore().importDocuments(docs);

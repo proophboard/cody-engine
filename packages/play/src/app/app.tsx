@@ -27,8 +27,8 @@ let currentRoutes: string[] = [];
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
-      <PlayConfigProvider>
-        <User>
+      <User>
+        <PlayConfigProvider>
           <ToggleColorMode>
             <SnackbarProvider maxSnack={3} >
               <MainLayout>
@@ -37,8 +37,8 @@ export function App() {
               </MainLayout>
             </SnackbarProvider>
           </ToggleColorMode>
-        </User>
-      </PlayConfigProvider>
+        </PlayConfigProvider>
+      </User>
     </>
   };
 

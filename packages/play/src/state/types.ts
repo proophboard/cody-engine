@@ -10,7 +10,7 @@ import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
 import {UiSchema} from "@rjsf/utils";
-import {TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/get-vo-metadata";
+import {ResolveConfig, TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/get-vo-metadata";
 
 /* UI */
 
@@ -55,6 +55,10 @@ export interface PlayQueryRuntimeInfo {
   desc: QueryDescription,
   factory: AnyRule[],
   schema: DeepReadonly<JSONSchema7>,
+}
+
+export type PlayResolverRegistry = {
+  [queryName: string]: ResolveConfig;
 }
 
 /* Information */

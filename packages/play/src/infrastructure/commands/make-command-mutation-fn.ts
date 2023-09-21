@@ -4,7 +4,6 @@ import {
   PlayEventRegistry,
   PlayInformationRuntimeInfo, PlaySchemaDefinitions
 } from "@cody-play/state/types";
-import {Command} from "@event-engine/messaging/command";
 import {AxiosError, AxiosHeaders, AxiosResponse} from "axios";
 import {User} from "@app/shared/types/core/user/user";
 import {Payload, setMessageMetadata} from "@event-engine/messaging/message";

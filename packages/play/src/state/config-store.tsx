@@ -3,7 +3,7 @@ import {
   PlayAggregateRegistry, PlayApplyRulesRegistry, PlayCommandHandlerRegistry,
   PlayCommandRegistry, PlayEventRegistry, PlayInformationRegistry, PlayInformationRuntimeInfo,
   PlayInitAction,
-  PlayPageRegistry, PlayQueryRegistry,
+  PlayPageRegistry, PlayQueryRegistry, PlayResolverRegistry,
   PlaySchemaDefinitions, PlayTopLevelPage,
   PlayViewRegistry
 } from "@cody-play/state/types";
@@ -15,6 +15,9 @@ import {
   QueryableStateDescription,
   QueryableStateListDescription
 } from "@event-engine/descriptions/descriptions";
+import {injectCustomApiQuery} from "@frontend/queries/use-api-query";
+import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
+import {useUser} from "@frontend/hooks/use-user";
 
 export interface CodyPlayConfig {
   pages: PlayPageRegistry,
@@ -25,6 +28,7 @@ export interface CodyPlayConfig {
   events: PlayEventRegistry,
   eventReducers: PlayApplyRulesRegistry,
   queries: PlayQueryRegistry,
+  resolvers: PlayResolverRegistry,
   types: PlayInformationRegistry,
   definitions: PlaySchemaDefinitions,
 }
@@ -303,6 +307,9 @@ const initialPlayConfig: CodyPlayConfig = {
       }
     }
   },
+  resolvers: {
+    'FleetManagement.GetBrandList': {}
+  },
   types: {
     "FleetManagement.Car.BrandList": {
       desc: ({
@@ -526,6 +533,7 @@ const clearAfterDispatchListener = (): void => {
 }
 
 const PlayConfigProvider = (props: PropsWithChildren) => {
+  const [user, ] = useUser();
   const [config, dispatch] = useReducer((config: CodyPlayConfig, action: Action): CodyPlayConfig => {
     switch (action.type) {
       case "INIT":
@@ -541,6 +549,8 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
   useEffect(() => {
     afterDispatchListeners.forEach(l => l(config));
   }, [config]);
+
+  injectCustomApiQuery(makeLocalApiQuery(config, user));
 
   return <Provider value={{ config, dispatch }}>{props.children}</Provider>;
 }
