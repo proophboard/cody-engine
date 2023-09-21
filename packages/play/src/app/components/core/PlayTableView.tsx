@@ -1,0 +1,276 @@
+import { Box, CircularProgress, Typography } from '@mui/material';
+import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import {useContext, useEffect} from 'react';
+import { triggerSideBarAnchorsRendered } from '@frontend/util/sidebar/trigger-sidebar-anchors-rendered';
+import NoRowsOverlay from '@frontend/app/components/core/table/NoRowsOverlay';
+import jexl from '@app/shared/jexl/get-configured-jexl';
+import { dataValueGetter } from '@frontend/util/table/data-value-getter';
+import { determineQueryPayload } from '@app/shared/utils/determine-query-payload';
+import { FleetManagementGetBrandListQueryRuntimeInfo } from '@app/shared/queries/fleet-management/get-brand-list';
+import PageLink from '@frontend/app/components/core/PageLink';
+import { mapProperties } from '@app/shared/utils/map-properties';
+import { BrandDetails } from '@frontend/app/pages/fleet-management/brand-details';
+import { CarDetails } from '@frontend/app/pages/fleet-management/car-details';
+import { stringify } from '@app/shared/utils/stringify';
+import {useApiQuery} from "@frontend/queries/use-api-query";
+import {
+  PlayInformationRegistry,
+  PlayInformationRuntimeInfo, PlayPageRegistry,
+  PlayQueryRegistry,
+  PlaySchemaDefinitions
+} from "@cody-play/state/types";
+import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
+import {BrandListDesc} from "@app/shared/types/fleet-management/car/brand-list.desc";
+import {UiSchema} from "@rjsf/utils";
+import {
+  PageLinkTableColumn, RefTableColumn,
+  TableColumnUiSchema,
+  TableUiSchema
+} from "@cody-engine/cody/hooks/utils/value-object/get-vo-metadata";
+import {
+  getColumns,
+  getPageDefinition,
+  getTableDensity,
+  getTablePageSizeConfig
+} from "@cody-play/infrastructure/ui-table/utils";
+import {names} from "@event-engine/messaging/helpers";
+import {informationTitle} from "@cody-play/infrastructure/information/titelize";
+import {UseQueryResult} from "@tanstack/react-query";
+import {isListSchema} from "@cody-engine/cody/hooks/utils/json-schema/list-schema";
+import {resolveRef} from "@cody-play/infrastructure/json-schema/resolve-ref";
+import {camelCaseToTitle} from "@frontend/util/string";
+import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {makeSyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
+import {QueryRuntimeInfo} from "@event-engine/messaging/query";
+import {configStore} from "@cody-play/state/config-store";
+
+const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
+  if(!isQueryableStateListDescription(informationInfo.desc)) {
+    throw new Error(`Play table view can only be used to show queriable state list information, but "${informationInfo.desc.name}" is not of this information type. ${CONTACT_PB_TEAM}`)
+  }
+
+  const {config: {queries, types, pages, definitions}} = useContext(configStore);
+
+  const query = useApiQuery(informationInfo.desc.query, params);
+
+  const uiSchema: UiSchema & TableUiSchema = informationInfo.uiSchema || {};
+
+  // Normalize table uiSchema
+  if(uiSchema['ui:table']) {
+    uiSchema.table = uiSchema['ui:table'];
+  }
+
+  const pageSizeConfig = getTablePageSizeConfig(uiSchema);
+  const density = getTableDensity(uiSchema);
+  const hideToolbar = !!uiSchema.table?.hideToolbar;
+
+  const itemIdentifier = informationInfo.desc.itemIdentifier;
+
+  useEffect(() => {
+    triggerSideBarAnchorsRendered();
+  }, [params]);
+
+  const columns: GridColDef[] = compileTableColumns(
+    params,
+    query,
+    itemIdentifier,
+    informationInfo,
+    uiSchema,
+    queries,
+    pages,
+    types,
+    definitions
+  );
+
+  return (
+    <Box component="div">
+      <Typography
+        variant="h3"
+        className="sidebar-anchor"
+        sx={{ padding: (theme) => theme.spacing(4), paddingLeft: 0 }}
+        id={"component-" + names(informationInfo.desc.name).fileName}
+      >
+        {informationTitle(informationInfo)}
+      </Typography>
+      {query.isLoading && <CircularProgress />}
+      {query.isSuccess && (
+        <DataGrid
+          columns={columns}
+          rows={query.data}
+          getRowId={(row) => row[itemIdentifier]}
+          sx={{ width: '100%' }}
+          slots={{
+            toolbar: hideToolbar? undefined : GridToolbar,
+            noRowsOverlay: NoRowsOverlay,
+          }}
+          initialState={{ pagination: { paginationModel: { pageSize: pageSizeConfig.pageSize } } }}
+          pageSizeOptions={pageSizeConfig.pageSizeOptions}
+          density={density}
+        />
+      )}
+    </Box>
+  );
+};
+
+export default PlayTableView;
+
+type RefQueryMap = {[column: string]: UseQueryResult}
+
+const compileTableColumns = (
+  params: any,
+  mainQuery: UseQueryResult,
+  itemIdentifier: string,
+  information: PlayInformationRuntimeInfo,
+  uiSchema: TableUiSchema,
+  queries: PlayQueryRegistry,
+  pages: PlayPageRegistry,
+  types: PlayInformationRegistry,
+  schemaDefinitions: PlaySchemaDefinitions
+): GridColDef[] => {
+  const schema = information.schema;
+
+  if (!isListSchema(schema)) {
+    throw new Error(`Cannot render table. Schema of "${information.desc.name}" is not a list.`);
+  }
+
+  const columns = getColumns(uiSchema, resolveRef(schema.items, schemaDefinitions));
+
+  const columnQueries: RefQueryMap = {};
+
+  const gridColDefs: GridColDef[] = [];
+
+  for (let column of columns) {
+    // @TODO: Validate column
+
+    if (typeof column === "string") {
+      column = {
+        field: column
+      }
+    }
+
+    if (!column.field) {
+      throw new Error(`Missing "field" property in a column definition. Every column needs to have at least a field property. Please check your configuration`);
+    }
+
+    if (!column['headerName']) {
+      column['headerName'] = camelCaseToTitle(column['field']);
+    }
+
+    if (!column['flex'] && !column['width']) {
+      column['flex'] = 1;
+    }
+
+    let hasValueGetter = false;
+
+    let cKey: keyof (TableColumnUiSchema);
+
+    const gridColDef: Partial<GridColDef> = {};
+
+    for (cKey in column) {
+      const cValue = column[cKey];
+
+      switch (cKey) {
+        case "pageLink":
+          const pageLinkConfig: PageLinkTableColumn = typeof cValue === "string" ? {
+            page: cValue,
+            mapping: {}
+          } : cValue as PageLinkTableColumn;
+
+          gridColDef.renderCell = (rowParams) => <PageLink page={getPageDefinition(pageLinkConfig, information, pages)}
+                                                           params={mapProperties({...rowParams, ...params}, pageLinkConfig.mapping)}
+          >{rowParams.value}</PageLink>;
+          break;
+        case "value":
+          gridColDef.valueGetter = (rowParams) => {
+            return dataValueGetter(
+              mainQuery,
+              itemIdentifier,
+              rowParams.value,
+              (data: any) => {
+                let ctx = {data, value: ''};
+
+                if (typeof cValue === 'string') {
+                  return jexl.evalSync(cValue, ctx);
+                }
+
+                const exe = makeSyncExecutable(cValue as AnyRule[]);
+
+                ctx = exe(ctx);
+
+                return ctx.value;
+              }
+            )
+          }
+
+          hasValueGetter = true;
+          break;
+        case "ref":
+          const refListVo = types[(cValue as RefTableColumn).data];
+
+          if (!refListVo) {
+            throw new Error(`Cannot find Information "${(cValue as RefTableColumn).data}" configured in column ref of column: "${column.field}".`);
+          }
+
+          const refListDesc = refListVo.desc;
+
+          if (!isQueryableStateListDescription(refListDesc)) {
+            throw new Error(`The ref in column "${column.field}" is not a list! Only lists can be used to load reference data.`);
+          }
+
+          const columnQuery = queries[refListDesc.query];
+
+          if (!columnQuery) {
+            throw new Error(`Cannot resolve column ref of column "${column.field}". The query is unknown: "${refListDesc.query}". Did you forget to pass the corresponding information card to Cody?`);
+          }
+
+          if (!columnQueries[column.field]) {
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            columnQueries[column.field] = useApiQuery(
+              columnQuery.desc.name,
+              determineQueryPayload(params, columnQuery as unknown as QueryRuntimeInfo)
+            )
+          }
+
+          const field = column.field;
+          const value = (cValue as RefTableColumn).value;
+
+          gridColDef.valueGetter = (rowParams) => {
+            return dataValueGetter(
+              columnQueries[field],
+              refListDesc.itemIdentifier,
+              rowParams.value,
+              (data: any) => {
+                let ctx = {data, value: ''};
+
+                if (typeof value === 'string') {
+                  return jexl.evalSync(value, ctx);
+                }
+
+                const exe = makeSyncExecutable(value as AnyRule[]);
+
+                ctx = exe(ctx);
+
+                return ctx.value;
+              }
+            )
+          }
+
+          hasValueGetter = true;
+          break;
+        default:
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          gridColDef[cKey] = cValue;
+      }
+    }
+
+    if (!hasValueGetter) {
+      gridColDef.valueGetter = params => stringify(params.value);
+    }
+
+    gridColDefs.push(gridColDef as GridColDef);
+  }
+
+  return gridColDefs;
+}

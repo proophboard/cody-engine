@@ -3,6 +3,8 @@ import {Filter} from "../value-object/query/filter-types";
 
 export type RuleType = 'always' | 'condition' | 'validate';
 
+export type AnyRule = AlwaysRule | ConditionRule;
+
 export interface Rule {
   rule: RuleType;
   then: ThenType;
