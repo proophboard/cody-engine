@@ -3,8 +3,15 @@ import React from "react";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {
   AggregateCommandDescription,
-  AggregateDescription, AggregateEventDescription,
-  CommandDescription, EventDescription, QueryDescription, StateDescription, StateListDescription, ValueObjectDescription
+  AggregateDescription,
+  AggregateEventDescription,
+  CommandDescription,
+  EventDescription, QueryableStateDescription, QueryableStateListDescription,
+  QueryableValueObjectDescription,
+  QueryDescription,
+  StateDescription,
+  StateListDescription,
+  ValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
 import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
@@ -47,6 +54,30 @@ export interface PlayAddCommandAction {
   command: PlayCommandRuntimeInfo,
 }
 
+export interface PlayAddTypeAction {
+  type: 'ADD_TYPE',
+  name: string,
+  information: PlayInformationRuntimeInfo,
+  definition: {
+    definitionId: string,
+    schema: JSONSchema7
+  }
+}
+
+export interface PlayAddQueryAction {
+  type: 'ADD_QUERY',
+  name: string,
+  query: PlayQueryRuntimeInfo,
+  resolver: ResolveConfig,
+}
+
+export interface PlayAddAggregateAction {
+  type: 'ADD_AGGREGATE',
+  name: string,
+  command: string,
+  aggregate: AggregateDescription,
+  businessRules: AnyRule[]
+}
 
 /* Commands */
 export type PlayCommandRegistry = {
@@ -85,7 +116,7 @@ export type PlayInformationRegistry = {
 }
 
 export interface PlayInformationRuntimeInfo {
-  desc: ValueObjectDescription | StateDescription | StateListDescription;
+  desc: ValueObjectDescription | StateDescription | StateListDescription | QueryableValueObjectDescription | QueryableStateDescription | QueryableStateListDescription;
   factory: AnyRule[];
   schema: DeepReadonly<JSONSchema7>;
   uiSchema?: UiSchema & TableUiSchema;

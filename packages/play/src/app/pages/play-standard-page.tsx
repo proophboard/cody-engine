@@ -23,6 +23,10 @@ export const PlayStandardPage = (props: Props) => {
   const commandBar = cmdBtns.length ? <Grid2 xs={12}><CommandBar>{cmdBtns}</CommandBar></Grid2> : <></>;
 
   const components = props.page.components.map((valueObjectName, index) => {
+    if(!config.views[valueObjectName]) {
+      throw new Error(`View Component for Information: "${valueObjectName}" is not registered. Did you forget to pass the corresponding Information card to Cody?`);
+    }
+
     const ViewComponent = getViewComponent(config.views[valueObjectName], config.types);
 
     return <Grid2 key={'comp' + index} xs={12}>{ViewComponent(routeParams)}</Grid2>

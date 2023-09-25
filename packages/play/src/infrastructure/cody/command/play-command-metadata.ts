@@ -10,6 +10,9 @@ import {
 import {playParseJsonMetadata} from "@cody-play/infrastructure/cody/metadata/play-parse-json-metadata";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {isShorthand} from "@cody-engine/cody/hooks/utils/json-schema/shorthand";
+import {playService} from "@cody-play/infrastructure/cody/service/play-service";
+import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
+import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-normalize-refs";
 
 interface RawCommandMeta {
   newAggregate: boolean;
@@ -40,6 +43,12 @@ export const playCommandMetadata = (command: Node, ctx: ElementEditedContext): P
     return meta;
   }
 
+  const service = playService(command, ctx);
+
+  if(playIsCodyError(service)) {
+    return service;
+  }
+
   let schema = meta.schema || {};
   if(isShorthand(schema)) {
     const convertedSchema = playJsonSchemaFromShorthand(schema, '/commands');
@@ -48,7 +57,7 @@ export const playCommandMetadata = (command: Node, ctx: ElementEditedContext): P
       return convertedSchema;
     }
 
-    schema = convertedSchema;
+    schema = playNormalizeRefs(playAddSchemaTitles(command.getName(), convertedSchema), service);
   }
 
   return {

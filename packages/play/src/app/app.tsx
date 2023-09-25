@@ -75,7 +75,6 @@ export function App() {
 
   useEffect(() => {
     addAfterDispatchListener((updatedState) => {
-      console.log("Page added updated state: ", updatedState)
       const newRoutes = Object.values(updatedState.pages).map(p => p.route);
 
       if(currentRoutes.length === newRoutes.length && JSON.stringify(currentRoutes) === JSON.stringify(newRoutes)) {

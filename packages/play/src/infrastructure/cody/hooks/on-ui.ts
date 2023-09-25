@@ -49,12 +49,39 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       .map(cmd => playwithErrorCheck(playGetNodeFromSyncedNodes, [cmd, ctx.syncedNodes]))
       .map(cmd => names(playwithErrorCheck(playService, [cmd, ctx])).className + '.' + names(cmd.getName()).className);
 
+    const pageName = names(ctx.boardName).className + '.' + uiNames.className;
+
+    const existingPage = config.pages[pageName];
+    const mergedComponents: string[] = [];
+    const mergedCommands: string[] = [];
+
+
+    if(existingPage) {
+      mergedComponents.push(...existingPage.components);
+      mergedCommands.push(...existingPage.commands);
+
+      views.forEach(v => {
+        if(!mergedComponents.includes(v)) {
+          mergedComponents.push(v);
+        }
+      })
+
+      commands.forEach(c => {
+        if(!mergedCommands.includes(c)) {
+          mergedCommands.push(c);
+        }
+      })
+    } else {
+      mergedComponents.push(...views.toArray());
+      mergedCommands.push(...commands.toArray());
+    }
+
 
     const page = topLevelPage ? ({
       service: serviceNames.className,
       route,
-      commands: commands.toArray(),
-      components: views.toArray(),
+      commands: mergedCommands,
+      components: mergedComponents,
       topLevel: topLevelPage,
       sidebar: meta.sidebar!,
       breadcrumb: meta.breadcrumb,
@@ -71,7 +98,7 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
     dispatch({
       type: "ADD_PAGE",
       page,
-      name: names(ctx.boardName).className + '.' + uiNames.className
+      name: pageName
     })
 
     return {cody: `The UI page "${ui.getName()}" is added to the app.`}

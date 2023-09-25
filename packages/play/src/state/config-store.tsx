@@ -1,7 +1,8 @@
 
 import {
+  PlayAddAggregateAction,
   PlayAddCommandAction,
-  PlayAddPageAction,
+  PlayAddPageAction, PlayAddQueryAction, PlayAddTypeAction,
   PlayAggregateRegistry, PlayApplyRulesRegistry, PlayCommandHandlerRegistry,
   PlayCommandRegistry, PlayEventRegistry, PlayInformationRegistry,
   PlayInitAction,
@@ -521,7 +522,7 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction | PlayAddPageAction | PlayAddCommandAction;
+type Action = PlayInitAction | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction | PlayAddQueryAction | PlayAddAggregateAction;
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
 
@@ -551,6 +552,26 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
       case "ADD_COMMAND":
         config.commands = {...config.commands};
         config.commands[action.name] = action.command;
+        return {...config};
+      case "ADD_TYPE":
+        config.types = {...config.types};
+        config.definitions = {...config.definitions};
+        config.types[action.name] = action.information;
+        config.definitions[action.definition.definitionId] = action.definition.schema;
+        return {...config};
+      case "ADD_QUERY":
+        config.queries = {...config.queries};
+        config.resolvers = {...config.resolvers};
+        config.views = {...config.views};
+        config.queries[action.name] = action.query;
+        config.resolvers[action.name] = action.resolver;
+        config.views[action.query.desc.returnType] = {information: action.query.desc.returnType};
+        return {...config};
+      case "ADD_AGGREGATE":
+        config.aggregates = {...config.aggregates};
+        config.commandHandlers = {...config.commandHandlers};
+        config.aggregates[action.name] = action.aggregate;
+        config.commandHandlers[action.command] = action.businessRules;
         return {...config};
       default:
         return config;
