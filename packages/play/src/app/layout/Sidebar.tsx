@@ -1,15 +1,15 @@
 import * as React from 'react';
 import {Box, Button, Drawer, List, ListItem, useMediaQuery, useTheme} from "@mui/material";
 import {NavLink} from "react-router-dom";
-import {isTopLevelPage, TopLevelPage} from "@frontend/app/pages/page-definitions";
+import {isTopLevelPage, PageDefinition} from "@frontend/app/pages/page-definitions";
 import SidebarSubMenu from "@frontend/app/layout/SidebarSubMenu";
-import {usePageMatch} from "@frontend/util/hook/use-page-match";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useUser} from "@frontend/hooks/use-user";
 import {useContext} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import {PlayTopLevelPage} from "@cody-play/state/types";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
+import {usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
 
 interface OwnProps {
   open: boolean;
@@ -22,14 +22,14 @@ const Sidebar = (props: SidebarProps) => {
 
   const {config} = useContext(configStore);
   const theme = useTheme();
-  const pageMatch = usePageMatch();
+  const pageMatch = usePlayPageMatch();
   const [user,] = useUser();
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
 
-  const topLevelPages: PlayTopLevelPage[] = Object.values(config.pages).filter(p => isTopLevelPage(p)) as PlayTopLevelPage[];
-  const topLevelPageItems = topLevelPages.map(({route, sidebar: {label, Icon, invisible}}) => {
+  const topLevelPages: PlayTopLevelPage[] = Object.values(config.pages).filter(p => isTopLevelPage(p as unknown as PageDefinition)) as PlayTopLevelPage[];
+  const topLevelPageItems = topLevelPages.map(({route, sidebar: {label, icon, invisible}}) => {
     if(typeof invisible === "boolean" && invisible) {
       return <></>
     }
@@ -71,7 +71,7 @@ const Sidebar = (props: SidebarProps) => {
           alignItems: 'center',
           marginRight: theme.spacing(1),
         }}>
-          <MdiIcon  icon={Icon} />
+          <MdiIcon  icon={icon} />
         </Box>
         {label}
       </Button>

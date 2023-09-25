@@ -17,11 +17,12 @@ import {joinPathFragments} from "nx/src/utils/path";
 import {detectService} from "./detect-service";
 import {names} from "@event-engine/messaging/helpers";
 import {isNewFile} from "./fs-tree";
-import {getVoMetadata, ValueObjectMetadata} from "./value-object/get-vo-metadata";
+import {getVoMetadata} from "./value-object/get-vo-metadata";
 import {namespaceToClassName, namespaceToFilePath, namespaceToJSONPointer} from "./value-object/namespace";
 import {getOriginalNode} from "./get-original-node";
 import {getEventMetadata} from "./event/get-event-metadata";
 import {getNodeFromSyncedNodes} from "./node-tree";
+import {ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
 
 const project = new Project({
   compilerOptions: {

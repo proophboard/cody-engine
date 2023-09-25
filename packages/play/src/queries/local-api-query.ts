@@ -16,13 +16,13 @@ import {PlayQueryRuntimeInfo} from "@cody-play/state/types";
 import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {QueryRuntimeInfo} from "@event-engine/messaging/query";
-import {ResolveConfig} from "@cody-engine/cody/hooks/utils/value-object/get-vo-metadata";
 import {User} from "@app/shared/types/core/user/user";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {JSONSchema7} from "json-schema-to-ts";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {makeInformationFactory} from "@cody-play/infrastructure/information/make-information-factory";
+import {ResolveConfig} from "@cody-engine/cody/hooks/utils/value-object/types";
 
 const ds = getConfiguredPlayDocumentStore();
 

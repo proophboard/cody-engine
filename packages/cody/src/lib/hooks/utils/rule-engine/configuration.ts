@@ -1,7 +1,6 @@
-import {JSONSchema7} from "json-schema-to-ts";
 import {Filter} from "../value-object/query/filter-types";
 
-export type RuleType = 'always' | 'condition' | 'validate';
+export type RuleType = 'always' | 'condition';
 
 export type AnyRule = AlwaysRule | ConditionRule;
 
@@ -32,10 +31,6 @@ export interface IfNotConditionRule extends Rule {
 
 export const isIfNotConditionRule = (rule: any): rule is IfNotConditionRule => {
   return typeof rule.if_not !== "undefined";
-}
-
-export interface ValidateRule extends Rule {
-  validate: JSONSchema7;
 }
 
 export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenFetchData | ThenExecuteRules | ThenForEach | ThenFilter;

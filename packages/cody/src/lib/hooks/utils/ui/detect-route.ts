@@ -4,9 +4,10 @@ import {PageDefinition} from "@frontend/app/pages/page-definitions";
 import {names} from "@event-engine/messaging/helpers";
 import {getSourcesOfType, isCodyError} from "@proophboard/cody-utils";
 import {getNodeFromSyncedNodes} from "../node-tree";
-import {getUiMetadata, UiMetadata} from "./get-ui-metadata";
+import {getUiMetadata} from "./get-ui-metadata";
 import {isTopLevelPage} from "./is-top-level-page";
 import {loadPageDefinition} from "./load-page-definition";
+import {UiMetadata} from "@cody-engine/cody/hooks/utils/ui/types";
 
 export const detectRoute = async (ui: Node, meta: UiMetadata, topLevelPage: boolean, ctx: Context, routeParams: string[] = [], pageDefinition?: PageDefinition): Promise<string | CodyResponse> => {
   if(meta.route) {

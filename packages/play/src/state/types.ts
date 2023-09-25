@@ -10,13 +10,19 @@ import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
 import {UiSchema} from "@rjsf/utils";
-import {ResolveConfig, TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/get-vo-metadata";
+import {DynamicBreadcrumbMetadata} from "@cody-engine/cody/hooks/utils/ui/types";
+import {ResolveConfig, TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/types";
 
 /* UI */
+export type PlayPageDefinition = Omit<PageDefinition, 'breadcrumb'> & {breadcrumb: string | DynamicBreadcrumbMetadata, service: string};
 
-export type PlayTopLevelPage = Omit<TopLevelPage, 'sidebar'> & {sidebar: {label: string, Icon: string, invisible?: string | boolean}};
+export type PlayTopLevelPage = Omit<Omit<TopLevelPage, 'sidebar'>, 'breadcrumb'> & {sidebar: {label: string, icon: string, invisible?: string | boolean}} & PlayPageDefinition;
 
-export type PlayPageRegistry = {[pageName: string]: PageDefinition};
+export interface PlaySubLevelPage extends PlayPageDefinition {
+  routeParams: string[];
+}
+
+export type PlayPageRegistry = {[pageName: string]: PlayPageDefinition};
 
 export type PlayViewRegistry = {
   [valueObjectName: string]: React.FunctionComponent<any> | { information: string };
@@ -27,6 +33,12 @@ export type PlayViewRegistry = {
 export interface PlayInitAction {
   type: 'INIT',
   payload: CodyPlayConfig,
+}
+
+export interface PlayAddPageAction {
+  type: 'ADD_PAGE',
+  name: string,
+  page: PlayPageDefinition,
 }
 
 

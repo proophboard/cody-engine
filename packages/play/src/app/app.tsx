@@ -21,6 +21,7 @@ import ToggleColorMode from "@frontend/app/providers/ToggleColorMode";
 import User from "@frontend/app/providers/User";
 import {addAfterDispatchListener, clearAfterDispatchListener, PlayConfigProvider, configStore} from "@cody-play/state/config-store";
 import {PlayPageRegistry} from "@cody-play/state/types";
+import CodyMessageServerInjection from "@cody-play/app/components/core/CodyMessageServer";
 
 let currentRoutes: string[] = [];
 
@@ -29,14 +30,16 @@ export function App() {
     return <>
       <User>
         <PlayConfigProvider>
-          <ToggleColorMode>
-            <SnackbarProvider maxSnack={3} >
-              <MainLayout>
-                <ScrollToTop />
-                <Outlet />
-              </MainLayout>
-            </SnackbarProvider>
-          </ToggleColorMode>
+          <CodyMessageServerInjection>
+            <ToggleColorMode>
+              <SnackbarProvider maxSnack={3} >
+                <MainLayout>
+                  <ScrollToTop />
+                  <Outlet />
+                </MainLayout>
+              </SnackbarProvider>
+            </ToggleColorMode>
+          </CodyMessageServerInjection>
         </PlayConfigProvider>
       </User>
     </>
@@ -72,12 +75,12 @@ export function App() {
 
   useEffect(() => {
     addAfterDispatchListener((updatedState) => {
+      console.log("Page added updated state: ", updatedState)
       const newRoutes = Object.values(updatedState.pages).map(p => p.route);
 
       if(currentRoutes.length === newRoutes.length && JSON.stringify(currentRoutes) === JSON.stringify(newRoutes)) {
         return;
       }
-      console.log("new router: ", updatedState.pages);
       setRouter(makeRouter(updatedState.pages));
     })
 

@@ -1,16 +1,15 @@
-import {PageDefinition} from "@frontend/app/pages/page-definitions";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import {useParams} from "react-router-dom";
 import CommandBar from "@frontend/app/layout/CommandBar";
 import React, {useContext} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
-import {PlayInformationRegistry} from "@cody-play/state/types";
+import {PlayInformationRegistry, PlayPageDefinition} from "@cody-play/state/types";
 import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import PlayTableView from "@cody-play/app/components/core/PlayTableView";
 
 interface Props {
-  page: PageDefinition
+  page: PlayPageDefinition
 }
 
 export const PlayStandardPage = (props: Props) => {

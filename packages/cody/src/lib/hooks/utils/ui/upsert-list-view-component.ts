@@ -5,11 +5,7 @@ import {detectService} from "../detect-service";
 import {isCodyError} from "@proophboard/cody-utils";
 import {names} from "@event-engine/messaging/helpers";
 import {
-  getVoMetadata,
-  PageLinkTableColumn,
-  RefTableColumn, StringOrTableColumnUiSchema,
-  TableColumnUiSchema,
-  ValueObjectMetadata
+  getVoMetadata
 } from "../value-object/get-vo-metadata";
 import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import {FQCNFromDefinitionId} from "../value-object/definitions";
@@ -26,6 +22,12 @@ import {convertRuleConfigToTableColumnValueGetterRules} from "../rule-engine/con
 import {toJSON} from "../to-json";
 import {GridDensity} from "@mui/x-data-grid";
 import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference";
+import {
+  PageLinkTableColumn, RefTableColumn,
+  StringOrTableColumnUiSchema,
+  TableColumnUiSchema,
+  ValueObjectMetadata
+} from "@cody-engine/cody/hooks/utils/value-object/types";
 
 export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetadata, ctx: Context, tree: FsTree): Promise<boolean|CodyResponse> => {
   const service = detectService(vo, ctx);

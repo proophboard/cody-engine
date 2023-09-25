@@ -1,5 +1,4 @@
 import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
-import {ResolveConfig, ValueObjectMetadata} from "../value-object/get-vo-metadata";
 import {Context} from "../../context";
 import {
   isQueryableStateDescription,
@@ -43,6 +42,7 @@ import {
 } from "../value-object/query/filter-types";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {isCodyError} from "@proophboard/cody-utils";
+import {ResolveConfig, ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
 
 export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
   if(!voMeta.isQueryable) {

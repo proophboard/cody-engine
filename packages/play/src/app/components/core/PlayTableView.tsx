@@ -6,11 +6,8 @@ import NoRowsOverlay from '@frontend/app/components/core/table/NoRowsOverlay';
 import jexl from '@app/shared/jexl/get-configured-jexl';
 import { dataValueGetter } from '@frontend/util/table/data-value-getter';
 import { determineQueryPayload } from '@app/shared/utils/determine-query-payload';
-import { FleetManagementGetBrandListQueryRuntimeInfo } from '@app/shared/queries/fleet-management/get-brand-list';
 import PageLink from '@frontend/app/components/core/PageLink';
 import { mapProperties } from '@app/shared/utils/map-properties';
-import { BrandDetails } from '@frontend/app/pages/fleet-management/brand-details';
-import { CarDetails } from '@frontend/app/pages/fleet-management/car-details';
 import { stringify } from '@app/shared/utils/stringify';
 import {useApiQuery} from "@frontend/queries/use-api-query";
 import {
@@ -21,13 +18,7 @@ import {
 } from "@cody-play/state/types";
 import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
-import {BrandListDesc} from "@app/shared/types/fleet-management/car/brand-list.desc";
 import {UiSchema} from "@rjsf/utils";
-import {
-  PageLinkTableColumn, RefTableColumn,
-  TableColumnUiSchema,
-  TableUiSchema
-} from "@cody-engine/cody/hooks/utils/value-object/get-vo-metadata";
 import {
   getColumns,
   getPageDefinition,
@@ -44,6 +35,12 @@ import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {makeSyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {QueryRuntimeInfo} from "@event-engine/messaging/query";
 import {configStore} from "@cody-play/state/config-store";
+import {
+  PageLinkTableColumn, RefTableColumn,
+  TableColumnUiSchema,
+  TableUiSchema
+} from "@cody-engine/cody/hooks/utils/value-object/types";
+import {PageDefinition} from "@frontend/app/pages/page-definitions";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
   if(!isQueryableStateListDescription(informationInfo.desc)) {
@@ -177,7 +174,7 @@ const compileTableColumns = (
             mapping: {}
           } : cValue as PageLinkTableColumn;
 
-          gridColDef.renderCell = (rowParams) => <PageLink page={getPageDefinition(pageLinkConfig, information, pages)}
+          gridColDef.renderCell = (rowParams) => <PageLink page={getPageDefinition(pageLinkConfig, information, pages) as unknown as PageDefinition}
                                                            params={mapProperties({...rowParams, ...params}, pageLinkConfig.mapping)}
           >{rowParams.value}</PageLink>;
           break;

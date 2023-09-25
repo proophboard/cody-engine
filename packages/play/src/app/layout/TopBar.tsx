@@ -1,10 +1,10 @@
-import React, {createContext, useContext} from 'react';
+import React, {useContext} from 'react';
 import {AppBar, Box, Toolbar, Typography, IconButton} from "@mui/material";
-import Breadcrumbs from "@frontend/app/layout/Breadcrumbs";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 import {environment} from "@cody-play/environments/environment";
+import PlayBreadcrumbs from "@cody-play/app/layout/PlayBreadcrumbs";
 
 
 interface OwnProps {
@@ -26,7 +26,7 @@ const TopBar = (props: TopBarProps) => {
         <Box component={"div"} sx={{minWidth: {lg: "300px"}}}>
           <Typography variant={"h3"} sx={{color: (theme) => theme.palette.primary.contrastText}}>{environment.appName}</Typography>
         </Box>
-        <Breadcrumbs />
+        <PlayBreadcrumbs />
         <Box component={"div"} sx={{flexGrow: 1}}/>
         <IconButton aria-label="Light mode" onClick={toggleColorMode}>
           {mode === 'light' && <LightModeIcon sx={{ color: 'white' }}/> }

@@ -1,15 +1,15 @@
-import {
-  PageLinkTableColumn,
-  StringOrTableColumnUiSchema, TableColumnUiSchema,
-  TableUiSchema
-} from "@cody-engine/cody/hooks/utils/value-object/get-vo-metadata";
 import {GridDensity} from "@mui/x-data-grid";
 import {isObjectSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-object-schema";
-import {JSONSchema7} from "json-schema-to-ts";
 import {camelCaseToTitle} from "@frontend/util/string";
 import {names} from "@event-engine/messaging/helpers";
-import {PlayInformationRuntimeInfo, PlayPageRegistry} from "@cody-play/state/types";
-import {PageDefinition} from "@frontend/app/pages/page-definitions";
+import {PlayInformationRuntimeInfo, PlayPageDefinition, PlayPageRegistry} from "@cody-play/state/types";
+import {
+  PageLinkTableColumn,
+  StringOrTableColumnUiSchema,
+  TableColumnUiSchema,
+  TableUiSchema
+} from "@cody-engine/cody/hooks/utils/value-object/types";
+import {JSONSchema7} from "json-schema";
 
 export const getTablePageSizeConfig = (uiSchema: TableUiSchema): {pageSize: number, pageSizeOptions: number[]} => {
   let pageSize: number, pageSizeOptions: number[];
@@ -48,7 +48,7 @@ const deriveColumnsFromSchema = (itemSchema: JSONSchema7): TableColumnUiSchema[]
   }
 
   for (const propertyName in itemSchema.properties) {
-    const propSchema: JSONSchema7 & {title?: string} = itemSchema.properties[propertyName];
+    const propSchema: JSONSchema7 = itemSchema.properties[propertyName] as JSONSchema7;
 
     columns.push({
       field: propertyName,
@@ -60,7 +60,7 @@ const deriveColumnsFromSchema = (itemSchema: JSONSchema7): TableColumnUiSchema[]
   return columns;
 }
 
-export const getPageDefinition = (linkedPage: PageLinkTableColumn, information: PlayInformationRuntimeInfo, pages: PlayPageRegistry): PageDefinition => {
+export const getPageDefinition = (linkedPage: PageLinkTableColumn, information: PlayInformationRuntimeInfo, pages: PlayPageRegistry): PlayPageDefinition => {
   const parts = linkedPage.page.split(".");
   let service: string, pageName: string;
 

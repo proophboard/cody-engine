@@ -1,13 +1,13 @@
 
 import {
+  PlayAddPageAction,
   PlayAggregateRegistry, PlayApplyRulesRegistry, PlayCommandHandlerRegistry,
-  PlayCommandRegistry, PlayEventRegistry, PlayInformationRegistry, PlayInformationRuntimeInfo,
+  PlayCommandRegistry, PlayEventRegistry, PlayInformationRegistry,
   PlayInitAction,
   PlayPageRegistry, PlayQueryRegistry, PlayResolverRegistry,
   PlaySchemaDefinitions, PlayTopLevelPage,
   PlayViewRegistry
 } from "@cody-play/state/types";
-import {staticLabel} from "@frontend/util/breadcrumb/static-label";
 import CoreWelcome from "@frontend/app/components/core/welcome";
 import {createContext, PropsWithChildren, useEffect, useReducer} from "react";
 import {
@@ -36,26 +36,28 @@ export interface CodyPlayConfig {
 const initialPlayConfig: CodyPlayConfig = {
   pages: {
     Dashboard: ({
+      service: 'CrmTest',
       commands: [],
       components: ["Core.Welcome"],
       sidebar: {
         label: "Dashboard",
-        Icon: "view-dashboard"
+        icon: "ViewDashboard"
       },
       route: "/dashboard",
       topLevel: true,
-      breadcrumb: staticLabel('Dashboard')
+      breadcrumb: 'Dashboard'
     } as PlayTopLevelPage),
     Cars: ({
+      service: 'CrmTest',
       commands: ["FleetManagement.AddCarToFleet"],
       components: ["FleetManagement.CarList"],
       sidebar: {
         label: "Cars",
-        Icon: "car-multiple"
+        icon: "CarMultiple"
       },
       route: "/cars",
       topLevel: true,
-      breadcrumb: staticLabel('Cars')
+      breadcrumb: 'Cars'
     } as PlayTopLevelPage)
   },
   views: {
@@ -518,7 +520,7 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction;
+type Action = PlayInitAction | PlayAddPageAction;
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
 
@@ -541,12 +543,17 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         newConfig.pages.Dashboard = initialPlayConfig.pages.Dashboard;
         newConfig.views["Core.Welcome"] = initialPlayConfig.views["Core.Welcome"];
         return newConfig;
+      case "ADD_PAGE":
+        config.pages = {...config.pages};
+        config.pages[action.name] = action.page;
+        return {...config};
       default:
         return config;
     }
   }, initialPlayConfig);
 
   useEffect(() => {
+    console.log("trigger after dispatch: ", config);
     afterDispatchListeners.forEach(l => l(config));
   }, [config]);
 
