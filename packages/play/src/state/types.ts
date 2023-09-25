@@ -79,6 +79,14 @@ export interface PlayAddAggregateAction {
   businessRules: AnyRule[]
 }
 
+export interface PlayAddAggregateEventAction {
+  type: 'ADD_AGGREGATE_EVENT',
+  name: string,
+  aggregate: string,
+  event: PlayEventRuntimeInfo,
+  reducer: AnyRule[],
+}
+
 /* Commands */
 export type PlayCommandRegistry = {
   [commandName: string]: PlayCommandRuntimeInfo;

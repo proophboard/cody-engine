@@ -28,20 +28,14 @@ let currentRoutes: string[] = [];
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
-      <User>
-        <PlayConfigProvider>
-          <CodyMessageServerInjection>
-            <ToggleColorMode>
-              <SnackbarProvider maxSnack={3} >
-                <MainLayout>
-                  <ScrollToTop />
-                  <Outlet />
-                </MainLayout>
-              </SnackbarProvider>
-            </ToggleColorMode>
-          </CodyMessageServerInjection>
-        </PlayConfigProvider>
-      </User>
+      <ToggleColorMode>
+        <SnackbarProvider maxSnack={3} >
+          <MainLayout>
+            <ScrollToTop />
+            <Outlet />
+          </MainLayout>
+        </SnackbarProvider>
+      </ToggleColorMode>
     </>
   };
 
@@ -77,6 +71,7 @@ export function App() {
     addAfterDispatchListener((updatedState) => {
       const newRoutes = Object.values(updatedState.pages).map(p => p.route);
 
+      console.log(currentRoutes, newRoutes);
       if(currentRoutes.length === newRoutes.length && JSON.stringify(currentRoutes) === JSON.stringify(newRoutes)) {
         return;
       }
@@ -88,7 +83,13 @@ export function App() {
 
   return (
     <QueryClientProvider client={queryClient!}>
-      <RouterProvider router={router} />
+      <User>
+        <PlayConfigProvider>
+          <CodyMessageServerInjection>
+            <RouterProvider router={router} />
+          </CodyMessageServerInjection>
+        </PlayConfigProvider>
+      </User>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

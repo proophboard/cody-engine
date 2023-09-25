@@ -23,15 +23,17 @@ import {IChangeEvent} from "@rjsf/core";
 import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
 import {cloneSchema, resolveRefs, resolveUiSchema} from "@event-engine/messaging/resolve-refs";
-import definitions from "@app/shared/types/definitions";
 import {useUser} from "@frontend/hooks/use-user";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {types} from "@app/shared/types";
 import {getRjsfValidator} from "@frontend/util/rjsf-validator";
+import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
+import {JSONSchema7} from "json-schema";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
   commandFn: UseMutateAsyncFunction;
+  definitions: {[id: string]: DeepReadonly<JSONSchema7>};
   onBeforeSubmitting?: (formData: {[prop: string]: any}) => {[prop: string]: any};
   onSubmitted?: () => void;
   onResponseReceived?: () => void;
@@ -133,7 +135,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   const resolvedUiSchema = resolveUiSchema(props.command.schema as any, types);
   const uiSchema = normalizeUiSchema({...resolvedUiSchema, ...mainUiSchema}, {data: formData, user});
 
-  const schema = resolveRefs(cloneSchema(props.command.schema as any), definitions) as RJSFSchema;
+  const schema = resolveRefs(cloneSchema(props.command.schema as any), props.definitions) as RJSFSchema;
 
   if(
     isAggregateCommandDescription(desc) && desc.newAggregate && desc.aggregateIdentifier

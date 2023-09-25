@@ -89,6 +89,7 @@ const PlayCommand = (props: PlayCommandProps) => {
         onClose={handleCloseDialog}
         commandDialogCommand={runtimeInfo}
         commandFn={commandFn}
+        definitions={definitions}
       />
     </>
   );

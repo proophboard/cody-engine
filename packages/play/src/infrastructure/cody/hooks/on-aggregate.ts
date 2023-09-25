@@ -19,6 +19,7 @@ import {alwaysRecordEvent} from "@cody-engine/cody/hooks/utils/aggregate/always-
 import {isStateDescription} from "@event-engine/descriptions/descriptions";
 import {playVoFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {playUpdateProophBoardInfo} from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
+import {normalizeThenRecordEventRules} from "@cody-play/infrastructure/rule-engine/normalize-then-record-event-rules";
 
 export const onAggregate = async (aggregate: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -43,16 +44,19 @@ export const onAggregate = async (aggregate: Node, dispatch: PlayConfigDispatch,
 
     const collection = aggregateStateMeta.collection || aggregateStateNames.constantName.toLowerCase() + '_collection';
     const stream = meta.stream || 'write_model_stream';
-    const rules = meta.rules || [];
+    let rules = meta.rules || [];
 
     if(rules.length === 0) {
       events.forEach(evt => rules.push(alwaysRecordEvent(evt)))
     }
 
+
+
     const aggregateName = `${serviceNames.className}.${aggregateNames.className}`;
     const commandName = `${serviceNames.className}.${commandNames.className}`;
     const stateFQCN = playwithErrorCheck(playVoFQCN, [aggregateState, aggregateStateMeta, ctx]);
     const pbInfo = playwithErrorCheck(playUpdateProophBoardInfo, [aggregate, ctx, config.aggregates[aggregateName]])
+    rules = normalizeThenRecordEventRules(aggregateName, rules);
 
     dispatch({
       type: "ADD_AGGREGATE",

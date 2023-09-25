@@ -22,6 +22,9 @@ import CommandForm from "@frontend/app/components/core/CommandForm";
 import {AxiosResponse} from "axios";
 import {useLocation, useNavigate, useParams} from "react-router-dom";
 import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
+import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
+import {JSONSchema7} from "json-schema";
+import definitions from "@app/shared/types/definitions";
 
 export interface AggregateIdentifier {
   identifier: string;
@@ -40,6 +43,7 @@ interface OwnProps {
   onClose: () => void;
   commandDialogCommand: CommandRuntimeInfo;
   commandFn: UseMutateAsyncFunction<AxiosResponse, unknown, any>;
+  definitions?: {[id: string]: DeepReadonly<JSONSchema7>};
   aggregateIdentifier?: AggregateIdentifier;
   aggregateState?: {[stateKey: string]: any};
   initialValues?: {[prop: string]: any};
@@ -164,6 +168,7 @@ const CommandDialog = (props: CommandDialogProps) => {
         <CommandForm
           command={props.commandDialogCommand}
           commandFn={props.commandFn}
+          definitions={props.definitions || definitions}
           ref={commandFormRef}
           onBeforeSubmitting={(formData: {[prop: string]: any}) => {
             setTransactionState({...defaultTransactionState, isSubmitting: true})

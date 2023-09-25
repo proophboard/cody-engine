@@ -1,13 +1,13 @@
-import {CodyHook, Node, NodeType} from "@proophboard/cody-types";
+import {CodyHook, CodyResponse, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
 import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {names} from "@event-engine/messaging/helpers";
-import {getSingleSource, isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
+import {getSingleSource, isCodyError} from "@proophboard/cody-utils";
 import {detectService} from "./utils/detect-service";
 import {getNodeFromSyncedNodes} from "./utils/node-tree";
 import {findAggregateState} from "./utils/aggregate/find-aggregate-state";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
-import {flushChanges, FsTree} from "nx/src/generators/tree";
+import {flushChanges} from "nx/src/generators/tree";
 import {formatFiles, generateFiles} from "@nx/devkit";
 import {toJSON} from "./utils/to-json";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
@@ -18,23 +18,35 @@ import {createApplyFunctionRegistryIfNotExists} from "./utils/aggregate/create-a
 import {alwaysMapPayload} from "./utils/event/always-map-payload";
 import {convertRuleConfigToEventReducerRules} from "./utils/rule-engine/convert-rule-config-to-behavior";
 import {EventMeta, getEventMetadata} from "./utils/event/get-event-metadata";
-import {getOriginalNode} from "./utils/get-original-node";
 import {ensureAllRefsAreKnown} from "./utils/json-schema/ensure-all-refs-are-known";
-
 
 
 export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
   try {
-    event = getOriginalNode(event, ctx);
     const eventNames = names(event.getName());
-    const aggregate = getSingleSource(event, NodeType.aggregate);
+    let aggregate = getSingleSource(event, NodeType.aggregate);
+
+    if(isCodyError(aggregate) && event.getTags().contains('pb:connected')) {
+      for (const [, syncedNode] of ctx.syncedNodes) {
+        if(syncedNode.getType() === NodeType.event && syncedNode.getName() === event.getName()
+          && syncedNode.getTags().contains('pb:connected')) {
+          aggregate = getSingleSource(syncedNode, NodeType.aggregate);
+
+          if(!isCodyError(aggregate)) {
+            event = syncedNode;
+            break;
+          }
+        }
+      }
+    }
+
     const service = withErrorCheck(detectService, [event, ctx]);
     const serviceNames = names(service);
     const meta = withErrorCheck(getEventMetadata, [event, ctx]) as EventMeta;
 
     const isAggregateEvent = !isCodyError(aggregate);
 
-    if(!isAggregateEvent) {
+    if(isCodyError(aggregate)) {
       // @TODO: handle non-aggregate event
       return aggregate;
     }

@@ -1,6 +1,6 @@
 
 import {
-  PlayAddAggregateAction,
+  PlayAddAggregateAction, PlayAddAggregateEventAction,
   PlayAddCommandAction,
   PlayAddPageAction, PlayAddQueryAction, PlayAddTypeAction,
   PlayAggregateRegistry, PlayApplyRulesRegistry, PlayCommandHandlerRegistry,
@@ -522,7 +522,7 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction | PlayAddQueryAction | PlayAddAggregateAction;
+type Action = PlayInitAction | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction | PlayAddQueryAction | PlayAddAggregateAction | PlayAddAggregateEventAction;
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
 
@@ -572,6 +572,13 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.commandHandlers = {...config.commandHandlers};
         config.aggregates[action.name] = action.aggregate;
         config.commandHandlers[action.command] = action.businessRules;
+        return {...config};
+      case "ADD_AGGREGATE_EVENT":
+        config.events = {...config.events};
+        config.eventReducers = {...config.eventReducers};
+        config.eventReducers[action.aggregate] = {...config.eventReducers[action.aggregate]};
+        config.events[action.name] = action.event;
+        config.eventReducers[action.aggregate][action.name] = action.reducer;
         return {...config};
       default:
         return config;
