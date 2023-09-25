@@ -1,10 +1,10 @@
 import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
-import {isCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 
 export const playParseJsonMetadata = <T>(node: Node): T | CodyResponse => {
   const meta = getStringMetadata(node);
 
-  if(isCodyError(meta)) {
+  if(playIsCodyError(meta)) {
     return meta;
   }
 

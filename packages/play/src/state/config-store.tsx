@@ -1,5 +1,6 @@
 
 import {
+  PlayAddCommandAction,
   PlayAddPageAction,
   PlayAggregateRegistry, PlayApplyRulesRegistry, PlayCommandHandlerRegistry,
   PlayCommandRegistry, PlayEventRegistry, PlayInformationRegistry,
@@ -520,7 +521,7 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction | PlayAddPageAction;
+type Action = PlayInitAction | PlayAddPageAction | PlayAddCommandAction;
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
 
@@ -546,6 +547,10 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
       case "ADD_PAGE":
         config.pages = {...config.pages};
         config.pages[action.name] = action.page;
+        return {...config};
+      case "ADD_COMMAND":
+        config.commands = {...config.commands};
+        config.commands[action.name] = action.command;
         return {...config};
       default:
         return config;

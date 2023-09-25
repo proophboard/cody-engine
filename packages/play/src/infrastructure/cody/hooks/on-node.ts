@@ -2,11 +2,14 @@ import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-
 import {ElementEditedContext, PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
 import {onUi} from "@cody-play/infrastructure/cody/hooks/on-ui";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
+import {onCommand} from "@cody-play/infrastructure/cody/hooks/on-command";
 
 export const onNode = async (node: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   switch (node.getType()) {
     case NodeType.ui:
       return onUi(node, dispatch, ctx, config);
+    case NodeType.command:
+      return onCommand(node, dispatch, ctx, config);
   }
 
   return {

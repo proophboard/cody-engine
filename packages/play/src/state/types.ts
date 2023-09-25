@@ -41,6 +41,12 @@ export interface PlayAddPageAction {
   page: PlayPageDefinition,
 }
 
+export interface PlayAddCommandAction {
+  type: 'ADD_COMMAND',
+  name: string,
+  command: PlayCommandRuntimeInfo,
+}
+
 
 /* Commands */
 export type PlayCommandRegistry = {

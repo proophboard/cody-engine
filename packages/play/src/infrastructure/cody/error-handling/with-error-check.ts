@@ -1,6 +1,6 @@
 import {CodyResponse, CodyResponseType} from "@proophboard/cody-types";
 
-export const isCodyError =(err: any): err is CodyResponse => {
+export const playIsCodyError =(err: any): err is CodyResponse => {
   if(err && typeof err === 'object') {
     // eslint-disable-next-line no-prototype-builtins
     return err.hasOwnProperty('cody') && err.hasOwnProperty('type') && err.type === CodyResponseType.Error;
@@ -9,7 +9,7 @@ export const isCodyError =(err: any): err is CodyResponse => {
   return false;
 }
 
-export const isCodyWarning =(warning: any): warning is CodyResponse => {
+export const playIsCodyWarning =(warning: any): warning is CodyResponse => {
   if(warning && typeof warning === 'object') {
     // eslint-disable-next-line no-prototype-builtins
     return warning.hasOwnProperty('cody') && warning.hasOwnProperty('type') && warning.type === CodyResponseType.Warning;
@@ -30,7 +30,7 @@ export class CodyResponseException extends Error {
 export const playwithErrorCheck = <T extends (...args: any) => any>(func: T, args: Parameters<T>): Exclude<ReturnType<T>, CodyResponse> => {
   const res = func.apply(func, args);
 
-  if(isCodyError(res)) {
+  if(playIsCodyError(res)) {
     throw new CodyResponseException(res);
   }
 
@@ -40,7 +40,7 @@ export const playwithErrorCheck = <T extends (...args: any) => any>(func: T, arg
 export const asyncPlayWithErrorCheck = async <T extends (...args: any) => Promise<any>>(func: T, args: Parameters<T>): Promise<Exclude<Awaited<ReturnType<T>>, CodyResponse>> => {
   const res = await func.apply(func, args);
 
-  if(isCodyError(res)) {
+  if(playIsCodyError(res)) {
     throw new CodyResponseException(res);
   }
 

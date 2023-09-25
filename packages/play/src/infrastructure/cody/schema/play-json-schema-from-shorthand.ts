@@ -1,5 +1,5 @@
 import {CodyResponse, CodyResponseType} from "@proophboard/cody-types";
-import {isCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {JSONSchema7} from "json-schema";
 import {PlaySchemaDefinitions} from "@cody-play/state/types";
 
@@ -98,7 +98,7 @@ export const convertShorthandObjectToJsonSchema = (shorthand: ShorthandObject, n
 
       const arraySchema = convertShorthandStringToJsonSchema(itemsShorthandSchema, namespace);
 
-      if(!isCodyError(arraySchema) && Object.keys(shorthand).includes('$title')) {
+      if(!playIsCodyError(arraySchema) && Object.keys(shorthand).includes('$title')) {
         arraySchema.title = shorthand['$title'] as string;
       }
 
@@ -116,7 +116,7 @@ export const convertShorthandObjectToJsonSchema = (shorthand: ShorthandObject, n
     if(typeof shorthand[property] === "object") {
       const propertySchemaObj = convertShorthandObjectToJsonSchema(shorthand[property] as ShorthandObject, namespace);
 
-      if(isCodyError(propertySchemaObj)) {
+      if(playIsCodyError(propertySchemaObj)) {
         return propertySchemaObj;
       }
 
@@ -124,7 +124,7 @@ export const convertShorthandObjectToJsonSchema = (shorthand: ShorthandObject, n
     } else if(typeof shorthand[property] === "string") {
       const propertySchema = convertShorthandStringToJsonSchema(shorthand[property] as string, namespace);
 
-      if(isCodyError(propertySchema)) {
+      if(playIsCodyError(propertySchema)) {
         return propertySchema;
       }
 
@@ -169,7 +169,7 @@ export const convertShorthandStringToJsonSchema = (shorthand: string, namespace:
 
     const itemsSchema = convertShorthandStringToJsonSchema(itemsParts.join('|'), namespace);
 
-    if(isCodyError(itemsSchema)) {
+    if(playIsCodyError(itemsSchema)) {
       return itemsSchema;
     }
 
@@ -199,7 +199,7 @@ export const convertShorthandStringToJsonSchema = (shorthand: string, namespace:
         for (const part of parts.slice(1)) {
           const validation = parseShorthandValidation(part);
 
-          if(isCodyError(validation)) {
+          if(playIsCodyError(validation)) {
             return validation;
           }
 
@@ -218,7 +218,7 @@ export const convertShorthandStringToJsonSchema = (shorthand: string, namespace:
         for (const valPart of valParts) {
           const validation = parseShorthandValidation(valPart);
 
-          if (isCodyError(validation)) {
+          if (playIsCodyError(validation)) {
             return validation;
           }
 
@@ -315,7 +315,7 @@ export const playJsonSchemaFromShorthand = (shorthand: string | ShorthandObject,
   if(shorthand["$type"] && typeof shorthand["$type"] === "string") {
     const schema = convertShorthandStringToJsonSchema(normalizeShorthandString(shorthand["$type"]), namespace);
 
-    if(isCodyError(schema)) {
+    if(playIsCodyError(schema)) {
       return schema;
     }
 

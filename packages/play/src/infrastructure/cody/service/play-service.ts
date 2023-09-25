@@ -2,13 +2,13 @@ import {CodyResponse, Node, NodeType} from "@proophboard/cody-types";
 import {ElementEditedContext} from "@cody-play/infrastructure/cody/cody-message-server";
 import {names} from "@event-engine/messaging/helpers";
 import {playParseJsonMetadata} from "@cody-play/infrastructure/cody/metadata/play-parse-json-metadata";
-import {isCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {playFindParentByType} from "@cody-play/infrastructure/cody/node-traversing/node-tree";
 
 export const playService = (node: Node, ctx: ElementEditedContext): string | CodyResponse => {
   const meta = node.getMetadata() ? playParseJsonMetadata<{service?: string}>(node) : {};
 
-  if(isCodyError(meta)) {
+  if(playIsCodyError(meta)) {
     return meta;
   }
 
@@ -21,7 +21,7 @@ export const playService = (node: Node, ctx: ElementEditedContext): string | Cod
   if(feature) {
     const featureMeta = playParseJsonMetadata<{service?: string}>(feature);
 
-    if(!isCodyError(featureMeta)) {
+    if(!playIsCodyError(featureMeta)) {
       if(featureMeta.service) {
         return names(featureMeta.service).className;
       }
@@ -32,7 +32,7 @@ export const playService = (node: Node, ctx: ElementEditedContext): string | Cod
 
   if(bc) {
     const bcMeta = playParseJsonMetadata<{service?: string}>(bc);
-    if(!isCodyError(bcMeta) && bcMeta.service) {
+    if(!playIsCodyError(bcMeta) && bcMeta.service) {
       return names(bcMeta.service).className;
     }
   }

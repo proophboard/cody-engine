@@ -5,7 +5,7 @@ import {
   playGetNodeFromSyncedNodes,
   playGetSourcesOfType
 } from "@cody-play/infrastructure/cody/node-traversing/node-tree";
-import {isCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {playVoMetadata} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 import {PlayUiMetadata} from "@cody-play/infrastructure/cody/ui/play-ui-metadata";
 import {PlayInformationRegistry} from "@cody-play/state/types";
@@ -21,7 +21,7 @@ export const playIsTopLevelPage = (ui: Node, uiMeta: PlayUiMetadata, ctx: Elemen
 
   const viewModels = playGetSourcesOfType(ui, NodeType.document, true, true, true);
 
-  if(isCodyError(viewModels)) {
+  if(playIsCodyError(viewModels)) {
     return viewModels;
   }
 
@@ -30,13 +30,13 @@ export const playIsTopLevelPage = (ui: Node, uiMeta: PlayUiMetadata, ctx: Elemen
   viewModels.forEach(vM => {
     const syncedVm = playGetNodeFromSyncedNodes(vM, ctx.syncedNodes);
 
-    if(isCodyError(syncedVm)) {
+    if(playIsCodyError(syncedVm)) {
       return false;
     }
 
     const vMMeta = playVoMetadata(syncedVm, ctx, types);
 
-    if(isCodyError(vMMeta)) {
+    if(playIsCodyError(vMMeta)) {
       return false;
     }
 

@@ -3,12 +3,12 @@ import {ElementEditedContext} from "@cody-play/infrastructure/cody/cody-message-
 import {names} from "@event-engine/messaging/helpers";
 import {namespaceToFilePath, namespaceToJSONPointer} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
-import {isCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {PlayValueObjectMetadata} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 
 export const playDefinitionId = (vo: Node, ns: string, ctx: ElementEditedContext): string | CodyResponse => {
   const service = playService(vo, ctx);
-  if(isCodyError(service)) {
+  if(playIsCodyError(service)) {
     return service;
   }
 
@@ -22,11 +22,19 @@ export const playDefinitionId = (vo: Node, ns: string, ctx: ElementEditedContext
 
 export const playVoFQCN = (vo: Node, voMeta: PlayValueObjectMetadata, ctx: ElementEditedContext): string | CodyResponse => {
   const service = playService(vo, ctx);
-  if(isCodyError(service)) {
+  if(playIsCodyError(service)) {
     return service;
   }
 
   const nsJsonPointer = namespaceToJSONPointer(voMeta.ns);
 
   return `${names(service).className}${nsJsonPointer}${names(vo.getName()).className}`;
+}
+
+export const playFQCNFromDefinitionId = (definitionId: string): string => {
+  const withoutPrefix = definitionId.replace('/definitions/', '');
+
+  const fqcnParts = withoutPrefix.split("/");
+
+  return fqcnParts.map(p => names(p).className).join(".");
 }

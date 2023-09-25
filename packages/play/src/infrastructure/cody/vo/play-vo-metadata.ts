@@ -8,10 +8,13 @@ import {
   ValueObjectDescriptionFlags
 } from "@event-engine/descriptions/descriptions";
 import {playParseJsonMetadata} from "@cody-play/infrastructure/cody/metadata/play-parse-json-metadata";
-import {isCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {playDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
-import {playJsonSchemaFromShorthand} from "@cody-play/infrastructure/cody/schema/play-json-schema-from-shorthand";
+import {
+  playJsonSchemaFromShorthand,
+  ShorthandObject
+} from "@cody-play/infrastructure/cody/schema/play-json-schema-from-shorthand";
 import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-normalize-refs";
 import {playResolveRef} from "@cody-play/infrastructure/cody/schema/play-resolve-ref";
 import {PlayInformationRegistry} from "@cody-play/state/types";
@@ -22,8 +25,6 @@ import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-ad
 import {isListSchema} from "@cody-play/infrastructure/cody/schema/check";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {GridDensity} from "@mui/x-data-grid";
-
-export interface ShorthandObject {[property: string]: ShorthandObject | string}
 
 export interface PlayValueObjectMetadataRaw {
   identifier?: string;
@@ -99,7 +100,7 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
   const meta = playParseJsonMetadata<PlayValueObjectMetadataRaw>(vo);
   const voNames = names(vo.getName());
 
-  if(isCodyError(meta)) {
+  if(playIsCodyError(meta)) {
     return meta;
   }
 
@@ -112,7 +113,7 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
   if(isShorthand(meta.schema)) {
     const jsonSchema = playJsonSchemaFromShorthand(meta.schema as ShorthandObject, ns);
 
-    if(isCodyError(jsonSchema)) {
+    if(playIsCodyError(jsonSchema)) {
       return jsonSchema;
     }
 
@@ -123,7 +124,7 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
 
   const service = playService(vo, ctx);
 
-  if(isCodyError(service)) {
+  if(playIsCodyError(service)) {
     return service;
   }
 
@@ -131,7 +132,7 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
     if(isShorthand(meta.querySchema)) {
       const queryJsonSchema = playJsonSchemaFromShorthand(meta.querySchema as ShorthandObject, ns);
 
-      if(isCodyError(queryJsonSchema)) {
+      if(playIsCodyError(queryJsonSchema)) {
         return queryJsonSchema;
       }
 
@@ -178,7 +179,7 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
 
   if(isListSchema(normalizedSchema)) {
     const refVORuntimeInfo = playResolveRef(normalizedSchema.items, normalizedSchema, vo, types);
-    if(isCodyError(refVORuntimeInfo)) {
+    if(playIsCodyError(refVORuntimeInfo)) {
       return refVORuntimeInfo;
     }
 

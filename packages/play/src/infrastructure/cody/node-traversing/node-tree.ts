@@ -6,6 +6,11 @@ import {
   NodeType
 } from "@proophboard/cody-types";
 import {List} from "immutable";
+import {ElementEditedContext} from "@cody-play/infrastructure/cody/cody-message-server";
+import {isStateDescription} from "@event-engine/descriptions/descriptions";
+import {playVoMetadata} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
+import {PlayInformationRegistry} from "@cody-play/state/types";
+import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 
 type Success = Node;
 type Error = CodyResponse;
@@ -20,6 +25,50 @@ export const playFindParentByType = (node: Node | null, type: NodeType): Node | 
   }
 
   return playFindParentByType(node.getParent(), type);
+}
+
+export const playGetSingleSource = (node: Node, expectedType: NodeType): Success | Error => {
+  const sources = node.getSources().filter(t => t.getType() === expectedType);
+
+  if(sources.count() === 0) {
+    return {
+      cody: `Looking for a "${expectedType}" as a source of "${node.getName()}", but there is non connected.`,
+      details: `I'd love to, but I cannot proceed without a ${expectedType}`,
+      type: CodyResponseType.Error
+    };
+  }
+
+  if(sources.count() > 1) {
+    return {
+      cody: `Looking for a single "${expectedType}" as a source of "${node.getName()}", but there are multiple connected.`,
+      details: `You could teach me to handle the situation. But at the moment I can't, sorry.`,
+      type: CodyResponseType.Error
+    };
+  }
+
+  return sources.first();
+}
+
+export const playGetSingleTarget = (node: Node, expectedType: NodeType): Success | Error => {
+  const targets = node.getTargets().filter(t => t.getType() === expectedType);
+
+  if(targets.count() === 0) {
+    return {
+      cody: `Looking for a "${expectedType}" as a target of "${node.getName()}", but there is non connected.`,
+      details: `Check your design. Cannot proceed without a ${expectedType}`,
+      type: CodyResponseType.Error
+    };
+  }
+
+  if(targets.count() > 1) {
+    return {
+      cody: `Looking for a single "${expectedType}" as a target of "${node.getName()}", but there are multiple connected.`,
+      details: `Not sure what you've planned? But I cannot handle it this way, sorry.`,
+      type: CodyResponseType.Error
+    };
+  }
+
+  return node.getTargets().first();
 }
 
 export const playGetNodesOfTypeNearby = (node: Node, type: NodeType, nearbyPadding: number, syncedNodes: NodeMap): List<Node> => {
@@ -104,6 +153,46 @@ export const playGetTargetsOfType = (node: Node, expectedType: NodeType, ignoreO
   }
 
   return targets;
+}
+
+export const playFindAggregateState = (aggregate: Node, ctx: ElementEditedContext, types: PlayInformationRegistry): Success | Error => {
+  const events = playGetTargetsOfType(aggregate, NodeType.event);
+
+  if(playIsCodyError(events)) {
+    return events;
+  }
+
+  for (const event of events) {
+    const syncedEvent = playGetNodeFromSyncedNodes(event, ctx.syncedNodes);
+
+    if(playIsCodyError(syncedEvent)) {
+      return syncedEvent;
+    }
+
+    const vos = playGetTargetsOfType(syncedEvent, NodeType.document, true, false, true);
+
+    if(playIsCodyError(vos)) {
+      return vos;
+    }
+
+    for (const vo of vos) {
+      const voMeta = playVoMetadata(vo, ctx, types);
+
+      if(playIsCodyError(voMeta)) {
+        return voMeta;
+      }
+
+      if(isStateDescription(voMeta)) {
+        return vo;
+      }
+    }
+  }
+
+  return {
+    cody: `I cannot find an information card that defines the state for the aggregate: ${aggregate.getName()}.`,
+    type: CodyResponseType.Error,
+    details: `Aggregate state needs to be an object with an identifier and it should be the result of an event.`,
+  }
 }
 
 export const playGetAbsoluteGraphPoint = (node: Node, calculatedChildGraphPoint?: GraphPoint): GraphPoint => {
