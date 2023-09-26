@@ -67,11 +67,11 @@ export const getPageDefinition = (linkedPage: PageLinkTableColumn, information: 
   if(parts.length === 2) {
     [service, pageName] = parts;
   } else {
-    service = information.desc.name.split('.').pop() || '';
+    service = information.desc.name.split('.').shift() || '';
     pageName = linkedPage.page;
   }
 
-  const pageFullName = names(service).className + names(pageName).className;
+  const pageFullName = names(service).className + '.' + names(pageName).className;
 
   const page = pages[pageFullName];
 

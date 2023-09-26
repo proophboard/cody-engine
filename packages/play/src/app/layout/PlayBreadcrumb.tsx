@@ -54,7 +54,7 @@ const PlayBreadcrumb = (props: BreadcrumbProps) => {
 
 export default PlayBreadcrumb;
 
-const getBreadcrumbFnFromPlayPage = (page: PlayPageDefinition, config: CodyPlayConfig, user: User): BreadcrumbFn => {
+export const getBreadcrumbFnFromPlayPage = (page: PlayPageDefinition, config: CodyPlayConfig, user: User): BreadcrumbFn => {
   if(typeof page.breadcrumb === "string") {
     return staticLabel(page.breadcrumb);
   } else if (isDynamicBreadcrumb(page.breadcrumb)){

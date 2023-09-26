@@ -49,7 +49,7 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       .map(cmd => playwithErrorCheck(playGetNodeFromSyncedNodes, [cmd, ctx.syncedNodes]))
       .map(cmd => names(playwithErrorCheck(playService, [cmd, ctx])).className + '.' + names(cmd.getName()).className);
 
-    const pageName = names(ctx.boardName).className + '.' + uiNames.className;
+    const pageName = serviceNames.className + '.' + uiNames.className;
 
     const existingPage = config.pages[pageName];
     const mergedComponents: string[] = [];
@@ -76,21 +76,23 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       mergedCommands.push(...commands.toArray());
     }
 
-
     const page = topLevelPage ? ({
       service: serviceNames.className,
       route,
       commands: mergedCommands,
       components: mergedComponents,
       topLevel: topLevelPage,
-      sidebar: meta.sidebar!,
+      sidebar: meta.sidebar || {
+        label: ui.getName(),
+        icon: 'square'
+      },
       breadcrumb: meta.breadcrumb,
     } as PlayTopLevelPage) : ({
       service: serviceNames.className,
       route,
       routeParams,
-      commands: commands.toArray(),
-      components: views.toArray(),
+      commands: mergedCommands,
+      components: mergedComponents,
       topLevel: false,
       breadcrumb: meta.breadcrumb
     } as PlaySubLevelPage);

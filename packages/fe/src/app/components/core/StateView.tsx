@@ -20,6 +20,8 @@ import {useUser} from "@frontend/hooks/use-user";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {types} from "@app/shared/types";
 import {getRjsfValidator} from "@frontend/util/rjsf-validator";
+import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
+import {JSONSchema7} from "json-schema";
 
 interface OwnProps {
   state?: Record<string, any>;
@@ -29,6 +31,7 @@ interface OwnProps {
   objectFieldTemplate?: React.FunctionComponent<ObjectFieldTemplateProps>;
   arrayFieldTemplate?: React.FunctionComponent<ArrayFieldTemplateProps>;
   fieldTemplate?: React.FunctionComponent<FieldTemplateProps>;
+  definitions?: {[id: string]: DeepReadonly<JSONSchema7>};
 }
 
 type StateViewProps = OwnProps;
@@ -130,7 +133,7 @@ const StateView = (props: StateViewProps) => {
     triggerSideBarAnchorsRendered();
   }, [props.state]);
 
-  const schema = resolveRefs(cloneSchema(props.description.schema as any), definitions) as RJSFSchema;
+  const schema = resolveRefs(cloneSchema(props.description.schema as any), props.definitions || definitions) as RJSFSchema;
 
   return <Card>
     <CardContent sx={theme.stateView.styleOverrides}>

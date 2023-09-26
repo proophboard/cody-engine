@@ -2,7 +2,6 @@ import * as React from 'react';
 import {Box, Button, Drawer, List, ListItem, useMediaQuery, useTheme} from "@mui/material";
 import {NavLink} from "react-router-dom";
 import {isTopLevelPage, PageDefinition} from "@frontend/app/pages/page-definitions";
-import SidebarSubMenu from "@frontend/app/layout/SidebarSubMenu";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useUser} from "@frontend/hooks/use-user";
 import {useContext} from "react";
@@ -10,6 +9,7 @@ import {configStore} from "@cody-play/state/config-store";
 import {PlayTopLevelPage} from "@cody-play/state/types";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
+import PlaySidebarSubMenu from "@cody-play/app/layout/PlaySidebarSubMenu";
 
 interface OwnProps {
   open: boolean;
@@ -76,7 +76,7 @@ const Sidebar = (props: SidebarProps) => {
         {label}
       </Button>
     </ListItem>
-      {pageMatch.pathname.includes(route) && <SidebarSubMenu/>}
+      {pageMatch.pathname.includes(route) && <PlaySidebarSubMenu/>}
     </div>
   });
 

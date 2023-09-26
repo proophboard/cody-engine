@@ -7,6 +7,7 @@ import PlayCommand from "@cody-play/app/components/core/PlayCommand";
 import {PlayInformationRegistry, PlayPageDefinition} from "@cody-play/state/types";
 import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import PlayTableView from "@cody-play/app/components/core/PlayTableView";
+import PlayStateView from "@cody-play/app/components/core/PlayStateView";
 
 interface Props {
   page: PlayPageDefinition
@@ -50,6 +51,10 @@ const getViewComponent = (component: React.FunctionComponent | { information: st
       return (params: any) => {
         return PlayTableView(params, information);
       };
+    } else {
+      return (params: any) => {
+        return PlayStateView(params, information);
+      }
     }
   }
 

@@ -175,7 +175,7 @@ const compileTableColumns = (
           } : cValue as PageLinkTableColumn;
 
           gridColDef.renderCell = (rowParams) => <PageLink page={getPageDefinition(pageLinkConfig, information, pages) as unknown as PageDefinition}
-                                                           params={mapProperties({...rowParams, ...params}, pageLinkConfig.mapping)}
+                                                           params={mapProperties({...rowParams.row, ...params}, pageLinkConfig.mapping)}
           >{rowParams.value}</PageLink>;
           break;
         case "value":

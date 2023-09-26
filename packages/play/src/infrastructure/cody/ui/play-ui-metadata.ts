@@ -5,7 +5,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {playParseJsonMetadata} from "@cody-play/infrastructure/cody/metadata/play-parse-json-metadata";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 
-export type PlayUiMetadata = UiMetadata & {sidebar: {label: string, icon: string}};
+export type PlayUiMetadata = UiMetadata & {sidebar?: {label: string, icon: string}};
 
 export const playUiMetadata = (ui: Node, ctx: ElementEditedContext): PlayUiMetadata | CodyResponse => {
   const meta = playParseJsonMetadata(ui) as UiMetadata;
@@ -15,13 +15,6 @@ export const playUiMetadata = (ui: Node, ctx: ElementEditedContext): PlayUiMetad
   }
 
   const metadata = meta || {};
-
-  if(!metadata.sidebar) {
-    meta.sidebar = {
-      label: ui.getName(),
-      icon: 'Square'
-    }
-  }
 
   if(metadata.sidebar?.icon) {
     metadata.sidebar.icon = names(metadata.sidebar.icon).className;

@@ -12,6 +12,7 @@ import {makeCommandMutationFn} from "@cody-play/infrastructure/commands/make-com
 import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {useUser} from "@frontend/hooks/use-user";
+import PlayExistingStateCommandDialog from "@cody-play/app/components/core/PlayExistingStateCommandDialog";
 
 interface OwnProps {
   command: PlayCommandRuntimeInfo
@@ -84,13 +85,21 @@ const PlayCommand = (props: PlayCommandProps) => {
         onClick={handleOpenDialog}
         {...{ startIcon: getButtonIcon(runtimeInfo.uiSchema) }}
       />
-      <CommandDialog
+      {commandDesc.newAggregate && <CommandDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
         commandDialogCommand={runtimeInfo}
         commandFn={commandFn}
         definitions={definitions}
-      />
+      />}
+      {!commandDesc.newAggregate && <PlayExistingStateCommandDialog
+          open={dialogOpen}
+          onClose={handleCloseDialog}
+          commandDialogCommand={runtimeInfo}
+          commandFn={commandFn}
+          definitions={definitions}
+          stateInfo={stateInfo}
+      />}
     </>
   );
 };
