@@ -9,12 +9,19 @@ const modeValueTest = "test";
 
 export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) => {
   try {
-    // console.log("onFeature");
     feature = getOriginalNode(feature, ctx);
     const featureMeta : any = feature?.getMetadata() ? parseJsonMetadata<{service?: string}>(feature) : {};
     const parentContainer = feature.getParent();
     const parentContainerMeta : any = parentContainer?.getMetadata() ? parseJsonMetadata<{service?: string}>(parentContainer) : {};
-    // console.log(parentContainerMeta);
+
+    // add all test nodes to a map with their ID as the key, for easy access
+    const validTestNodes = [NodeType.command, NodeType.event];
+    const testNodesMap = new Map<any, Node>();
+    feature.getChildren().forEach(function(elem) {
+      if (validTestNodes.includes(elem.getType())) {
+        testNodesMap.set(elem.getId(), elem);
+      }
+    });
 
     // check if either the feature (the test) or its bounded context (the test container) have their mode set to "test"
     if (featureMeta[modeKey] == modeValueTest || parentContainerMeta[modeKey] == modeValueTest) {
@@ -25,36 +32,34 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
       feature.getChildren().forEach(function(elem) {
         if (elem.getType() == NodeType.command) {
           whenCommand = elem;
-          console.log('found WHEN command:', elem.getName(), elem.getSources().first()?.getName(), elem.getTargets().first()?.getName());
+          console.log("found WHEN command:", elem.getName(), elem.getSources().first()?.getName(), elem.getTargets().first()?.getName());
         }
       });
 
       if (whenCommand) {
         let givenNodes : Array<Node> = [];
         let thenNodes : Array<Node> = [];
-        let currentNode : Node = whenCommand;
-
-        console.log("checking for GIVEN");
+        let currentNode : Node | undefined = whenCommand;
 
         // everything before the "when" command node is seen as "given"
-        while (!currentNode.getSources().isEmpty()) {
-          currentNode = currentNode.getSources().first();
-          givenNodes.unshift(currentNode);
+        while (currentNode) {
+          currentNode = testNodesMap.get(currentNode.getSources().first()?.getId()) || undefined;
 
-          console.log(currentNode.getName(), currentNode.getSources().count());
+          if (currentNode) {
+            givenNodes.unshift(currentNode);
+            // console.log(currentNode.getName(), currentNode.getSources().count());
+          }
         }
-
-        // TODO: the source/target lists aren't recursive, so they always only give you direct source/targets, and not their sources/targets! we'd have to fetch those nodes again, somehow
-
-        console.log("checking for THEN");
 
         // everything after the "when" command is "then"
         currentNode = whenCommand;
-        while (!currentNode.getTargets().isEmpty()) {
-          currentNode = currentNode.getTargets().first();
-          thenNodes.push(currentNode);
+        while (currentNode) {
+          currentNode = testNodesMap.get(currentNode.getTargets().first()?.getId()) || undefined;
 
-          console.log(currentNode.getName());
+          if (currentNode) {
+            thenNodes.push(currentNode);
+            // console.log(currentNode.getName(), currentNode.getTargets().count());
+          }
         }
         
         // for logging:
@@ -66,8 +71,6 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
         thenNodes.forEach(function(node) {
           loggedNodes.push(node.getName());
         });
-
-        console.log("running test!");
 
         return {
           cody: `Running test called "${feature.getName().trim()}".\nThese are the nodes included in the test: ${loggedNodes.toString()}`,
