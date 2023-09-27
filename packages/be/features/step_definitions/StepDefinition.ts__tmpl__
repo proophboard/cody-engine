@@ -1,0 +1,79 @@
+import { before, binding, given, then, when } from "cucumber-tsflow";
+import {<%= commandNames.className %>} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= commandNames.fileName %>";
+import { Event } from "@event-engine/messaging/event";
+import { getConfiguredMessageBox } from "@server/infrastructure/configuredMessageBox";
+import { getConfiguredEventStore } from "@server/infrastructure/configuredEventStore";
+import {<%= givenEvent.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= fileName %>/<%= givenEvent.fileName %>";
+import {<%= thenEvent.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= fileName %>/<%= thenEvent.fileName %>";
+import expect from "expect";
+
+
+@binding()
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+class <%= featureName %>Steps {
+  private messageBox = getConfiguredMessageBox();
+  private eventStore = getConfiguredEventStore();
+  private events: Event[] = [];
+
+  @before()
+  public setup(): void {
+    const listener = (streamName: string, events: Event[]) => {
+      this.events.push(...events);
+    };
+    this.eventStore.attachAppendToListener(listener);
+  }
+
+  @given(<%= givenNodeName %>)
+  public async given<%= givenEventNameCamelCase %>(): Promise<void> {
+    const payload = {
+      <%= givenEventPayload %>
+    };
+
+    const event = <%= event.propertyName %>(payload);
+
+    await this.messageBox.dispatch(event.name, event.payload, event.meta);
+  }
+
+/* multiple givens via iterator like above
+  @given('Car Added To Fleet')
+  public async givenCarAddedToFleet(): Promise<void> {
+    const payload = {
+      'vehicleId': '6a76bead-46ce-4651-bea0-d8a387b2e9d0',
+    };
+
+    const event = carAddedToFleet(payload);
+
+    await this.messageBox.dispatch(event.name, event.payload, event.meta);
+  }
+*/
+
+  @when(<%= whenNodeName %>)
+  public async when<%= whenCommandNameCamelCase %>(): Promise<void> {
+    const payload = {
+      <%= givenCommandPayload %>
+    };
+
+    const command = <%= commandNames.className %>(payload);
+
+    await this.messageBox.dispatch(command.name, command.payload, command.meta);
+  }
+
+  @then('<%= thenNodeName %>')
+  public async then<%= thenCommandNameCamelCase %>(): Promise<void> {
+    const identifier = <%= expectedIdentifier %>;
+    const expectedPayload = {
+      <%= thenEventPayload %>
+    };
+    const expectedEvent = <%= thenEvent.propertyName %>(expectedPayload);
+
+    const newestEventToCompare = this.events.
+    filter((event: Event) => {
+      return event.name === expectedEvent.name && event.meta.aggregateId === identifier;
+    }).sort((event1, event2) => {
+      return event2.createdAt.getTime() - event1.createdAt.getTime();
+    }).pop();
+
+    expect(newestEventToCompare).toBeDefined();
+    expect(newestEventToCompare?.payload).toEqual(expectedPayload);
+  }
+}

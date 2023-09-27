@@ -30,7 +30,7 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
     if (featureMeta[modeKey] == modeValueTest || parentContainerMeta[modeKey] == modeValueTest) {
 
       let whenCommand : Node | undefined;
-    
+
       // find "when" command node
       feature.getChildren().forEach(function(elem) {
         if (elem.getType() == NodeType.command) {
@@ -63,7 +63,7 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
         }
 
         createTestFile(givenNodes, whenCommand, thenNodes);
-        
+
         // for logging:
         var loggedNodes : Array<String> = [];
         loggedNodes.push("GIVEN");
@@ -74,6 +74,7 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
         loggedNodes.push(whenCommand.getName());
         loggedNodes.push("THEN");
         thenNodes.forEach(function(node) {
+          //@ToDo extract and slice expectedIdentifier
           loggedNodes.push(node.getName());
         });
 
@@ -97,7 +98,7 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
 
 function createTestFile(givenNodes : Array<Node>, whenCommand : Node, thenNodes : Array<Node>) {
   const fs = require('fs');
-  
+
   let stream = fs.createWriteStream('test.js');
 
   addWhenCommand(stream, whenCommand);
@@ -108,7 +109,7 @@ function createTestFile(givenNodes : Array<Node>, whenCommand : Node, thenNodes 
 function addWhenCommand(stream: any, whenCommand : Node) {
 
   const codeName = nodeNameToCamelCase(whenCommand.getName());
-  
+
   stream.write(`@when('${whenCommand.getName()}')\n`);
   stream.write(`public async ${codeName}(): Promise<void> {\n`);
   stream.write(`const payload = {${whenCommand.getDescription()}};\n`);
