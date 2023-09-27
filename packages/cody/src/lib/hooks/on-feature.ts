@@ -3,6 +3,9 @@ import { parseJsonMetadata } from "@proophboard/cody-utils";
 import { Context } from "./context";
 import { CodyResponseException } from "./utils/error-handling";
 import { getOriginalNode } from "./utils/get-original-node";
+import {
+  nodeNameToCamelCase,
+} from "@proophboard/cody-utils";
 
 const modeKey = "mode";
 const modeValueTest = "test";
@@ -32,7 +35,6 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
       feature.getChildren().forEach(function(elem) {
         if (elem.getType() == NodeType.command) {
           whenCommand = elem;
-          console.log("found WHEN command:", elem.getName(), elem.getSources().first()?.getName(), elem.getTargets().first()?.getName());
         }
       });
 
@@ -47,7 +49,6 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
 
           if (currentNode) {
             givenNodes.unshift(currentNode);
-            // console.log(currentNode.getName(), currentNode.getSources().count());
           }
         }
 
@@ -58,16 +59,20 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
 
           if (currentNode) {
             thenNodes.push(currentNode);
-            // console.log(currentNode.getName(), currentNode.getTargets().count());
           }
         }
+
+        createTestFile(givenNodes, whenCommand, thenNodes);
         
         // for logging:
         var loggedNodes : Array<String> = [];
+        loggedNodes.push("GIVEN");
         givenNodes.forEach(function(node) {
           loggedNodes.push(node.getName());
         });
+        loggedNodes.push("WHEN");
         loggedNodes.push(whenCommand.getName());
+        loggedNodes.push("THEN");
         thenNodes.forEach(function(node) {
           loggedNodes.push(node.getName());
         });
@@ -88,4 +93,26 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
 
     throw e;
   }
+}
+
+function createTestFile(givenNodes : Array<Node>, whenCommand : Node, thenNodes : Array<Node>) {
+  const fs = require('fs');
+  
+  let stream = fs.createWriteStream('test.js');
+
+  addWhenCommand(stream, whenCommand);
+
+  stream.end();
+}
+
+function addWhenCommand(stream: any, whenCommand : Node) {
+
+  const codeName = nodeNameToCamelCase(whenCommand.getName());
+  
+  stream.write(`@when('${whenCommand.getName()}')\n`);
+  stream.write(`public async ${codeName}(): Promise<void> {\n`);
+  stream.write(`const payload = {${whenCommand.getDescription()}};\n`);
+  stream.write(`const command = ${codeName}(payload);\n`);
+  stream.write(`await this.messageBox.dispatch(command.name, command.payload, command.meta);\n`);
+  stream.write(`}`);
 }
