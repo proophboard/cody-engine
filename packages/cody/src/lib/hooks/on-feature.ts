@@ -1,11 +1,11 @@
 import { CodyHook, Node, NodeType } from "@proophboard/cody-types";
 import { parseJsonMetadata } from "@proophboard/cody-utils";
 import { Context } from "./context";
-import { CodyResponseException } from "./utils/error-handling";
 import { getOriginalNode } from "./utils/get-original-node";
-import {
-  nodeNameToCamelCase,
-} from "@proophboard/cody-utils";
+import { names} from "@event-engine/messaging/helpers";
+import { formatFiles, generateFiles } from "@nx/devkit";
+import { CodyResponseException, withErrorCheck } from "./utils/error-handling";
+import { detectService } from "./utils/detect-service";
 
 const modeKey = "mode";
 const modeValueTest = "test";
@@ -62,7 +62,7 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
           }
         }
 
-        createTestFile(givenNodes, whenCommand, thenNodes);
+        createTestFile(feature.getName(), givenNodes, whenCommand, thenNodes, ctx);
 
         // for logging:
         var loggedNodes : Array<String> = [];
@@ -96,24 +96,25 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
   }
 }
 
-function createTestFile(givenNodes : Array<Node>, whenCommand : Node, thenNodes : Array<Node>) {
-  const fs = require('fs');
+function createTestFile(featureName: string, givenNodes : Array<Node>, whenCommand : Node, thenNodes : Array<Node>, ctx: Context) {
+  const service = withErrorCheck(detectService, [whenCommand, ctx]);
 
-  let stream = fs.createWriteStream('test.js');
+  // TODO: currently only using the first "when" & "then" nodes
+  const substitutions = {
+    "serviceNames": names(service),
+    "featureNames": names(featureName),
+    "givenEvent": names(givenNodes[0].getName()), 
+    "whenEvent": names(whenCommand.getName()),
+    "thenEvent": names(thenNodes[0].getName()),
+    "givenPayload": givenNodes[0].getDescription(),
+    "whenPayload": whenCommand.getDescription(),
+    "thenPayload": thenNodes[0].getDescription(),
+    "expectedIdentifier": "6a76bead-46ce-4651-bea0-d8a387b2e9d0" // TODO: read from "then" node payload (convert to json, read & remove "expectedIdentifier", convert back to string)
+  }
 
-  addWhenCommand(stream, whenCommand);
+  console.log(substitutions);
 
-  stream.end();
-}
-
-function addWhenCommand(stream: any, whenCommand : Node) {
-
-  const codeName = nodeNameToCamelCase(whenCommand.getName());
-
-  stream.write(`@when('${whenCommand.getName()}')\n`);
-  stream.write(`public async ${codeName}(): Promise<void> {\n`);
-  stream.write(`const payload = {${whenCommand.getDescription()}};\n`);
-  stream.write(`const command = ${codeName}(payload);\n`);
-  stream.write(`await this.messageBox.dispatch(command.name, command.payload, command.meta);\n`);
-  stream.write(`}`);
+  const {tree} = ctx;
+  generateFiles(tree, __dirname + '/command-files/shared', ctx.sharedSrc, substitutions); // TODO: setup correct template/target folder
+  formatFiles(tree); // TODO: is this necessary? see https://nx.dev/extending-nx/recipes/creating-files
 }
