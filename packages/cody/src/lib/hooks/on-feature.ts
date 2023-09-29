@@ -6,6 +6,8 @@ import { names} from "@event-engine/messaging/helpers";
 import { formatFiles, generateFiles } from "@nx/devkit";
 import { CodyResponseException, withErrorCheck } from "./utils/error-handling";
 import { detectService } from "./utils/detect-service";
+import {flushChanges} from "nx/src/generators/tree";
+import {listChangesForCodyResponse} from "./utils/fs-tree";
 
 const modeKey = "mode";
 const modeValueTest = "test";
@@ -39,8 +41,8 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
       });
 
       if (whenCommand) {
-        let givenNodes : Array<Node> = [];
-        let thenNodes : Array<Node> = [];
+        const givenNodes : Array<Node> = [];
+        const thenNodes : Array<Node> = [];
         let currentNode : Node | undefined = whenCommand;
 
         // everything before the "when" command node is seen as "given"
@@ -62,10 +64,10 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
           }
         }
 
-        createTestFile(feature.getName(), givenNodes, whenCommand, thenNodes, ctx);
+        const changesForCodyResponse = await createTestFile(feature.getName(), givenNodes, whenCommand, thenNodes, ctx);
 
         // for logging:
-        var loggedNodes : Array<String> = [];
+        const loggedNodes: Array<string> = [];
         loggedNodes.push("GIVEN");
         givenNodes.forEach(function(node) {
           loggedNodes.push(node.getName());
@@ -80,6 +82,7 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
 
         return {
           cody: `Running test called "${feature.getName().trim()}".\nThese are the nodes included in the test: ${loggedNodes.toString()}`,
+          details: changesForCodyResponse
         }
       }
     }
@@ -96,25 +99,36 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
   }
 }
 
-function createTestFile(featureName: string, givenNodes : Array<Node>, whenCommand : Node, thenNodes : Array<Node>, ctx: Context) {
+async function createTestFile(featureName: string, givenNodes : Array<Node>, whenCommand : Node, thenNodes : Array<Node>, ctx: Context): Promise<string> {
   const service = withErrorCheck(detectService, [whenCommand, ctx]);
+
+  const aggregate = 'car';
 
   // TODO: currently only using the first "when" & "then" nodes
   const substitutions = {
+    "feature": names(featureName).className,
     "serviceNames": names(service),
     "featureNames": names(featureName),
-    "givenEvent": names(givenNodes[0].getName()), 
+    "givenEvent": names(givenNodes[0].getName()),
     "whenEvent": names(whenCommand.getName()),
     "thenEvent": names(thenNodes[0].getName()),
     "givenPayload": givenNodes[0].getDescription(),
     "whenPayload": whenCommand.getDescription(),
     "thenPayload": thenNodes[0].getDescription(),
+    "aggregate": aggregate,
     "expectedIdentifier": "6a76bead-46ce-4651-bea0-d8a387b2e9d0" // TODO: read from "then" node payload (convert to json, read & remove "expectedIdentifier", convert back to string)
   }
 
-  console.log(substitutions);
+  // console.log(substitutions);
 
   const {tree} = ctx;
-  generateFiles(tree, __dirname + '/command-files/shared', ctx.sharedSrc, substitutions); // TODO: setup correct template/target folder
-  formatFiles(tree); // TODO: is this necessary? see https://nx.dev/extending-nx/recipes/creating-files
+  generateFiles(tree, __dirname + '/behaviour-test-files', ctx.beSrc+'/../', substitutions); // TODO: setup correct template/target folder
+
+  await formatFiles(tree);
+
+  const changes = tree.listChanges();
+
+  flushChanges(ctx.projectRoot, changes);
+
+  return = listChangesForCodyResponse(tree);
 }

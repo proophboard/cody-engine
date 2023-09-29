@@ -1,16 +1,16 @@
 import { before, binding, given, then, when } from "cucumber-tsflow";
-import {<%= commandNames.className %>} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= commandNames.fileName %>";
+import {<%= whenEvent.className %>} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= whenEvent.fileName %>";
 import { Event } from "@event-engine/messaging/event";
 import { getConfiguredMessageBox } from "@server/infrastructure/configuredMessageBox";
 import { getConfiguredEventStore } from "@server/infrastructure/configuredEventStore";
-import {<%= givenEvent.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= fileName %>/<%= givenEvent.fileName %>";
-import {<%= thenEvent.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= fileName %>/<%= thenEvent.fileName %>";
+import {<%= givenEvent.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= aggregate %>/<%= givenEvent.fileName %>";
+import {<%= thenEvent.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= aggregate %>/<%= thenEvent.fileName %>";
 import expect from "expect";
 
 
 @binding()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-class <%= featureName %>Steps {
+class <%= feature %>Steps {
   private messageBox = getConfiguredMessageBox();
   private eventStore = getConfiguredEventStore();
   private events: Event[] = [];
@@ -23,13 +23,13 @@ class <%= featureName %>Steps {
     this.eventStore.attachAppendToListener(listener);
   }
 
-  @given(<%= givenNodeName %>)
-  public async given<%= givenEventNameCamelCase %>(): Promise<void> {
+  @given('<%= givenEvent.name %>'')
+  public async given<%= givenEvent.className %>(): Promise<void> {
     const payload = {
-      <%= givenEventPayload %>
+      <%= givenPayload %>
     };
 
-    const event = <%= event.propertyName %>(payload);
+    const event = <%= givenEvent.propertyName %>(payload);
 
     await this.messageBox.dispatch(event.name, event.payload, event.meta);
   }
@@ -47,22 +47,22 @@ class <%= featureName %>Steps {
   }
 */
 
-  @when(<%= whenNodeName %>)
-  public async when<%= whenCommandNameCamelCase %>(): Promise<void> {
+  @when('<%= whenEvent.name %>')
+  public async when<%= whenEvent.className %>(): Promise<void> {
     const payload = {
-      <%= givenCommandPayload %>
+      <%= whenPayload %>
     };
 
-    const command = <%= commandNames.className %>(payload);
+    const command = <%= whenEvent.className %>(payload);
 
     await this.messageBox.dispatch(command.name, command.payload, command.meta);
   }
 
-  @then('<%= thenNodeName %>')
-  public async then<%= thenCommandNameCamelCase %>(): Promise<void> {
-    const identifier = <%= expectedIdentifier %>;
+  @then('<%= thenEvent.name %>')
+  public async then<%= thenEvent.className %>(): Promise<void> {
+    const identifier = '<%= expectedIdentifier %>';
     const expectedPayload = {
-      <%= thenEventPayload %>
+      <%= thenPayload %>
     };
     const expectedEvent = <%= thenEvent.propertyName %>(expectedPayload);
 
