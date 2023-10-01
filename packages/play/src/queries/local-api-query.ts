@@ -9,20 +9,27 @@ import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {
   isQueryableStateDescription,
-  isQueryableStateListDescription, isQueryableValueObjectDescription,
-  QueryableStateDescription, QueryableStateListDescription, QueryableValueObjectDescription
+  isQueryableStateListDescription,
+  isQueryableValueObjectDescription,
+  QueryableStateDescription,
+  QueryableStateListDescription,
+  QueryableValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
 import {PlayQueryRuntimeInfo} from "@cody-play/state/types";
 import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {QueryRuntimeInfo} from "@event-engine/messaging/query";
 import {User} from "@app/shared/types/core/user/user";
-import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {JSONSchema7} from "json-schema-to-ts";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {makeInformationFactory} from "@cody-play/infrastructure/information/make-information-factory";
 import {ResolveConfig} from "@cody-engine/cody/hooks/utils/value-object/types";
+import {
+  makeFiltersFromQuerySchema,
+  makeFiltersFromResolveConfig,
+  mapOrderByProp
+} from "@cody-play/queries/make-filters";
 
 const ds = getConfiguredPlayDocumentStore();
 
@@ -87,7 +94,7 @@ const resolveStateQuery = async (desc: QueryableStateDescription, factory: AnyRu
 const resolveStateListQuery = async (desc: QueryableStateListDescription, factory: AnyRule[], queryInfo: PlayQueryRuntimeInfo, resolve: ResolveConfig, params: any, user: User): Promise<Array<any>> => {
   const queryPayload = determineQueryPayload(params, queryInfo as unknown as QueryRuntimeInfo);
 
-  const filters = resolve.where ? makeFiltersFromResolveConfig(desc, resolve, params, user) : makeFiltersFromQuerySchema(queryInfo.schema as JSONSchema7, params, user);
+  const filters = resolve.where ? makeFiltersFromResolveConfig(desc, resolve, queryPayload, user) : makeFiltersFromQuerySchema(queryInfo.schema as JSONSchema7, queryPayload, user);
 
   let orderBy: SortOrder | undefined = undefined;
 
@@ -128,17 +135,3 @@ const resolveSingleValueObjectQuery = async (desc: QueryableValueObjectDescripti
   }
 }
 
-const makeFiltersFromResolveConfig = (desc: QueryableStateListDescription | QueryableValueObjectDescription, resolve: ResolveConfig, params: any, user: User): Filter => {
-  return new filters.AnyFilter();
-}
-
-const makeFiltersFromQuerySchema = (schema: JSONSchema7, params: any, user: User): Filter => {
-  return new filters.AnyFilter();
-}
-
-const mapOrderByProp = (orderBy: SortOrderItem): SortOrderItem => {
-  return {
-    prop: `state.${orderBy.prop}`,
-    sort: orderBy.sort
-  }
-}
