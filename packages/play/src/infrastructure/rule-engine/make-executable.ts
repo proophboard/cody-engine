@@ -1,13 +1,29 @@
 import {
-  isAssignVariable, isIfConditionRule, isIfNotConditionRule, isRecordEvent, PropMapping,
+  isAssignVariable, isCallService,
+  isExecuteRules, isForEach,
+  isIfConditionRule,
+  isIfNotConditionRule,
+  isRecordEvent,
+  isThrowError,
+  isTriggerCommand,
+  PropMapping,
   Rule,
-  ThenAssignVariable, ThenRecordEvent,
+  ThenAssignVariable, ThenCallService,
+  ThenExecuteRules, ThenForEach,
+  ThenRecordEvent,
+  ThenThrowError, ThenTriggerCommand,
   ThenType
 } from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import jexl from "@app/shared/jexl/get-configured-jexl";
-import {PlayEventRegistry, PlayEventRuntimeInfo} from "@cody-play/state/types";
+import {
+  PlayCommandRegistry,
+  PlayCommandRuntimeInfo,
+  PlayEventRegistry,
+  PlayEventRuntimeInfo
+} from "@cody-play/state/types";
 import {makeEventFactory} from "@cody-play/infrastructure/events/make-event-factory";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
+import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-command-factory";
 
 type ExecutionContext = any;
 
@@ -97,7 +113,20 @@ const execThenSync = (then: ThenType, ctx: ExecutionContext): ExecutionContext =
       return execAssignVariableSync(then as ThenAssignVariable, ctx);
     case isRecordEvent(then):
       return execRecordEventSync(then as ThenRecordEvent, ctx);
+    case isExecuteRules(then):
+      return execExecuteRulesSync(then as ThenExecuteRules, ctx);
+    case isThrowError(then):
+      execThrowError(then as ThenThrowError, ctx);
+      return;
+    case isForEach(then):
+      return execForEachSync(then as ThenForEach, ctx);
+    case isTriggerCommand(then):
+      return execTriggerCommandSync(then as ThenTriggerCommand, ctx);
+    case isCallService(then):
+      return execCallServiceSync(then as ThenCallService, ctx);
   }
+
+  throw new Error(`Cannot execute rule. The "then" part is unknown: ${JSON.stringify(then)}`);
 }
 
 const execThenAsync = async (then: ThenType, ctx: ExecutionContext): Promise<ExecutionContext> => {
@@ -106,7 +135,176 @@ const execThenAsync = async (then: ThenType, ctx: ExecutionContext): Promise<Exe
       return await execAssignVariableAsync(then as ThenAssignVariable, ctx);
     case isRecordEvent(then):
       return await execRecordEventAsync(then as ThenRecordEvent, ctx);
+    case isExecuteRules(then):
+      return await execExecuteRulesAsync(then as ThenExecuteRules, ctx);
+    case isThrowError(then):
+      execThrowError(then as ThenThrowError, ctx);
+      return;
+    case isForEach(then):
+      return execForEachAsync(then as ThenForEach, ctx);
+    case isTriggerCommand(then):
+      return await execTriggerCommandAsync(then as ThenTriggerCommand, ctx);
+    case isCallService(then):
+      return await execCallServiceAsync(then as ThenCallService, ctx);
   }
+
+  throw new Error(`Cannot execute rule. The "then" part is unknown: ${JSON.stringify(then)}`);
+}
+
+const validateTriggerCommandContext = (then: ThenTriggerCommand, ctx: ExecutionContext): PlayCommandRuntimeInfo => {
+  if(!ctx.commandRegistry) {
+    throw new Error(`Failed to execute trigger command rule. The "commandRegistry" is missing in the context. ${CONTACT_PB_TEAM}`);
+  }
+
+  if(!ctx.schemaDefinitions) {
+    throw new Error(`Failed to execute trigger command rule. The "schemaDefinitions" are missing in the context. ${CONTACT_PB_TEAM}`);
+  }
+
+  const cmdInfo = (ctx.commandRegistry as PlayCommandRegistry)[then.trigger.command];
+
+  if(!cmdInfo) {
+    throw new Error(`Unable to trigger command "${then.trigger.command}". Its name is not registered in the registry!`);
+  }
+
+  return cmdInfo;
+}
+
+const execForEachSync = (then: ThenForEach, ctx: ExecutionContext): ExecutionContext => {
+  if(ctx[then.forEach.variable] && Array.isArray(ctx[then.forEach.variable])) {
+    for (const itemIndex in ctx[then.forEach.variable]) {
+      ctx['item'] = ctx[then.forEach.variable][itemIndex];
+      ctx['itemIndex'] = itemIndex;
+
+      ctx = execThenSync(then.forEach.then, ctx);
+    }
+  }
+
+  return ctx;
+}
+
+const execForEachAsync = async (then: ThenForEach, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  if(ctx[then.forEach.variable] && Array.isArray(ctx[then.forEach.variable])) {
+    for (const itemIndex in ctx[then.forEach.variable]) {
+      ctx['item'] = ctx[then.forEach.variable][itemIndex];
+      ctx['itemIndex'] = itemIndex;
+
+      ctx = await execThenAsync(then.forEach.then, ctx);
+    }
+  }
+
+  return ctx;
+}
+
+const execCallServiceSync = (then: ThenCallService, ctx: ExecutionContext): ExecutionContext => {
+  const service = ctx[then.call.service];
+
+  if(!service) {
+    throw new Error(`Cannot execute rule: call service "${then.call.service}". Service not found. Please check your dependency configuration for spelling mistakes e.g. if you use an alias.`);
+  }
+
+  const method = then.call.method
+    ? (args?: object) => {return ctx[then.call.service][then.call.method!](args)}
+    : (args?: object) => {return ctx[then.call.service](args)};
+
+  const result = then.call.arguments ? method(execMappingSync(then.call.arguments, ctx)) : method();
+
+  if(then.call.result.mapping) {
+    ctx[`__data`] = ctx['data'];
+    ctx['data'] = result;
+    ctx[then.call.result.variable] = execMappingSync(then.call.result.mapping, ctx);
+    ctx['data'] = ctx['__data'];
+    delete ctx['__data'];
+  } else {
+    ctx[then.call.result.variable] = result;
+  }
+
+  return ctx;
+}
+
+const execCallServiceAsync = async (then: ThenCallService, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const service = ctx[then.call.service];
+
+  if(!service) {
+    throw new Error(`Cannot execute rule: call service "${then.call.service}". Service not found. Please check your dependency configuration for spelling mistakes e.g. if you use an alias.`);
+  }
+
+  const method = then.call.method
+    ? async (args?: object) => {return await ctx[then.call.service][then.call.method!](args)}
+    : async (args?: object) => {return await ctx[then.call.service](args)};
+
+  const result = then.call.arguments ? await method(await execMappingAsync(then.call.arguments, ctx)) : await method();
+
+  if(then.call.result.mapping) {
+    ctx[`__data`] = ctx['data'];
+    ctx['data'] = result;
+    ctx[then.call.result.variable] = await execMappingAsync(then.call.result.mapping, ctx);
+    ctx['data'] = ctx['__data'];
+    delete ctx['__data'];
+  } else {
+    ctx[then.call.result.variable] = result;
+  }
+
+  return ctx;
+}
+
+const execTriggerCommandSync = (then: ThenTriggerCommand, ctx: ExecutionContext): ExecutionContext => {
+  const cmdInfo = validateTriggerCommandContext(then, ctx);
+
+  const factory = makeCommandFactory(cmdInfo, ctx.schemaDefinitions);
+
+  const payload = execMappingSync(then.trigger.mapping, ctx);
+
+  const commands = ctx['commands'] || [];
+  commands.push(factory(payload, ctx.meta));
+  ctx['commands'] = commands;
+
+  return ctx;
+}
+
+const execTriggerCommandAsync = async (then: ThenTriggerCommand, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const cmdInfo = validateTriggerCommandContext(then, ctx);
+
+  const factory = makeCommandFactory(cmdInfo, ctx.schemaDefinitions);
+
+  const payload = await execMappingAsync(then.trigger.mapping, ctx);
+
+  const commands = ctx['commands'] || [];
+  commands.push(factory(payload, ctx.meta));
+  ctx['commands'] = commands;
+
+  return ctx;
+}
+
+const execThrowError = (then: ThenThrowError, ctx: ExecutionContext) => {
+  throw new Error(then.throw.error);
+}
+
+const execExecuteRulesSync = (then: ThenExecuteRules, ctx: ExecutionContext): ExecutionContext => {
+  for (const r of then.execute.rules) {
+    const [changedCtx, nextRule] = execRuleSync(r, ctx);
+
+    if(!nextRule) {
+      return changedCtx;
+    }
+
+    ctx = changedCtx;
+  }
+
+  return ctx;
+}
+
+const execExecuteRulesAsync = async (then: ThenExecuteRules, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  for (const r of then.execute.rules) {
+    const [changedCtx, nextRule] = await execRuleAsync(r, ctx);
+
+    if(!nextRule) {
+      return changedCtx;
+    }
+
+    ctx = changedCtx;
+  }
+
+  return ctx;
 }
 
 const execAssignVariableSync = (then: ThenAssignVariable, ctx: ExecutionContext): ExecutionContext => {
@@ -146,7 +344,11 @@ const execRecordEventSync = (then: ThenRecordEvent, ctx: ExecutionContext): Exec
 
   const payload = execMappingSync(then.record.mapping, ctx);
 
-  ctx['event'] = factory(payload, ctx.meta);
+  const events = ctx['events'] || [];
+
+  events.push(factory(payload, ctx.meta));
+
+  ctx['events'] = events;
 
   return ctx;
 }
@@ -158,7 +360,11 @@ const execRecordEventAsync = async (then: ThenRecordEvent, ctx: ExecutionContext
 
   const payload = await execMappingAsync(then.record.mapping, ctx);
 
-  ctx['event'] = factory(payload, ctx.meta);
+  const events = ctx['events'] || [];
+
+  events.push(factory(payload, ctx.meta));
+
+  ctx['events'] = events;
 
   return ctx;
 }

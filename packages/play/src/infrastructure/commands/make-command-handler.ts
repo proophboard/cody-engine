@@ -17,9 +17,11 @@ export const makeCommandHandler = (
     for (const rule of commandHandlerRules) {
       const [result, nextRule] = await execRuleAsync(rule, ctx);
 
-      if(result.event) {
-        yield result.event;
-        delete result.event;
+      if(result.events) {
+        for (const evt of result.events) {
+          yield evt;
+        }
+        delete result.events;
       }
 
       if(!nextRule) {

@@ -378,16 +378,17 @@ const convertThenThrowError = (node: Node, ctx: Context, then: ThenThrowError, r
 
 const convertThenForEach = (node: Node, ctx: Context, then: ThenForEach, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
 
-  lines.push(`${indent}ctx['${then.forEach.variable}'].forEach((item: any) => {`);
-  lines.push(`${indent}  ctx['item'] = item;`)
+  lines.push(`${indent}for (const itemIndex in ctx['${then.forEach.variable}']) {`);
+  lines.push(`${indent}  ctx['item'] = ctx['${then.forEach.variable}'][itemIndex];`);
+  lines.push(`${indent}  ctx['itemIndex'] = itemIndex;`);
 
-  const result = convertThen(node, ctx, then.forEach.then, rule, lines, indent + '  ', true);
+  const result = convertThen(node, ctx, then.forEach.then, rule, lines, indent + '  ', evalSync);
 
   if(isCodyError(result)) {
     return result;
   }
 
-  lines.push(`${indent}})`)
+  lines.push(`${indent}}`)
   return true;
 }
 
