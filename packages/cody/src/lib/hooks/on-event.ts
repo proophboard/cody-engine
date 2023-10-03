@@ -1,4 +1,4 @@
-import {CodyHook, CodyResponse, Node, NodeType} from "@proophboard/cody-types";
+import {CodyHook, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
 import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {names} from "@event-engine/messaging/helpers";
@@ -19,26 +19,14 @@ import {alwaysMapPayload} from "./utils/event/always-map-payload";
 import {convertRuleConfigToEventReducerRules} from "./utils/rule-engine/convert-rule-config-to-behavior";
 import {EventMeta, getEventMetadata} from "./utils/event/get-event-metadata";
 import {ensureAllRefsAreKnown} from "./utils/json-schema/ensure-all-refs-are-known";
+import {getOriginalEvent} from "@cody-engine/cody/hooks/utils/event/get-original-event";
 
 
 export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
   try {
+    event = getOriginalEvent(event, ctx);
     const eventNames = names(event.getName());
-    let aggregate = getSingleSource(event, NodeType.aggregate);
-
-    if(isCodyError(aggregate) && event.getTags().contains('pb:connected')) {
-      for (const [, syncedNode] of ctx.syncedNodes) {
-        if(syncedNode.getType() === NodeType.event && syncedNode.getName() === event.getName()
-          && syncedNode.getTags().contains('pb:connected')) {
-          aggregate = getSingleSource(syncedNode, NodeType.aggregate);
-
-          if(!isCodyError(aggregate)) {
-            event = syncedNode;
-            break;
-          }
-        }
-      }
-    }
+    const aggregate = getSingleSource(event, NodeType.aggregate);
 
     const service = withErrorCheck(detectService, [event, ctx]);
     const serviceNames = names(service);

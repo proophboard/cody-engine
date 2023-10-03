@@ -6,7 +6,7 @@ import {
   AggregateDescription,
   AggregateEventDescription,
   CommandDescription,
-  EventDescription, QueryableStateDescription, QueryableStateListDescription,
+  EventDescription, PolicyDescription, QueryableStateDescription, QueryableStateListDescription,
   QueryableValueObjectDescription,
   QueryDescription,
   StateDescription,
@@ -87,6 +87,13 @@ export interface PlayAddAggregateEventAction {
   reducer: AnyRule[],
 }
 
+export interface PlayAddEventPolicyAction {
+  type: 'ADD_EVENT_POLICY',
+  name: string,
+  event: string,
+  desc: PlayEventPolicyDescription,
+}
+
 /* Commands */
 export type PlayCommandRegistry = {
   [commandName: string]: PlayCommandRuntimeInfo;
@@ -134,6 +141,15 @@ export interface PlayInformationRuntimeInfo {
 export type PlayAggregateRegistry = {
   [aggregateName: string]: AggregateDescription;
 }
+
+/* Event Policies */
+export type PlayEventPolicyRegistry = {
+  [eventName: string]: {
+    [policyName: string]: PlayEventPolicyDescription
+  };
+}
+
+export type PlayEventPolicyDescription = PolicyDescription & { rules: AnyRule[] };
 
 /* Events */
 export type PlayEventRegistry = {

@@ -24,6 +24,7 @@ import {
 import {makeEventFactory} from "@cody-play/infrastructure/events/make-event-factory";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-command-factory";
+import {ValidationError} from "ajv";
 
 type ExecutionContext = any;
 
@@ -153,7 +154,7 @@ const execThenAsync = async (then: ThenType, ctx: ExecutionContext): Promise<Exe
 
 const validateTriggerCommandContext = (then: ThenTriggerCommand, ctx: ExecutionContext): PlayCommandRuntimeInfo => {
   if(!ctx.commandRegistry) {
-    throw new Error(`Failed to execute trigger command rule. The "commandRegistry" is missing in the context. ${CONTACT_PB_TEAM}`);
+    throw new Error(`Failed to execute trigger command rule. "commandRegistry" are missing in the context. ${CONTACT_PB_TEAM}`);
   }
 
   if(!ctx.schemaDefinitions) {
@@ -269,7 +270,16 @@ const execTriggerCommandAsync = async (then: ThenTriggerCommand, ctx: ExecutionC
   const payload = await execMappingAsync(then.trigger.mapping, ctx);
 
   const commands = ctx['commands'] || [];
-  commands.push(factory(payload, ctx.meta));
+  try {
+    commands.push(factory(payload, ctx.meta));
+  } catch (e) {
+    if(e instanceof ValidationError) {
+      throw new Error(`Command payload validation failed for command "${cmdInfo.desc.name}" and payload "${JSON.stringify(payload)}" with error: ` + JSON.stringify(e.errors, null, 2));
+    }
+
+    throw e;
+  }
+
   ctx['commands'] = commands;
 
   return ctx;

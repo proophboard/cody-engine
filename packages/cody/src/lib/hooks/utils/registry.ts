@@ -19,10 +19,10 @@ import {names} from "@event-engine/messaging/helpers";
 import {isNewFile} from "./fs-tree";
 import {getVoMetadata} from "./value-object/get-vo-metadata";
 import {namespaceToClassName, namespaceToFilePath, namespaceToJSONPointer} from "./value-object/namespace";
-import {getOriginalNode} from "./get-original-node";
 import {getEventMetadata} from "./event/get-event-metadata";
 import {getNodeFromSyncedNodes} from "./node-tree";
 import {ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
+import {getOriginalEvent} from "@cody-engine/cody/hooks/utils/event/get-original-event";
 
 const project = new Project({
   compilerOptions: {
@@ -304,7 +304,7 @@ const registerPolicyForEvent = (service: string, policyFQCN: string, policy: Nod
     return syncedEvent;
   }
 
-  const originalEvent = getOriginalNode(syncedEvent, ctx);
+  const originalEvent = getOriginalEvent(syncedEvent, ctx);
   const eventMeta = getEventMetadata(originalEvent, ctx);
   const policyNames = names(policy.getName());
   const serviceNames = names(service);

@@ -4,7 +4,6 @@ import {Event} from "@event-engine/messaging/event";
 import {ProcessingFunctionWithDeps} from "@event-engine/infrastructure/commandHandling";
 import {execRuleAsync} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {PlayEventRegistry, PlaySchemaDefinitions} from "@cody-play/state/types";
-import Definitions from "@app/shared/types/definitions";
 
 export const makeCommandHandler = (
   commandHandlerRules: AnyRule[],

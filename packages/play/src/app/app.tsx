@@ -14,7 +14,7 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import queryClient from "@frontend/extensions/http/configured-react-query";
 import MainLayout from "@cody-play/app/layout/MainLayout";
-import React, {useContext, useEffect, useState} from "react";
+import React, {useContext, useEffect, useRef, useState} from "react";
 import {SnackbarProvider} from "notistack";
 import ScrollToTop from "@frontend/app/components/core/ScrollToTop";
 import ToggleColorMode from "@frontend/app/providers/ToggleColorMode";
@@ -22,6 +22,8 @@ import User from "@frontend/app/providers/User";
 import {addAfterDispatchListener, clearAfterDispatchListener, PlayConfigProvider, configStore} from "@cody-play/state/config-store";
 import {PlayPageRegistry} from "@cody-play/state/types";
 import CodyMessageServerInjection from "@cody-play/app/components/core/CodyMessageServer";
+import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
+import {makeStreamListener, PlayStreamListener} from "@cody-play/infrastructure/multi-model-store/make-stream-listener";
 
 let currentRoutes: string[] = [];
 
@@ -40,6 +42,21 @@ export function App() {
   };
 
   const {config} = useContext(configStore);
+
+  const publicListenerRef = useRef<PlayStreamListener | null>(null);
+  const writeModelStreamListenerRef = useRef<PlayStreamListener | null>(null);
+
+  if(publicListenerRef.current === null) {
+    const es = getConfiguredPlayEventStore();
+    publicListenerRef.current = new PlayStreamListener(es, 'public_stream', config);
+    publicListenerRef.current?.startProcessing();
+  }
+
+  if(writeModelStreamListenerRef.current === null) {
+    const es = getConfiguredPlayEventStore();
+    writeModelStreamListenerRef.current = new PlayStreamListener(es, 'write_model_stream', config);
+    writeModelStreamListenerRef.current?.startProcessing();
+  }
 
   const makeRouter = (pages: PlayPageRegistry) => {
     const routeObjects: RouteObject[] = Object.values(pages).map(p => ({
@@ -76,9 +93,14 @@ export function App() {
         return;
       }
       setRouter(makeRouter(updatedState.pages));
+
+      publicListenerRef.current?.updateConfig(updatedState);
+      writeModelStreamListenerRef.current?.updateConfig(updatedState);
     })
 
-    return () => {clearAfterDispatchListener()}
+    return () => {
+      clearAfterDispatchListener();
+    }
   })
 
   return (

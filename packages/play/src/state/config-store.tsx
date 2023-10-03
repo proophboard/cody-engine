@@ -1,10 +1,10 @@
 
 import {
   PlayAddAggregateAction, PlayAddAggregateEventAction,
-  PlayAddCommandAction,
+  PlayAddCommandAction, PlayAddEventPolicyAction,
   PlayAddPageAction, PlayAddQueryAction, PlayAddTypeAction,
   PlayAggregateRegistry, PlayApplyRulesRegistry, PlayCommandHandlerRegistry,
-  PlayCommandRegistry, PlayEventRegistry, PlayInformationRegistry,
+  PlayCommandRegistry, PlayEventPolicyRegistry, PlayEventRegistry, PlayInformationRegistry,
   PlayInitAction,
   PlayPageRegistry, PlayQueryRegistry, PlayResolverRegistry,
   PlaySchemaDefinitions, PlayTopLevelPage,
@@ -24,6 +24,7 @@ export interface CodyPlayConfig {
   aggregates: PlayAggregateRegistry,
   events: PlayEventRegistry,
   eventReducers: PlayApplyRulesRegistry,
+  eventPolicies: PlayEventPolicyRegistry,
   queries: PlayQueryRegistry,
   resolvers: PlayResolverRegistry,
   types: PlayInformationRegistry,
@@ -59,35 +60,14 @@ const initialPlayConfig: CodyPlayConfig = {
   eventReducers: {
   },
   queries: {
-    'FleetManagement.GetBrandList': {
-      desc: {
-        name: 'FleetManagement.GetBrandList',
-        returnType: 'FleetManagement.Car.BrandList',
-        _pbBoardId: 'ba59fb19-4d03-46fe-82a2-2725d61481ae',
-        _pbCardId: 'mjx58MGg9HfWsogJbZvL3T',
-        _pbCreatedBy: 'a35267cd-dfd0-410f-b64a-7163fd150352',
-        _pbCreatedAt: '2023-07-20T19:47:32.281Z',
-        _pbLastUpdatedBy: 'a35267cd-dfd0-410f-b64a-7163fd150352',
-        _pbLastUpdatedAt: '2023-07-25T20:01:29.215Z',
-        _pbVersion: 2,
-        _pbLink:
-          'https://app.prooph-board.com/inspectio/board/ba59fb19-4d03-46fe-82a2-2725d61481ae?cells=mjx58MGg9HfWsogJbZvL3T&clicks=1',
-      },
-      factory: [],
-      schema: {
-        type: 'object',
-        properties: {},
-        required: [],
-        additionalProperties: false,
-        title: 'Get Brand List',
-      }
-    }
   },
   resolvers: {
   },
   types: {
   },
   definitions: {
+  },
+  eventPolicies: {
   }
 }
 
@@ -104,7 +84,7 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction | PlayAddQueryAction | PlayAddAggregateAction | PlayAddAggregateEventAction;
+type Action = PlayInitAction | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction | PlayAddQueryAction | PlayAddAggregateAction | PlayAddAggregateEventAction | PlayAddEventPolicyAction;
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
 
@@ -161,6 +141,11 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.eventReducers[action.aggregate] = {...config.eventReducers[action.aggregate]};
         config.events[action.name] = action.event;
         config.eventReducers[action.aggregate][action.name] = action.reducer;
+        return {...config};
+      case "ADD_EVENT_POLICY":
+        config.eventPolicies = {...config.eventPolicies};
+        config.eventPolicies[action.event] = {...config.eventPolicies[action.event]};
+        config.eventPolicies[action.event][action.name] = action.desc;
         return {...config};
       default:
         return config;

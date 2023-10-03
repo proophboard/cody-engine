@@ -102,7 +102,7 @@ export const makeCommandMutationFn = (
   }
 }
 
-const makeAggregateRepository = (
+export const makeAggregateRepository = (
   aggregateDesc: AggregateDescription,
   eventReducers: PlayEventReducers,
   stateInfo: PlayInformationRuntimeInfo

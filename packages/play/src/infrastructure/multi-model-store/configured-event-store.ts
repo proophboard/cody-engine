@@ -1,4 +1,4 @@
-import {InMemoryEventStore, InMemoryStreamStore} from "@event-engine/infrastructure/EventStore/InMemoryEventStore";
+import {InMemoryEventStore} from "@event-engine/infrastructure/EventStore/InMemoryEventStore";
 
 let store: InMemoryEventStore;
 
@@ -9,3 +9,5 @@ export const getConfiguredPlayEventStore = (): InMemoryEventStore => {
 
   return store;
 }
+
+

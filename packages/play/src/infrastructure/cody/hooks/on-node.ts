@@ -6,6 +6,7 @@ import {onCommand} from "@cody-play/infrastructure/cody/hooks/on-command";
 import {onDocument} from "@cody-play/infrastructure/cody/hooks/on-document";
 import {onAggregate} from "@cody-play/infrastructure/cody/hooks/on-aggregate";
 import {onEvent} from "@cody-play/infrastructure/cody/hooks/on-event";
+import {onPolicy} from "@cody-play/infrastructure/cody/hooks/on-policy";
 
 export const onNode = async (node: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   switch (node.getType()) {
@@ -19,6 +20,8 @@ export const onNode = async (node: Node, dispatch: PlayConfigDispatch, ctx: Elem
       return onEvent(node, dispatch, ctx, config);
     case NodeType.document:
       return onDocument(node, dispatch, ctx, config);
+    case NodeType.policy:
+      return onPolicy(node, dispatch, ctx, config);
   }
 
   return {
