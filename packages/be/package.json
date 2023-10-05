@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "cucumber": "npx ../../node_modules/.bin/cucumber-js -p default"
+    "cucumber": "npx cucumber-js -p default"
   },
     "dependencies": {
         "@app/shared": "file:be/packages/shared",

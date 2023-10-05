@@ -6,6 +6,8 @@ let common = [
   '--require ./features/step_definitions/**/*.ts',   // Load step definitions
 ].join(' ');
 
+process.env['NODE_ENV'] = "test";
+
 module.exports = {
   default: common
 };
