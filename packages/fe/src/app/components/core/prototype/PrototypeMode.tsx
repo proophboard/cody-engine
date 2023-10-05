@@ -21,8 +21,10 @@ const PrototypeMode = (props: PrototypeModeProps) => {
       Cody Engine should help you answer questions like:
     </p>
     <ul>
+      <li>Are all needed information available?</li>
+      <li>Can process steps be automated with the help of events?</li>
       <li>Is the task-based UI aligned with the domain model?</li>
-      <li>Does it serve user needs well?</li>
+      <li>Does the solution serve user needs well?</li>
     </ul>
     <Alert variant="outlined" severity="info" icon={<Lightbulb sx={{color: '#f5e339'}} />}>
       <i>It's possible to turn the prototype into a production-ready application by connecting it to a real database (Postgres) and set up an authentication server like Keycloak.

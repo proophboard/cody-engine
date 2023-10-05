@@ -7,7 +7,7 @@ import {
   PlayCommandRegistry, PlayEventPolicyRegistry, PlayEventRegistry, PlayInformationRegistry,
   PlayInitAction,
   PlayPageRegistry, PlayQueryRegistry, PlayRenameApp, PlayResolverRegistry,
-  PlaySchemaDefinitions, PlayTopLevelPage,
+  PlaySchemaDefinitions, PlaySetPersonas, PlayTopLevelPage,
   PlayViewRegistry
 } from "@cody-play/state/types";
 import {createContext, PropsWithChildren, useEffect, useReducer} from "react";
@@ -17,10 +17,12 @@ import {useUser} from "@frontend/hooks/use-user";
 import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
 import PlayWelcome from "@cody-play/app/components/core/PlayWelcome";
 import {ThemeOptions} from "@mui/material";
+import {Persona} from "@app/shared/extensions/personas";
 
 export interface CodyPlayConfig {
   appName: string,
   theme: ThemeOptions,
+  personas: Persona[],
   pages: PlayPageRegistry,
   views: PlayViewRegistry,
   commands: PlayCommandRegistry,
@@ -38,6 +40,16 @@ export interface CodyPlayConfig {
 const initialPlayConfig: CodyPlayConfig = {
   appName: 'Cody Play',
   theme: {},
+  personas: [
+    {
+      displayName: 'Anyone',
+      userId: '0299cda3-a2f7-4e94-9899-e1e37e5fe088',
+      email: 'anyone@example.local',
+      roles: ['Anyone'],
+      avatar: '/assets/account-circle-outline.svg',
+      description: 'Anyone represents a standard user of the app without a specific role. This user has access to functionality that is not explicitly restricted.'
+    }
+  ],
   pages: {
     Dashboard: ({
       service: 'CrmTest',
@@ -92,7 +104,7 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction | PlayRenameApp | PlayChangeTheme | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction
+type Action = PlayInitAction | PlayRenameApp | PlayChangeTheme | PlaySetPersonas | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction
   | PlayAddQueryAction | PlayAddAggregateAction | PlayAddAggregateEventAction | PlayAddEventPolicyAction;
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
@@ -121,6 +133,8 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         return {...config, appName: action.name};
       case "CHANGE_THEME":
         return {...config, theme: action.theme};
+      case "SET_PERSONAS":
+        return {...config, personas: action.personas};
       case "ADD_PAGE":
         config.pages = {...config.pages};
         config.pages[action.name] = action.page;

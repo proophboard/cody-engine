@@ -20,6 +20,7 @@ import {UiSchema} from "@rjsf/utils";
 import {DynamicBreadcrumbMetadata} from "@cody-engine/cody/hooks/utils/ui/types";
 import {ResolveConfig, TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {ThemeOptions} from "@mui/material";
+import {Persona} from "@app/shared/extensions/personas";
 
 /* UI */
 export type PlayPageDefinition = Omit<PageDefinition, 'breadcrumb'> & {breadcrumb: string | DynamicBreadcrumbMetadata, service: string};
@@ -51,6 +52,11 @@ export interface PlayRenameApp {
 export interface PlayChangeTheme {
   type: 'CHANGE_THEME',
   theme: ThemeOptions,
+}
+
+export interface PlaySetPersonas {
+  type: 'SET_PERSONAS',
+  personas: Persona[],
 }
 
 export interface PlayAddPageAction {

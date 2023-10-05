@@ -18,6 +18,12 @@ const randomColor = (): string => Math.floor(Math.random()*16777215).toString(16
 
 const userColors: {[userId: string]: string} = {};
 
+export const clearAvatarColorCache = (userId: string) => {
+  if(userColors[userId]) {
+    delete userColors[userId];
+  }
+}
+
 const UserAvatar = (props: UserAvatarProps) => {
 
   if(!userColors[props.user.userId]) {
@@ -29,7 +35,7 @@ const UserAvatar = (props: UserAvatarProps) => {
             sx={{bgcolor: (props.user.avatar ? 'none' : userColors[props.user.userId]), ...props.sx}}
             src={props.user.avatar}
             alt={props.user.displayName}
-    >{props.user.displayName}</Avatar>
+    >{props.user.displayName.slice(0, 1)}</Avatar>
   </Badge>
 };
 
