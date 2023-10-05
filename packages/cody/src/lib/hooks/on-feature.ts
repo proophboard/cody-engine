@@ -10,7 +10,7 @@ import {flushChanges} from "nx/src/generators/tree";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 
 const modeKey = "mode";
-const modeValueTest = "test";
+const modeValueTest = "test-scenario";
 
 export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) => {
   try {
@@ -64,7 +64,7 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
           }
         }
 
-        const changesForCodyResponse = await createTestFile(feature.getName(), givenNodes, whenCommand, thenNodes, ctx);
+        const changesForCodyResponse = await createTestFiles(feature.getName(), givenNodes, whenCommand, thenNodes, ctx);
 
         // for logging:
         const loggedNodes: Array<string> = [];
@@ -99,7 +99,8 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
   }
 }
 
-async function createTestFile(featureName: string, givenNodes : Array<Node>, whenCommand : Node, thenNodes : Array<Node>, ctx: Context): Promise<string> {
+async function createTestFiles(featureName: string, givenNodes : Array<Node>, whenCommand : Node, thenNodes : Array<Node>, ctx: Context): Promise<string> {
+  // if using a service from another board (e.g. Fleet Management), make sure to set this up in the test feature's metadata!
   const service = withErrorCheck(detectService, [whenCommand, ctx]);
 
   const aggregate = 'car';
@@ -119,16 +120,13 @@ async function createTestFile(featureName: string, givenNodes : Array<Node>, whe
     "aggregate": aggregate,
     "expectedIdentifier": "6a76bead-46ce-4651-bea0-d8a387b2e9d0" // TODO: read from "then" node payload (convert to json, read & remove "expectedIdentifier", convert back to string)
   }
-
   // console.log(substitutions);
 
+  // generate test files
   const {tree} = ctx;
-  generateFiles(tree, __dirname + '/behaviour-test-files', ctx.beSrc+'/../', substitutions); // TODO: setup correct template/target folder
-
+  generateFiles(tree, __dirname + '/behaviour-test-files', ctx.beSrc+'/../', substitutions);
   await formatFiles(tree);
-
   const changes = tree.listChanges();
-
   flushChanges(ctx.projectRoot, changes);
 
   return listChangesForCodyResponse(tree);

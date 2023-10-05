@@ -1,0 +1,5 @@
+Feature: <%= featureNames.name %>
+  Scenario: <%= featureNames.name %>
+    Given <%= givenEvent.name %>
+    When <%= whenEvent.name %>
+    Then <%= thenEvent.name %>
