@@ -1,6 +1,5 @@
 /* eslint-disable no-prototype-builtins */
 import {Event, EventMeta} from "@event-engine/messaging/event";
-import fs from "fs";
 import {
   AppendToListener, checkMatchObject,
   EventStore,
@@ -8,8 +7,9 @@ import {
   MetadataMatcher, StreamType
 } from "@event-engine/infrastructure/EventStore";
 import {messageFromJSON, Payload} from "@event-engine/messaging/message";
+import {Filesystem, NodeFilesystem} from "@event-engine/infrastructure/helpers/fs";
 
-interface InMemoryStreamStore {
+export interface InMemoryStreamStore {
   [streamName: string]: Event[];
 }
 
@@ -51,18 +51,20 @@ const matchMetadata = (event: Event, metadataMatcher: MetadataMatcher): boolean 
 }
 
 export class InMemoryEventStore implements EventStore {
-  private readonly streams: InMemoryStreamStore = {};
+  private streams: InMemoryStreamStore = {};
   private readonly persistOnDisk: boolean;
   private readonly storageFile: string;
   private appendToListeners: AppendToListener[] = [];
+  private readonly fs: Filesystem;
 
-  constructor(storageFile?: string) {
+  constructor(storageFile?: string, fs?: Filesystem) {
     this.persistOnDisk = !!storageFile;
     this.storageFile = storageFile || '//memory';
+    this.fs = fs || new NodeFilesystem();
 
     if(this.persistOnDisk) {
-      if(!fs.existsSync(this.storageFile)) {
-        fs.writeFileSync(this.storageFile, JSON.stringify({streams: {}}));
+      if(!this.fs.existsSync(this.storageFile)) {
+        this.fs.writeFileSync(this.storageFile, JSON.stringify({streams: this.streams}));
       }
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -189,9 +191,17 @@ export class InMemoryEventStore implements EventStore {
     this.appendToListeners = this.appendToListeners.filter(l => l !== listener);
   }
 
+  public async importStreams(streams: InMemoryStreamStore): Promise<void> {
+    this.streams = streams;
+  }
+
+  public async exportStreams(): Promise<InMemoryStreamStore> {
+    return this.streams;
+  }
+
   private persistOnDiskIfEnabled () {
     if(this.persistOnDisk) {
-      fs.writeFileSync(this.storageFile, JSON.stringify({streams: this.streams}, null, 2));
+      this.fs.writeFileSync(this.storageFile, JSON.stringify({streams: this.streams}, null, 2));
     }
   }
 }

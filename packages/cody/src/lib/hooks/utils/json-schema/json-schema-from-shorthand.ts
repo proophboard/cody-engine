@@ -6,7 +6,6 @@ import {
 import {JSONSchema} from "json-schema-to-typescript";
 import {CodyResponse} from "@proophboard/cody-types";
 import {isCodyError} from "@proophboard/cody-utils";
-import {replace} from "lodash";
 
 const normalizeShorthandString = (shorthand: string): string => {
   shorthand = shorthand.replace('string|enum:', 'enum:');

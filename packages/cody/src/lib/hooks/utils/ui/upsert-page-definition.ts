@@ -3,7 +3,6 @@ import {Context} from "../../context";
 import {FsTree} from "nx/src/generators/tree";
 import {List} from "immutable";
 import {PageDefinition} from "@frontend/app/pages/page-definitions";
-import {isDynamicBreadcrumb, UiMetadata} from "./get-ui-metadata";
 import {updateProophBoardInfo} from "../prooph-board-info";
 import {names} from "@event-engine/messaging/helpers";
 import {detectService} from "../detect-service";
@@ -16,6 +15,7 @@ import {getVoFromSyncedNodes} from "../value-object/get-vo-from-synced-nodes";
 import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
 import {getNodesOfTypeNearby} from "../node-tree";
 import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference";
+import {isDynamicBreadcrumb, UiMetadata} from "@cody-engine/cody/hooks/utils/ui/types";
 
 export const upsertTopLevelPage = async (
   ui: Node,

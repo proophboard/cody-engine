@@ -45,7 +45,7 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
       rules,
       [
         {
-          name: aggregateStateNames.propertyName,
+          name: 'information',
           initializer: aggregateStateNames.propertyName
         },
         {

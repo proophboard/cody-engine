@@ -1,6 +1,4 @@
 import {names} from "@event-engine/messaging/helpers";
-import {FsTree} from "nx/src/generators/tree";
-import {Context} from "../../context";
 
 const prepareNs = (ns: string): string => {
   if(ns.length === 0) {

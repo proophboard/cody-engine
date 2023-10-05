@@ -5,7 +5,7 @@ import {CodyResponse, Node} from "@proophboard/cody-types";
 import {detectService} from "../detect-service";
 import {isCodyError} from "@proophboard/cody-utils";
 import {namespaceToFilePath, namespaceToJSONPointer} from "./namespace";
-import {ValueObjectMetadata} from "./get-vo-metadata";
+import {ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
 
 export const definitionId = (vo: Node, ns: string, ctx: Context): string | CodyResponse => {
   const service = detectService(vo, ctx);

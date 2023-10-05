@@ -1,12 +1,10 @@
 import {CodyHook, CodyResponse, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
-import {DependencyRegistry} from "@event-engine/descriptions/descriptions";
-import {Rule} from "./utils/rule-engine/configuration";
 import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {names} from "@event-engine/messaging/helpers";
 import {getTargetsOfType, parseJsonMetadata} from "@proophboard/cody-utils";
 import {detectService} from "./utils/detect-service";
-import {flushChanges, FsTree} from "nx/src/generators/tree";
+import {flushChanges} from "nx/src/generators/tree";
 import {formatFiles, generateFiles} from "@nx/devkit";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
@@ -14,12 +12,7 @@ import {registerPolicy} from "./utils/registry";
 import {alwaysTriggerCommand} from "./utils/policy/always-trigger-command";
 import {convertRuleConfigToPolicyRules} from "./utils/rule-engine/convert-rule-config-to-behavior";
 import {toJSON} from "./utils/to-json";
-
-interface PolicyMeta {
-  service?: string;
-  dependencies?: DependencyRegistry;
-  rules?: Rule[];
-}
+import {PolicyMeta} from "@cody-engine/cody/hooks/utils/policy/metadata";
 
 export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): Promise<CodyResponse> => {
   try {

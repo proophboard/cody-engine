@@ -6,90 +6,13 @@ import {ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema"
 import {detectService} from "../detect-service";
 import {definitionId, normalizeRefs} from "./definitions";
 import {names} from "@event-engine/messaging/helpers";
-import {
-  isQueryableStateDescription,
-  isStateDescription,
-  ValueObjectDescriptionFlags
-} from "@event-engine/descriptions/descriptions";
-import {Rule} from "../rule-engine/configuration";
+import {isQueryableStateDescription, isStateDescription} from "@event-engine/descriptions/descriptions";
 import {isListSchema} from "../json-schema/list-schema";
 import {resolveRef} from "../json-schema/resolve-ref";
-import {UiSchema} from "@rjsf/utils";
-import {GridDensity} from "@mui/x-data-grid";
 import {addSchemaTitles} from "../json-schema/add-schema-titles";
 import {jsonSchemaFromShorthand} from "../json-schema/json-schema-from-shorthand";
-import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {isShorthand} from "../json-schema/shorthand";
-
-interface ValueObjectMetadataRaw {
-  identifier?: string;
-  schema: any;
-  querySchema?: any;
-  resolve?: ResolveConfig;
-  ns?: string;
-  collection?: string;
-  initialize?: Rule[];
-  uiSchema?: UiSchema & TableUiSchema;
-}
-
-export interface ResolveConfig {
-  where?: Rule,
-  orderBy?: SortOrderItem | SortOrder
-}
-
-export interface RefTableColumn {
-  data: string;
-  value: Rule[] | string;
-}
-
-export interface PageLinkTableColumn {
-  page: string;
-  mapping: Record<string, string>;
-}
-
-export interface TableColumnUiSchema {
-  field: string;
-  headerName?: string;
-  flex?: string | number;
-  width?: string | number;
-  value?: Rule[] | string;
-  pageLink?: string | PageLinkTableColumn;
-  ref?: {data: string; value: string};
-  link?: string | Rule[];
-}
-
-export type StringOrTableColumnUiSchema = string | TableColumnUiSchema;
-
-interface TableProps {
-  columns?: StringOrTableColumnUiSchema[],
-  pageSize?: number,
-  pageSizeOptions?: number[],
-  density?: GridDensity,
-  hideToolbar?: boolean,
-  // @TODO: show/hide specific grid toolbar options or hide entire grid toolbar
-  // @TODO: support endless scroll, pagination, ... ?
-}
-
-export interface TableUiSchema {
-  "ui:table"?: TableProps;
-  table?: TableProps;
-}
-
-export interface ValueObjectMetadata extends ValueObjectDescriptionFlags {
-  schema: JSONSchema7;
-  querySchema?: JSONSchema7;
-  ns: string;
-  service: string;
-  isList: boolean;
-  hasIdentifier: boolean;
-  isQueryable: boolean;
-  identifier?: string;
-  collection?: string;
-  initialize?: Rule[];
-  itemType?: string;
-  resolve?: ResolveConfig;
-  uiSchema?: UiSchema & TableUiSchema;
-}
+import {ValueObjectMetadata, ValueObjectMetadataRaw} from "@cody-engine/cody/hooks/utils/value-object/types";
 
 export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | CodyResponse => {
   const meta = parseJsonMetadata<ValueObjectMetadataRaw>(vo);

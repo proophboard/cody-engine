@@ -1,5 +1,4 @@
 import {CodyResponse, Node} from "@proophboard/cody-types";
-import {ValueObjectMetadata} from "../value-object/get-vo-metadata";
 import {Context} from "../../context";
 import {FsTree} from "nx/src/generators/tree";
 import {namespaceToClassName, namespaceToFilePath} from "../value-object/namespace";
@@ -8,6 +7,7 @@ import {isCodyError} from "@proophboard/cody-utils";
 import {names} from "@event-engine/messaging/helpers";
 import {generateFiles} from "@nx/devkit";
 import {registerViewComponent} from "../registry";
+import {ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
 
 export const upsertStateViewComponent = async (vo: Node, voMeta: ValueObjectMetadata, ctx: Context, tree: FsTree): Promise<boolean|CodyResponse> => {
   const service = detectService(vo, ctx);

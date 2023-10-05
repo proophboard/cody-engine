@@ -1,26 +1,29 @@
-/* eslint-disable no-prototype-builtins */
-import fs from "fs";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {DocumentStore, PartialSelect, SortOrder} from "@event-engine/infrastructure/DocumentStore";
 import {asyncEmptyIterator} from "@event-engine/infrastructure/helpers/async-empty-iterator";
 import {InMemoryFilterProcessor} from "@event-engine/infrastructure/DocumentStore/InMemory/InMemoryFilterProcessor";
 import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
 import {areValuesEqualForAllSorts, getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
+import {Filesystem, NodeFilesystem} from "@event-engine/infrastructure/helpers/fs";
+
+export type Documents = {[collectionName: string]: {[docId: string]: object}};
 
 export class InMemoryDocumentStore implements DocumentStore {
-  private readonly documents: {[collectionName: string]: {[docId: string]: object}} = {};
+  private documents: Documents = {};
   private readonly persistOnDisk: boolean;
   private readonly storageFile: string;
   private readonly filterProcessor: InMemoryFilterProcessor;
+  private readonly fs: Filesystem;
 
-  constructor(storageFile?: string) {
+  constructor(storageFile?: string, fs?: Filesystem) {
     this.persistOnDisk = !!storageFile;
     this.storageFile = storageFile || '//memory';
     this.filterProcessor = new InMemoryFilterProcessor();
+    this.fs = fs || new NodeFilesystem();
 
     if(this.persistOnDisk) {
-      if(! fs.existsSync(this.storageFile)) {
-        fs.writeFileSync(this.storageFile, JSON.stringify({documents: {}}));
+      if(! this.fs.existsSync(this.storageFile)) {
+        this.fs.writeFileSync(this.storageFile, JSON.stringify({documents: this.documents}));
       }
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -243,9 +246,17 @@ export class InMemoryDocumentStore implements DocumentStore {
     return counter;
   }
 
+  public async importDocuments(documents: Documents): Promise<void> {
+    this.documents = documents;
+  }
+
+  public async exportDocuments(): Promise<Documents> {
+    return this.documents;
+  }
+
   private persistOnDiskIfEnabled() {
     if(this.persistOnDisk) {
-      fs.writeFileSync(this.storageFile, JSON.stringify({documents: this.documents}, null, 2));
+      this.fs.writeFileSync(this.storageFile, JSON.stringify({documents: this.documents}, null, 2));
     }
   }
 

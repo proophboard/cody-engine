@@ -19,13 +19,14 @@
     "baseUrl": ".",
     "paths": {
       "@app/shared/*": ["packages/shared/src/lib/*"],
-      "@cody-engine/cody": ["packages/cody/src/index.ts"],
-      "@cody-engine/contribution": ["packages/contribution/src/index.ts"],
+      "@cody-engine/cody/*": ["packages/cody/src/lib/*"],
+      "@cody-engine/contribution/*": ["packages/contribution/src/*"],
       "@event-engine/descriptions/*": ["packages/descriptions/src/lib/*"],
       "@event-engine/infrastructure/*": ["packages/infrastructure/src/lib/*"],
       "@event-engine/messaging/*": ["packages/messaging/src/lib/*"],
       "@frontend/*": ["packages/fe/src/*"],
-      "@server/*": ["packages/be/src/*"]
+      "@server/*": ["packages/be/src/*"],
+      "@cody-play/*": ["packages/play/src/*"]
     }
   },
   "exclude": ["node_modules", "tmp"]

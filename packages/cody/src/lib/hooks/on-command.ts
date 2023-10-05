@@ -63,8 +63,9 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
     const isAggregateCommand = !isCodyError(aggregate);
 
     if(!isAggregateCommand) {
-      // @TODO: handle non-aggregate command
-      return aggregate;
+      return {
+        cody: `Skipping command ${command.getName()}. It's not connected to an aggregate.`
+      }
     }
 
     const syncedAggregate = withErrorCheck(getNodeFromSyncedNodes, [aggregate, ctx.syncedNodes]);
