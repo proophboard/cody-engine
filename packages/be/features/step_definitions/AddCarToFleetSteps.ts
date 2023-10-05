@@ -1,11 +1,10 @@
 import { before, binding, given, then, when } from "cucumber-tsflow";
-import { addCarToFleet } from "@app/shared/commands/fleet-management/add-car-to-fleet";
+import {addCarToFleet} from "@app/shared/commands/fleet-management/add-car-to-fleet";
 import { Event } from "@event-engine/messaging/event";
 import { getConfiguredMessageBox } from "@server/infrastructure/configuredMessageBox";
-import { carAdded } from "@app/shared/events/fleet-management/car/car-added";
-import { carAddedToFleet } from "@app/shared/events/fleet-management/car/car-added-to-fleet";
 import { getConfiguredEventStore } from "@server/infrastructure/configuredEventStore";
-import { incompleteCarAdded } from "@app/shared/events/fleet-management/car/incomplete-car-added";
+import {carAdded} from "@app/shared/events/fleet-management/car/car-added";
+import {incompleteCarAdded} from "@app/shared/events/fleet-management/car/incomplete-car-added";
 import expect from "expect";
 
 
@@ -28,9 +27,9 @@ class AddCarToFleetSteps {
   public async givenCarAdded(): Promise<void> {
     const payload = {
       'productionYear': 1998,
-      'vehicleId': '6a76bead-46ce-4651-bea0-d8a387b2e9d0',
-      'brand': 'Ford',
-      'model': 'Focus'
+'vehicleId': '6a76bead-46ce-4651-bea0-d8a387b2e9d0',
+'brand': 'Ford',
+'model': 'Focus'
     };
 
     const event = carAdded(payload);
@@ -38,6 +37,7 @@ class AddCarToFleetSteps {
     await this.messageBox.dispatch(event.name, event.payload, event.meta);
   }
 
+/* multiple givens via iterator like above
   @given('Car Added To Fleet')
   public async givenCarAddedToFleet(): Promise<void> {
     const payload = {
@@ -48,13 +48,14 @@ class AddCarToFleetSteps {
 
     await this.messageBox.dispatch(event.name, event.payload, event.meta);
   }
+*/
 
   @when('Add Car To Fleet')
-  public async addCarToFleet(): Promise<void> {
+  public async whenAddCarToFleet(): Promise<void> {
     const payload = {
       'vehicleId': '6a76bead-46ce-4651-bea0-d8a387b2e9d0',
-      'brand': 'BMW',
-      'model': '1er',
+'brand': 'BMW',
+'model': '1er'
     };
 
     const command = addCarToFleet(payload);
@@ -66,9 +67,8 @@ class AddCarToFleetSteps {
   public async thenIncompleteCarAdded(): Promise<void> {
     const identifier = '6a76bead-46ce-4651-bea0-d8a387b2e9d0';
     const expectedPayload = {
-      'vehicleId': '6a76bead-46ce-4651-bea0-d8a387b2e9d0',
-      'brand': 'BMW',
-      'model': '1er',
+      'vehicleId': '6a76bead-46ce-4651-bea0-d8a387b2e9d0', 'brand': 'BMW',
+'model': '1er'
     };
     const expectedEvent = incompleteCarAdded(expectedPayload);
 

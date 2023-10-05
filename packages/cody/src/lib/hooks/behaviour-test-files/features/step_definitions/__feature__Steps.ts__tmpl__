@@ -1,5 +1,5 @@
 import { before, binding, given, then, when } from "cucumber-tsflow";
-import {<%= whenEvent.className %>} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= whenEvent.fileName %>";
+import {<%= whenEvent.propertyName %>} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= whenEvent.fileName %>";
 import { Event } from "@event-engine/messaging/event";
 import { getConfiguredMessageBox } from "@server/infrastructure/configuredMessageBox";
 import { getConfiguredEventStore } from "@server/infrastructure/configuredEventStore";
@@ -23,7 +23,7 @@ class <%= feature %>Steps {
     this.eventStore.attachAppendToListener(listener);
   }
 
-  @given('<%= givenEvent.name %>'')
+  @given('<%= givenEvent.name %>')
   public async given<%= givenEvent.className %>(): Promise<void> {
     const payload = {
       <%= givenPayload %>
@@ -53,7 +53,7 @@ class <%= feature %>Steps {
       <%= whenPayload %>
     };
 
-    const command = <%= whenEvent.className %>(payload);
+    const command = <%= whenEvent.propertyName %>(payload);
 
     await this.messageBox.dispatch(command.name, command.payload, command.meta);
   }

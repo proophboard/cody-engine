@@ -44,7 +44,6 @@ export interface CommandMeta {
 }
 
 export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) => {
-
   try {
     const cmdNames = names(command.getName());
     const aggregate = getSingleTarget(command, NodeType.aggregate);
