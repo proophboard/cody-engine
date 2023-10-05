@@ -26,7 +26,7 @@ class <%= feature %>Steps {
   @given('<%= givenEvent.name %>')
   public async given<%= givenEvent.className %>(): Promise<void> {
     const payload = {
-      <%= givenPayload %>
+      <%- givenPayload %>
     };
 
     const event = <%= givenEvent.propertyName %>(payload);
@@ -50,7 +50,7 @@ class <%= feature %>Steps {
   @when('<%= whenEvent.name %>')
   public async when<%= whenEvent.className %>(): Promise<void> {
     const payload = {
-      <%= whenPayload %>
+      <%- whenPayload %>
     };
 
     const command = <%= whenEvent.propertyName %>(payload);
@@ -62,7 +62,7 @@ class <%= feature %>Steps {
   public async then<%= thenEvent.className %>(): Promise<void> {
     const identifier = '<%= expectedIdentifier %>';
     const expectedPayload = {
-      <%= thenPayload %>
+      <%- thenPayload %>
     };
     const expectedEvent = <%= thenEvent.propertyName %>(expectedPayload);
 
