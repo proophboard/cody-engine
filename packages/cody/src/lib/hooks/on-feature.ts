@@ -106,6 +106,7 @@ async function createTestFile(featureName: string, givenNodes : Array<Node>, whe
 
   // TODO: currently only using the first "when" & "then" nodes
   const substitutions = {
+    'tmpl': '',
     "feature": names(featureName).className,
     "serviceNames": names(service),
     "featureNames": names(featureName),
@@ -130,5 +131,5 @@ async function createTestFile(featureName: string, givenNodes : Array<Node>, whe
 
   flushChanges(ctx.projectRoot, changes);
 
-  return = listChangesForCodyResponse(tree);
+  return listChangesForCodyResponse(tree);
 }
