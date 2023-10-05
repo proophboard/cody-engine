@@ -15,6 +15,8 @@ import {createContext, PropsWithChildren, useEffect, useReducer} from "react";
 import {injectCustomApiQuery} from "@frontend/queries/use-api-query";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
 import {useUser} from "@frontend/hooks/use-user";
+import {environment} from "@cody-play/environments/environment";
+import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
 
 export interface CodyPlayConfig {
   pages: PlayPageRegistry,
@@ -71,14 +73,16 @@ const initialPlayConfig: CodyPlayConfig = {
   }
 }
 
-export const CONFIG_STORE_SESSION_STORAGE_KEY = 'cody_play_config';
+export const CONFIG_STORE_LOCAL_STORAGE_KEY = 'cody_play_config_';
 
-const storedConfigStr = sessionStorage.getItem(CONFIG_STORE_SESSION_STORAGE_KEY);
+const storedConfigStr = localStorage.getItem(CONFIG_STORE_LOCAL_STORAGE_KEY + currentBoardId());
 
 const defaultPlayConfig = storedConfigStr ? JSON.parse(storedConfigStr) : initialPlayConfig;
 
 defaultPlayConfig.pages.Dashboard = initialPlayConfig.pages.Dashboard;
 defaultPlayConfig.views['Core.Welcome'] = initialPlayConfig.views['Core.Welcome'];
+
+console.log(`[PlayConfigStore] Initializing with config: `, defaultPlayConfig);
 
 const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action) => void}>({config: defaultPlayConfig, dispatch: (action: Action) => {return;}});
 
@@ -101,6 +105,7 @@ const clearAfterDispatchListener = (): void => {
 const PlayConfigProvider = (props: PropsWithChildren) => {
   const [user, ] = useUser();
   const [config, dispatch] = useReducer((config: CodyPlayConfig, action: Action): CodyPlayConfig => {
+    console.log(`[PlayConfigStore] Going to apply action: `, action);
     switch (action.type) {
       case "INIT":
         const newConfig = { ...action.payload };
@@ -153,8 +158,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
   }, defaultPlayConfig);
 
   useEffect(() => {
-    console.log("trigger after dispatch: ", config);
-    sessionStorage.setItem(CONFIG_STORE_SESSION_STORAGE_KEY, JSON.stringify(config));
+    console.log("[PlayConfigStore] trigger after dispatch: ", config);
     afterDispatchListeners.forEach(l => l(config));
   }, [config]);
 

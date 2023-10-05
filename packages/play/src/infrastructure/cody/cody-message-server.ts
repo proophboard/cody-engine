@@ -46,7 +46,6 @@ export class CodyMessageServer {
       window.addEventListener('message', (msg) => {
         try {
           if(!allowedOrigins.includes(msg.origin)) {
-            console.log("[CodyMessageServer] Ignored message: ", msg);
             return;
           }
 

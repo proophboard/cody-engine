@@ -17,7 +17,6 @@ import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {playVoMetadata} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 import {playEnsureAllRefsAreKnown} from "@cody-play/infrastructure/cody/schema/play-ensure-all-refs-are-known";
 import {playUpdateProophBoardInfo} from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
-import {addSchemaTitles} from "@cody-engine/cody/hooks/utils/json-schema/add-schema-titles";
 
 export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -29,7 +28,6 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
     if(playIsCodyError(aggregate)) {
       return {
         cody: `Skipping command "${command.getName()}", because it has no aggregate connected.`,
-        type: CodyResponseType.Warning,
       }
     }
 

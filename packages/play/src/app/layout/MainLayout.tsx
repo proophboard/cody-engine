@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {Box, CssBaseline} from "@mui/material";
 import TopBar from "@cody-play/app/layout/TopBar";
 import Sidebar from "@cody-play/app/layout/Sidebar";
+import SaveData from "@cody-play/app/components/core/SaveData";
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -37,6 +38,7 @@ const MainLayout = (props: MainLayoutProps) => {
             }}>
                 {props.children}
             </Box>
+            <SaveData />
         </Box>
     );
 };
