@@ -24,6 +24,7 @@ import CodyMessageServerInjection from "@cody-play/app/components/core/CodyMessa
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
 import {PlayStreamListener} from "@cody-play/infrastructure/multi-model-store/make-stream-listener";
 import PlayToggleColorMode from "@cody-play/app/layout/PlayToggleColorMode";
+import PendingChanges, {PendingChangesContext} from "@cody-play/infrastructure/multi-model-store/PendingChanges";
 
 let currentRoutes: string[] = [];
 
@@ -31,7 +32,7 @@ export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
       <PlayToggleColorMode>
-        <SnackbarProvider maxSnack={3} >
+        <SnackbarProvider maxSnack={3}>
           <MainLayout>
             <ScrollToTop />
             <Outlet />
@@ -42,6 +43,7 @@ export function App() {
   };
 
   const {config} = useContext(configStore);
+  const {setPendingChanges} = useContext(PendingChangesContext);
 
   document.title = config.appName;
 
@@ -114,7 +116,9 @@ export function App() {
       <User>
         <PlayConfigProvider>
           <CodyMessageServerInjection>
-            <RouterProvider router={router} />
+            <PendingChanges>
+              <RouterProvider router={router} />
+            </PendingChanges>
           </CodyMessageServerInjection>
         </PlayConfigProvider>
       </User>
