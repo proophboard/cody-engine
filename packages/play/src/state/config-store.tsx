@@ -3,22 +3,24 @@ import {
   PlayAddAggregateAction, PlayAddAggregateEventAction,
   PlayAddCommandAction, PlayAddEventPolicyAction,
   PlayAddPageAction, PlayAddQueryAction, PlayAddTypeAction,
-  PlayAggregateRegistry, PlayApplyRulesRegistry, PlayCommandHandlerRegistry,
+  PlayAggregateRegistry, PlayApplyRulesRegistry, PlayChangeTheme, PlayCommandHandlerRegistry,
   PlayCommandRegistry, PlayEventPolicyRegistry, PlayEventRegistry, PlayInformationRegistry,
   PlayInitAction,
-  PlayPageRegistry, PlayQueryRegistry, PlayResolverRegistry,
+  PlayPageRegistry, PlayQueryRegistry, PlayRenameApp, PlayResolverRegistry,
   PlaySchemaDefinitions, PlayTopLevelPage,
   PlayViewRegistry
 } from "@cody-play/state/types";
-import CoreWelcome from "@frontend/app/components/core/welcome";
 import {createContext, PropsWithChildren, useEffect, useReducer} from "react";
 import {injectCustomApiQuery} from "@frontend/queries/use-api-query";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
 import {useUser} from "@frontend/hooks/use-user";
-import {environment} from "@cody-play/environments/environment";
 import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
+import PlayWelcome from "@cody-play/app/components/core/PlayWelcome";
+import {ThemeOptions} from "@mui/material";
 
 export interface CodyPlayConfig {
+  appName: string,
+  theme: ThemeOptions,
   pages: PlayPageRegistry,
   views: PlayViewRegistry,
   commands: PlayCommandRegistry,
@@ -34,6 +36,8 @@ export interface CodyPlayConfig {
 }
 
 const initialPlayConfig: CodyPlayConfig = {
+  appName: 'Cody Play',
+  theme: {},
   pages: {
     Dashboard: ({
       service: 'CrmTest',
@@ -49,7 +53,7 @@ const initialPlayConfig: CodyPlayConfig = {
     } as PlayTopLevelPage),
   },
   views: {
-    "Core.Welcome": CoreWelcome,
+    "Core.Welcome": PlayWelcome,
   },
   commands: {
   },
@@ -88,7 +92,8 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction | PlayAddQueryAction | PlayAddAggregateAction | PlayAddAggregateEventAction | PlayAddEventPolicyAction;
+type Action = PlayInitAction | PlayRenameApp | PlayChangeTheme | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction
+  | PlayAddQueryAction | PlayAddAggregateAction | PlayAddAggregateEventAction | PlayAddEventPolicyAction;
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
 
@@ -112,6 +117,10 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         newConfig.pages.Dashboard = initialPlayConfig.pages.Dashboard;
         newConfig.views["Core.Welcome"] = initialPlayConfig.views["Core.Welcome"];
         return newConfig;
+      case "RENAME_APP":
+        return {...config, appName: action.name};
+      case "CHANGE_THEME":
+        return {...config, theme: action.theme};
       case "ADD_PAGE":
         config.pages = {...config.pages};
         config.pages[action.name] = action.page;

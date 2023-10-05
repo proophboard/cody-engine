@@ -1,11 +1,10 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
 import App from './app/app';
-import {environment} from "@cody-play/environments/environment";
 import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-model-store/configured-document-store";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
 
-document.title = environment.appName;
+document.title = 'Cody Play';
 
 (async () => {
   return new Promise<void>(resolve => {

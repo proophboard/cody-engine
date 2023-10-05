@@ -19,6 +19,7 @@ import {JSONSchema7} from "json-schema";
 import {UiSchema} from "@rjsf/utils";
 import {DynamicBreadcrumbMetadata} from "@cody-engine/cody/hooks/utils/ui/types";
 import {ResolveConfig, TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/types";
+import {ThemeOptions} from "@mui/material";
 
 /* UI */
 export type PlayPageDefinition = Omit<PageDefinition, 'breadcrumb'> & {breadcrumb: string | DynamicBreadcrumbMetadata, service: string};
@@ -40,6 +41,16 @@ export type PlayViewRegistry = {
 export interface PlayInitAction {
   type: 'INIT',
   payload: CodyPlayConfig,
+}
+
+export interface PlayRenameApp {
+  type: 'RENAME_APP',
+  name: string,
+}
+
+export interface PlayChangeTheme {
+  type: 'CHANGE_THEME',
+  theme: ThemeOptions,
 }
 
 export interface PlayAddPageAction {

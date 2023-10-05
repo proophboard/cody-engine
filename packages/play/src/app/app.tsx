@@ -17,31 +17,33 @@ import MainLayout from "@cody-play/app/layout/MainLayout";
 import React, {useContext, useEffect, useRef, useState} from "react";
 import {SnackbarProvider} from "notistack";
 import ScrollToTop from "@frontend/app/components/core/ScrollToTop";
-import ToggleColorMode from "@frontend/app/providers/ToggleColorMode";
 import User from "@frontend/app/providers/User";
 import {addAfterDispatchListener, clearAfterDispatchListener, PlayConfigProvider, configStore} from "@cody-play/state/config-store";
 import {PlayPageRegistry} from "@cody-play/state/types";
 import CodyMessageServerInjection from "@cody-play/app/components/core/CodyMessageServer";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
-import {makeStreamListener, PlayStreamListener} from "@cody-play/infrastructure/multi-model-store/make-stream-listener";
+import {PlayStreamListener} from "@cody-play/infrastructure/multi-model-store/make-stream-listener";
+import PlayToggleColorMode from "@cody-play/app/layout/PlayToggleColorMode";
 
 let currentRoutes: string[] = [];
 
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
-      <ToggleColorMode>
+      <PlayToggleColorMode>
         <SnackbarProvider maxSnack={3} >
           <MainLayout>
             <ScrollToTop />
             <Outlet />
           </MainLayout>
         </SnackbarProvider>
-      </ToggleColorMode>
+      </PlayToggleColorMode>
     </>
   };
 
   const {config} = useContext(configStore);
+
+  document.title = config.appName;
 
   const publicListenerRef = useRef<PlayStreamListener | null>(null);
   const writeModelStreamListenerRef = useRef<PlayStreamListener | null>(null);
@@ -59,11 +61,15 @@ export function App() {
   }
 
   const makeRouter = (pages: PlayPageRegistry) => {
-    const routeObjects: RouteObject[] = Object.values(pages).map(p => ({
-      path: p.route,
-      handle: {page: p},
-      element: <PlayStandardPage page={p} key={p.route}/>
-    }));
+    const routeObjects: RouteObject[] = Object.keys(pages).map(pName => {
+      const p = pages[pName];
+
+      return {
+        path: p.route,
+        handle: {page: p},
+        element: <PlayStandardPage page={pName} key={p.route}/>
+      }
+    });
 
     currentRoutes = routeObjects.map(r => r.path!);
 
