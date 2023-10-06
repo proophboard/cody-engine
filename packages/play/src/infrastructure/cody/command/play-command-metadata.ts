@@ -13,6 +13,7 @@ import {isShorthand} from "@cody-engine/cody/hooks/utils/json-schema/shorthand";
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
 import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-normalize-refs";
+import {names} from "@event-engine/messaging/helpers";
 
 interface RawCommandMeta {
   newAggregate: boolean;
@@ -59,6 +60,8 @@ export const playCommandMetadata = (command: Node, ctx: ElementEditedContext): P
 
     schema = playNormalizeRefs(playAddSchemaTitles(command.getName(), convertedSchema), service);
   }
+
+  schema['$id'] = `/definitions/${names(service).fileName}/commands/${names(command.getName()).fileName}`;
 
   return {
     ...meta,

@@ -18,6 +18,7 @@ import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
 import PlayWelcome from "@cody-play/app/components/core/PlayWelcome";
 import {ThemeOptions} from "@mui/material";
 import {Persona} from "@app/shared/extensions/personas";
+import {types as sharedTypes} from "@app/shared/types";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -148,6 +149,11 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.definitions = {...config.definitions};
         config.types[action.name] = action.information;
         config.definitions[action.definition.definitionId] = action.definition.schema;
+
+        // Sync types, so that DataSelect, breadcrumbs, ... can resolve references
+        for (const typeName in config.types) {
+          sharedTypes[typeName] = config.types[typeName] as any;
+        }
         return {...config};
       case "ADD_QUERY":
         config.queries = {...config.queries};

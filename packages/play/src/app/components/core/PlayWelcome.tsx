@@ -24,7 +24,7 @@ const PlayWelcome = (props: PlayWelcomeProps) => {
     <p><Flash sx={{color: '#f5e339'}} />This application is powered by <Link href="https://github.com/proophboard/cody-engine">Cody Engine</Link><Flash sx={{color: '#f5e339'}} /></p>
     <Box sx={{marginTop: '30px', maxWidth: '1000px'}}>
       <p>
-        Cody Play is a <strong>browser-only prototyping app</strong>. Design an event model on <Link href="https://free.prooph-board.com">prooph board</Link> and test it on-the-fly for a realtime feedback-loop.
+        Cody Play is a <strong>browser-only prototyping app</strong>. Design an event model on <Link href="https://free.prooph-board.com">prooph board</Link> and test it on-the-fly.
         Data and configuration can be saved in the browser's local storage by using the save button at the bottom right corner.
       </p>
       <p>
