@@ -8,7 +8,7 @@ export interface DynamicBreadcrumbMetadata {
 export interface UiMetadata {
   route?: string;
   routeParams?: string[];
-  sidebar?: { label?: string; icon?: string; show?: boolean | Rule[] };
+  sidebar?: { label?: string; icon?: string; show?: boolean | Rule[], invisible?: string };
   breadcrumb?: string | DynamicBreadcrumbMetadata;
 }
 

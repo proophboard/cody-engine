@@ -3,11 +3,15 @@ import {Persona} from "@app/shared/extensions/personas";
 import {v4} from "uuid";
 import {User} from "@app/shared/types/core/user/user";
 
-export class PlayAuthService implements AuthService {
-  private personas: Persona[];
+export type OnPersonaAdded = (newPersona: Persona) => void;
 
-  public constructor(personas: Persona[]) {
+export class PlayAuthService implements AuthService {
+  private readonly personas: Persona[];
+  private readonly onPersonaAdded: OnPersonaAdded;
+
+  public constructor(personas: Persona[], onPersonaAdded: OnPersonaAdded) {
     this.personas = personas;
+    this.onPersonaAdded = onPersonaAdded;
   }
 
   public async register(user: UnregisteredUser): Promise<string> {
@@ -24,6 +28,7 @@ export class PlayAuthService implements AuthService {
     };
 
     this.personas.push(newPersona);
+    this.onPersonaAdded(newPersona);
 
     return userId;
   }

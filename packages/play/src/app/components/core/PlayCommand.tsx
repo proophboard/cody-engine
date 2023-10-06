@@ -22,7 +22,9 @@ type PlayCommandProps = OwnProps;
 
 const PlayCommand = (props: PlayCommandProps) => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  // @TODO: Refactor to only use root config object
   const {config: {commandHandlers, definitions, events, eventReducers, aggregates, types }} = useContext(configStore);
+  const {config} = useContext(configStore);
   const [user,] = useUser();
 
   const handleOpenDialog = () => {
@@ -75,7 +77,8 @@ const PlayCommand = (props: PlayCommandProps) => {
     aggregateEventReducers,
     stateInfo,
     user,
-    definitions
+    definitions,
+    config
   )
 
   return (

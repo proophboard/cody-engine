@@ -11,7 +11,6 @@ import {generateFiles} from "@nx/devkit";
 import {toJSON} from "../to-json";
 import {getVoMetadata} from "../value-object/get-vo-metadata";
 import {isQueryableStateDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
-import {getVoFromSyncedNodes} from "../value-object/get-vo-from-synced-nodes";
 import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
 import {getNodesOfTypeNearby} from "../node-tree";
 import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference";

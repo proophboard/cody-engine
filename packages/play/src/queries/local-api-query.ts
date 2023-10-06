@@ -36,12 +36,6 @@ const ds = getConfiguredPlayDocumentStore();
 export const makeLocalApiQuery = (store: CodyPlayConfig, user: User): ApiQuery => {
   return async (queryName: string, params: any): Promise<any> => {
 
-    if(queryName === 'FleetManagement.GetCarList') {
-      const cursor = await ds.findDocs<{state: Car}>(CarListDesc.collection, new filters.AnyFilter());
-
-      return asyncIteratorToArray(asyncMap(cursor, ([, d]) => car(d.state)));
-    }
-
     const queryInfo = store.queries[queryName];
 
     if(!queryInfo) {

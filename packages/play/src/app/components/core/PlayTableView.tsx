@@ -41,6 +41,7 @@ import {
   TableUiSchema
 } from "@cody-engine/cody/hooks/utils/value-object/types";
 import {PageDefinition} from "@frontend/app/pages/page-definitions";
+import {JSONSchema7} from "json-schema";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
   if(!isQueryableStateListDescription(informationInfo.desc)) {
@@ -180,30 +181,23 @@ const compileTableColumns = (
           break;
         case "value":
           gridColDef.valueGetter = (rowParams) => {
-            return dataValueGetter(
-              mainQuery,
-              itemIdentifier,
-              rowParams.value,
-              (data: any) => {
-                let ctx = {data, value: ''};
+            let ctx = {...rowParams, value: ''};
 
-                if (typeof cValue === 'string') {
-                  return jexl.evalSync(cValue, ctx);
-                }
+            if (typeof cValue === 'string') {
+              return jexl.evalSync(cValue, ctx);
+            }
 
-                const exe = makeSyncExecutable(cValue as AnyRule[]);
+            const exe = makeSyncExecutable(cValue as AnyRule[]);
 
-                ctx = exe(ctx);
+            ctx = exe(ctx);
 
-                return ctx.value;
-              }
-            )
+            return ctx.value;
           }
 
           hasValueGetter = true;
           break;
         case "ref":
-          const refListVo = types[(cValue as RefTableColumn).data];
+          const refListVo = getVOFromTypes((cValue as RefTableColumn).data, information.schema as JSONSchema7 & {$id: string}, types);
 
           if (!refListVo) {
             throw new Error(`Cannot find Information "${(cValue as RefTableColumn).data}" configured in column ref of column: "${column.field}".`);
@@ -270,4 +264,19 @@ const compileTableColumns = (
   }
 
   return gridColDefs;
+}
+
+const getVOFromTypes = (refOrFQCN: string, rootSchema: JSONSchema7 & {$id: string}, types: PlayInformationRegistry): PlayInformationRuntimeInfo | null => {
+  if(refOrFQCN[0] === "/") {
+    const rootId = rootSchema.$id || '';
+    const definitionIdParts = rootId.replace('/definitions/', '').split('/');
+    const service = names(definitionIdParts[0] || '').className;
+    refOrFQCN = (service + refOrFQCN).split("/").join(".");
+  }
+
+  if(!types[refOrFQCN]) {
+    return null;
+  }
+
+  return types[refOrFQCN];
 }

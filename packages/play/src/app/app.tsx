@@ -43,7 +43,6 @@ export function App() {
   };
 
   const {config} = useContext(configStore);
-  const {setPendingChanges} = useContext(PendingChangesContext);
 
   document.title = config.appName;
 

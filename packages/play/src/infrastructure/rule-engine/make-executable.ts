@@ -81,6 +81,10 @@ export const execRuleSync = (rule: Rule, ctx: ExecutionContext): [ExecutionConte
     return [execThenSync(rule.else, ctx), true];
   }
 
+  if((isIfConditionRule(rule) || isIfNotConditionRule(rule))) {
+    return [ctx, true];
+  }
+
   throw new Error(`Unable to handle rule ${JSON.stringify(rule)}. The rule type is unknown.`);
 }
 
@@ -103,6 +107,10 @@ export const execRuleAsync = async (rule: Rule, ctx: ExecutionContext): Promise<
 
   if((isIfConditionRule(rule) || isIfNotConditionRule(rule)) && rule.else) {
     return [await execThenAsync(rule.else, ctx), true];
+  }
+
+  if((isIfConditionRule(rule) || isIfNotConditionRule(rule))) {
+    return [ctx, true];
   }
 
   throw new Error(`Unable to handle rule ${JSON.stringify(rule)}. The rule type is unknown.`);
@@ -286,7 +294,7 @@ const execTriggerCommandAsync = async (then: ThenTriggerCommand, ctx: ExecutionC
 }
 
 const execThrowError = (then: ThenThrowError, ctx: ExecutionContext) => {
-  throw new Error(then.throw.error);
+  throw new Error(jexl.evalSync(then.throw.error, ctx));
 }
 
 const execExecuteRulesSync = (then: ThenExecuteRules, ctx: ExecutionContext): ExecutionContext => {

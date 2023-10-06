@@ -59,6 +59,11 @@ export interface PlaySetPersonas {
   personas: Persona[],
 }
 
+export interface PlayAddPersona {
+  type: 'ADD_PERSONA',
+  persona: Persona,
+}
+
 export interface PlayAddPageAction {
   type: 'ADD_PAGE',
   name: string,

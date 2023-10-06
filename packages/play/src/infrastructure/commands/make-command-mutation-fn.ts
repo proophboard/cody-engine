@@ -28,6 +28,8 @@ import {handle} from "@event-engine/infrastructure/commandHandling";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {ValidationError} from "ajv";
 import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-command-factory";
+import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
+import {CodyPlayConfig} from "@cody-play/state/config-store";
 
 export const makeCommandMutationFn = (
   commandInfo: PlayCommandRuntimeInfo,
@@ -37,7 +39,8 @@ export const makeCommandMutationFn = (
   eventReducers: PlayEventReducers,
   stateInfo: PlayInformationRuntimeInfo,
   user: User,
-  schemaDefinitions: PlaySchemaDefinitions
+  schemaDefinitions: PlaySchemaDefinitions,
+  config: CodyPlayConfig
 ): (commandPayload: Payload) =>  Promise<AxiosResponse> => {
   return async (commandPayload: Payload): Promise<AxiosResponse> => {
     let command = (makeCommandFactory(commandInfo, schemaDefinitions))(commandPayload, {user});
@@ -56,8 +59,7 @@ export const makeCommandMutationFn = (
       command = setMessageMetadata(command, META_KEY_DELETE_HISTORY, true);
     }
 
-    // @TODO: load dependencies
-    const dependencies = {};
+    const dependencies = await playLoadDependencies(command, 'command', commandDesc.dependencies || {}, config);
 
     const repository = makeAggregateRepository(
       aggregateDesc,

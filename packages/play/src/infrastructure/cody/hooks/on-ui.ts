@@ -76,6 +76,8 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       mergedCommands.push(...commands.toArray());
     }
 
+    let invisible: string | undefined;
+
     const page = topLevelPage ? ({
       service: serviceNames.className,
       route,

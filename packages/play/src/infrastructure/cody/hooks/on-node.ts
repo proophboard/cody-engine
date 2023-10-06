@@ -7,6 +7,7 @@ import {onDocument} from "@cody-play/infrastructure/cody/hooks/on-document";
 import {onAggregate} from "@cody-play/infrastructure/cody/hooks/on-aggregate";
 import {onEvent} from "@cody-play/infrastructure/cody/hooks/on-event";
 import {onPolicy} from "@cody-play/infrastructure/cody/hooks/on-policy";
+import {onRole} from "@cody-play/infrastructure/cody/hooks/on-role";
 
 export const onNode = async (node: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   switch (node.getType()) {
@@ -22,10 +23,11 @@ export const onNode = async (node: Node, dispatch: PlayConfigDispatch, ctx: Elem
       return onDocument(node, dispatch, ctx, config);
     case NodeType.policy:
       return onPolicy(node, dispatch, ctx, config);
+    case NodeType.role:
+      return onRole(node, dispatch, ctx, config);
   }
 
   return {
-    cody: `Ignored ${node.getName()}. No hook defined for type ${node.getType()}`,
-    type: CodyResponseType.Warning
+    cody: `Skipping ${node.getName()}. No hook defined for type ${node.getType()}`,
   }
 }

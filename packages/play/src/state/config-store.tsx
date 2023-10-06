@@ -2,7 +2,7 @@
 import {
   PlayAddAggregateAction, PlayAddAggregateEventAction,
   PlayAddCommandAction, PlayAddEventPolicyAction,
-  PlayAddPageAction, PlayAddQueryAction, PlayAddTypeAction,
+  PlayAddPageAction, PlayAddPersona, PlayAddQueryAction, PlayAddTypeAction,
   PlayAggregateRegistry, PlayApplyRulesRegistry, PlayChangeTheme, PlayCommandHandlerRegistry,
   PlayCommandRegistry, PlayEventPolicyRegistry, PlayEventRegistry, PlayInformationRegistry,
   PlayInitAction,
@@ -19,6 +19,7 @@ import PlayWelcome from "@cody-play/app/components/core/PlayWelcome";
 import {ThemeOptions} from "@mui/material";
 import {Persona} from "@app/shared/extensions/personas";
 import {types as sharedTypes} from "@app/shared/types";
+import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -105,7 +106,7 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction | PlayRenameApp | PlayChangeTheme | PlaySetPersonas | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction
+type Action = PlayInitAction | PlayRenameApp | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction
   | PlayAddQueryAction | PlayAddAggregateAction | PlayAddAggregateEventAction | PlayAddEventPolicyAction;
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
@@ -119,6 +120,8 @@ const addAfterDispatchListener = (listener: AfterDispatchListener): void => {
 const clearAfterDispatchListener = (): void => {
   afterDispatchListeners.pop();
 }
+
+let currentDispatch: any;
 
 const PlayConfigProvider = (props: PropsWithChildren) => {
   const [user, ] = useUser();
@@ -135,7 +138,20 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
       case "CHANGE_THEME":
         return {...config, theme: action.theme};
       case "SET_PERSONAS":
+        // Sync Auth Service
+        getConfiguredPlayAuthService(action.personas, currentDispatch);
         return {...config, personas: action.personas};
+      case "ADD_PERSONA":
+        for (const existingPersona of config.personas) {
+          if(existingPersona.userId === action.persona.userId) {
+            return config
+          }
+        }
+
+        const updatedPersonas =  [...config.personas, action.persona];
+        // Sync Auth Service
+        getConfiguredPlayAuthService(updatedPersonas, currentDispatch);
+        return {...config, personas: updatedPersonas};
       case "ADD_PAGE":
         config.pages = {...config.pages};
         config.pages[action.name] = action.page;
@@ -191,7 +207,13 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
     afterDispatchListeners.forEach(l => l(config));
   }, [config]);
 
+  useEffect(() => {
+    getConfiguredPlayAuthService(config.personas, dispatch);
+  })
+
   injectCustomApiQuery(makeLocalApiQuery(config, user));
+
+  currentDispatch = dispatch;
 
   return <Provider value={{ config, dispatch }}>{props.children}</Provider>;
 }
