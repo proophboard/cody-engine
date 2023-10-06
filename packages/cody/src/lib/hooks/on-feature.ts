@@ -11,6 +11,9 @@ import {listChangesForCodyResponse} from "./utils/fs-tree";
 
 const modeKey = "mode";
 const modeValueTest = "test-scenario";
+const givenKey = "given";
+const whenKey = "when";
+const thenKey = "then";
 
 export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) => {
   try {
@@ -64,7 +67,7 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
           }
         }
 
-        const changesForCodyResponse = await createTestFiles(feature.getName(), givenNodes, whenCommand, thenNodes, ctx);
+        const changesForCodyResponse = await createTestFiles(feature.getName(), featureMeta, givenNodes, whenCommand, thenNodes, ctx);
 
         // for logging:
         const loggedNodes: Array<string> = [];
@@ -99,7 +102,7 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
   }
 }
 
-async function createTestFiles(featureName: string, givenNodes : Array<Node>, whenCommand : Node, thenNodes : Array<Node>, ctx: Context): Promise<string> {
+async function createTestFiles(featureName: string, featureMeta: any, givenNodes : Array<Node>, whenCommand : Node, thenNodes : Array<Node>, ctx: Context): Promise<string> {
   // if using a service from another board (e.g. Fleet Management), make sure to set this up in the test feature's metadata!
   const service = withErrorCheck(detectService, [whenCommand, ctx]);
 
@@ -111,6 +114,9 @@ async function createTestFiles(featureName: string, givenNodes : Array<Node>, wh
     "feature": names(featureName).className,
     "serviceNames": names(service),
     "featureNames": names(featureName),
+    "given": featureMeta[givenKey],
+    "when": featureMeta[whenKey],
+    "then": featureMeta[thenKey],
     "givenEvent": names(givenNodes[0].getName()),
     "whenEvent": names(whenCommand.getName()),
     "thenEvent": names(thenNodes[0].getName()),

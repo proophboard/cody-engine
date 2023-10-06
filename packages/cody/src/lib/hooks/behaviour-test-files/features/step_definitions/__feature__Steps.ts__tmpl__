@@ -23,7 +23,7 @@ class <%= feature %>Steps {
     this.eventStore.attachAppendToListener(listener);
   }
 
-  @given('<%= givenEvent.name %>')
+  @given('<%= given %>')
   public async given<%= givenEvent.className %>(): Promise<void> {
     const payload = {
       <%- givenPayload %>
@@ -47,7 +47,7 @@ class <%= feature %>Steps {
   }
 */
 
-  @when('<%= whenEvent.name %>')
+  @when('<%= when %>')
   public async when<%= whenEvent.className %>(): Promise<void> {
     const payload = {
       <%- whenPayload %>
@@ -58,7 +58,7 @@ class <%= feature %>Steps {
     await this.messageBox.dispatch(command.name, command.payload, command.meta);
   }
 
-  @then('<%= thenEvent.name %>')
+  @then('<%= then %>')
   public async then<%= thenEvent.className %>(): Promise<void> {
     const identifier = '<%= expectedIdentifier %>';
     const expectedPayload = {
