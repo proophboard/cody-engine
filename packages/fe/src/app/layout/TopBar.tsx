@@ -1,20 +1,27 @@
 import React, {createContext, useContext} from 'react';
-import {AppBar, Box, Toolbar, Typography, IconButton} from "@mui/material";
+import {AppBar, Box, Toolbar, Typography, IconButton, useTheme, useMediaQuery} from "@mui/material";
 import Breadcrumbs from "@frontend/app/layout/Breadcrumbs";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 import {environment} from "@frontend/environments/environment";
+import MenuOpenIcon from "@mui/icons-material/MenuOpen";
+import MenuIcon from "@mui/icons-material/Menu";
 
 
 interface OwnProps {
-
+  sidebarOpen: boolean;
+  onOpenSidebar: (openSidebar: boolean) => void;
 }
 
 type TopBarProps = OwnProps;
 
 const TopBar = (props: TopBarProps) => {
+  const theme = useTheme();
   const {mode, toggleColorMode} = useContext(ColorModeContext);
+  const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
+    defaultMatches: true,
+  });
 
   return (
     <AppBar position="fixed" color="default" sx={{
@@ -32,6 +39,9 @@ const TopBar = (props: TopBarProps) => {
           {mode === 'light' && <LightModeIcon sx={{ color: 'white' }}/> }
           {mode === 'dark' && <DarkModeIcon sx={{ color: 'black' }}/> }
         </IconButton>
+        {!sideBarPersistent && <IconButton onClick={() => props.onOpenSidebar(!props.sidebarOpen)} sx={{color: mode === 'dark' ? 'black' : 'white'}}>
+          {props.sidebarOpen? <MenuOpenIcon /> : <MenuIcon />}
+        </IconButton>}
       </Toolbar>
     </AppBar>
   )

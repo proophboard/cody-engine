@@ -12,6 +12,10 @@ const MainLayout = (props: MainLayoutProps) => {
 
     const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
 
+    const handleOpenSidebar = (sidebarOpenFromTopBar: boolean) => {
+      setSideBarOpen(sidebarOpenFromTopBar);
+    }
+
     return (
         <Box sx={{
             paddingTop: {
@@ -27,7 +31,7 @@ const MainLayout = (props: MainLayoutProps) => {
             display: 'flex'
         }}>
             <CssBaseline />
-            <TopBar />
+            <TopBar sidebarOpen={sideBarOpen} onOpenSidebar={handleOpenSidebar} />
             <Sidebar open={sideBarOpen} onClose={() => setSideBarOpen(false)} />
             <Box component={"main"} sx={{
                 padding: "32px",
