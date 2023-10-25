@@ -93,12 +93,21 @@ const initialPlayConfig: CodyPlayConfig = {
 
 export const CONFIG_STORE_LOCAL_STORAGE_KEY = 'cody_play_config_';
 
+const syncTypesWithSharedRegistry = (config: CodyPlayConfig): void => {
+  // Sync types, so that DataSelect, breadcrumbs, ... can resolve references
+  for (const typeName in config.types) {
+    sharedTypes[typeName] = config.types[typeName] as any;
+  }
+}
+
 const storedConfigStr = localStorage.getItem(CONFIG_STORE_LOCAL_STORAGE_KEY + currentBoardId());
 
 const defaultPlayConfig = storedConfigStr ? JSON.parse(storedConfigStr) : initialPlayConfig;
 
 defaultPlayConfig.pages.Dashboard = initialPlayConfig.pages.Dashboard;
 defaultPlayConfig.views['Core.Welcome'] = initialPlayConfig.views['Core.Welcome'];
+
+syncTypesWithSharedRegistry(defaultPlayConfig);
 
 console.log(`[PlayConfigStore] Initializing with config: `, defaultPlayConfig);
 
@@ -166,10 +175,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.types[action.name] = action.information;
         config.definitions[action.definition.definitionId] = action.definition.schema;
 
-        // Sync types, so that DataSelect, breadcrumbs, ... can resolve references
-        for (const typeName in config.types) {
-          sharedTypes[typeName] = config.types[typeName] as any;
-        }
+        syncTypesWithSharedRegistry(config);
         return {...config};
       case "ADD_QUERY":
         config.queries = {...config.queries};
