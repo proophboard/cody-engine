@@ -61,7 +61,7 @@ export function App() {
     writeModelStreamListenerRef.current?.startProcessing();
   }
 
-  const makeRouter = (pages: PlayPageRegistry) => {
+  const makeRouter = (pages: PlayPageRegistry, makeInitialRouter = false) => {
     const routeObjects: RouteObject[] = Object.keys(pages).map(pName => {
       const p = pages[pName];
 
@@ -72,7 +72,9 @@ export function App() {
       }
     });
 
-    currentRoutes = routeObjects.map(r => r.path!);
+    if (!makeInitialRouter || currentRoutes.length === 0) {
+      currentRoutes = routeObjects.map(r => r.path!);
+    }
 
     routeObjects.unshift({
       path: "/",
@@ -87,7 +89,7 @@ export function App() {
     return createBrowserRouter([rootRoute]);
   }
 
-  const initialRouter = makeRouter(config.pages);
+  const initialRouter = makeRouter(config.pages, true);
 
   const [router, setRouter] = useState(initialRouter);
 
