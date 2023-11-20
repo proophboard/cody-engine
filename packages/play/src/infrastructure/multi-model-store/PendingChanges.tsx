@@ -16,12 +16,6 @@ const es = getConfiguredPlayEventStore();
 const PendingChanges = (props: PendingChangesProps) => {
   const [pendingChanges, setPendingChanges] = useState(false);
 
-  useEffect(() => {
-    es.attachAppendToListener(() => {
-      setPendingChanges(true);
-    })
-  })
-
   return <PendingChangesContext.Provider value={{pendingChanges, setPendingChanges}}>
     {props.children}
   </PendingChangesContext.Provider>

@@ -22,6 +22,13 @@ interface OwnProps {
 
 type PlayPersonaModalProps = OwnProps;
 
+const emptyPersona: Partial<Persona> = {
+  roles: [],
+  email: '',
+  displayName: '',
+  description: ''
+}
+
 const PersonaSchema = {
   type: "array",
   items: {
@@ -57,11 +64,12 @@ const PlayPersonaModal = (props: PlayPersonaModalProps) => {
   const theme = useTheme();
   const {config, dispatch} = useContext(configStore);
   let formRef: any = useRef();
-  const [formData, setFormData] = useState<Persona[]>([]);
+  const [formData, setFormData] = useState<Persona[]>([emptyPersona as Persona]);
   const [liveValidate, setLiveValidate] = useState(false);
 
   useEffect(() => {
-    setFormData(config.personas.slice(1));
+    const personas = config.personas.slice(1);
+    setFormData(personas.length === 0 ? [emptyPersona as Persona] : personas);
   }, [config.personas])
 
   const handleValidationError = () => {
@@ -69,7 +77,7 @@ const PlayPersonaModal = (props: PlayPersonaModalProps) => {
   }
 
   const handleChange = () => {
-    setFormData(formRef.state.formData);
+    setFormData(formRef.state?.formData || [emptyPersona as Persona]);
   }
 
   const handleSave = () => {
@@ -90,7 +98,7 @@ const PlayPersonaModal = (props: PlayPersonaModalProps) => {
     });
 
     changedPersonas.unshift(config.personas[0]);
-
+    debugger;
     dispatch({
       type: "SET_PERSONAS",
       personas: changedPersonas

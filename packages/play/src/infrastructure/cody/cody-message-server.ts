@@ -2,20 +2,47 @@ import {CodyResponse, CodyResponseType, makeNodeRecord, Node, RawNodeRecordProps
 import {greeting, IioSaidHello} from "@proophboard/cody-server/lib/src/http/greeting";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {Map} from "immutable";
-import {checkQuestion, test, handleReply, Reply} from "@proophboard/cody-server/lib/src/http/question";
+import {checkQuestion, handleReply, Reply, test} from "@proophboard/cody-server/lib/src/http/question";
 import {ElementEdited} from "@proophboard/cody-server/lib/src/http/elementEdited";
 import {Action, CodyPlayConfig} from "@cody-play/state/config-store";
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
+import {Documents, InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
+import {InMemoryEventStore, InMemoryStreamStore} from "@event-engine/infrastructure/EventStore/InMemoryEventStore";
+import {v4} from "uuid";
+import {Record} from "mdi-material-ui";
 
 interface Message {
   messageId: string;
-  messageName: 'IioSaidHello' | 'UserReplied' | 'ElementEdited' | 'ConfirmTest' | 'Sync' | 'SyncDeleted' | 'FullSync';
+  messageName: 'IioSaidHello' | 'UserReplied' | 'ElementEdited' | 'ConfirmTest' | 'Sync' | 'SyncDeleted' | 'FullSync' | 'PlayshotSaved' | 'InitPlayshot';
   payload: any;
 }
 
 interface Response {
   responseTo: string;
   codyResponse: CodyResponse;
+}
+
+export interface Playshot {
+  playshotId: string;
+  boardId: string;
+  name: string;
+  playConfig: CodyPlayConfig;
+  playData: {
+    streams: InMemoryStreamStore;
+    documents: Documents;
+  }
+}
+
+type SavePlayshotResolver = (success: boolean) => void;
+
+interface Command {
+  command: 'SavePlayshot';
+  payload: any;
+}
+
+interface PlayshotSaved {
+  playshotId: string;
+  success: boolean;
 }
 
 interface Sync {
@@ -35,11 +62,17 @@ export class CodyMessageServer {
   private syncedNodes = Map<string, Node>();
   private dispatch: PlayConfigDispatch;
   private config: CodyPlayConfig;
+  private es: InMemoryEventStore;
+  private ds: InMemoryDocumentStore;
+  private pendingSavePlayshotCommands: Record<string, SavePlayshotResolver> = {};
+  private msgOrigin = '*';
 
-
-  public constructor(config: CodyPlayConfig, dispatch: PlayConfigDispatch) {
+  public constructor(config: CodyPlayConfig, dispatch: PlayConfigDispatch, es: InMemoryEventStore, ds: InMemoryDocumentStore) {
     this.config = config;
     this.dispatch = dispatch;
+    this.es = es;
+    this.ds = ds;
+
     if(window.opener) {
       this.pbTab = window.opener;
 
@@ -49,6 +82,7 @@ export class CodyMessageServer {
             return;
           }
 
+          this.msgOrigin = msg.origin;
           const message: Message = JSON.parse(msg.data);
 
           if(!message.messageId) {
@@ -85,6 +119,43 @@ export class CodyMessageServer {
     return !!this.pbTab;
   }
 
+  public async savePlayshot(name: string, boardId: string): Promise<boolean> {
+    if(!this.isConnected()) {
+      return false;
+    }
+
+    const playshot: Playshot = {
+      playshotId: v4(),
+      name,
+      boardId,
+      playConfig: this.config,
+      playData: {
+        streams: await this.es.exportStreams(),
+        documents: await this.ds.exportDocuments()
+      }
+    }
+
+    return Promise.race<boolean>([
+      new Promise(resolve => {
+        this.pendingSavePlayshotCommands[playshot.playshotId] = resolve;
+        const cmd: Command = {
+          command: "SavePlayshot",
+          payload: playshot
+        }
+
+        this.pbTab?.postMessage(JSON.stringify(cmd), this.msgOrigin);
+      }),
+      new Promise(resolve => {
+        window.setTimeout(() => {
+          if(this.pendingSavePlayshotCommands[playshot.playshotId]) {
+            delete this.pendingSavePlayshotCommands[playshot.playshotId];
+            resolve(false);
+          }
+        }, 5000)
+      })
+    ]);
+  }
+
   private async handleMessage(messageName: string, payload: any): Promise<CodyResponse> {
     console.log("[CodyMessageServer] going to handle message: ", messageName, payload);
     switch (messageName) {
@@ -102,6 +173,10 @@ export class CodyMessageServer {
         return this.handleConfirmTest(payload);
       case "ElementEdited":
         return this.handleElementEdited(payload);
+      case "PlayshotSaved":
+        return this.handlePlayshotSaved(payload);
+      case "InitPlayshot":
+        return this.initPlayshot(payload.payload);
       default:
         return {
           cody: `Unknown message received: ${messageName}`,
@@ -129,6 +204,44 @@ export class CodyMessageServer {
     }
 
     return checkQuestion(await onNode(makeNodeRecord(payload.node), this.dispatch, {...payload.context, syncedNodes: this.syncedNodes}, this.config));
+  }
+
+  private async handlePlayshotSaved(payload: PlayshotSaved): Promise<CodyResponse> {
+    if(this.pendingSavePlayshotCommands[payload.playshotId]) {
+      const resolve = this.pendingSavePlayshotCommands[payload.playshotId];
+      delete this.pendingSavePlayshotCommands[payload.playshotId];
+      resolve(payload.success);
+
+      if(!payload.success) {
+        return {
+          cody: 'Failed to save playshot',
+          type: CodyResponseType.Error
+        }
+      }
+
+      return {
+        cody: 'Playshot saved successfully'
+      }
+    } else {
+      return {
+        cody: 'Saving Playshot aborted due to a timeout. Please try again',
+        type: CodyResponseType.Error
+      }
+    }
+  }
+
+  private async initPlayshot(playshot: Playshot): Promise<CodyResponse> {
+    this.dispatch({
+      type: "INIT",
+      payload: playshot.playConfig,
+    });
+
+    await this.es.importStreams(playshot.playData.streams || {});
+    await this.ds.importDocuments(playshot.playData.documents || {});
+
+    return {
+      cody: `Playshot "${playshot.name}" loaded successfully.`
+    }
   }
 
   private async handleFullSync(payload: Sync): Promise<CodyResponse> {

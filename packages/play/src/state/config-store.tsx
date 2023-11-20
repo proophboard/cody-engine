@@ -20,6 +20,7 @@ import {ThemeOptions} from "@mui/material";
 import {Persona} from "@app/shared/extensions/personas";
 import {types as sharedTypes} from "@app/shared/types";
 import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
+import _ from "lodash";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -138,9 +139,10 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
     console.log(`[PlayConfigStore] Going to apply action: `, action);
     switch (action.type) {
       case "INIT":
-        const newConfig = { ...action.payload };
+        const newConfig = _.isEmpty(action.payload)? initialPlayConfig : { ...action.payload };
         newConfig.pages.Dashboard = initialPlayConfig.pages.Dashboard;
         newConfig.views["Core.Welcome"] = initialPlayConfig.views["Core.Welcome"];
+        syncTypesWithSharedRegistry(newConfig);
         return newConfig;
       case "RENAME_APP":
         return {...config, appName: action.name};
