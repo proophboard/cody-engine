@@ -2,7 +2,9 @@ import {CodyHook, Node} from "@proophboard/cody-types";
 import {Context} from "./context";
 import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {names} from "@event-engine/messaging/helpers";
+import {isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {detectService} from "./utils/detect-service";
+import {findParentByType} from "./utils/node-tree";
 import {findAggregateState} from "./utils/aggregate/find-aggregate-state";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {flushChanges} from "nx/src/generators/tree";
@@ -22,6 +24,19 @@ import {getOriginalEvent} from "@cody-engine/cody/hooks/utils/event/get-original
 
 export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
   try {
+
+    const feature = findParentByType(event, NodeType.feature);
+
+    if(feature) {
+      const featureMeta = parseJsonMetadata<{mode?: string}>(feature);
+
+      if(!isCodyError(featureMeta) && featureMeta.mode === 'test-scenario') {
+        return {
+          cody: `Inside test feature, skipping generation of event "${event.getName()}".`,
+        }
+      }
+    }
+
     event = getOriginalEvent(event, ctx);
     const eventNames = names(event.getName());
     const service = withErrorCheck(detectService, [event, ctx]);
