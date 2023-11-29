@@ -2,11 +2,12 @@ import { before, binding, given, then, when } from "cucumber-tsflow";
 import {<%= whenEvent.propertyName %>} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= whenEvent.fileName %>";
 import { Event } from "@event-engine/messaging/event";
 import { getConfiguredMessageBox } from "@server/infrastructure/configuredMessageBox";
-import { getConfiguredEventStore } from "@server/infrastructure/configuredEventStore";
+import { getConfiguredEventStore, PUBLIC_STREAM, WRITE_MODEL_STREAM } from "@server/infrastructure/configuredEventStore";
 import {<%= givenEvent.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= aggregate %>/<%= givenEvent.fileName %>";
 import {<%= thenEvent.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= aggregate %>/<%= thenEvent.fileName %>";
 import expect from "expect";
-
+import { setMessageMetadata } from "@event-engine/messaging/message";
+import { AggregateMeta } from "@event-engine/infrastructure/AggregateRepository";
 
 @binding()
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -20,6 +21,9 @@ class <%= feature %>Steps {
     const listener = (streamName: string, events: Event[]) => {
       this.events.push(...events);
     };
+
+    this.eventStore.createStream(WRITE_MODEL_STREAM);
+    this.eventStore.createStream(PUBLIC_STREAM);
     this.eventStore.attachAppendToListener(listener);
   }
 
@@ -29,23 +33,15 @@ class <%= feature %>Steps {
       <%- givenPayload %>
     };
 
-    const event = <%= givenEvent.propertyName %>(payload);
+    let event = <%= givenEvent.propertyName %>(payload);
 
+    event = setMessageMetadata(event, AggregateMeta.ID, '<%= expectedIdentifier %>');
+    event = setMessageMetadata(event, AggregateMeta.TYPE, '<%= givenAggregateMetaType %>');
+    event = setMessageMetadata(event, AggregateMeta.VERSION, 1);
+
+    await this.eventStore.appendTo(WRITE_MODEL_STREAM, [event]);
     await this.messageBox.dispatch(event.name, event.payload, event.meta);
   }
-
-/* multiple givens via iterator like above
-  @given('Car Added To Fleet')
-  public async givenCarAddedToFleet(): Promise<void> {
-    const payload = {
-      'vehicleId': '6a76bead-46ce-4651-bea0-d8a387b2e9d0',
-    };
-
-    const event = carAddedToFleet(payload);
-
-    await this.messageBox.dispatch(event.name, event.payload, event.meta);
-  }
-*/
 
   @when('<%= when %>')
   public async when<%= whenEvent.className %>(): Promise<void> {
