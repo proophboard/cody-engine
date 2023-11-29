@@ -20,6 +20,7 @@
     "paths": {
       "@app/shared/*": ["packages/shared/src/lib/*"],
       "@cody-engine/cody/*": ["packages/cody/src/lib/*"],
+      "@cody-engine/contribution": ["packages/contribution/src"],
       "@cody-engine/contribution/*": ["packages/contribution/src/*"],
       "@cody-play/*": ["packages/play/src/*"],
       "@event-engine/descriptions/*": ["packages/descriptions/src/lib/*"],
