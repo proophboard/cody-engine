@@ -63,12 +63,12 @@ export const onAggregate = async (aggregate: Node, dispatch: PlayConfigDispatch,
       name: aggregateName,
       command: commandName,
       aggregate: {
+        ...pbInfo,
         name: aggregateName,
         identifier: aggregateStateMeta.identifier,
         collection,
         stream,
-        state: stateFQCN,
-        ...pbInfo
+        state: stateFQCN
       },
       businessRules: rules,
     })

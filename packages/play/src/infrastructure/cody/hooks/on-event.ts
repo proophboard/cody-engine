@@ -73,11 +73,11 @@ export const onEvent = async (event: Node, dispatch: PlayConfigDispatch, ctx: El
       aggregate: `${serviceNames.className}.${aggregateNames.className}`,
       event: {
         desc: ({
+          ...pbInfo,
           name: meta.fqcn,
           aggregateEvent: isAggregateEvent,
           aggregateIdentifier: aggregateStateMeta.identifier,
           aggregateState: playwithErrorCheck(playVoFQCN, [aggregateState, aggregateStateMeta, ctx]),
-          ...pbInfo
         } as AggregateEventDescription),
         schema: meta.schema,
         factory: []

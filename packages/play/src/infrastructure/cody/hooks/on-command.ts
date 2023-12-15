@@ -54,6 +54,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
       name: cmdFQCN,
       command: {
         desc: {
+          ...pbInfo,
           dependencies,
           name: cmdFQCN,
           aggregateCommand: true,
@@ -61,8 +62,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
           aggregateName: aggregateFQCN,
           aggregateIdentifier: aggregateStateMeta.identifier,
           deleteState,
-          deleteHistory,
-          ...pbInfo
+          deleteHistory
         },
         schema: meta.schema,
         uiSchema,

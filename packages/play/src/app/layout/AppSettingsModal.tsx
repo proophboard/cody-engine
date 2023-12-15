@@ -10,17 +10,26 @@ import {
   TextField,
   useTheme
 } from "@mui/material";
-import {Close, ZipDisk} from "mdi-material-ui";
+import {Close, Database, ZipDisk} from "mdi-material-ui";
 import {useContext, useEffect, useRef, useState} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import {saveConfigToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-config-to-local-storage";
 import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
 import Editor from '@monaco-editor/react';
+import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
+import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-model-store/configured-document-store";
+import {
+  saveDataToLocalStorage,
+  saveToLocalStorage
+} from "@cody-play/infrastructure/multi-model-store/save-to-local-storage";
 
 interface OwnProps {
   open: boolean;
   onClose: () => void;
 }
+
+const es = getConfiguredPlayEventStore();
+const ds = getConfiguredPlayDocumentStore();
 
 type AppSettingsModalProps = OwnProps;
 
@@ -30,6 +39,7 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
   const [appName, setAppName] = useState('');
   const [themeOptions, setThemeOptions] = useState(JSON.stringify({}, null, 2));
   const [invalidThemeOptions, setInvalidThemeOptions] = useState(false);
+  const [resetData, setResetData] = useState(false);
 
   useEffect(() => {
     setAppName(config.appName);
@@ -58,6 +68,14 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
       setInvalidThemeOptions(false);
     } catch (e) {
       setInvalidThemeOptions(true);
+    }
+  }
+
+  const handleClose = () => {
+    if(!resetData) {
+      props.onClose();
+    } else {
+      setResetData(false);
     }
   }
 
@@ -94,6 +112,16 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
       }
     }
 
+    if(resetData && boardId) {
+      (async () => {
+        await es.importStreams({});
+        await ds.importDocuments({});
+        await saveDataToLocalStorage(ds, es, boardId);
+      })().catch(e => {throw e})
+
+      setResetData(false);
+    }
+
     props.onClose();
   }
 
@@ -109,11 +137,16 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
         <Close />
       </IconButton>
     </DialogTitle>
-    <DialogContent sx={{ padding: '24px 24px' }}>
+    {resetData && <DialogContent sx={{padding: '24px 24px'}} >
+        <Alert severity={'warning'}>
+            You're going to empty the Cody Play database for the current app. Play configuration will be kept, but all data is reset. Do you really want to do it?
+        </Alert>
+    </DialogContent>}
+    {!resetData && <DialogContent sx={{padding: '24px 24px'}}>
       <Box
         component="form"
         sx={{
-          '& .MuiTextField-root': { m: "10px" },
+          '& .MuiTextField-root': {m: "10px"},
         }}
         noValidate
         autoComplete="off"
@@ -130,7 +163,8 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
         </div>
         <div style={{marginTop: "30px", marginLeft: "10px", marginRight: "10px"}}>
           <FormLabel>Theme</FormLabel>
-          {invalidThemeOptions && <Alert variant="standard" severity="error">Invalid theme options. Please check your input!</Alert>}
+          {invalidThemeOptions &&
+              <Alert variant="standard" severity="error">Invalid theme options. Please check your input!</Alert>}
           <div style={{border: '1px solid #eee'}}>
             <Editor height="200px"
                     language="json"
@@ -153,14 +187,24 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
                     }}
             />
           </div>
-          <p><small>See <a href="https://mui.com/material-ui/customization/theming/#theme-configuration-variables" target="material_ui">Material UI docs</a> for options</small></p>
+          <p><small>See <a href="https://mui.com/material-ui/customization/theming/#theme-configuration-variables"
+                           target="material_ui">Material UI docs</a> for options</small></p>
         </div>
       </Box>
-    </DialogContent>
+    </DialogContent>}
     <DialogActions>
       <Button
-        children={'Close'}
-        onClick={props.onClose}
+        children={'Reset Data'}
+        startIcon={ <Database /> }
+        color={'secondary'}
+        title={'Empty the Cody Play database, but keep configuration in place'}
+        disabled={resetData}
+        onClick={() => setResetData(true)}
+      />
+      <Box sx={{flex: '1 0 0'}} />
+      <Button
+        children={resetData? 'No' : 'Close'}
+        onClick={handleClose}
         color={'secondary'}
       />
       <Button
@@ -169,9 +213,9 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
         startIcon={ <ZipDisk />}
         sx={{ textTransform: 'none', margin: '5px' }}
         onClick={handleSave}
-        disabled={appName === config.appName && JSON.stringify(config.theme, null, 2) === themeOptions}
+        disabled={appName === config.appName && JSON.stringify(config.theme, null, 2) === themeOptions && !resetData}
       >
-        {'Save'}
+        {resetData? 'Yes' : 'Save'}
       </Button>
     </DialogActions>
   </Dialog>

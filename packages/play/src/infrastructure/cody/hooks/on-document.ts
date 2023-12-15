@@ -68,9 +68,9 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
       name: queryName,
       query: {
         desc: {
+          ...queryPbInfo,
           name: queryName,
-          returnType: voFQCN,
-          ...queryPbInfo
+          returnType: voFQCN
         },
         schema: voMeta.querySchema || {} as JSONSchema7,
         factory: []
@@ -97,34 +97,37 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
   switch (detectDescriptionType(voMeta)) {
     case "StateDescription":
       return ({
+        ...pbInfo,
         name: voName,
         hasIdentifier: true,
         identifier: voMeta.identifier,
         isList: false,
         isQueryable: false,
-        ...pbInfo
       } as StateDescription);
     case "StateListDescription":
       return ({
+        ...pbInfo,
         name: voName,
         hasIdentifier: true,
         isList: true,
         isQueryable: false,
         itemIdentifier: voMeta.identifier,
-        ...pbInfo
+
       } as StateListDescription);
     case "QueryableValueObjectDescription":
       return ({
+        ...pbInfo,
         name: voName,
         hasIdentifier: false,
         isList: voMeta.isList,
         isQueryable: true,
         query: queryName,
         collection: voMeta.collection,
-        ...pbInfo
+
       } as QueryableValueObjectDescription);
     case "QueryableStateDescription":
       return ({
+        ...pbInfo,
         name: voName,
         hasIdentifier: true,
         identifier: voMeta.identifier,
@@ -132,10 +135,11 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         isQueryable: true,
         query: queryName,
         collection: voMeta.collection,
-        ...pbInfo
+
       } as QueryableStateDescription);
     case "QueryableStateListDescription":
       return ({
+        ...pbInfo,
         name: voName,
         hasIdentifier: true,
         isList: true,
@@ -143,15 +147,15 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         itemIdentifier: voMeta.identifier,
         query: queryName,
         collection: voMeta.collection,
-        ...pbInfo
+
       } as QueryableStateListDescription);
     default:
       return ({
+        ...pbInfo,
         name: voName,
         hasIdentifier: false,
         isList: voMeta.isList,
         isQueryable: false,
-        ...pbInfo
       } as ValueObjectDescription);
   }
 }
