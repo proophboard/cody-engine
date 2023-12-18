@@ -129,5 +129,9 @@ const resolveSingleValueObjectQuery = async (desc: QueryableValueObjectDescripti
   if(result.length !== 1) {
     throw new NotFoundError(`"${desc.name}" with "${JSON.stringify(params)}" not found!`);
   }
+
+  console.log(`[CodyPlay] Performed state query "${desc.name}" {${filters}"}`, result[0]);
+
+  return result[0];
 }
 

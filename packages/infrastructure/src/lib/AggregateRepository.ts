@@ -51,6 +51,8 @@ export const AggregateMeta = {
     ID: "aggregateId",
 }
 
+export const AggregateMetaKeys = [AggregateMeta.VERSION, AggregateMeta.TYPE, AggregateMeta.ID];
+
 export class AggregateRepository<T extends {} = any> {
     public readonly aggregateType: string;
     public readonly aggregateIdentifier: string;
@@ -123,6 +125,9 @@ export class AggregateRepository<T extends {} = any> {
             evt = setMessageMetadata(evt, 'causationName', command.name);
 
             for (const k in command.meta) {
+                if(AggregateMetaKeys.includes(k)) {
+                    continue;
+                }
                 evt = setMessageMetadata(evt, k, command.meta[k]);
             }
 
