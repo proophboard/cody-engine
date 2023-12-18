@@ -35,7 +35,7 @@ export const onPolicy = async (policy: Node, dispatch: PlayConfigDispatch, ctx: 
       })
     }
 
-    const events = playwithErrorCheck(playGetSourcesOfType, [policy, NodeType.event]);
+    const events = playwithErrorCheck(playGetSourcesOfType, [policy, NodeType.event, true]);
 
     events.forEach(event => {
       event = playOriginalEvent(event, ctx);

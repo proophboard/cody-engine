@@ -39,8 +39,9 @@ export class PlayStreamListener {
       for (const policy of Object.values(policies)) {
         console.log(`[PlayStreamListener] Going to execute policy rules of "${policy.name}"`)
         try {
-          // @TODO load dependencies
-          const ctx = {event: event.payload, meta: event.meta, commandRegistry: config.commands, schemaDefinitions: config.definitions};
+          const dependencies = await playLoadDependencies(event, 'event', policy.dependencies || {}, config);
+
+          const ctx = {event: event.payload, meta: event.meta, ...dependencies, commandRegistry: config.commands, schemaDefinitions: config.definitions};
           const exe = makeAsyncExecutable(policy.rules);
           const result = await exe(ctx);
 
