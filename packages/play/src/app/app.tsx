@@ -28,6 +28,9 @@ import PendingChanges, {PendingChangesContext} from "@cody-play/infrastructure/m
 
 let currentRoutes: string[] = [];
 
+let publicListenerRef: PlayStreamListener;
+let writeModelStreamListenerRef: PlayStreamListener;
+
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
@@ -46,19 +49,18 @@ export function App() {
 
   document.title = config.appName;
 
-  const publicListenerRef = useRef<PlayStreamListener | null>(null);
-  const writeModelStreamListenerRef = useRef<PlayStreamListener | null>(null);
 
-  if(publicListenerRef.current === null) {
+
+  if(!publicListenerRef) {
     const es = getConfiguredPlayEventStore();
-    publicListenerRef.current = new PlayStreamListener(es, 'public_stream', config);
-    publicListenerRef.current?.startProcessing();
+    publicListenerRef = new PlayStreamListener(es, 'public_stream', config);
+    publicListenerRef.startProcessing();
   }
 
-  if(writeModelStreamListenerRef.current === null) {
+  if(!writeModelStreamListenerRef) {
     const es = getConfiguredPlayEventStore();
-    writeModelStreamListenerRef.current = new PlayStreamListener(es, 'write_model_stream', config);
-    writeModelStreamListenerRef.current?.startProcessing();
+    writeModelStreamListenerRef = new PlayStreamListener(es, 'write_model_stream', config);
+    writeModelStreamListenerRef.startProcessing();
   }
 
   const makeRouter = (pages: PlayPageRegistry, makeInitialRouter = false) => {
@@ -103,8 +105,8 @@ export function App() {
       }
       setRouter(makeRouter(updatedState.pages));
 
-      publicListenerRef.current?.updateConfig(updatedState);
-      writeModelStreamListenerRef.current?.updateConfig(updatedState);
+      publicListenerRef.updateConfig(updatedState);
+      writeModelStreamListenerRef.updateConfig(updatedState);
     })
 
     return () => {

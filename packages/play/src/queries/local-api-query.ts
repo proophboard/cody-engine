@@ -80,6 +80,8 @@ const resolveStateQuery = async (desc: QueryableStateDescription, factory: AnyRu
     throw new NotFoundError(`"${desc.name}" with "${desc.identifier}": "${params[desc.identifier]}" not found!`);
   }
 
+  console.log(`[CodyPlay] Performed state query "${desc.name}" {${desc.identifier}: "${params[desc.identifier]}"}`, doc);
+
   const exe = makeInformationFactory(factory);
 
   return exe(doc.state);

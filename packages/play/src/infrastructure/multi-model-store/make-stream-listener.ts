@@ -10,6 +10,7 @@ import {makeAggregateRepository} from "@cody-play/infrastructure/commands/make-c
 import {handle} from "@event-engine/infrastructure/commandHandling";
 import {Command} from "@event-engine/messaging/command";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
+import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
 
 export class PlayStreamListener {
   private readonly queue: EventQueue;
@@ -123,8 +124,7 @@ const dispatchCommand = async (command: Command, config: CodyPlayConfig): Promis
     command = setMessageMetadata(command, META_KEY_DELETE_HISTORY, true);
   }
 
-  // @TODO: load dependencies
-  const dependencies = {};
+  const dependencies = await playLoadDependencies(command, 'command', commandDesc.dependencies || {}, config);
 
   const repository = makeAggregateRepository(
     aggregate,
