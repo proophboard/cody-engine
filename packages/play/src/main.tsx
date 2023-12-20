@@ -8,8 +8,15 @@ document.title = 'Cody Play';
 
 (async () => {
   return new Promise<void>(resolve => {
-    getConfiguredPlayDocumentStore();
-    getConfiguredPlayEventStore();
+    const ds = getConfiguredPlayDocumentStore();
+    const es = getConfiguredPlayEventStore();
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    window.$CP = {
+      ds,
+      es
+    }
 
     // Wait a moment, so that DS and ES can load data from local storage
     window.setTimeout(() => resolve(), 100);

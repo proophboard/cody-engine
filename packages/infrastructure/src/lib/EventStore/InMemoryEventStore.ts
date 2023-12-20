@@ -8,6 +8,7 @@ import {
 } from "@event-engine/infrastructure/EventStore";
 import {messageFromJSON, Payload} from "@event-engine/messaging/message";
 import {Filesystem, NodeFilesystem} from "@event-engine/infrastructure/helpers/fs";
+import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";
 
 export interface InMemoryStreamStore {
   [streamName: string]: Event[];
@@ -16,10 +17,14 @@ export interface InMemoryStreamStore {
 
 
 const matchMetadata = (event: Event, metadataMatcher: MetadataMatcher): boolean => {
-  const meta = event.meta;
+  const meta = {...event.meta};
 
   for(const prop in metadataMatcher) {
     if(metadataMatcher.hasOwnProperty(prop)) {
+      if(prop === '$eventId') {
+        meta['$eventId'] = event.uuid;
+      }
+
       if(!meta.hasOwnProperty(prop)) {
         return false;
       }
@@ -197,6 +202,14 @@ export class InMemoryEventStore implements EventStore {
 
   public async exportStreams(): Promise<InMemoryStreamStore> {
     return this.streams;
+  }
+
+  public async republish(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<void> {
+    const events = await this.load(streamName, metadataMatcher, fromEventId, limit);
+
+    for await (const event of events) {
+      this.appendToListeners.forEach(l => l(streamName, [event]));
+    }
   }
 
   private persistOnDiskIfEnabled () {
