@@ -10,6 +10,7 @@ import {Event, EventMeta} from "@event-engine/messaging/event";
 import {AggregateMeta} from "@event-engine/infrastructure/AggregateRepository";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {Payload} from "@event-engine/messaging/message";
+import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
 
 interface Row<P,M> {
   no: number;
@@ -107,7 +108,15 @@ export class PostgresEventStore implements EventStore {
       return false;
     }
 
-    await this.db.query(query, bindings);
+    try {
+      await this.db.query(query, bindings);
+    } catch (err: any) {
+      if(err.code && (err.code == "23505" || err.code == "23000")) {
+        throw new ConcurrencyError(`Concurrency exception. Expected stream version does not match. Expected ${expectedVersion} for stream ${streamName} with metadata matcher ${JSON.stringify(metadataMatcher)}.`);
+      }
+
+      throw err;
+    }
 
     this.triggerAppendToListeners(streamName, events);
 

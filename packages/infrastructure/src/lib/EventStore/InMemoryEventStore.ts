@@ -9,6 +9,7 @@ import {
 import {messageFromJSON, Payload} from "@event-engine/messaging/message";
 import {Filesystem, NodeFilesystem} from "@event-engine/infrastructure/helpers/fs";
 import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";
+import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
 
 export interface InMemoryStreamStore {
   [streamName: string]: Event[];
@@ -116,8 +117,7 @@ export class InMemoryEventStore implements EventStore {
 
 
       if(existingEvts.length !== expectedVersion) {
-        throw Error(`Concurrency exception. Expected stream version does not match. Expected ${expectedVersion} for stream ${streamName} with metadata matcher ${JSON.stringify(metadataMatcher)}. But current version is ${existingEvts.length}`);
-
+        throw new ConcurrencyError(`Concurrency exception. Expected stream version does not match. Expected ${expectedVersion} for stream ${streamName} with metadata matcher ${JSON.stringify(metadataMatcher)}. But current version is ${existingEvts.length}`);
       }
     }
 

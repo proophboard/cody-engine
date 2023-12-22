@@ -12,6 +12,7 @@ import {
 import {MessageBus} from "@server/infrastructure/MessageBus";
 import {setMessageMetadata} from "@event-engine/messaging/message";
 import {META_KEY_DELETE_HISTORY, META_KEY_DELETE_STATE} from "@event-engine/infrastructure/AggregateRepository";
+import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
 
 export const SERVICE_NAME_COMMAND_BUS = '$CommandBus';
 
@@ -42,7 +43,16 @@ class CommandBus extends MessageBus {
       command = setMessageMetadata(command, META_KEY_DELETE_HISTORY, true);
     }
 
-    return handle(command, handler, repositories[desc.aggregateName], desc.newAggregate, deps);
+    try {
+      return handle(command, handler, repositories[desc.aggregateName], desc.newAggregate, deps);
+    } catch (e) {
+      if(e instanceof ConcurrencyError) {
+        // Try again
+        return handle(command, handler, repositories[desc.aggregateName], desc.newAggregate, deps);
+      }
+
+      throw e;
+    }
   }
 
   private async dispatchNonAggregateCommand(command: Command, handler: CommandHandler, desc: CommandDescription, deps: any): Promise<boolean> {
