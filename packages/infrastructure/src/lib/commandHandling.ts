@@ -49,5 +49,5 @@ export async function handle<C extends Payload = any, E extends Payload = any, S
         events.push(event);
     }
 
-    return repository.save(events, state, expectedVersion, command);
+    return await repository.save(events, state, expectedVersion, command);
 }

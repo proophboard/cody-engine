@@ -30,22 +30,30 @@ export class InMemoryMultiModelStore implements MultiModelStore {
   async commitSession(session: Session): Promise<boolean> {
     session.commit();
 
-    session.getAppendEventsTasks().forEach(task => this.eventStore.appendTo(
-      task.streamName,
-      task.events,
-      task.metadataMatcher,
-      task.expectedVersion
-    ));
+    for (const appendEventsTask of session.getAppendEventsTasks()) {
+      await this.eventStore.appendTo(
+        appendEventsTask.streamName,
+        appendEventsTask.events,
+        appendEventsTask.metadataMatcher,
+        appendEventsTask.expectedVersion
+      )
+    }
 
-    session.getDeleteEventsTasks().forEach(task => this.eventStore.delete(task.streamName, task.metadataMatcher));
+    for (const deleteEventsTask of session.getDeleteEventsTasks()) {
+      await this.eventStore.delete(deleteEventsTask.streamName, deleteEventsTask.metadataMatcher);
+    }
 
-    session.getUpsertDocumentTasks().forEach(task => this.documentStore.upsertDoc(
-      task.collectionName,
-      task.docId,
-      task.doc
-    ));
+    for (const upsertDocumentTask of session.getUpsertDocumentTasks()) {
+      await this.documentStore.upsertDoc(
+        upsertDocumentTask.collectionName,
+        upsertDocumentTask.docId,
+        upsertDocumentTask.doc
+      )
+    }
 
-    session.getDeleteDocumentTasks().forEach(task => this.documentStore.deleteDoc(task.collectionName, task.docId));
+    for (const deleteDocumentTask of session.getDeleteDocumentTasks()) {
+      await this.documentStore.deleteDoc(deleteDocumentTask.collectionName, deleteDocumentTask.docId);
+    }
 
     return true;
   }

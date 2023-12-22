@@ -44,7 +44,7 @@ class CommandBus extends MessageBus {
     }
 
     try {
-      return handle(command, handler, repositories[desc.aggregateName], desc.newAggregate, deps);
+      return await handle(command, handler, repositories[desc.aggregateName], desc.newAggregate, deps);
     } catch (e) {
       if(e instanceof ConcurrencyError) {
         // Try again

@@ -179,7 +179,7 @@ export class AggregateRepository<T extends {} = any> {
             session.appendEventsTo(this.publicStream, publicEvents);
         }
 
-        return this.store.commitSession(session);
+        return await this.store.commitSession(session);
     }
 
     public async loadState(aggregateId: string, untilVersion?: number): Promise<[T, number]> {
