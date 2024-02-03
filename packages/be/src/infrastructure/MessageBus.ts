@@ -34,6 +34,19 @@ export class MessageBus {
 
       switch (dep.type) {
         case "query":
+          if(dep.options?.query) {
+            const payload: Record<string, any> = {};
+
+            const messageDep: Record<string, object> = {};
+            messageDep[type] = message.payload;
+
+            for (const prop in dep.options.query) {
+              payload[prop] = await jexl.eval(dep.options.query[prop], {...loadedDependencies, ...messageDep});
+            }
+
+            dep.options.query = payload;
+          }
+
           loadedDependencies[depName] = await this.loadQueryDependency(dependencyKey, message, dep.options);
           break;
         case "service":
@@ -54,8 +67,9 @@ export class MessageBus {
 
     const queryRuntimeInfo = queries[queryName];
     const keyMapping = options?.mapping || {};
+    const queryPayload = options?.query || message.payload;
 
-    const query = queryRuntimeInfo.factory(determineQueryPayload(message.payload, queryRuntimeInfo, keyMapping), message.meta);
+    const query = queryRuntimeInfo.factory(determineQueryPayload(queryPayload, queryRuntimeInfo, keyMapping), message.meta);
 
     return await getConfiguredMessageBox().queryBus.dispatch(query, queryRuntimeInfo.desc);
   }
