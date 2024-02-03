@@ -222,6 +222,14 @@ export class PostgresEventStore implements EventStore {
     return result.rowCount;
   }
 
+  public async republish(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<void> {
+    const events = await this.load(streamName, metadataMatcher, fromEventId, limit);
+
+    for await (const event of events) {
+      this.appendToListeners.forEach(l => l(streamName, [event]));
+    }
+  }
+
   public attachAppendToListener(listener: AppendToListener): void {
     if(!this.appendToListeners.includes(listener)) {
       this.appendToListeners.push(listener);
@@ -238,6 +246,10 @@ export class PostgresEventStore implements EventStore {
 
   private matchObjectToWhereClause(prop: string, valuePos: number, matcher: MatchObject | string): [string, any] {
     matcher = checkMatchObject(matcher);
+
+    if(prop === '$eventId') {
+      return [`uuid = $${valuePos}`, matcher.val];
+    }
 
     switch (matcher.op) {
       case MatchOperator.EQ:
