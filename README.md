@@ -27,6 +27,10 @@ This will start:
 - Webpack Dev Server + API Proxy serving React Frontend on: [http://localhost:4200](http://localhost:4200)
 - Cody Server on default port: [http://localhost:3311](http://localhost:3311)
 
+## Prepare Database
+
+`npx nx run be:preparedb`
+
 ## Push to your own repo
 
 If you want to keep a connection to the upstream repo `cody-engine` you can do:
@@ -109,6 +113,14 @@ npm run test-fe
 
 ```shell
 npm run test-shared
+```
+
+## Republish Events
+
+Useful during development to test new policies or trigger events in production again
+
+```shell
+npx nx run be:republish --eventid <EventId>
 ```
 
 ## Contribution
