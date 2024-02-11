@@ -4,14 +4,17 @@ import {CommandRuntimeInfo} from "@event-engine/messaging/command";
 import {EventRuntimeInfo} from "@event-engine/messaging/event";
 import {queries} from "@app/shared/queries";
 import {QueryRuntimeInfo} from "@event-engine/messaging/query";
-import {CommandBus, EventBus, QueryBus} from "@server/infrastructure/types";
 import {getExternalService} from "@server/extensions/get-external-service";
 import {getConfiguredCommandBus, SERVICE_NAME_COMMAND_BUS} from "@server/infrastructure/configuredCommandBus";
 import {getConfiguredQueryBus, SERVICE_NAME_QUERY_BUS} from "@server/infrastructure/configuredQueryBus";
 import {getConfiguredEventBus, SERVICE_NAME_EVENT_BUS} from "@server/infrastructure/configuredEventBus";
 import {Meta, Payload} from "@event-engine/messaging/message";
+import {CommandBus} from "@event-engine/messaging/command-bus";
+import {EventBus} from "@event-engine/messaging/event-bus";
+import {QueryBus} from "@event-engine/messaging/query-bus";
+import {MessageBox} from "@event-engine/messaging/message-box";
 
-class MessageBox {
+class InternalMessageBox implements MessageBox{
 
   public commandBus: CommandBus;
   public eventBus: EventBus;
@@ -87,7 +90,7 @@ let messageBox: MessageBox;
 
 export const getConfiguredMessageBox = (): MessageBox => {
   if(!messageBox) {
-    messageBox = new MessageBox();
+    messageBox = new InternalMessageBox();
   }
 
   return messageBox;

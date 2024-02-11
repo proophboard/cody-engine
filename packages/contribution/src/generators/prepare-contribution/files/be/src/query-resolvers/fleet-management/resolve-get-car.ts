@@ -8,12 +8,12 @@ import {CarDesc} from "@app/shared/types/fleet-management/car/car.desc";
 export const resolveGetCar = async (query: Query<GetCar>): Promise<Car> => {
   const ds = getConfiguredDocumentStore();
 
-  const doc = await ds.getDoc<{state: Car}>(CarDesc.collection, query.payload.vehicleId);
-  
+  const doc = await ds.getDoc<Car>(CarDesc.collection, query.payload.vehicleId);
+
   if(!doc) {
     throw new NotFoundError(`Car with vehicleId: "${query.payload.vehicleId}" not found!`);
   }
-  
-  return car(doc.state);
+
+  return car(doc);
 
 }

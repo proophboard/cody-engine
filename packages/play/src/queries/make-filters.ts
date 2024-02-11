@@ -102,16 +102,16 @@ export const makeFiltersFromQuerySchema = (schema: JSONSchema7, params: any, use
 
 export const mapOrderByProp = (orderBy: SortOrderItem): SortOrderItem => {
   return {
-    prop: `state.${orderBy.prop}`,
+    prop: `${orderBy.prop}`,
     sort: orderBy.sort
   }
 }
 
 const makeEqFilterFromProperty = (prop: string, params: any): DSFilter => {
-  return new filters.EqFilter(`state.${prop}`, params[prop] || '$codyplay__not_set_value__');
+  return new filters.EqFilter(`${prop}`, params[prop] || '$codyplay__not_set_value__');
 }
 
-const makeFilter = (filter: Filter, ctx: any): DSFilter => {
+export const makeFilter = (filter: Filter, ctx: any): DSFilter => {
   if(isAndFilter(filter)) {
     const mappedFilters = filter.and.map(f => makeFilter(f, ctx));
 
@@ -141,7 +141,7 @@ const makeFilter = (filter: Filter, ctx: any): DSFilter => {
   }
 
   if(isAnyOfFilter(filter)) {
-    return new filters.AnyOfFilter(`state.${filter.anyOf.prop}`, execExpr(filter.anyOf.valueList, ctx));
+    return new filters.AnyOfFilter(`${filter.anyOf.prop}`, execExpr(filter.anyOf.valueList, ctx));
   }
 
   if(isDocIdFilter(filter)) {
@@ -149,35 +149,35 @@ const makeFilter = (filter: Filter, ctx: any): DSFilter => {
   }
 
   if(isEqFilter(filter)) {
-    return new filters.EqFilter(`state.${filter.eq.prop}`, execExpr(filter.eq.value, ctx));
+    return new filters.EqFilter(`${filter.eq.prop}`, execExpr(filter.eq.value, ctx));
   }
 
   if(isExistsFilter(filter)) {
-    return new filters.ExistsFilter(`state.${filter.exists.prop}`);
+    return new filters.ExistsFilter(`${filter.exists.prop}`);
   }
 
   if(isGteFilter(filter)) {
-    return new filters.GteFilter(`state.${filter.gte.prop}`, execExpr(filter.gte.value, ctx));
+    return new filters.GteFilter(`${filter.gte.prop}`, execExpr(filter.gte.value, ctx));
   }
 
   if(isGtFilter(filter)) {
-    return new filters.GtFilter(`state.${filter.gt.prop}`, execExpr(filter.gt.value, ctx));
+    return new filters.GtFilter(`${filter.gt.prop}`, execExpr(filter.gt.value, ctx));
   }
 
   if(isInArrayFilter(filter)) {
-    return new filters.InArrayFilter(`state.${filter.inArray.prop}`, execExpr(filter.inArray.value, ctx));
+    return new filters.InArrayFilter(`${filter.inArray.prop}`, execExpr(filter.inArray.value, ctx));
   }
 
   if(isLikeFilter(filter)) {
-    return new filters.LikeFilter(`state.${filter.like.prop}`, execExpr(filter.like.value, ctx));
+    return new filters.LikeFilter(`${filter.like.prop}`, execExpr(filter.like.value, ctx));
   }
 
   if(isLteFilter(filter)) {
-    return new filters.LteFilter(`state.${filter.lte.prop}`, execExpr(filter.lte.value, ctx));
+    return new filters.LteFilter(`${filter.lte.prop}`, execExpr(filter.lte.value, ctx));
   }
 
   if(isLtFilter(filter)) {
-    return new filters.LtFilter(`state.${filter.lt.prop}`, execExpr(filter.lt.value, ctx));
+    return new filters.LtFilter(`${filter.lt.prop}`, execExpr(filter.lt.value, ctx));
   }
 
   return makeAnyFilter();

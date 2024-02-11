@@ -12,11 +12,11 @@ import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 export const resolveGetCarList = async (query: Query<GetCarList>): Promise<CarList> => {
   const ds = getConfiguredDocumentStore();
 
-  const cursor = await ds.findDocs<{state: Car}>(
+  const cursor = await ds.findDocs<Car>(
     CarListDesc.collection,
     new AnyFilter()
   );
-  
-  return asyncIteratorToArray(asyncMap(cursor, ([,d]) => car(d.state)));
+
+  return asyncIteratorToArray(asyncMap(cursor, ([,d]) => car(d)));
 
 }

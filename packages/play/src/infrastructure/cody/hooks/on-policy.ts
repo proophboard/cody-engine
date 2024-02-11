@@ -13,6 +13,15 @@ import {alwaysTriggerCommand} from "@cody-engine/cody/hooks/utils/policy/always-
 import {playOriginalEvent} from "@cody-play/infrastructure/cody/event/play-original-event";
 import {playEventMetadata} from "@cody-play/infrastructure/cody/event/play-event-metadata";
 import {playUpdateProophBoardInfo} from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
+import {normalizeProjectionRules} from "@cody-play/infrastructure/rule-engine/normalize-projection-rules";
+import {visitRulesThen} from "@cody-engine/cody/hooks/utils/rule-engine/visit-rule-then";
+import {
+  isDeleteInformation,
+  isInsertInformation, isReplaceInformation,
+  isUpdateInformation,
+  isUpsertInformation
+} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {DEFAULT_READ_MODEL_PROJECTION} from "@event-engine/infrastructure/Projection/types";
 
 export const onPolicy = async (policy: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -22,7 +31,26 @@ export const onPolicy = async (policy: Node, dispatch: PlayConfigDispatch, ctx: 
     const policyName = `${serviceNames.className}.${policyNames.className}`;
     const meta = playwithErrorCheck(playEventPolicyMetadata, [policy, ctx]);
     const dependencies = meta.dependencies || {};
-    const rules = meta.rules || [];
+    const rules = normalizeProjectionRules(meta.rules || [], service, config);
+    const isLiveProjection = !!meta.live;
+
+    let isProjection = false;
+
+    visitRulesThen(rules, then => {
+      switch (true) {
+        case isInsertInformation(then):
+        case isUpsertInformation(then):
+        case isUpdateInformation(then):
+        case isReplaceInformation(then):
+        case isDeleteInformation(then):
+          isProjection = true;
+          break
+      }
+
+      return then;
+    })
+
+    const projectionName = isProjection? meta.projection || DEFAULT_READ_MODEL_PROJECTION : undefined;
 
     if(rules.length === 0) {
       const commands = playwithErrorCheck(playGetTargetsOfType, [policy, NodeType.command]);
@@ -51,6 +79,8 @@ export const onPolicy = async (policy: Node, dispatch: PlayConfigDispatch, ctx: 
           name: policyName,
           rules,
           dependencies,
+          live: isLiveProjection,
+          projection: projectionName
         }
       })
     })

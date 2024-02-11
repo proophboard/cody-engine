@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {DocumentStore, PartialSelect, SortOrder} from "@event-engine/infrastructure/DocumentStore";
 import {asyncEmptyIterator} from "@event-engine/infrastructure/helpers/async-empty-iterator";
@@ -5,12 +6,13 @@ import {InMemoryFilterProcessor} from "@event-engine/infrastructure/DocumentStor
 import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
 import {areValuesEqualForAllSorts, getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
 import {Filesystem, NodeFilesystem} from "@event-engine/infrastructure/helpers/fs";
+import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";
 
-export type Documents = {[collectionName: string]: {[docId: string]: object}};
+export type Documents = {[collectionName: string]: {[docId: string]: {doc: object, version: number}}};
 
 export class InMemoryDocumentStore implements DocumentStore {
   private documents: Documents = {};
-  private readonly persistOnDisk: boolean;
+  private persistOnDisk: boolean;
   private readonly storageFile: string;
   private readonly filterProcessor: InMemoryFilterProcessor;
   private readonly fs: Filesystem;
@@ -27,7 +29,7 @@ export class InMemoryDocumentStore implements DocumentStore {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      this.documents = require(this.storageFile).documents;
+      this.documents = this.migrateDocs(require(this.storageFile).documents);
     }
   }
 
@@ -59,17 +61,21 @@ export class InMemoryDocumentStore implements DocumentStore {
   public async dropCollectionIndex(collectionName: string, index: Index): Promise<void> {
   }
 
-  public async addDoc(collectionName: string, docId: string, doc: object): Promise<void> {
+  public async addDoc(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): Promise<void> {
     if (!this.documents.hasOwnProperty(collectionName)) {
       this.documents[collectionName] = {};
     }
 
-    this.documents[collectionName][docId] = doc;
+    if(!version) {
+      version = 1;
+    }
+
+    this.documents[collectionName][docId] = {doc: {...doc}, version};
 
     this.persistOnDiskIfEnabled();
   }
 
-  public async updateDoc(collectionName: string, docId: string, docOrSubset: object): Promise<void> {
+  public async updateDoc(collectionName: string, docId: string, docOrSubset: object, metadata?: object, version?: number): Promise<void> {
     if (!this.documents.hasOwnProperty(collectionName)) {
       this.documents[collectionName] = {};
     }
@@ -78,21 +84,26 @@ export class InMemoryDocumentStore implements DocumentStore {
       throw new Error("Cannot update document with id: " + docId + ". No document found.");
     }
     const doc = this.documents[collectionName][docId];
-    this.documents[collectionName][docId] = {...doc, ...docOrSubset};
+
+    if(!version) {
+      version = doc.version + 1;
+    }
+
+    this.documents[collectionName][docId] = {doc: {...doc.doc, ...docOrSubset}, version};
 
     this.persistOnDiskIfEnabled();
   }
 
-  public async upsertDoc(collectionName: string, docId: string, doc: object): Promise<void> {
+  public async upsertDoc(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): Promise<void> {
     if (await this.getDoc(collectionName, docId)) {
-      await this.updateDoc(collectionName, docId, doc);
+      await this.updateDoc(collectionName, docId, doc, metadata, version);
       return;
     }
 
-    await this.addDoc(collectionName, docId, doc);
+    await this.addDoc(collectionName, docId, doc, metadata, version);
   }
 
-  public async replaceDoc(collectionName: string, docId: string, doc: object): Promise<void> {
+  public async replaceDoc(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): Promise<void> {
     if (!this.documents.hasOwnProperty(collectionName)) {
       this.documents[collectionName] = {};
     }
@@ -101,7 +112,13 @@ export class InMemoryDocumentStore implements DocumentStore {
       throw new Error("Cannot update document with id: " + docId + ". No document found.");
     }
 
-    this.documents[collectionName][docId] = {...doc};
+    const existingDoc = this.documents[collectionName][docId];
+
+    if(!version) {
+      version = existingDoc.version + 1;
+    }
+
+    this.documents[collectionName][docId] = {doc: {...doc}, version};
 
     this.persistOnDiskIfEnabled();
   }
@@ -115,11 +132,35 @@ export class InMemoryDocumentStore implements DocumentStore {
       return null;
     }
 
-    return this.documents[collectionName][docId] as D;
+    return this.documents[collectionName][docId].doc as D;
   }
 
   public async getPartialDoc<D extends object>(collectionName: string, docId: string, partialSelect: PartialSelect): Promise<D | null> {
     return new Promise(resolve => resolve(null));
+  }
+
+  public async getDocAndVersion<D extends object>(collectionName: string, docId: string): Promise<{doc: D, version: number} | null> {
+    if(!this.documents.hasOwnProperty(collectionName)) {
+      return null;
+    }
+
+    if(!this.documents[collectionName].hasOwnProperty(docId)) {
+      return null;
+    }
+
+    return this.documents[collectionName][docId] as {doc: D, version: number};
+  }
+
+  public async getDocVersion<D extends object>(collectionName: string, docId: string): Promise<number | null> {
+    if(!this.documents.hasOwnProperty(collectionName)) {
+      return null;
+    }
+
+    if(!this.documents[collectionName].hasOwnProperty(docId)) {
+      return null;
+    }
+
+    return this.documents[collectionName][docId].version;
   }
 
   public async deleteDoc(collectionName: string, docId: string): Promise<void> {
@@ -134,16 +175,37 @@ export class InMemoryDocumentStore implements DocumentStore {
     this.persistOnDiskIfEnabled();
   }
 
-  public async updateMany(collectionName: string, filter: any, set: object): Promise<void> {
+  public async updateMany(collectionName: string, filter: Filter, set: object, metadata?: object, version?: number): Promise<void> {
+    const docs = await asyncIteratorToArray(await this.findDocs(collectionName, filter));
+
+    for (const [docId, doc] of docs) {
+      await this.updateDoc(collectionName, docId, set, metadata, version);
+    }
+
+    return;
   }
 
-  public async replaceMany(collectionName: string, filter: any, set: object): Promise<void> {
+  public async replaceMany(collectionName: string, filter: Filter, set: object, metadata?: object, version?: number): Promise<void> {
+    const docs = await asyncIteratorToArray(await this.findDocs(collectionName, filter));
+
+    for (const [docId, doc] of docs) {
+      await this.replaceDoc(collectionName, docId, set, metadata, version);
+    }
+
+    return;
   }
 
   public async deleteMany(collectionName: string, filter: Filter): Promise<void> {
+    const docs = await asyncIteratorToArray(await this.findDocs(collectionName, filter));
+
+    for (const [docId, doc] of docs) {
+      await this.deleteDoc(collectionName, docId);
+    }
+
+    return;
   }
 
-  public async findDocs<D extends object>(collectionName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<AsyncIterable<[string, D]>> {
+  public async findDocs<D extends object>(collectionName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<AsyncIterable<[string, D, number]>> {
     if(!this.documents.hasOwnProperty(collectionName)) {
       return asyncEmptyIterator(); // @todo supposed to not throw an error?
     }
@@ -153,7 +215,7 @@ export class InMemoryDocumentStore implements DocumentStore {
     }
 
     let count = 0;
-    const resultSet: [string, D][] = [];
+    const resultSet: [string, D, number][] = [];
 
     const filterFunction = this.filterProcessor.process(filter);
 
@@ -162,7 +224,7 @@ export class InMemoryDocumentStore implements DocumentStore {
         continue;
       }
 
-      const doc = this.documents[collectionName][docId] as D;
+      const doc = this.documents[collectionName][docId] as {doc: D, version: number};
 
       if(!filterFunction(doc, docId)) {
         continue;
@@ -172,7 +234,7 @@ export class InMemoryDocumentStore implements DocumentStore {
       if(skip && count <= skip) continue;
       if(limit && (count - skip) > limit) break;
 
-      resultSet.push([docId, doc]);
+      resultSet.push([docId, doc.doc, doc.version]);
     }
 
     if(orderBy) {
@@ -215,7 +277,7 @@ export class InMemoryDocumentStore implements DocumentStore {
     return iter();
   }
 
-  public async findPartialDocs<D extends object>(collectionName: string, partialSelect: PartialSelect, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<AsyncIterable<[string, D]>> {
+  public async findPartialDocs<D extends object>(collectionName: string, partialSelect: PartialSelect, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<AsyncIterable<[string, D, number]>> {
     return undefined as any;
   }
 
@@ -246,12 +308,58 @@ export class InMemoryDocumentStore implements DocumentStore {
     return counter;
   }
 
+  public disableDiskStorage(): void {
+    this.persistOnDisk = false;
+  }
+
+  public enableDiskStorage(): void {
+    this.persistOnDisk = this.storageFile !== '//memory'
+  }
+
+  public flush(): void {
+    this.persistOnDiskIfEnabled();
+  }
+
   public async importDocuments(documents: Documents): Promise<void> {
-    this.documents = documents;
+    this.documents = this.migrateDocs(documents);
   }
 
   public async exportDocuments(): Promise<Documents> {
     return this.documents;
+  }
+
+  private migrateDocs(documents: Documents): Documents {
+    // Keep BC, convert old format (without dedicated version property) to new format
+    // This mostly influences aggregate state, because the aggregate version was stored as part of the document
+    // whereas now: state is becoming the doc itself and version is stored in new version property
+    // Read Models also have a version now that gets incremented on update
+    for (const collection in documents) {
+      const collectionDocs = documents[collection];
+
+      const firstDoc: any = Object.values(collectionDocs)[0];
+
+      if(firstDoc && firstDoc.state) {
+        for (const docId in collectionDocs) {
+          collectionDocs[docId] = ((doc: any) => {
+            if(doc.state) {
+              return {
+                doc: doc.state,
+                version: doc.version || 1
+              }
+            } else {
+              return {
+                doc,
+                version: 1
+              }
+            }
+          })(collectionDocs[docId])
+
+        }
+        documents[collection] = collectionDocs;
+      }
+    }
+
+    return documents;
   }
 
   private persistOnDiskIfEnabled() {

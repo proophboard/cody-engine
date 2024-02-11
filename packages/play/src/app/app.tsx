@@ -18,18 +18,32 @@ import React, {useContext, useEffect, useRef, useState} from "react";
 import {SnackbarProvider} from "notistack";
 import ScrollToTop from "@frontend/app/components/core/ScrollToTop";
 import User from "@frontend/app/providers/User";
-import {addAfterDispatchListener, clearAfterDispatchListener, PlayConfigProvider, configStore} from "@cody-play/state/config-store";
+import {
+  addAfterDispatchListener,
+  clearAfterDispatchListener,
+  PlayConfigProvider,
+  configStore,
+  CodyPlayConfig
+} from "@cody-play/state/config-store";
 import {PlayPageRegistry} from "@cody-play/state/types";
 import CodyMessageServerInjection from "@cody-play/app/components/core/CodyMessageServer";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
 import {PlayStreamListener} from "@cody-play/infrastructure/multi-model-store/make-stream-listener";
 import PlayToggleColorMode from "@cody-play/app/layout/PlayToggleColorMode";
 import PendingChanges, {PendingChangesContext} from "@cody-play/infrastructure/multi-model-store/PendingChanges";
+import {MessageBox} from "@event-engine/messaging/message-box";
+import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";
+import {PlayMessageBox} from "@cody-play/infrastructure/message-box/play-message-box";
+import {
+  getConfiguredPlayReadModelProjector
+} from "@cody-play/infrastructure/multi-model-store/configured-play-read-model-projector";
 
 let currentRoutes: string[] = [];
+let messageBoxRef: PlayMessageBox;
 
-let publicListenerRef: PlayStreamListener;
-let writeModelStreamListenerRef: PlayStreamListener;
+const updateGlobalProjector = (config: CodyPlayConfig) => {
+  (window as any).$CP.projector = getConfiguredPlayReadModelProjector(config);
+}
 
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
@@ -51,16 +65,15 @@ export function App() {
 
 
 
-  if(!publicListenerRef) {
+  if(!messageBoxRef) {
     const es = getConfiguredPlayEventStore();
-    publicListenerRef = new PlayStreamListener(es, 'public_stream', config);
-    publicListenerRef.startProcessing();
-  }
+    messageBoxRef = getConfiguredPlayMessageBox(config);
+    const PublicStreamListener = new PlayStreamListener(es, 'public_stream', messageBoxRef);
+    PublicStreamListener.startProcessing();
 
-  if(!writeModelStreamListenerRef) {
-    const es = getConfiguredPlayEventStore();
-    writeModelStreamListenerRef = new PlayStreamListener(es, 'write_model_stream', config);
-    writeModelStreamListenerRef.startProcessing();
+    const writeModelStreamListener = new PlayStreamListener(es, 'write_model_stream', messageBoxRef);
+    writeModelStreamListener.startProcessing();
+    updateGlobalProjector(config);
   }
 
   const makeRouter = (pages: PlayPageRegistry, makeInitialRouter = false) => {
@@ -105,8 +118,8 @@ export function App() {
       }
       setRouter(makeRouter(updatedState.pages));
 
-      publicListenerRef.updateConfig(updatedState);
-      writeModelStreamListenerRef.updateConfig(updatedState);
+      messageBoxRef.updateConfig(updatedState);
+      updateGlobalProjector(updatedState);
     })
 
     return () => {

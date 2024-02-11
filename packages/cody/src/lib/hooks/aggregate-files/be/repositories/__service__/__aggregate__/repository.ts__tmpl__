@@ -7,19 +7,36 @@ import {<%= aggregateStateNames.className %>, <%= aggregateStateNames.propertyNa
 import {eventReducerExtensions} from "@server/extensions/event-reducers";
 import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
 import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {
+  INFORMATION_SERVICE_NAME,
+  InformationService
+} from "@server/infrastructure/information-service/information-service";
+import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 
-const store = getConfiguredMultiModelStore();
-const authService = getExternalServiceOrThrow<AuthService>('AuthService', {});
+let repository: AggregateRepository<<%= aggregateStateNames.className %>>;
 
-const repository = new AggregateRepository<<%= aggregateStateNames.className %>>(
-  store,
-  <%= serviceNames.className %><%= className %>AggregateDesc.stream || WRITE_MODEL_STREAM,
-  <%= serviceNames.className %><%= className %>AggregateDesc.collection,
-  <%= serviceNames.className %><%= className %>AggregateDesc.name,
-  <%= serviceNames.className %><%= className %>AggregateDesc.identifier,
-  {...applyFunctions, ...eventReducerExtensions},
-  <%= aggregateStateNames.propertyName %>,
-  authService
-);
+const factory = (): AggregateRepository<<%= aggregateStateNames.className %>> => {
+  if(!repository) {
+    const store = getConfiguredMultiModelStore();
+    const authService = getExternalServiceOrThrow<AuthService>('AuthService', {});
+    const infoService = getExternalServiceOrThrow<InformationService>(INFORMATION_SERVICE_NAME, {});
+    const messageBox = getConfiguredMessageBox();
 
-export default repository;
+    repository = new AggregateRepository<<%= aggregateStateNames.className %>>(
+      store,
+      <%= serviceNames.className %><%= className %>AggregateDesc.stream || WRITE_MODEL_STREAM,
+      <%= serviceNames.className %><%= className %>AggregateDesc.collection,
+      <%= serviceNames.className %><%= className %>AggregateDesc.name,
+      <%= serviceNames.className %><%= className %>AggregateDesc.identifier,
+      {...applyFunctions, ...eventReducerExtensions},
+      <%= aggregateStateNames.propertyName %>,
+      authService,
+      infoService,
+      messageBox
+    );
+  }
+
+  return repository;
+}
+
+export default factory;

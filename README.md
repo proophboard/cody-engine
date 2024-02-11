@@ -123,6 +123,17 @@ Useful during development to test new policies or trigger events in production a
 npx nx run be:republish --eventid <EventId>
 ```
 
+## Trigger Projection with event
+
+Useful during development to test new projections or trigger events in production again
+
+```shell
+npx nx run be:project --eventid <EventId> --name <ProjectionName>
+```
+
+`--name` is optional and defaults to: "read_model"
+
+
 ## Contribution
 
 This repository is a skeleton for a Cody Engine app that has batteries included. This means, that Cody will

@@ -6,6 +6,7 @@ import {PostgresIndexProcessor} from "@event-engine/infrastructure/DocumentStore
 import {MetadataFieldIndex} from "@event-engine/infrastructure/DocumentStore/Index/MetadataFieldIndex";
 
 export const PARTIAL_SELECT_DOC_ID = '__partial_sel_doc_id__';
+export const PARTIAL_SELECT_DOC_VERSION = '__partial_sel_doc_v__'
 export const PARTIAL_SELECT_MERGE = '__partial_sel_merge__';
 
 export const RESERVED_ALIASES = [
@@ -25,23 +26,33 @@ export class PostgresQueryBuilder {
     this.indexProcessor = indexProcessor;
   }
 
-  public makeAddDocQuery(collectionName: string, docId: string, doc: object, metadata?: object): PostgresQuery {
-    const { metaKeys, metaValues, metaBindings } = this.extractMetadata(3, metadata);
+  public makeAddDocQuery(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): PostgresQuery {
+    const { metaKeys, metaValues, metaBindings } = this.extractMetadata(4, metadata);
+
+    if(!version) {
+      version = 1;
+    }
 
     const queryString = `
-      INSERT INTO ${this.tableName(collectionName)} (id, doc ${metaKeys})
-      VALUES ($1, $2 ${metaBindings})
+      INSERT INTO ${this.tableName(collectionName)} (id, doc, version ${metaKeys})
+      VALUES ($1, $2, $3 ${metaBindings})
     `;
 
-    const bindings = [docId, doc, ...metaValues];
+    const bindings = [docId, doc, version, ...metaValues];
 
     return [queryString, bindings];
   }
 
-  public makeUpdateDocQuery(collectionName: string, docId: string, docOrSubset: object, metadata?: object): PostgresQuery {
+  public makeUpdateDocQuery(collectionName: string, docId: string, docOrSubset: object, metadata?: object, version?: number): PostgresQuery {
     const bindings = [docId, docOrSubset];
 
-    const metaUpdate = this.applyMetadataForUpdate(bindings, metadata);
+    let metaUpdate = this.applyMetadataForUpdate(bindings, metadata);
+
+    if(version) {
+      metaUpdate += `, version = $${bindings.push(version.toString())}`
+    } else {
+      metaUpdate += ', version = version + 1'
+    }
 
     const queryString = `
       UPDATE ${this.tableName(collectionName)}
@@ -52,24 +63,35 @@ export class PostgresQueryBuilder {
     return [queryString, bindings];
   }
 
-  public makeUpdateManyQuery(collectionName: string, filter: Filter, set: object): PostgresQuery {
+  public makeUpdateManyQuery(collectionName: string, filter: Filter, set: object, metadata?: object, version?: number): PostgresQuery {
     const filterClause = this.filterProcessor.process(filter);
     let argumentCounter = filterClause[1].length;
 
+    const bindings = [...filterClause[1], JSON.stringify(set)];
+
+    let metaUpdate = this.applyMetadataForUpdate(bindings, metadata);
+
+    if(version) {
+      metaUpdate += `, version = $${bindings.push(version.toString())}`
+    } else {
+      metaUpdate += ', version = version + 1'
+    }
+
     const queryString = `
       UPDATE ${this.tableName(collectionName)}
-      SET doc = (to_jsonb(doc) || $${++argumentCounter})
+      SET doc = (to_jsonb(doc) || $${++argumentCounter}) ${metaUpdate}
       WHERE ${filterClause[0]};
     `;
-
-    const bindings = [...filterClause[1], JSON.stringify(set)];
 
     return [queryString, bindings];
   }
 
-  public makeUpsertDocQuery(collectionName: string, docId: string, doc: object, metadata?: object): PostgresQuery {
+  public makeUpsertDocQuery(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): PostgresQuery {
     const tableName = this.tableName(collectionName);
-    const { metaKeys, metaValues, metaBindings } = this.extractMetadata(3, metadata);
+
+    const insertVersion = version? version : 1;
+
+    const { metaKeys, metaValues, metaBindings } = this.extractMetadata(4, metadata);
 
     const conflictMetaUpdateClause = metadata
       ? ', ' + Object.keys(metadata).map(key => `${key} = EXCLUDED.${key}`).join(', ')
@@ -77,22 +99,28 @@ export class PostgresQueryBuilder {
 
     const queryString = `
       INSERT INTO ${tableName} (id, doc ${metaKeys})
-      VALUES ($1, $2 ${metaBindings})
+      VALUES ($1, $2 $3 ${metaBindings})
       ON CONFLICT (id)
       DO
-        UPDATE SET doc = (to_jsonb(${tableName}.doc) || EXCLUDED.doc) ${conflictMetaUpdateClause}
+        UPDATE SET doc = (to_jsonb(${tableName}.doc) || EXCLUDED.doc) ${conflictMetaUpdateClause}, ${version? 'version = $3' : 'version = version + 1'}
         WHERE ${tableName}.id = EXCLUDED.id;
     `;
 
-    const bindings = [docId, doc, ...metaValues];
+    const bindings = [docId, doc, insertVersion, ...metaValues];
 
     return [queryString, bindings];
   }
 
-  public makeReplaceDocQuery(collectionName: string, docId: string, doc: object, metadata?: object): PostgresQuery {
+  public makeReplaceDocQuery(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): PostgresQuery {
     const bindings = [docId, JSON.stringify(doc)];
 
-    const metaUpdate = this.applyMetadataForUpdate(bindings, metadata);
+    let metaUpdate = this.applyMetadataForUpdate(bindings, metadata);
+
+    if(version) {
+      metaUpdate += `, version = $${bindings.push(version.toString())}`
+    } else {
+      metaUpdate += ', version = version + 1'
+    }
 
     const queryString = `
       UPDATE ${this.tableName(collectionName)}
@@ -103,17 +131,25 @@ export class PostgresQueryBuilder {
     return [queryString, bindings];
   }
 
-  public makeReplaceManyQuery(collectionName: string, filter: Filter, set: object): PostgresQuery {
+  public makeReplaceManyQuery(collectionName: string, filter: Filter, set: object, metadata?: object, version?: number): PostgresQuery {
     const filterClause = this.filterProcessor.process(filter);
     let argumentCounter = filterClause[1].length;
 
+    const bindings = [...filterClause[1], JSON.stringify(set)];
+
+    let metaUpdate = this.applyMetadataForUpdate(bindings, metadata);
+
+    if(version) {
+      metaUpdate += `, version = $${bindings.push(version.toString())}`
+    } else {
+      metaUpdate += ', version = version + 1'
+    }
+
     const queryString = `
       UPDATE ${this.tableName(collectionName)}
-      SET doc = $${++argumentCounter}
+      SET doc = $${++argumentCounter} ${metaUpdate}
       WHERE ${filterClause[0]};
     `;
-
-    const bindings = [...filterClause[1], JSON.stringify(set)];
 
     return [queryString, bindings];
   }
@@ -155,6 +191,18 @@ export class PostgresQueryBuilder {
   public makeGetDocQuery(collectionName: string, docId: string): PostgresQuery {
     const queryString = `
       SELECT *
+      FROM ${this.tableName(collectionName)}
+      WHERE id = $1
+    `;
+
+    const bindings = [docId];
+
+    return [queryString, bindings];
+  }
+
+  public makeGetDocVersionQuery(collectionName: string, docId: string): PostgresQuery {
+    const queryString = `
+      SELECT version
       FROM ${this.tableName(collectionName)}
       WHERE id = $1
     `;
@@ -255,6 +303,7 @@ export class PostgresQueryBuilder {
       CREATE TABLE ${this.tableName(collectionName)}
       (id ${docIdSchema},
       doc JSONB NOT NULL,
+      version INTEGER NOT NULL,   
       PRIMARY KEY (id));
     `;
 
@@ -316,7 +365,7 @@ export class PostgresQueryBuilder {
 
 
   private makePartialDocSelect(partialSelect: Array<string|[string, string]>): string {
-    let select = `id as "${PARTIAL_SELECT_DOC_ID}", `;
+    let select = `id as "${PARTIAL_SELECT_DOC_ID}", version as "${PARTIAL_SELECT_DOC_VERSION}"`;
 
     for (const item of partialSelect) {
       const isStringItem = typeof item === 'string';

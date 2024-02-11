@@ -1,16 +1,34 @@
 import {
   AlwaysRule,
   ConditionRule,
-  isAssignVariable, isCallService,
-  isExecuteRules, isForEach,
+  isAssignVariable,
+  isCallService,
+  isDeleteInformation,
+  isExecuteRules,
+  isForEach,
   isIfConditionRule,
   isIfNotConditionRule,
-  isRecordEvent, isThrowError, isTriggerCommand,
+  isInsertInformation,
+  isRecordEvent, isReplaceInformation,
+  isThrowError,
+  isTriggerCommand,
+  isUpdateInformation,
+  isUpsertInformation,
   PropMapping,
   Rule,
-  ThenAssignVariable, ThenCallService,
-  ThenExecuteRules, ThenForEach,
-  ThenRecordEvent, ThenThrowError, ThenTriggerCommand, ThenType
+  ThenAssignVariable,
+  ThenCallService,
+  ThenDeleteInformation,
+  ThenExecuteRules,
+  ThenForEach,
+  ThenInsertInformation,
+  ThenRecordEvent,
+  ThenReplaceInformation,
+  ThenThrowError,
+  ThenTriggerCommand,
+  ThenType,
+  ThenUpdateInformation,
+  ThenUpsertInformation
 } from "./configuration";
 import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
 import {getTargetsOfType, isCodyError} from "@proophboard/cody-utils";
@@ -18,6 +36,10 @@ import {names} from "@event-engine/messaging/helpers";
 import {detectService} from "../detect-service";
 import {Context} from "../../context";
 import {withErrorCheck} from "../error-handling";
+import {getVOFromDataReference} from "@cody-engine/cody/hooks/utils/value-object/get-vo-from-data-reference";
+import {voRegistryId} from "@cody-engine/cody/hooks/utils/value-object/vo-registry-id";
+import {makeFilter} from "@cody-engine/cody/hooks/utils/query/make-query-resolver";
+import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
 
 export interface Variable {
   name: string;
@@ -277,6 +299,16 @@ const convertThen = (node: Node, ctx: Context, then: ThenType, rule: Rule, lines
       return convertThenForEach(node, ctx, then as ThenForEach, rule, lines, indent, evalSync);
     case isCallService(then):
       return convertThenCallService(node, ctx, then as ThenCallService, rule, lines, indent, evalSync);
+    case isInsertInformation(then):
+      return convertThenInsertInformation(node, ctx, then as ThenInsertInformation, rule, lines, indent, evalSync);
+    case isUpsertInformation(then):
+      return convertThenUpsertInformation(node, ctx, then as ThenUpsertInformation, rule, lines, indent, evalSync);
+    case isUpdateInformation(then):
+      return convertThenUpdateInformation(node, ctx, then as ThenUpdateInformation, rule, lines, indent, evalSync);
+    case isReplaceInformation(then):
+      return convertThenReplaceInformation(node, ctx, then as ThenReplaceInformation, rule, lines, indent, evalSync);
+    case isDeleteInformation(then):
+      return convertThenDeleteInformation(node, ctx, then as ThenDeleteInformation, rule, lines, indent, evalSync);
     default:
       return {
         cody: `I don't know the "then" part of that rule: ${JSON.stringify(rule)}.`,
@@ -409,6 +441,106 @@ const convertThenCallService = (node: Node, ctx: Context, then: ThenCallService,
   } else {
     lines.push(`${indent}ctx['${then.call.result.variable}'] = ${invokeService}`);
   }
+
+  return true;
+}
+
+const convertThenInsertInformation = (node: Node, ctx: Context, then: ThenInsertInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+  const awaitStr = evalSync ? 'await ' : '';
+  const vo = withErrorCheck(getVOFromDataReference, [then.insert.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  let invokeInfoService = `${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].insert('${registryId}', ${wrapExpression(then.insert.id, evalSync)}, `
+    + withErrorCheck(convertMapping, [node, ctx, then.insert.set, rule, indent + '  ', evalSync]);
+
+  if(then.insert.metadata) {
+    invokeInfoService += ', ' + withErrorCheck(convertMapping, [node, ctx, then.insert.metadata, rule, indent + '  ', evalSync]);
+  }
+
+  if(then.insert.version) {
+    invokeInfoService += ', ' + `${then.insert.version}`;
+  }
+
+  invokeInfoService += `);`;
+
+  lines.push(`${indent}${invokeInfoService}`);
+
+  return true;
+}
+
+const convertThenUpsertInformation = (node: Node, ctx: Context, then: ThenUpsertInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+  const awaitStr = evalSync ? 'await ' : '';
+  const vo = withErrorCheck(getVOFromDataReference, [then.upsert.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  let invokeInfoService = `${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].upsert('${registryId}', ${wrapExpression(then.upsert.id, evalSync)}, `
+    + withErrorCheck(convertMapping, [node, ctx, then.upsert.set, rule, indent + '  ', evalSync]);
+
+  if(then.upsert.metadata) {
+    invokeInfoService += ', ' + withErrorCheck(convertMapping, [node, ctx, then.upsert.metadata, rule, indent + '  ', evalSync]);
+  }
+
+  if(then.upsert.version) {
+    invokeInfoService += ', ' + `${then.upsert.version}`;
+  }
+
+  invokeInfoService += `);`;
+
+  lines.push(`${indent}${invokeInfoService}`);
+
+  return true;
+}
+
+const convertThenUpdateInformation = (node: Node, ctx: Context, then: ThenUpdateInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+  const awaitStr = evalSync ? 'await ' : '';
+  const vo = withErrorCheck(getVOFromDataReference, [then.update.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  lines.push(`${indent}${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].update('${registryId}',`);
+  makeFilter(then.update.filter, lines, indent + '  ', ',');
+  lines.push(withErrorCheck(convertMapping, [node, ctx, then.update.set, rule, indent + '  ', evalSync]));
+  if(then.update.metadata) {
+    lines.push(`${indent}  , ` + withErrorCheck(convertMapping, [node, ctx, then.update.metadata, rule, indent + '  ', evalSync]));
+  }
+  if(then.update.version) {
+    lines.push(`${indent}  , ${then.update.version}`)
+  }
+
+  lines.push(`${indent});`);
+
+  return true;
+}
+
+const convertThenReplaceInformation = (node: Node, ctx: Context, then: ThenReplaceInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+  const awaitStr = evalSync ? 'await ' : '';
+  const vo = withErrorCheck(getVOFromDataReference, [then.replace.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  lines.push(`${indent}${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].replace('${registryId}',`);
+  makeFilter(then.replace.filter, lines, indent + '  ', ',');
+  lines.push(withErrorCheck(convertMapping, [node, ctx, then.replace.set, rule, indent + '  ', evalSync]));
+
+  if(then.replace.metadata) {
+    lines.push(`${indent}  , ` + withErrorCheck(convertMapping, [node, ctx, then.replace.metadata, rule, indent + '  ', evalSync]));
+  }
+  if(then.replace.version) {
+    lines.push(`${indent}  , ${then.replace.version}`)
+  }
+
+  lines.push(`${indent});`);
+
+  return true;
+}
+
+const convertThenDeleteInformation = (node: Node, ctx: Context, then: ThenDeleteInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+  const awaitStr = evalSync ? 'await ' : '';
+  const vo = withErrorCheck(getVOFromDataReference, [then.delete.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  lines.push(`${indent}${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].delete('${registryId}',`);
+  makeFilter(then.delete.filter, lines, indent + '  ');
+
+  lines.push(`${indent});`)
 
   return true;
 }

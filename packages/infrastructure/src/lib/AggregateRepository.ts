@@ -8,6 +8,8 @@ import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
 import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {makeValueObject} from "@event-engine/messaging/value-object";
 import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {InformationService} from "@server/infrastructure/information-service/information-service";
+import {MessageBox} from "@event-engine/messaging/message-box";
 
 interface AggregateState {
     [prop: string]: any;
@@ -18,7 +20,7 @@ interface AggregateStateDoc {
     version: number;
 }
 
-type AggregateStateFactory<T extends {} = any> = ReturnType<typeof makeValueObject<T>>;
+type AggregateStateFactory<T extends object = any> = ReturnType<typeof makeValueObject<T>>;
 
 export interface AggregateStateDocument<S = any> {
     state: S;
@@ -53,7 +55,7 @@ export const AggregateMeta = {
 
 export const AggregateMetaKeys = [AggregateMeta.VERSION, AggregateMeta.TYPE, AggregateMeta.ID];
 
-export class AggregateRepository<T extends {} = any> {
+export class AggregateRepository<T extends object = any> {
     public readonly aggregateType: string;
     public readonly aggregateIdentifier: string;
     protected readonly store: MultiModelStore;
@@ -62,6 +64,8 @@ export class AggregateRepository<T extends {} = any> {
     protected readonly applyFunctions: ApplyFunctionRegistry<T>;
     protected readonly stateFactory: AggregateStateFactory<T>;
     protected readonly authService: AuthService;
+    protected readonly infoService: InformationService;
+    protected readonly messageBox: MessageBox;
     protected readonly publicStream: string;
     protected nextSession: Session | undefined;
 
@@ -74,6 +78,8 @@ export class AggregateRepository<T extends {} = any> {
         applyFunctions: {[eventName: string]: ApplyFunction<T>},
         stateFactory: AggregateStateFactory<T>,
         authService: AuthService,
+        infoService: InformationService,
+        messageBox: MessageBox,
         publicStream = "public_stream"
     ) {
         this.store = store;
@@ -84,6 +90,8 @@ export class AggregateRepository<T extends {} = any> {
         this.applyFunctions = applyFunctions;
         this.stateFactory = stateFactory;
         this.authService = authService;
+        this.infoService = infoService;
+        this.messageBox = messageBox;
         this.publicStream = publicStream;
     }
 
@@ -168,10 +176,7 @@ export class AggregateRepository<T extends {} = any> {
             if(deleteState) {
                 session.deleteDocument(this.aggregateCollection, arId);
             } else {
-                session.upsertDocument(this.aggregateCollection, arId, {
-                    state: aggregateState,
-                    version: expectedVersion + events.length,
-                });
+                session.upsertDocument(this.aggregateCollection, arId, aggregateState, undefined, expectedVersion + events.length);
             }
         }
 
@@ -179,7 +184,21 @@ export class AggregateRepository<T extends {} = any> {
             session.appendEventsTo(this.publicStream, publicEvents);
         }
 
-        return await this.store.commitSession(session);
+        console.log("before live projections");
+
+        // Trigger live projections
+        this.infoService.useSession(session);
+        try {
+            for (const projectionEvent of [...writeModelEvents, ...publicEvents]) {
+                await this.messageBox.eventBus.on(projectionEvent, true);
+            }
+            this.infoService.forgetSession();
+            return await this.store.commitSession(session);
+        } catch (e) {
+            this.infoService.forgetSession();
+            console.log("exception caught before store commit", e);
+            throw e;
+        }
     }
 
     public async loadState(aggregateId: string, untilVersion?: number): Promise<[T, number]> {
@@ -188,11 +207,11 @@ export class AggregateRepository<T extends {} = any> {
         let aggregateVersion = 0;
 
         if(!untilVersion) {
-            const doc = await this.store.loadDoc<AggregateStateDoc>(this.aggregateCollection, aggregateId);
+            const docAndVersion = await this.store.loadDoc<AggregateStateDoc>(this.aggregateCollection, aggregateId);
 
-            if(doc) {
-                aggregateState = {...aggregateState, ...doc.state};
-                aggregateVersion = doc.version;
+            if(docAndVersion) {
+                aggregateState = {...aggregateState, ...docAndVersion.doc};
+                aggregateVersion = docAndVersion.version;
                 maybeVersionMatcher = {'aggregateVersion': {op: MatchOperator.GT, val: aggregateVersion}};
             }
         } else {

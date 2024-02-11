@@ -33,7 +33,8 @@ export const isIfNotConditionRule = (rule: any): rule is IfNotConditionRule => {
   return typeof rule.if_not !== "undefined";
 }
 
-export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenFetchData | ThenExecuteRules | ThenForEach | ThenFilter;
+export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenFetchData | ThenExecuteRules | ThenForEach
+  | ThenFilter | ThenInsertInformation | ThenUpsertInformation | ThenUpdateInformation | ThenReplaceInformation | ThenDeleteInformation;
 
 export type PropMapping = {[name: string]: string | string[]};
 
@@ -116,6 +117,63 @@ export interface ThenFetchData {
 
 export const isFetchData = (then: any): then is ThenFetchData => typeof then.fetch !== 'undefined';
 
+export interface ThenInsertInformation {
+  insert: {
+    information: string;
+    id: string;
+    set: string | PropMapping;
+    metadata?: string | PropMapping;
+    version?: number;
+  }
+}
+
+export const isInsertInformation = (then: any): then is ThenInsertInformation => typeof then.insert !== 'undefined';
+
+export interface ThenUpsertInformation {
+  upsert: {
+    information: string;
+    id: string;
+    set: string | PropMapping;
+    metadata?: string | PropMapping;
+    version?: number;
+  }
+}
+
+export const isUpsertInformation = (then: any): then is ThenUpsertInformation => typeof then.upsert !== 'undefined';
+
+export interface ThenUpdateInformation {
+  update: {
+    information: string;
+    filter: Filter;
+    set: string | PropMapping;
+    metadata?: string | PropMapping;
+    version?: number;
+  }
+}
+
+export const isUpdateInformation = (then: any): then is ThenUpdateInformation => typeof then.update !== 'undefined';
+
+export interface ThenReplaceInformation {
+  replace: {
+    information: string;
+    filter: Filter;
+    set: string | PropMapping;
+    metadata?: string | PropMapping;
+    version?: number;
+  }
+}
+
+export const isReplaceInformation = (then: any): then is ThenReplaceInformation => typeof then.replace !== 'undefined';
+
+export interface ThenDeleteInformation {
+  delete: {
+    information: string;
+    filter: Filter;
+  }
+}
+
+export const isDeleteInformation = (then: any): then is ThenDeleteInformation => typeof then.delete !== 'undefined';
+
 export interface ThenExecuteRules {
   execute: {
     rules: Rule[]
@@ -123,3 +181,5 @@ export interface ThenExecuteRules {
 }
 
 export const isExecuteRules = (then: any): then is ThenExecuteRules => typeof then.execute !== 'undefined';
+
+

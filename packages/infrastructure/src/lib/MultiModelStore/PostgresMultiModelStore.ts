@@ -78,7 +78,8 @@ export class PostgresMultiModelStore implements MultiModelStore {
     return true;
   }
 
-  loadDoc<D extends object>(collectionName: string, docId: string): Promise<D | null> {
+  loadDoc<D extends object>(collectionName: string, docId: string): Promise<{doc: D, version: number} | null> {
+    // @TODO: getDocAndVersion
     return this.documentStore.getDoc(collectionName, docId);
   }
 

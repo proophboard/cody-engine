@@ -1,5 +1,4 @@
 import {PostgresDocumentStore} from "@event-engine/infrastructure/DocumentStore/PostgresDocumentStore";
-import {getConfiguredDB} from "@app/core/configuredDB";
 import {AnyFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AnyFilter";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {EqFilter} from "@event-engine/infrastructure/DocumentStore/Filter/EqFilter";
@@ -20,6 +19,7 @@ import {PartialSelect, SortOrder} from "@event-engine/infrastructure/DocumentSto
 import {FieldIndex} from "@event-engine/infrastructure/DocumentStore/Index/FieldIndex";
 import {MultiFieldIndex} from "@event-engine/infrastructure/DocumentStore/Index/MultiFieldIndex";
 import {MetadataFieldIndex} from "@event-engine/infrastructure/DocumentStore/Index/MetadataFieldIndex";
+import {getConfiguredDB} from "@server/infrastructure/configuredDB";
 
 describe('PostgresDocumentStore', () => {
   const db = getConfiguredDB();
@@ -91,7 +91,7 @@ describe('PostgresDocumentStore', () => {
 
   const getCollectionColumnsHelper = async (collection: string): Promise<string[]> => {
     const query = `SELECT column_name FROM information_schema.columns WHERE table_schema='public' AND table_name='${collection}'`;
-    return (await db.query(query)).rows.map(row => row['column_name']);
+    return (await db.query(query)).rows.map((row: any) => row['column_name']);
   };
 
   beforeEach(async () => {

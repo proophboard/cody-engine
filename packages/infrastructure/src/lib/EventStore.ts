@@ -23,7 +23,7 @@ export function checkMatchObject(matcher: string | MatchObject): MatchObject {
     return matcher;
 }
 
-export type AppendToListener = (streamName: string, events: Event[]) => void;
+export type AppendToListener = (streamName: string, events: Event[], isRepublishing?: boolean) => void;
 
 export type StreamType = "write-model" | "public";
 

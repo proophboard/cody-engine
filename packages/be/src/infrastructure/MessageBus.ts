@@ -5,6 +5,7 @@ import {services} from "@server/extensions/services";
 import {Message} from "@event-engine/messaging/message";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 import jexl from "@app/shared/jexl/get-configured-jexl";
+import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
 
 export type MessageType = 'command' | 'event' | 'query';
 
@@ -14,7 +15,7 @@ export class MessageBus {
     const {dependencies} = desc;
     const loadedDependencies: Record<string, any> = {};
 
-    if(!dependencies) {
+    if(!dependencies && type !== 'event') {
       return loadedDependencies;
     }
 
@@ -55,6 +56,11 @@ export class MessageBus {
         default:
           throw new Error(`Unknown dependency type detected for "${message.name}". Supported dependency types are: "query", "service". But the configured type is "${dep.type}"`);
       }
+    }
+
+    // Always add Information Service so that read model rules can access it
+    if(type === "event") {
+      loadedDependencies[INFORMATION_SERVICE_NAME] = this.loadServiceDependency(INFORMATION_SERVICE_NAME, message, {});
     }
 
     return loadedDependencies;
