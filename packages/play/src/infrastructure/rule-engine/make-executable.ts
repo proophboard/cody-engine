@@ -1,18 +1,18 @@
 import {
-  isAssignVariable, isCallService,
+  isAssignVariable, isCallService, isDeleteInformation,
   isExecuteRules, isForEach,
   isIfConditionRule,
-  isIfNotConditionRule,
-  isRecordEvent,
+  isIfNotConditionRule, isInsertInformation,
+  isRecordEvent, isReplaceInformation,
   isThrowError,
-  isTriggerCommand,
+  isTriggerCommand, isUpdateInformation, isUpsertInformation,
   PropMapping,
   Rule,
-  ThenAssignVariable, ThenCallService,
-  ThenExecuteRules, ThenForEach,
-  ThenRecordEvent,
+  ThenAssignVariable, ThenCallService, ThenDeleteInformation,
+  ThenExecuteRules, ThenForEach, ThenInsertInformation,
+  ThenRecordEvent, ThenReplaceInformation,
   ThenThrowError, ThenTriggerCommand,
-  ThenType
+  ThenType, ThenUpdateInformation, ThenUpsertInformation
 } from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {
@@ -25,6 +25,11 @@ import {makeEventFactory} from "@cody-play/infrastructure/events/make-event-fact
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-command-factory";
 import {ValidationError} from "ajv";
+import {
+  INFORMATION_SERVICE_NAME,
+  InformationService
+} from "@server/infrastructure/information-service/information-service";
+import {makeFilter} from "@cody-play/queries/make-filters";
 
 type ExecutionContext = any;
 
@@ -133,6 +138,12 @@ const execThenSync = (then: ThenType, ctx: ExecutionContext): ExecutionContext =
       return execTriggerCommandSync(then as ThenTriggerCommand, ctx);
     case isCallService(then):
       return execCallServiceSync(then as ThenCallService, ctx);
+    case isInsertInformation(then):
+    case isUpsertInformation(then):
+    case isUpdateInformation(then):
+    case isReplaceInformation(then):
+    case isDeleteInformation(then):
+      throw new Error(`Information update rules can only be used in asynchronous contexts like policies or processors`);
   }
 
   throw new Error(`Cannot execute rule. The "then" part is unknown: ${JSON.stringify(then)}`);
@@ -155,6 +166,16 @@ const execThenAsync = async (then: ThenType, ctx: ExecutionContext): Promise<Exe
       return await execTriggerCommandAsync(then as ThenTriggerCommand, ctx);
     case isCallService(then):
       return await execCallServiceAsync(then as ThenCallService, ctx);
+    case isInsertInformation(then):
+      return await execInsertInformationAsync(then as ThenInsertInformation, ctx);
+    case isUpsertInformation(then):
+      return await execUpsertInformationAsync(then as ThenUpsertInformation, ctx);
+    case isUpdateInformation(then):
+      return await execUpdateInformationAsync(then as ThenUpdateInformation, ctx);
+    case isReplaceInformation(then):
+      return await execReplaceInformationAsync(then as ThenReplaceInformation, ctx);
+    case isDeleteInformation(then):
+      return await execDeleteInformationAsync(then as ThenDeleteInformation, ctx);
   }
 
   throw new Error(`Cannot execute rule. The "then" part is unknown: ${JSON.stringify(then)}`);
@@ -252,6 +273,84 @@ const execCallServiceAsync = async (then: ThenCallService, ctx: ExecutionContext
   } else {
     ctx[then.call.result.variable] = result;
   }
+
+  return ctx;
+}
+
+const execInsertInformationAsync = async (then: ThenInsertInformation, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: insert information "${then.insert.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const data = await execMappingAsync(then.insert.set, ctx);
+
+  const metadata = then.insert.metadata? await execMappingAsync(then.insert.metadata, ctx) : undefined;
+
+  await infoService.insert(then.insert.information, await execExprAsync(then.insert.id, ctx), data, metadata, then.insert.version);
+
+  return ctx;
+}
+
+const execUpsertInformationAsync = async (then: ThenUpsertInformation, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: upsert information "${then.upsert.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const data = await execMappingAsync(then.upsert.set, ctx);
+
+  const metadata = then.upsert.metadata? await execMappingAsync(then.upsert.metadata, ctx) : undefined;
+
+  await infoService.upsert(then.upsert.information, await execExprAsync(then.upsert.id, ctx), data, metadata, then.upsert.version);
+
+  return ctx;
+}
+
+const execUpdateInformationAsync = async (then: ThenUpdateInformation, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: update information "${then.update.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const filter = makeFilter(then.update.filter, ctx);
+  const data = await execMappingAsync(then.update.set, ctx);
+  const metadata = then.update.metadata? await execMappingAsync(then.update.metadata, ctx) : undefined;
+
+  await infoService.update(then.update.information, filter, data, metadata, then.update.version);
+
+  return ctx;
+}
+
+const execReplaceInformationAsync = async (then: ThenReplaceInformation, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: replace information "${then.replace.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const filter = makeFilter(then.replace.filter, ctx);
+  const data = await execMappingAsync(then.replace.set, ctx);
+  const metadata = then.replace.metadata? await execMappingAsync(then.replace.metadata, ctx) : undefined;
+
+  await infoService.replace(then.replace.information, filter, data, metadata, then.replace.version);
+
+  return ctx;
+}
+
+const execDeleteInformationAsync = async (then: ThenDeleteInformation, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: delete information "${then.delete.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const filter = makeFilter(then.delete.filter, ctx);
+
+  await infoService.delete(then.delete.information, filter);
 
   return ctx;
 }

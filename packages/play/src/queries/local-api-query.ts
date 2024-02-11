@@ -74,7 +74,7 @@ const resolveStateQuery = async (desc: QueryableStateDescription, factory: AnyRu
     throw new Error(`Cannot resolve query: "${queryInfo.desc.name}". Query property "${desc.identifier}" is missing in query payload. This error can be caused by a wrong mapping. Please check potential metadata configuration.`);
   }
 
-  const doc = await ds.getDoc<{state: any}>(desc.collection, params[desc.identifier]);
+  const doc = await ds.getDoc<any>(desc.collection, params[desc.identifier]);
 
   if(!doc) {
     throw new NotFoundError(`"${desc.name}" with "${desc.identifier}": "${params[desc.identifier]}" not found!`);
@@ -84,7 +84,7 @@ const resolveStateQuery = async (desc: QueryableStateDescription, factory: AnyRu
 
   const exe = makeInformationFactory(factory);
 
-  return exe(doc.state);
+  return exe(doc);
 }
 
 const resolveStateListQuery = async (desc: QueryableStateListDescription, factory: AnyRule[], queryInfo: PlayQueryRuntimeInfo, resolve: ResolveConfig, params: any, user: User): Promise<Array<any>> => {
@@ -102,9 +102,9 @@ const resolveStateListQuery = async (desc: QueryableStateListDescription, factor
 
   const exe = makeInformationFactory(factory);
 
-  const cursor = await ds.findDocs<{state: any}>(desc.collection, filters, undefined, undefined, orderBy);
+  const cursor = await ds.findDocs<any>(desc.collection, filters, undefined, undefined, orderBy);
 
-  return asyncIteratorToArray(asyncMap(cursor, ([, d]) => exe(d.state)));
+  return asyncIteratorToArray(asyncMap(cursor, ([, d]) => exe(d)));
 }
 
 const resolveSingleValueObjectQuery = async (desc: QueryableValueObjectDescription, factory: AnyRule[], queryInfo: PlayQueryRuntimeInfo, resolve: ResolveConfig, params: any, user: User): Promise<any> => {
@@ -122,9 +122,9 @@ const resolveSingleValueObjectQuery = async (desc: QueryableValueObjectDescripti
 
   const exe = makeInformationFactory(factory);
 
-  const cursor = await ds.findDocs<{state: any}>(desc.collection, filters, undefined, 1, orderBy);
+  const cursor = await ds.findDocs<any>(desc.collection, filters, undefined, 1, orderBy);
 
-  const result = await asyncIteratorToArray(asyncMap(cursor, ([, d]) => exe(d.state)));
+  const result = await asyncIteratorToArray(asyncMap(cursor, ([, d]) => exe(d)));
 
   if(result.length !== 1) {
     throw new NotFoundError(`"${desc.name}" with "${JSON.stringify(params)}" not found!`);

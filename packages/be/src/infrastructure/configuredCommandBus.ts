@@ -13,12 +13,13 @@ import {MessageBus} from "@server/infrastructure/MessageBus";
 import {setMessageMetadata} from "@event-engine/messaging/message";
 import {META_KEY_DELETE_HISTORY, META_KEY_DELETE_STATE} from "@event-engine/infrastructure/AggregateRepository";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
+import {CommandBus} from "@event-engine/messaging/command-bus";
 
 export const SERVICE_NAME_COMMAND_BUS = '$CommandBus';
 
 type CommandHandler = ProcessingFunction | ProcessingFunctionWithDeps;
 
-class CommandBus extends MessageBus {
+class LiveCommandBus extends MessageBus implements CommandBus {
   public async dispatch (command: Command, desc: CommandDescription): Promise<boolean> {
     const handler = this.getHandler(desc);
     const dependencies = await this.loadDependencies(command, desc, 'command');
@@ -44,11 +45,11 @@ class CommandBus extends MessageBus {
     }
 
     try {
-      return await handle(command, handler, repositories[desc.aggregateName], desc.newAggregate, deps);
+      return await handle(command, handler, repositories[desc.aggregateName](), desc.newAggregate, deps);
     } catch (e) {
       if(e instanceof ConcurrencyError) {
         // Try again
-        return handle(command, handler, repositories[desc.aggregateName], desc.newAggregate, deps);
+        return handle(command, handler, repositories[desc.aggregateName](), desc.newAggregate, deps);
       }
 
       throw e;
@@ -88,11 +89,11 @@ class CommandBus extends MessageBus {
 
 }
 
-let commandBus: CommandBus;
+let commandBus: LiveCommandBus;
 
-export const getConfiguredCommandBus = (): CommandBus => {
+export const getConfiguredCommandBus = (): LiveCommandBus => {
   if(!commandBus) {
-    commandBus = new CommandBus();
+    commandBus = new LiveCommandBus();
   }
 
   return commandBus;

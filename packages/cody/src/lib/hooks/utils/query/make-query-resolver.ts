@@ -103,7 +103,7 @@ const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata 
     }
   }
 
-  return `${jexlInit}const cursor = await ds.findDocs<{state: ${voNames.className}}>(
+  return `${jexlInit}const cursor = await ds.findDocs<${voNames.className}>(
     ${voNames.className}Desc.collection,
     ${filters},
     undefined,
@@ -111,7 +111,7 @@ const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata 
     ${orderBy}
   );
   
-  const result = await asyncIteratorToArray(asyncMap(cursor, ([,d]) => ${names(voNames.className).propertyName}(d.state)));
+  const result = await asyncIteratorToArray(asyncMap(cursor, ([,d]) => ${names(voNames.className).propertyName}(d)));
   if(result.length !== 1) {
     throw new NotFoundError(\`${voNames.className} with "\${JSON.stringify(query.payload)}" not found!\`);
   }
@@ -140,13 +140,13 @@ const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableS
     return codyQuerySchemaError;
   }
 
-  return `const doc = await ds.getDoc<{state: ${voNames.className}}>(${voNames.className}Desc.collection, query.payload.${meta.identifier});
+  return `const doc = await ds.getDoc<${voNames.className}>(${voNames.className}Desc.collection, query.payload.${meta.identifier});
   
   if(!doc) {
     throw new NotFoundError(\`${voNames.className} with ${meta.identifier}: "\${query.payload.${meta.identifier}}" not found!\`);
   }
   
-  return ${voNames.propertyName}(doc.state);
+  return ${voNames.propertyName}(doc);
 `
 }
 
@@ -183,7 +183,7 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableSt
     }
   }
 
-  return `${jexlInit}const cursor = await ds.findDocs<{state: ${itemClassName}}>(
+  return `${jexlInit}const cursor = await ds.findDocs<${itemClassName}>(
     ${voNames.className}Desc.collection,
     ${filters},
     undefined,
@@ -191,13 +191,13 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableSt
     ${orderBy}
   );
   
-  return asyncIteratorToArray(asyncMap(cursor, ([,d]) => ${names(itemClassName).propertyName}(d.state)));
+  return asyncIteratorToArray(asyncMap(cursor, ([,d]) => ${names(itemClassName).propertyName}(d)));
 `
 }
 
 const mapOrderByProp = (orderBy: SortOrderItem): SortOrderItem => {
   return {
-    prop: `state.${orderBy.prop}`,
+    prop: `${orderBy.prop}`,
     sort: orderBy.sort
   }
 }
@@ -282,27 +282,27 @@ const makeFiltersFromResolveConfig = (vo: Node, resolveConfig: ResolveConfig, in
   return lines.join("\n");
 }
 
-const makeFilter = (filter: Filter, lines: string[], indent = '', endOfLine = '') => {
+export const makeFilter = (filter: Filter, lines: string[], indent = '', endOfLine = '') => {
   if (isAndFilter(filter)) {
     lines.push(`${indent}new filters.AndFilter(`);
 
     filter.and.forEach(f => makeFilter(f, lines, indent + '  ', ','));
 
-    lines.push(`${indent})`);
+    lines.push(`${indent})${endOfLine}`);
 
   } else if (isOrFilter(filter)) {
     lines.push(`${indent}new filters.OrFilter(`);
 
     filter.or.forEach(f => makeFilter(f, lines, indent + '  ', ','));
 
-    lines.push(`${indent})`);
+    lines.push(`${indent})${endOfLine}`);
 
   } else if (isNotFilter(filter)) {
     lines.push(`${indent}new filters.NotFilter(`);
 
     makeFilter(filter.not, lines, indent + '  ');
 
-    lines.push(`${indent})`);
+    lines.push(`${indent})${endOfLine}`);
   } else if (isAnyOfDocIdFilter(filter)) {
     lines.push(`${indent}${makeAnyOfDocIdFilter(filter)}${endOfLine}`);
 
@@ -377,7 +377,7 @@ const makeAnyOfDocIdFilter = (filter: AnyOfDocIdFilter): string => {
 }
 
 const makeAnyOfFilter = (filter: AnyOfFilter): string => {
-  return `new filters.AnyOfFilter('state.${filter.anyOf.prop}', ${wrapExpression(filter.anyOf.valueList)})`;
+  return `new filters.AnyOfFilter('${filter.anyOf.prop}', ${wrapExpression(filter.anyOf.valueList)})`;
 }
 
 const makeDocIdFilter = (filter: DocIdFilter): string => {
@@ -385,38 +385,38 @@ const makeDocIdFilter = (filter: DocIdFilter): string => {
 }
 
 const makeEqFilter = (filter: EqFilter): string => {
-  return `new filters.EqFilter('state.${filter.eq.prop}', ${wrapExpression(filter.eq.value)})`
+  return `new filters.EqFilter('${filter.eq.prop}', ${wrapExpression(filter.eq.value)})`
 }
 
 const makeExistsFilter = (filter: ExistsFilter): string => {
-  return `new filters.ExistsFilter('state.${filter.exists.prop}')`;
+  return `new filters.ExistsFilter('${filter.exists.prop}')`;
 }
 
 const makeGteFilter = (filter: GteFilter): string => {
-  return `new filters.GteFilter('state.${filter.gte.prop}', ${wrapExpression(filter.gte.value)})`;
+  return `new filters.GteFilter('${filter.gte.prop}', ${wrapExpression(filter.gte.value)})`;
 }
 
 const makeGtFilter = (filter: GtFilter): string => {
-  return `new filters.GtFilter('state.${filter.gt.prop}', ${wrapExpression(filter.gt.value)})`;
+  return `new filters.GtFilter('${filter.gt.prop}', ${wrapExpression(filter.gt.value)})`;
 }
 
 const makeInArrayFilter = (filter: InArrayFilter): string => {
-  return `new filters.InArrayFilter('state.${filter.inArray.prop}', ${wrapExpression(filter.inArray.value)})`;
+  return `new filters.InArrayFilter('${filter.inArray.prop}', ${wrapExpression(filter.inArray.value)})`;
 }
 
 const makeLikeFilter = (filter: LikeFilter): string => {
-  return `new filters.LikeFilter('state.${filter.like.prop}', ${wrapExpression(filter.like.value)})`;
+  return `new filters.LikeFilter('${filter.like.prop}', ${wrapExpression(filter.like.value)})`;
 }
 
 const makeLteFilter = (filter: LteFilter): string => {
-  return `new filters.LteFilter('state.${filter.lte.prop}', ${wrapExpression(filter.lte.value)})`;
+  return `new filters.LteFilter('${filter.lte.prop}', ${wrapExpression(filter.lte.value)})`;
 }
 
 const makeLtFilter = (filter: LtFilter): string => {
-  return `new filters.LtFilter('state.${filter.lt.prop}', ${wrapExpression(filter.lt.value)})`;
+  return `new filters.LtFilter('${filter.lt.prop}', ${wrapExpression(filter.lt.value)})`;
 }
 
 const makeEqFilterFromPropertySchema = (prop: string, schema: JSONSchema7, indent = ''): string => {
 
-  return `${indent}new filters.EqFilter("state.${prop}", query.payload.${prop})`;
+  return `${indent}new filters.EqFilter("${prop}", query.payload.${prop})`;
 }

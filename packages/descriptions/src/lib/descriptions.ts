@@ -66,6 +66,8 @@ export interface QueryDescription extends ProophBoardDescription {
 export interface PolicyDescription extends ProophBoardDescription {
   name: string;
   dependencies?: DependencyRegistry;
+  live?: boolean;
+  projection?: string;
 }
 
 export interface ValueObjectDescriptionFlags {

@@ -19,8 +19,8 @@ export class InMemoryMultiModelStore implements MultiModelStore {
     return this.eventStore.load(streamName, metadataMatcher, fromEventId, limit);
   }
 
-  async loadDoc <D extends object>(collectionName: string, docId: string): Promise<D | null> {
-    return this.documentStore.getDoc(collectionName, docId);
+  async loadDoc <D extends object>(collectionName: string, docId: string): Promise<{doc: D, version: number} | null> {
+    return this.documentStore.getDocAndVersion(collectionName, docId);
   }
 
   beginSession(): Session {
@@ -28,31 +28,110 @@ export class InMemoryMultiModelStore implements MultiModelStore {
   }
 
   async commitSession(session: Session): Promise<boolean> {
+    console.log("commit session");
     session.commit();
 
-    for (const appendEventsTask of session.getAppendEventsTasks()) {
-      await this.eventStore.appendTo(
-        appendEventsTask.streamName,
-        appendEventsTask.events,
-        appendEventsTask.metadataMatcher,
-        appendEventsTask.expectedVersion
-      )
-    }
+    const currentStreams = await this.eventStore.exportStreams();
+    const currentDocuments = await this.documentStore.exportDocuments();
 
-    for (const deleteEventsTask of session.getDeleteEventsTasks()) {
-      await this.eventStore.delete(deleteEventsTask.streamName, deleteEventsTask.metadataMatcher);
-    }
+    this.eventStore.disableDiskStorage();
+    this.documentStore.disableDiskStorage();
 
-    for (const upsertDocumentTask of session.getUpsertDocumentTasks()) {
-      await this.documentStore.upsertDoc(
-        upsertDocumentTask.collectionName,
-        upsertDocumentTask.docId,
-        upsertDocumentTask.doc
-      )
-    }
+    try {
+      for (const appendEventsTask of session.getAppendEventsTasks()) {
+        await this.eventStore.appendTo(
+          appendEventsTask.streamName,
+          appendEventsTask.events,
+          appendEventsTask.metadataMatcher,
+          appendEventsTask.expectedVersion
+        )
+      }
 
-    for (const deleteDocumentTask of session.getDeleteDocumentTasks()) {
-      await this.documentStore.deleteDoc(deleteDocumentTask.collectionName, deleteDocumentTask.docId);
+      for (const deleteEventsTask of session.getDeleteEventsTasks()) {
+        await this.eventStore.delete(deleteEventsTask.streamName, deleteEventsTask.metadataMatcher);
+      }
+
+      for (const insertDocumentTask of session.getInsertDocumentTasks()) {
+        await this.documentStore.addDoc(
+          insertDocumentTask.collectionName,
+          insertDocumentTask.docId,
+          insertDocumentTask.doc,
+          insertDocumentTask.metadata,
+          insertDocumentTask.version
+        )
+      }
+
+      for (const upsertDocumentTask of session.getUpsertDocumentTasks()) {
+        await this.documentStore.upsertDoc(
+          upsertDocumentTask.collectionName,
+          upsertDocumentTask.docId,
+          upsertDocumentTask.doc,
+          upsertDocumentTask.metadata,
+          upsertDocumentTask.version
+        )
+      }
+
+      for (const updateDocumentTask of session.getUpdateDocumentTasks()) {
+        await this.documentStore.updateDoc(
+          updateDocumentTask.collectionName,
+          updateDocumentTask.docId,
+          updateDocumentTask.doc,
+          updateDocumentTask.metadata,
+          updateDocumentTask.version
+        )
+      }
+
+      for (const updateManyDocumentsTask of session.getUpdateManyDocumentsTasks()) {
+        await this.documentStore.updateMany(
+          updateManyDocumentsTask.collectionName,
+          updateManyDocumentsTask.filter,
+          updateManyDocumentsTask.docOrSubset,
+          updateManyDocumentsTask.metadata,
+          updateManyDocumentsTask.version
+        )
+      }
+
+      for (const replaceDocumentTask of session.getReplaceDocumentTasks()) {
+        await this.documentStore.replaceDoc(
+          replaceDocumentTask.collectionName,
+          replaceDocumentTask.docId,
+          replaceDocumentTask.doc,
+          replaceDocumentTask.metadata,
+          replaceDocumentTask.version
+        )
+      }
+
+      for (const replaceManyDocumentsTask of session.getReplaceManyDocumentsTasks()) {
+        await this.documentStore.replaceMany(
+          replaceManyDocumentsTask.collectionName,
+          replaceManyDocumentsTask.filter,
+          replaceManyDocumentsTask.doc,
+          replaceManyDocumentsTask.metadata,
+          replaceManyDocumentsTask.version
+        )
+      }
+
+      for (const deleteDocumentTask of session.getDeleteDocumentTasks()) {
+        await this.documentStore.deleteDoc(deleteDocumentTask.collectionName, deleteDocumentTask.docId);
+      }
+
+      for (const deleteManyDocumentsTask of session.getDeleteManyDocumentsTasks()) {
+        await this.documentStore.deleteMany(
+          deleteManyDocumentsTask.collectionName,
+          deleteManyDocumentsTask.filter
+        )
+      }
+
+      this.eventStore.enableDiskStorage();
+      this.documentStore.enableDiskStorage();
+      this.documentStore.flush();
+      this.eventStore.flush();
+    } catch (e) {
+      await this.eventStore.importStreams(currentStreams);
+      await this.documentStore.importDocuments(currentDocuments);
+      this.eventStore.enableDiskStorage();
+      this.documentStore.enableDiskStorage();
+      throw e;
     }
 
     return true;

@@ -9,11 +9,16 @@ import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {QueryRuntimeInfo} from "@event-engine/messaging/query";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
 import {User} from "@app/shared/types/core/user/user";
+import {
+  playInformationServiceFactory
+} from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
+import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
 
 export type PlayMessageType = 'command' | 'event' | 'query';
 
 export const services: {[serviceName: string]: (options?: any) => any} = {
   AuthService: getConfiguredPlayAuthService,
+  CodyInformationService: playInformationServiceFactory,
 }
 
 export const playLoadDependencies = async (message: Message, type: PlayMessageType, dependencies: DependencyRegistry, config: CodyPlayConfig): Promise<any> => {
@@ -35,6 +40,19 @@ export const playLoadDependencies = async (message: Message, type: PlayMessageTy
 
     switch (dep.type) {
       case "query":
+        if(dep.options?.query) {
+          const payload: Record<string, any> = {};
+
+          const messageDep: Record<string, object> = {};
+          messageDep[type] = message.payload;
+
+          for (const prop in dep.options.query) {
+            payload[prop] = await jexl.eval(dep.options.query[prop], {...loadedDependencies, ...messageDep});
+          }
+
+          dep.options.query = payload;
+        }
+
         loadedDependencies[depName] = await loadQueryDependency(dependencyKey, message, dep.options, config.queries, config);
         break;
       case "service":
@@ -43,6 +61,11 @@ export const playLoadDependencies = async (message: Message, type: PlayMessageTy
       default:
         throw new Error(`Unknown dependency type detected for "${message.name}". Supported dependency types are: "query", "service". But the configured type is "${dep.type}"`);
     }
+  }
+
+  // Always add Information Service so that read model rules can access it
+  if(type === "event") {
+    loadedDependencies[INFORMATION_SERVICE_NAME] = loadServiceDependency(INFORMATION_SERVICE_NAME, message, {});
   }
 
   return loadedDependencies;
@@ -55,8 +78,9 @@ const loadQueryDependency = (queryName: string, message: Message, options: any, 
 
   const queryRuntimeInfo = queries[queryName];
   const keyMapping = options?.mapping || {};
+  const queryPayload = options?.query || message.payload;
 
-  const queryParams = determineQueryPayload(message.payload, queryRuntimeInfo as unknown as QueryRuntimeInfo, keyMapping);
+  const queryParams = determineQueryPayload(queryPayload, queryRuntimeInfo as unknown as QueryRuntimeInfo, keyMapping);
 
   return makeLocalApiQuery(config, message.meta.user as User)(queryName, queryParams);
 }

@@ -91,6 +91,24 @@
         }
       }
     },
+    "project": {
+      "executor": "nx:run-commands",
+      "defaultConfiguration": "development",
+      "options": {
+        "cwd": "packages/be",
+        "color": true,
+        "command": "npx ts-node -r tsconfig-paths/register src/infrastructure/run-projection.ts",
+        "buildTarget": "be:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "be:build:development"
+        },
+        "production": {
+          "buildTarget": "be:build:production"
+        }
+      }
+    },
     "lint": {
       "executor": "@nx/linter:eslint",
       "outputs": ["{options.outputFile}"],

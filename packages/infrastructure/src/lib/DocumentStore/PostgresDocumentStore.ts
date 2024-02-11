@@ -4,7 +4,7 @@ import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {PostgresFilterProcessor} from "@event-engine/infrastructure/DocumentStore/Postgres/PostgresFilterProcessor";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {
-  PARTIAL_SELECT_DOC_ID, PARTIAL_SELECT_MERGE,
+  PARTIAL_SELECT_DOC_ID, PARTIAL_SELECT_DOC_VERSION, PARTIAL_SELECT_MERGE,
   PostgresQueryBuilder
 } from "@event-engine/infrastructure/DocumentStore/Postgres/PostgresQueryBuilder";
 import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
@@ -94,24 +94,24 @@ export class PostgresDocumentStore implements DocumentStore {
     });
   }
 
-  async addDoc(collectionName: string, docId: string, doc: object, metadata?: object): Promise<void> {
-    const [queryString, bindings] = this.queryBuilder.makeAddDocQuery(collectionName, docId, doc, metadata);
+  async addDoc(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): Promise<void> {
+    const [queryString, bindings] = this.queryBuilder.makeAddDocQuery(collectionName, docId, doc, metadata, version);
 
     await this.db.query(queryString, bindings);
   }
 
-  async updateDoc(collectionName: string, docId: string, docOrSubset: object, metadata?: object): Promise<void> {
-    const [queryString, bindings] = this.queryBuilder.makeUpdateDocQuery(collectionName, docId, docOrSubset, metadata);
+  async updateDoc(collectionName: string, docId: string, docOrSubset: object, metadata?: object, version?: number): Promise<void> {
+    const [queryString, bindings] = this.queryBuilder.makeUpdateDocQuery(collectionName, docId, docOrSubset, metadata, version);
     await this.db.query(queryString, bindings);
   }
 
-  async upsertDoc(collectionName: string, docId: string, docOrSubset: object, metadata?: object): Promise<void> {
-    const [queryString, bindings] = this.queryBuilder.makeUpsertDocQuery(collectionName, docId, docOrSubset, metadata);
+  async upsertDoc(collectionName: string, docId: string, docOrSubset: object, metadata?: object, version?: number): Promise<void> {
+    const [queryString, bindings] = this.queryBuilder.makeUpsertDocQuery(collectionName, docId, docOrSubset, metadata, version);
     await this.db.query(queryString, bindings);
   }
 
-  public async replaceDoc(collectionName: string, docId: string, doc: object, metadata?: object): Promise<void> {
-    const [queryString, bindings] = this.queryBuilder.makeReplaceDocQuery(collectionName, docId, doc, metadata);
+  public async replaceDoc(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): Promise<void> {
+    const [queryString, bindings] = this.queryBuilder.makeReplaceDocQuery(collectionName, docId, doc, metadata, version);
     await this.db.query(queryString, bindings);
   }
 
@@ -124,6 +124,31 @@ export class PostgresDocumentStore implements DocumentStore {
     }
 
     return result.rows[0].doc;
+  }
+
+  async getDocAndVersion<D extends object>(collectionName: string, docId: string): Promise<{doc: D, version: number} | null> {
+    const [queryString, bindings] = this.queryBuilder.makeGetDocQuery(collectionName, docId);
+    const result = await this.db.query(queryString, bindings);
+
+    if (result.rowCount !== 1) {
+      return null;
+    }
+
+    return {
+      doc: result.rows[0].doc,
+      version: parseInt(result.rows[0].version)
+    };
+  }
+
+  async getDocVersion(collectionName: string, docId: string): Promise<number | null> {
+    const [queryString, bindings] = this.queryBuilder.makeGetDocVersionQuery(collectionName, docId);
+    const result = await this.db.query(queryString, bindings);
+
+    if (result.rowCount !== 1) {
+      return null;
+    }
+
+    return parseInt(result.rows[0].version);
   }
 
   async getPartialDoc<D extends object>(collectionName: string, docId: string, partialSelect: PartialSelect): Promise<D | null> {
@@ -142,13 +167,13 @@ export class PostgresDocumentStore implements DocumentStore {
     await this.db.query(queryString, bindings);
   }
 
-  async updateMany(collectionName: string, filter: Filter, docOrSubset: object): Promise<void> {
-    const [queryString, bindings] = this.queryBuilder.makeUpdateManyQuery(collectionName, filter, docOrSubset);
+  async updateMany(collectionName: string, filter: Filter, docOrSubset: object, metadata?: object, version?: number): Promise<void> {
+    const [queryString, bindings] = this.queryBuilder.makeUpdateManyQuery(collectionName, filter, docOrSubset, metadata, version);
     await this.db.query(queryString, bindings);
   }
 
-  public async replaceMany(collectionName: string, filter: Filter, doc: object): Promise<void> {
-    const [queryString, bindings] = this.queryBuilder.makeReplaceManyQuery(collectionName, filter, doc);
+  public async replaceMany(collectionName: string, filter: Filter, doc: object, metadata?: object, version?: number): Promise<void> {
+    const [queryString, bindings] = this.queryBuilder.makeReplaceManyQuery(collectionName, filter, doc, metadata, version);
     await this.db.query(queryString, bindings);
   }
 
@@ -157,24 +182,24 @@ export class PostgresDocumentStore implements DocumentStore {
     await this.db.query(queryString, bindings);
   }
 
-  async findDocs<D extends object>(collectionName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<AsyncIterable<[string, D]>> {
+  async findDocs<D extends object>(collectionName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<AsyncIterable<[string, D, number]>> {
     this.assertSkipValid(skip);
     this.assertLimitValid(limit);
 
     const [queryString, bindings] = this.queryBuilder.makeFindDocsQuery(collectionName, filter, skip, limit, orderBy);
     const cursor = await this.db.iterableCursor(queryString, bindings);
 
-    return asyncMap(cursor, (row: any) => [row.id, row.doc]);
+    return asyncMap(cursor, (row: any) => [row.id, row.doc, row.version]);
   }
 
-  async findPartialDocs<D extends object>(collectionName: string, partialSelect: PartialSelect, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<AsyncIterable<[string, D]>> {
+  async findPartialDocs<D extends object>(collectionName: string, partialSelect: PartialSelect, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<AsyncIterable<[string, D, number]>> {
     this.assertSkipValid(skip);
     this.assertLimitValid(limit);
 
     const [queryString, bindings] = this.queryBuilder.makeFindPartialDocsQuery(collectionName, partialSelect, filter, skip, limit, orderBy);
     const cursor = await this.db.iterableCursor(queryString, bindings);
 
-    return asyncMap(cursor, (row: any) => this.transformPartialDoc(partialSelect, row));
+    return asyncMap(cursor, (row: any) => [row[PARTIAL_SELECT_DOC_ID], this.transformPartialDoc(partialSelect, row), parseInt(row[PARTIAL_SELECT_DOC_VERSION])]);
   }
 
   async findDocIds(collectionName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<string[]> {

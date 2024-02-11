@@ -58,10 +58,12 @@ const matchMetadata = (event: Event, metadataMatcher: MetadataMatcher): boolean 
 
 export class InMemoryEventStore implements EventStore {
   private streams: InMemoryStreamStore = {};
-  private readonly persistOnDisk: boolean;
+  private persistOnDisk: boolean;
+  private publishOnFlush: boolean = false;
   private readonly storageFile: string;
   private appendToListeners: AppendToListener[] = [];
   private readonly fs: Filesystem;
+  private session: {streamName: string, events: Event[]} | undefined;
 
   constructor(storageFile?: string, fs?: Filesystem) {
     this.persistOnDisk = !!storageFile;
@@ -125,7 +127,11 @@ export class InMemoryEventStore implements EventStore {
 
     this.persistOnDiskIfEnabled();
 
-    this.appendToListeners.forEach(l => l(streamName, events));
+    if(this.publishOnFlush) {
+        this.session = {streamName, events};
+    } else {
+      this.appendToListeners.forEach(l => l(streamName, events));
+    }
 
     return true;
   }
@@ -186,6 +192,25 @@ export class InMemoryEventStore implements EventStore {
     });
   }
 
+  public disableDiskStorage(): void {
+    this.persistOnDisk = false;
+    this.publishOnFlush = true;
+  }
+
+  public enableDiskStorage(): void {
+    this.persistOnDisk = this.storageFile !== '//memory';
+    this.publishOnFlush = false;
+  }
+
+  public flush(): void {
+    this.persistOnDiskIfEnabled();
+    if(this.session) {
+      const {streamName, events} = this.session;
+      this.session = undefined;
+      this.appendToListeners.forEach(l => l(streamName, events));
+    }
+  }
+
   public attachAppendToListener(listener: AppendToListener): void {
     if(!this.appendToListeners.includes(listener)) {
       this.appendToListeners.push(listener);
@@ -208,7 +233,7 @@ export class InMemoryEventStore implements EventStore {
     const events = await this.load(streamName, metadataMatcher, fromEventId, limit);
 
     for await (const event of events) {
-      this.appendToListeners.forEach(l => l(streamName, [event]));
+      this.appendToListeners.forEach(l => l(streamName, [event], true));
     }
   }
 

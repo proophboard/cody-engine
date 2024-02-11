@@ -30,6 +30,10 @@ import {ValidationError} from "ajv";
 import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-command-factory";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
+import {
+  playInformationServiceFactory
+} from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
+import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";
 
 export const makeCommandMutationFn = (
   commandInfo: PlayCommandRuntimeInfo,
@@ -64,7 +68,8 @@ export const makeCommandMutationFn = (
     const repository = makeAggregateRepository(
       aggregateDesc,
       eventReducers,
-      stateInfo
+      stateInfo,
+      config
     );
 
     const processingFunction = makeCommandHandler(
@@ -107,7 +112,8 @@ export const makeCommandMutationFn = (
 export const makeAggregateRepository = (
   aggregateDesc: AggregateDescription,
   eventReducers: PlayEventReducers,
-  stateInfo: PlayInformationRuntimeInfo
+  stateInfo: PlayInformationRuntimeInfo,
+  config: CodyPlayConfig
 ): AggregateRepository => {
   return new AggregateRepository<any>(
     getConfiguredPlayMultiModelStore(),
@@ -117,7 +123,9 @@ export const makeAggregateRepository = (
     aggregateDesc.identifier,
     makeEventReducers(eventReducers),
     makeInformationFactory(stateInfo.factory),
-    getConfiguredPlayAuthService()
+    getConfiguredPlayAuthService(),
+    playInformationServiceFactory(),
+    getConfiguredPlayMessageBox(config)
   )
 }
 

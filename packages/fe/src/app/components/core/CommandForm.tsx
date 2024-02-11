@@ -29,6 +29,7 @@ import {types} from "@app/shared/types";
 import {getRjsfValidator} from "@frontend/util/rjsf-validator";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -107,7 +108,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   }
 
   const handleSubmit = (e: IChangeEvent<any>) => {
-    let formData = e.formData;
+    let formData = cloneDeepJSON(e.formData);
     if(props.onBeforeSubmitting) {
       formData = props.onBeforeSubmitting(formData);
     }
