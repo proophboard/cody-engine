@@ -226,7 +226,7 @@ export class InMemoryDocumentStore implements DocumentStore {
 
       const doc = this.documents[collectionName][docId] as {doc: D, version: number};
 
-      if(!filterFunction(doc, docId)) {
+      if(!filterFunction(doc.doc, docId)) {
         continue;
       }
 
