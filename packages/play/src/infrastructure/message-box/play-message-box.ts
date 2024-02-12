@@ -11,7 +11,7 @@ import {
   isAggregateCommandDescription,
   QueryDescription
 } from "@event-engine/descriptions/descriptions";
-import {Payload, setMessageMetadata} from "@event-engine/messaging/message";
+import {Meta, Payload, setMessageMetadata} from "@event-engine/messaging/message";
 import {META_KEY_DELETE_HISTORY, META_KEY_DELETE_STATE} from "@event-engine/infrastructure/AggregateRepository";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
 import {makeAggregateRepository} from "@cody-play/infrastructure/commands/make-command-mutation-fn";
@@ -21,6 +21,9 @@ import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-ex
 import {PlayEventPolicyDescription, PlayEventPolicyRegistry} from "@cody-play/state/types";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
 import {User} from "@app/shared/types/core/user/user";
+import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-command-factory";
+import {makeEventFactory} from "@cody-play/infrastructure/events/make-event-factory";
+import {makeQueryFactory} from "@cody-play/queries/make-query-factory";
 
 export class PlayMessageBox implements MessageBox {
   private config: CodyPlayConfig;
@@ -51,6 +54,23 @@ export class PlayMessageBox implements MessageBox {
 
   public updateConfig(config: CodyPlayConfig) {
     this.config = config;
+  }
+
+  public async dispatch(messageName: string, payload: Payload, meta?: Meta): Promise<any> {
+    if(this.isCommand(messageName)) {
+      const commandFactory = makeCommandFactory(this.config.commands[messageName], this.config.definitions);
+      return await this.commandBus.dispatch(commandFactory(payload, meta), this.config.commands[messageName].desc);
+    }
+
+    if(this.isEvent(messageName)) {
+      const eventFactory = makeEventFactory(this.config.events[messageName], this.config.definitions);
+      return await this.eventBus.on(eventFactory(payload, meta));
+    }
+
+    if(this.isQuery(messageName)) {
+      const queryFactory = makeQueryFactory(this.config.queries[messageName], this.config.definitions);
+      return await this.queryBus.dispatch(queryFactory(payload, meta), this.config.queries[messageName].desc);
+    }
   }
 
   getCommandInfo(name: string): CommandRuntimeInfo {
