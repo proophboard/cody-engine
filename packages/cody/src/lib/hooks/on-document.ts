@@ -35,8 +35,6 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
     const serviceNames = names(service);
     let queryNames;
 
-    console.log(voMeta);
-
     if(voMeta.isQueryable) {
       queryNames = names('Get' + voNames.className);
     }
