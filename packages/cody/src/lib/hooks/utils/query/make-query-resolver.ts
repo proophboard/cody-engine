@@ -1,9 +1,10 @@
 import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
 import {Context} from "../../context";
 import {
+  isQueryableListDescription, isQueryableNotStoredStateDescription,
   isQueryableStateDescription,
   isQueryableStateListDescription,
-  isQueryableValueObjectDescription,
+  isQueryableValueObjectDescription, QueryableListDescription, QueryableNotStoredStateDescription,
   QueryableStateDescription,
   QueryableStateListDescription,
   QueryableValueObjectDescription
@@ -13,7 +14,7 @@ import {isObjectSchema, ObjectSchema} from "../json-schema/is-object-schema";
 import {voClassNameFromFQCN} from "../value-object/definitions";
 import {JSONSchema7} from "json-schema-to-ts";
 import {isExecuteRules, isFilter, isIfConditionRule, isIfNotConditionRule} from "../rule-engine/configuration";
-import {wrapExpression} from "../rule-engine/convert-rule-config-to-behavior";
+import {convertRuleConfigToQueryResolverRules, wrapExpression} from "../rule-engine/convert-rule-config-to-behavior";
 import {
   AnyOfDocIdFilter,
   AnyOfFilter,
@@ -43,6 +44,10 @@ import {
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {isCodyError} from "@proophboard/cody-utils";
 import {ResolveConfig, ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
+import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
+import {requireUncachedTypes} from "@cody-engine/cody/hooks/utils/value-object/require-uncached-types";
+import {voRegistryId} from "@cody-engine/cody/hooks/utils/value-object/vo-registry-id";
+import {withErrorCheck} from "@cody-engine/cody/hooks/utils/error-handling";
 
 export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
   if(!voMeta.isQueryable) {
@@ -53,11 +58,15 @@ export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Co
     }
   }
 
+  if(isQueryableNotStoredStateDescription(voMeta)) {
+    return makeSingleValueObjectQueryResolver(vo, voMeta, ctx);
+  }
+
   if(isQueryableStateDescription(voMeta)) {
     return makeStateQueryResolver(vo, voMeta, ctx);
   }
 
-  if(isQueryableStateListDescription(voMeta)) {
+  if(isQueryableStateListDescription(voMeta) || isQueryableListDescription(voMeta)) {
     return makeListQueryResolver(vo, voMeta, ctx);
   }
 
@@ -72,7 +81,7 @@ export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Co
   }
 }
 
-const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableValueObjectDescription, ctx: Context): string | CodyResponse => {
+const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata & (QueryableValueObjectDescription | QueryableNotStoredStateDescription), ctx: Context): string | CodyResponse => {
   const voNames = names(vo.getName());
   const querySchema = meta.querySchema;
 
@@ -89,21 +98,27 @@ const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata 
   const filters = meta.resolve?.where ? makeFiltersFromResolveConfig(vo, meta.resolve) : makeFiltersFromQuerySchema(querySchema);
 
   let jexlInit = '';
+  let jexlRules = '';
   let orderBy = 'undefined';
 
   if(meta.resolve) {
-    if(meta.resolve.where) {
-      jexlInit = `const ctx: any = {query: query.payload, meta: query.meta}\n\n  `;
+    if(meta.resolve.where || meta.resolve.rules) {
+      jexlInit = `const ctx: any = {query: query.payload, meta: query.meta}\nctx[INFORMATION_SERVICE_NAME] = infoService;\n`;
+    }
+
+    if(meta.resolve.rules) {
+      jexlRules = withErrorCheck(convertRuleConfigToQueryResolverRules, [vo, ctx, meta.resolve.rules, '  ']);
     }
 
     if(meta.resolve.orderBy) {
-      orderBy = typeof meta.resolve.orderBy === 'object'
-        ? JSON.stringify([mapOrderByProp(meta.resolve.orderBy as SortOrderItem)])
-        : JSON.stringify((meta.resolve.orderBy as SortOrder).map(orderBy => mapOrderByProp(orderBy)));
+      orderBy = JSON.stringify(mapOrderBy(meta.resolve.orderBy));
     }
   }
 
-  return `${jexlInit}const cursor = await ds.findDocs<${voNames.className}>(
+  if(meta.collection) {
+    return `${jexlInit}
+  ${jexlRules}  
+  const cursor = await ds.findDocs<${voNames.className}>(
     ${voNames.className}Desc.collection,
     ${filters},
     undefined,
@@ -118,6 +133,17 @@ const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata 
   
   return result[0];
 `
+  }
+
+  return `${jexlInit}
+  ${jexlRules}
+  
+  if(typeof ctx['information'] === 'undefined') {
+    throw new Error('The resolver rules did not assign an "information" variable that can be used as return value. Please check the query resolver config for ${vo.getName()} on prooph board.');
+  }
+  
+  return ${names(voNames.className).propertyName}(ctx['information']);
+  `
 }
 
 const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableStateDescription, ctx: Context): string | CodyResponse => {
@@ -150,7 +176,7 @@ const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableS
 `
 }
 
-const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableStateListDescription, ctx: Context): string | CodyResponse => {
+const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & (QueryableStateListDescription | QueryableListDescription ), ctx: Context): string | CodyResponse => {
   const voNames = names(vo.getName());
   const querySchema = meta.querySchema;
 
@@ -169,21 +195,27 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableSt
   const itemClassName = voClassNameFromFQCN(meta.itemType);
 
   let jexlInit = '';
+  let jexlRules = '';
   let orderBy = 'undefined';
 
   if(meta.resolve) {
-    if(meta.resolve.where) {
-      jexlInit = `const ctx: any = {query: query.payload, meta: query.meta}\n\n  `;
+    if(meta.resolve.where || meta.resolve.rules) {
+      jexlInit = `const ctx: any = {query: query.payload, meta: query.meta}\n  ctx[INFORMATION_SERVICE_NAME] = infoService;\n`;
+    }
+
+    if(meta.resolve.rules) {
+      jexlRules = withErrorCheck(convertRuleConfigToQueryResolverRules, [vo, ctx, meta.resolve.rules, '  ']);
     }
 
     if(meta.resolve.orderBy) {
-      orderBy = Array.isArray(meta.resolve.orderBy)
-        ? JSON.stringify((meta.resolve.orderBy as SortOrder).map(orderBy => mapOrderByProp(orderBy)))
-        : JSON.stringify([mapOrderByProp(meta.resolve.orderBy as SortOrderItem)]);
+      orderBy = JSON.stringify(mapOrderBy(meta.resolve.orderBy));
     }
   }
 
-  return `${jexlInit}const cursor = await ds.findDocs<${itemClassName}>(
+  if(meta.collection) {
+    return `${jexlInit}
+  ${jexlRules}
+  const cursor = await ds.findDocs<${itemClassName}>(
     ${voNames.className}Desc.collection,
     ${filters},
     undefined,
@@ -193,13 +225,21 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableSt
   
   return asyncIteratorToArray(asyncMap(cursor, ([,d]) => ${names(itemClassName).propertyName}(d)));
 `
-}
-
-const mapOrderByProp = (orderBy: SortOrderItem): SortOrderItem => {
-  return {
-    prop: `${orderBy.prop}`,
-    sort: orderBy.sort
   }
+
+  return `${jexlInit}
+  ${jexlRules}
+  
+  if(typeof ctx['information'] === 'undefined') {
+    throw new Error('The resolver rules did not assign an "information" variable that can be used as return value. Please check the query resolver config for ${vo.getName()} on prooph board.');
+  }
+  
+  if(!Array.isArray(ctx['information'])) {
+    throw new Error('The "information" variable assigned in the rules is not a list. Please check the query resolver config for ${vo.getName()} on prooph board.');
+  }
+  
+  return ctx['information'].map(item => ${names(itemClassName).propertyName}(item));
+`
 }
 
 const makeFiltersFromResolveConfig = (vo: Node, resolveConfig: ResolveConfig, indent = '  '): string | CodyResponse => {

@@ -3,7 +3,7 @@ import {User} from "@app/shared/types/core/user/user";
 import {filters} from "@event-engine/infrastructure/DocumentStore/Filter/index";
 import {QueryableStateListDescription, QueryableValueObjectDescription} from "@event-engine/descriptions/descriptions";
 import {ResolveConfig} from "@cody-engine/cody/hooks/utils/value-object/types";
-import {SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
+import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {Filter as DSFilter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {
   isExecuteRules,
@@ -98,13 +98,6 @@ export const makeFiltersFromQuerySchema = (schema: JSONSchema7, params: any, use
   })
 
   return new filters.AndFilter(eqFilters[0], eqFilters[1], ...eqFilters.slice(2));
-}
-
-export const mapOrderByProp = (orderBy: SortOrderItem): SortOrderItem => {
-  return {
-    prop: `${orderBy.prop}`,
-    sort: orderBy.sort
-  }
 }
 
 const makeEqFilterFromProperty = (prop: string, params: any): DSFilter => {

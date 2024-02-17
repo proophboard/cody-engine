@@ -60,6 +60,12 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     meta.querySchema = normalizeRefs(addSchemaTitles('Get ' + vo.getName(), meta.querySchema), service);
   }
 
+  let isNotStored = false;
+
+  if(typeof meta.collection === "boolean" && !meta.collection) {
+    isNotStored = true;
+  }
+
   const normalizedSchema = normalizeRefs(addSchemaTitles(vo.getName(), meta.schema), service) as JSONSchema7;
 
   const hasIdentifier = !!meta.identifier;
@@ -76,11 +82,6 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
 
   if(hasIdentifier) {
     convertedMeta.identifier = meta.identifier;
-  }
-
-  if(isQueryable) {
-    convertedMeta.querySchema = normalizeRefs(meta.querySchema, service) as JSONSchema7;
-    convertedMeta.collection = meta.collection || voNames.constantName.toLowerCase() + '_collection';
   }
 
   if(meta.initialize) {
@@ -104,21 +105,25 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     convertedMeta.itemType = refVORuntimeInfo.desc.name;
 
     if(isQueryable) {
-      if(!isStateDescription(refVORuntimeInfo.desc)) {
-        return {
-          cody: `The queryable list value object "${vo.getName()}" references value object: "${refVORuntimeInfo.desc.name}", which is not a state value object. This combination is not supported.`,
-          type: CodyResponseType.Error,
-          details: `Define an identifier for "${refVORuntimeInfo.desc.name}" in its metadata and tell me about it.`
-        }
+      if(isStateDescription(refVORuntimeInfo.desc)) {
+        convertedMeta.hasIdentifier = true;
+        convertedMeta.identifier = refVORuntimeInfo.desc.identifier;
       }
-      convertedMeta.hasIdentifier = true;
-      convertedMeta.identifier = refVORuntimeInfo.desc.identifier;
 
       if(isQueryableStateDescription(refVORuntimeInfo.desc)) {
         convertedMeta.collection = refVORuntimeInfo.desc.collection;
       }
     }
   }
+
+  if(isQueryable) {
+    convertedMeta.querySchema = normalizeRefs(meta.querySchema, service) as JSONSchema7;
+    if(!convertedMeta.collection && convertedMeta.hasIdentifier && (typeof meta.collection === "undefined" || typeof meta.collection === "string")) {
+      convertedMeta.collection = meta.collection || voNames.constantName.toLowerCase() + '_collection';
+    }
+  }
+
+  convertedMeta.isNotStored = isNotStored;
 
   return convertedMeta;
 }

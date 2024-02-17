@@ -10,6 +10,7 @@ import {
   TableUiSchema
 } from "@cody-engine/cody/hooks/utils/value-object/types";
 import {JSONSchema7} from "json-schema";
+import {isScalarSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-scalar-schema";
 
 export const getTablePageSizeConfig = (uiSchema: TableUiSchema): {pageSize: number, pageSizeOptions: number[]} => {
   let pageSize: number, pageSizeOptions: number[];
@@ -36,12 +37,24 @@ export const getTableDensity = (uiSchema: TableUiSchema): GridDensity => {
   return uiSchema.table?.density || 'comfortable';
 }
 
-export const getColumns = (uiSchema: TableUiSchema, itemSchema: JSONSchema7): StringOrTableColumnUiSchema[] => {
-  return uiSchema.table?.columns || deriveColumnsFromSchema(itemSchema);
+export const getColumns = (information: PlayInformationRuntimeInfo, uiSchema: TableUiSchema, itemSchema: JSONSchema7): StringOrTableColumnUiSchema[] => {
+  return uiSchema.table?.columns || deriveColumnsFromSchema(information, itemSchema);
 }
 
-const deriveColumnsFromSchema = (itemSchema: JSONSchema7): TableColumnUiSchema[] => {
+const deriveColumnsFromSchema = (information: PlayInformationRuntimeInfo, itemSchema: JSONSchema7): TableColumnUiSchema[] => {
   const columns: TableColumnUiSchema[] = [];
+
+  if(isScalarSchema(itemSchema)) {
+    const name = itemSchema.title || names(information.desc.name).className;
+    columns.push({
+      field: name,
+      headerName: camelCaseToTitle(name),
+      flex: 1,
+      value: [{rule: "always", then: {assign: {variable: "value", value: "row"}}}]
+    })
+
+    return columns;
+  }
 
   if(!isObjectSchema(itemSchema)) {
     throw new Error(`I'm trying to derive table columns for the list, but the item schema is not of type object.\n To solve the issue either reference another object or change the schema to be an object.`)

@@ -10,7 +10,7 @@ import {PlayValueObjectMetadata, playVoMetadata} from "@cody-play/infrastructure
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {playEnsureAllRefsAreKnown} from "@cody-play/infrastructure/cody/schema/play-ensure-all-refs-are-known";
 import {
-  detectDescriptionType,
+  detectDescriptionType, QueryableListDescription, QueryableNotStoredStateDescription,
   QueryableStateDescription, QueryableStateListDescription,
   QueryableValueObjectDescription,
   StateDescription,
@@ -21,6 +21,7 @@ import {playUpdateProophBoardInfo} from "@cody-play/infrastructure/cody/pb-info/
 import {namespaceToJSONPointer} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 import {playDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {JSONSchema7} from "json-schema";
+import {normalizeProjectionRules} from "@cody-play/infrastructure/rule-engine/normalize-projection-rules";
 
 export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -62,6 +63,10 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
     });
 
     const queryPbInfo = playUpdateProophBoardInfo(vo, ctx, config.queries[queryName]?.desc);
+
+    if(voMeta.resolve && voMeta.resolve.rules) {
+      voMeta.resolve = {...voMeta.resolve, rules: normalizeProjectionRules(voMeta.resolve.rules, service, config)}
+    }
 
     dispatch({
       type: "ADD_QUERY",
@@ -112,6 +117,7 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         isList: true,
         isQueryable: false,
         itemIdentifier: voMeta.identifier,
+        itemType: voMeta.itemType,
 
       } as StateListDescription);
     case "QueryableValueObjectDescription":
@@ -125,6 +131,16 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         collection: voMeta.collection,
 
       } as QueryableValueObjectDescription);
+    case "QueryableNotStoredStateDescription":
+      return ({
+        ...pbInfo,
+        name: voName,
+        hasIdentifier: true,
+        isList: false,
+        isQueryable: true,
+        query: queryName,
+        isNotStored: true,
+      } as QueryableNotStoredStateDescription);
     case "QueryableStateDescription":
       return ({
         ...pbInfo,
@@ -145,10 +161,20 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         isList: true,
         isQueryable: true,
         itemIdentifier: voMeta.identifier,
+        itemType: voMeta.itemType,
         query: queryName,
         collection: voMeta.collection,
 
       } as QueryableStateListDescription);
+    case "QueryableListDescription":
+      return ({
+        ...pbInfo,
+        name: voName,
+        hasIdentifier: false,
+        isList: true,
+        isQueryable: true,
+        query: queryName,
+      } as QueryableListDescription);
     default:
       return ({
         ...pbInfo,

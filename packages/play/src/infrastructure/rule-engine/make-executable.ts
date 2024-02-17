@@ -1,6 +1,6 @@
 import {
-  isAssignVariable, isCallService, isDeleteInformation,
-  isExecuteRules, isForEach,
+  isAssignVariable, isCallService, isCountInformation, isDeleteInformation,
+  isExecuteRules, isFindInformation, isForEach,
   isIfConditionRule,
   isIfNotConditionRule, isInsertInformation,
   isRecordEvent, isReplaceInformation,
@@ -8,8 +8,8 @@ import {
   isTriggerCommand, isUpdateInformation, isUpsertInformation,
   PropMapping,
   Rule,
-  ThenAssignVariable, ThenCallService, ThenDeleteInformation,
-  ThenExecuteRules, ThenForEach, ThenInsertInformation,
+  ThenAssignVariable, ThenCallService, ThenCountInformation, ThenDeleteInformation,
+  ThenExecuteRules, ThenFindInformation, ThenForEach, ThenInsertInformation,
   ThenRecordEvent, ThenReplaceInformation,
   ThenThrowError, ThenTriggerCommand,
   ThenType, ThenUpdateInformation, ThenUpsertInformation
@@ -30,6 +30,7 @@ import {
   InformationService
 } from "@server/infrastructure/information-service/information-service";
 import {makeFilter} from "@cody-play/queries/make-filters";
+import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
 
 type ExecutionContext = any;
 
@@ -138,6 +139,9 @@ const execThenSync = (then: ThenType, ctx: ExecutionContext): ExecutionContext =
       return execTriggerCommandSync(then as ThenTriggerCommand, ctx);
     case isCallService(then):
       return execCallServiceSync(then as ThenCallService, ctx);
+    case isFindInformation(then):
+    case isCountInformation(then):
+      throw new Error(`Information find rules can only be used in asynchronous contexts like query resolvers, policies or processors`);
     case isInsertInformation(then):
     case isUpsertInformation(then):
     case isUpdateInformation(then):
@@ -166,6 +170,10 @@ const execThenAsync = async (then: ThenType, ctx: ExecutionContext): Promise<Exe
       return await execTriggerCommandAsync(then as ThenTriggerCommand, ctx);
     case isCallService(then):
       return await execCallServiceAsync(then as ThenCallService, ctx);
+    case isFindInformation(then):
+      return await execFindInformation(then as ThenFindInformation, ctx);
+    case isCountInformation(then):
+      return await execCountInformation(then as ThenCountInformation, ctx);
     case isInsertInformation(then):
       return await execInsertInformationAsync(then as ThenInsertInformation, ctx);
     case isUpsertInformation(then):
@@ -273,6 +281,40 @@ const execCallServiceAsync = async (then: ThenCallService, ctx: ExecutionContext
   } else {
     ctx[then.call.result.variable] = result;
   }
+
+  return ctx;
+}
+
+const execFindInformation = async (then: ThenFindInformation, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: find information "${then.find.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const variable = then.find.variable || 'information';
+
+  ctx[variable] = await infoService.find(
+    then.find.information,
+    makeFilter(then.find.filter, ctx),
+    then.find.skip,
+    then.find.limit,
+    then.find.orderBy ? mapOrderBy(then.find.orderBy) : undefined
+  );
+
+  return ctx;
+}
+
+const execCountInformation = async (then: ThenCountInformation, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: count information "${then.count.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const variable = then.count.variable || 'information';
+
+  ctx[variable] = await infoService.find(then.count.information, makeFilter(then.count.filter, ctx));
 
   return ctx;
 }

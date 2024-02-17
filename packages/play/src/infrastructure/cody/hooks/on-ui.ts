@@ -10,7 +10,10 @@ import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {names} from "@event-engine/messaging/helpers";
 import {playIsTopLevelPage} from "@cody-play/infrastructure/cody/ui/play-is-top-level-page";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
-import {isQueryableStateDescription} from "@event-engine/descriptions/descriptions";
+import {
+  isQueryableNotStoredStateDescription,
+  isQueryableStateDescription
+} from "@event-engine/descriptions/descriptions";
 import {
   playGetNodeFromSyncedNodes,
   playGetSourcesOfType, playGetTargetsOfType
@@ -36,7 +39,7 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       const syncedVm = playwithErrorCheck(playGetNodeFromSyncedNodes, [vM, ctx.syncedNodes]);
       const vMMeta = playwithErrorCheck(playVoMetadata, [syncedVm, ctx, config.types]);
 
-      if(isQueryableStateDescription(vMMeta)) {
+      if(isQueryableStateDescription(vMMeta) || isQueryableNotStoredStateDescription(vMMeta)) {
         if(!routeParams.includes(vMMeta.identifier)) {
           routeParams.push(vMMeta.identifier);
         }

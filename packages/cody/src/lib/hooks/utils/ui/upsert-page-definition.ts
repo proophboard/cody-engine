@@ -10,7 +10,11 @@ import {getSourcesOfType, isCodyError} from "@proophboard/cody-utils";
 import {generateFiles} from "@nx/devkit";
 import {toJSON} from "../to-json";
 import {getVoMetadata} from "../value-object/get-vo-metadata";
-import {isQueryableStateDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {
+  isQueryableListDescription, isQueryableNotStoredStateDescription,
+  isQueryableStateDescription,
+  isQueryableStateListDescription
+} from "@event-engine/descriptions/descriptions";
 import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
 import {getNodesOfTypeNearby} from "../node-tree";
 import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference";
@@ -216,7 +220,7 @@ const getComponentNames = (viewModels: List<Node>, ctx: Context, existingPageDef
       return service;
     }
 
-    if(isQueryableStateDescription(voMeta) || isQueryableStateListDescription(voMeta)) {
+    if(isQueryableStateDescription(voMeta) || isQueryableNotStoredStateDescription(voMeta) || isQueryableStateListDescription(voMeta) || isQueryableListDescription(voMeta)) {
       const componentName = `${names(service).className}.${names(vo.getName()).className}`;
       if(!componentNames.includes(componentName)) {
         componentNames.push(componentName);

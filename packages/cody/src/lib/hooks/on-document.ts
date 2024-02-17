@@ -11,7 +11,7 @@ import {
 } from "./utils/value-object/namespace";
 import {voPath} from "./utils/value-object/vo-path";
 import {
-  detectDescriptionType,
+  detectDescriptionType, isQueryableListDescription, isQueryableNotStoredStateDescription,
   isQueryableStateListDescription,
   isQueryableValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
@@ -91,11 +91,11 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
 
       let itemNames, itemNS, isList = false, isSingleVOQuery = false;
 
-      if(isQueryableStateListDescription(voMeta)) {
+      if(isQueryableStateListDescription(voMeta) || isQueryableListDescription(voMeta)) {
         itemNames = names(voClassNameFromFQCN(voMeta.itemType));
         itemNS = namespaceNames(valueObjectNamespaceFromFQCN(voMeta.itemType));
         isList = true;
-      } else if (isQueryableValueObjectDescription(voMeta)) {
+      } else if (isQueryableValueObjectDescription(voMeta) || isQueryableNotStoredStateDescription(voMeta)) {
         isSingleVOQuery = true;
       }
 

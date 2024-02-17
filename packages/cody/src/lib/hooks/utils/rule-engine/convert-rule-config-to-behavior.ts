@@ -3,13 +3,16 @@ import {
   ConditionRule,
   isAssignVariable,
   isCallService,
+  isCountInformation,
   isDeleteInformation,
   isExecuteRules,
+  isFindInformation,
   isForEach,
   isIfConditionRule,
   isIfNotConditionRule,
   isInsertInformation,
-  isRecordEvent, isReplaceInformation,
+  isRecordEvent,
+  isReplaceInformation,
   isThrowError,
   isTriggerCommand,
   isUpdateInformation,
@@ -18,8 +21,10 @@ import {
   Rule,
   ThenAssignVariable,
   ThenCallService,
+  ThenCountInformation,
   ThenDeleteInformation,
   ThenExecuteRules,
+  ThenFindInformation,
   ThenForEach,
   ThenInsertInformation,
   ThenRecordEvent,
@@ -40,6 +45,10 @@ import {getVOFromDataReference} from "@cody-engine/cody/hooks/utils/value-object
 import {voRegistryId} from "@cody-engine/cody/hooks/utils/value-object/vo-registry-id";
 import {makeFilter} from "@cody-engine/cody/hooks/utils/query/make-query-resolver";
 import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
+import {visitRulesThen} from "@cody-engine/cody/hooks/utils/rule-engine/visit-rule-then";
+import {validateResolverRules} from "@cody-engine/cody/hooks/utils/rule-engine/validate-resolver-rules";
+import {getVoMetadata} from "@cody-engine/cody/hooks/utils/value-object/get-vo-metadata";
+import {isQueryableListDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 
 export interface Variable {
   name: string;
@@ -108,6 +117,28 @@ export const convertRuleConfigToPolicyRules = (policy: Node, ctx: Context, rules
   for (const rule of rules) {
     lines.push("");
     const res = convertRule(policy, ctx, rule, lines, indent);
+    if(isCodyError(res)) {
+      return res;
+    }
+  }
+
+  lines.push("");
+
+  return lines.join("\n");
+}
+
+export const convertRuleConfigToQueryResolverRules = (vo: Node, ctx: Context, rules: Rule[], indent = '  '): string | CodyResponse => {
+  if(!rules.length) {
+    return '';
+  }
+
+  validateResolverRules(rules);
+
+  const lines: string[] = [];
+
+  for (const rule of rules) {
+    lines.push("");
+    const res = convertRule(vo, ctx, rule, lines, indent);
     if(isCodyError(res)) {
       return res;
     }
@@ -299,6 +330,10 @@ const convertThen = (node: Node, ctx: Context, then: ThenType, rule: Rule, lines
       return convertThenForEach(node, ctx, then as ThenForEach, rule, lines, indent, evalSync);
     case isCallService(then):
       return convertThenCallService(node, ctx, then as ThenCallService, rule, lines, indent, evalSync);
+    case isFindInformation(then):
+      return convertThenFind(node, ctx, then as ThenFindInformation, rule, lines, indent, evalSync);
+    case isCountInformation(then):
+      return convertThenCount(node, ctx, then as ThenCountInformation, rule, lines, indent, evalSync);
     case isInsertInformation(then):
       return convertThenInsertInformation(node, ctx, then as ThenInsertInformation, rule, lines, indent, evalSync);
     case isUpsertInformation(then):
@@ -441,6 +476,57 @@ const convertThenCallService = (node: Node, ctx: Context, then: ThenCallService,
   } else {
     lines.push(`${indent}ctx['${then.call.result.variable}'] = ${invokeService}`);
   }
+
+  return true;
+}
+
+const convertThenFind = (node: Node, ctx: Context, then: ThenFindInformation, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
+  if(evalSync) {
+    return {
+      cody: `Find information rules can only be used in query resolvers. Please check rule configuration of ${node.getName()}`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  const vo = withErrorCheck(getVOFromDataReference, [then.find.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  const variable = then.find.variable || 'information';
+
+  lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].find('${registryId}',`);
+  makeFilter(then.find.filter, lines, indent + '  ');
+  if(typeof then.find.skip !== 'undefined') {
+    lines.push(`${indent}  , ${then.find.skip}`);
+  }
+  if(typeof then.find.limit !== 'undefined') {
+    lines.push(`${indent}  , ${then.find.limit}`);
+  }
+  if(then.find.orderBy) {
+    lines.push(`${indent}  , ${JSON.stringify(then.find.orderBy)}`);
+  }
+
+  lines.push(`${indent});`);
+
+  return true;
+}
+
+const convertThenCount = (node: Node, ctx: Context, then: ThenCountInformation, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
+  if(evalSync) {
+    return {
+      cody: `Count information rules can only be used in query resolvers. Please check rule configuration of ${node.getName()}`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  const vo = withErrorCheck(getVOFromDataReference, [then.count.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  const variable = then.count.variable || 'information';
+
+  lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].count('${registryId}',`);
+  makeFilter(then.count.filter, lines, indent + '  ');
+
+  lines.push(`${indent});`);
 
   return true;
 }

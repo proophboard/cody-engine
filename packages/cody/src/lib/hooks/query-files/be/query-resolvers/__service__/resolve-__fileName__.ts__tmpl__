@@ -4,6 +4,11 @@ import jexl from "@app/shared/jexl/get-configured-jexl";
 import {<%= className %>} from "@app/shared/queries/<%= serviceNames.fileName %>/<%= fileName %>";
 import {<%= voNames.propertyName %>, <%= voNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %><%= ns.fileName %><%= voNames.fileName %>";
 import {<%= voNames.className %>Desc} from "@app/shared/types/<%= serviceNames.fileName %><%= ns.fileName %><%= voNames.fileName %>.desc";
+import {
+  INFORMATION_SERVICE_NAME,
+  InformationService
+} from "@server/infrastructure/information-service/information-service";
+import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
 <% if (!isList) { %>import {NotFoundError} from "@event-engine/messaging/error/not-found-error";<% } %>
 <% if (isList) { %>import {<%= itemNames.propertyName %>, <%= itemNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %><%= itemNS.fileName %><%= itemNames.fileName %>";<% } %>
 <% if (isList || isSingleVOQuery) { %>import {filters} from "@event-engine/infrastructure/DocumentStore/Filter/index";<% } %>
@@ -12,6 +17,7 @@ import {<%= voNames.className %>Desc} from "@app/shared/types/<%= serviceNames.f
 
 export const resolve<%= className %> = async (query: Query<<%= className %>>): Promise<<%= voNames.className %>> => {
   const ds = getConfiguredDocumentStore();
+  <% if (isList || isSingleVOQuery) { %>const infoService = getExternalServiceOrThrow<InformationService>(INFORMATION_SERVICE_NAME, {});<% } %>
 
   <%- resolve %>
 }

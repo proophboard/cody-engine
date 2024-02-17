@@ -16,7 +16,7 @@ import {
   PlayQueryRegistry,
   PlaySchemaDefinitions
 } from "@cody-play/state/types";
-import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {isQueryableListDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {UiSchema} from "@rjsf/utils";
 import {
@@ -44,7 +44,7 @@ import {PageDefinition} from "@frontend/app/pages/page-definitions";
 import {JSONSchema7} from "json-schema";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
-  if(!isQueryableStateListDescription(informationInfo.desc)) {
+  if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc)) {
     throw new Error(`Play table view can only be used to show queriable state list information, but "${informationInfo.desc.name}" is not of this information type. ${CONTACT_PB_TEAM}`)
   }
 
@@ -63,7 +63,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
   const density = getTableDensity(uiSchema);
   const hideToolbar = !!uiSchema.table?.hideToolbar;
 
-  const itemIdentifier = informationInfo.desc.itemIdentifier;
+  const itemIdentifier = isQueryableStateListDescription(informationInfo.desc)? informationInfo.desc.itemIdentifier : undefined;
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
@@ -71,8 +71,6 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
 
   const columns: GridColDef[] = compileTableColumns(
     params,
-    query,
-    itemIdentifier,
     informationInfo,
     uiSchema,
     queries,
@@ -96,7 +94,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
         <DataGrid
           columns={columns}
           rows={query.data}
-          getRowId={(row) => row[itemIdentifier]}
+          getRowId={(row) => itemIdentifier ? row[itemIdentifier] : JSON.stringify(row)}
           sx={{ width: '100%' }}
           slots={{
             toolbar: hideToolbar? undefined : GridToolbar,
@@ -117,8 +115,6 @@ type RefQueryMap = {[column: string]: UseQueryResult}
 
 const compileTableColumns = (
   params: any,
-  mainQuery: UseQueryResult,
-  itemIdentifier: string,
   information: PlayInformationRuntimeInfo,
   uiSchema: TableUiSchema,
   queries: PlayQueryRegistry,
@@ -132,7 +128,7 @@ const compileTableColumns = (
     throw new Error(`Cannot render table. Schema of "${information.desc.name}" is not a list.`);
   }
 
-  const columns = getColumns(uiSchema, resolveRef(schema.items, schemaDefinitions));
+  const columns = getColumns(information, uiSchema, resolveRef(schema.items, schemaDefinitions));
 
   const columnQueries: RefQueryMap = {};
 

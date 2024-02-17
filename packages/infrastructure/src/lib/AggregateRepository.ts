@@ -184,8 +184,6 @@ export class AggregateRepository<T extends object = any> {
             session.appendEventsTo(this.publicStream, publicEvents);
         }
 
-        console.log("before live projections");
-
         // Trigger live projections
         this.infoService.useSession(session);
         try {
@@ -196,7 +194,6 @@ export class AggregateRepository<T extends object = any> {
             return await this.store.commitSession(session);
         } catch (e) {
             this.infoService.forgetSession();
-            console.log("exception caught before store commit", e);
             throw e;
         }
     }

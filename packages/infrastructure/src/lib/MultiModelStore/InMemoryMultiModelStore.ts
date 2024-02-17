@@ -28,7 +28,6 @@ export class InMemoryMultiModelStore implements MultiModelStore {
   }
 
   async commitSession(session: Session): Promise<boolean> {
-    console.log("commit session");
     session.commit();
 
     const currentStreams = await this.eventStore.exportStreams();
