@@ -26,7 +26,8 @@ const emptyPersona: Partial<Persona> = {
   roles: [],
   email: '',
   displayName: '',
-  description: ''
+  description: '',
+  attributes: {},
 }
 
 const PersonaSchema = {
@@ -47,6 +48,11 @@ const PersonaSchema = {
         title: "Roles",
         items: {type: "string", default: "Anyone", title: 'Role'},
         minItems: 1
+      },
+      attributes: {
+        type: "object",
+        title: "Attributes",
+        additionalProperties: true
       }
     }
   }
@@ -98,7 +104,7 @@ const PlayPersonaModal = (props: PlayPersonaModalProps) => {
     });
 
     changedPersonas.unshift(config.personas[0]);
-    debugger;
+
     dispatch({
       type: "SET_PERSONAS",
       personas: changedPersonas

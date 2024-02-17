@@ -5,7 +5,8 @@ interface UserProps {
   userId: string;
   email: string;
   avatar?: string;
-  roles: UserRole[],
+  roles: UserRole[];
+  attributes?: Record<string, unknown>;
 }
 
 export type User = Readonly<UserProps>;

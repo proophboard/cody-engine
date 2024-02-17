@@ -15,6 +15,7 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addFunction('count', count);
     configuredJexl.addFunction('uuid', generateUuuid);
     configuredJexl.addFunction('isRole', isRole);
+    configuredJexl.addFunction('userAttr', getAttribute);
 
     registerArrayExtensions(configuredJexl);
     registerDateTimeExtensions(configuredJexl);
@@ -51,6 +52,18 @@ const generateUuuid = () => {
 
 const isRole = (user: User, role: UserRole): boolean => {
   return user.roles.includes(role);
+}
+
+const getAttribute = (user: User, attrName: string, notSetValue: any = null): any => {
+  if(!user.attributes) {
+    return notSetValue;
+  }
+
+  if(typeof user.attributes[attrName] === "undefined") {
+    return notSetValue;
+  }
+
+  return user.attributes[attrName];
 }
 
 export default getConfiguredJexl();
