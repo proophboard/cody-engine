@@ -7,7 +7,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {
   getVoMetadata
 } from "../value-object/get-vo-metadata";
-import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {isQueryableListDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import {FQCNFromDefinitionId} from "../value-object/definitions";
 import {getVoFromSyncedNodes} from "../value-object/get-vo-from-synced-nodes";
 import {isObjectSchema} from "../json-schema/is-object-schema";
@@ -28,6 +28,7 @@ import {
   TableColumnUiSchema,
   ValueObjectMetadata
 } from "@cody-engine/cody/hooks/utils/value-object/types";
+import {isScalarSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-scalar-schema";
 
 export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetadata, ctx: Context, tree: FsTree): Promise<boolean|CodyResponse> => {
   const service = detectService(vo, ctx);
@@ -47,9 +48,9 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
   const serviceNames = names(service);
   const voNames = names(vo.getName());
 
-  if(!isQueryableStateListDescription(voMeta)) {
+  if(!isQueryableStateListDescription(voMeta) && !isQueryableListDescription(voMeta)) {
     return {
-      cody: `Upps, upsertListViewComponent is called with a non-QueryableStateList Value Object.`,
+      cody: `Upps, upsertListViewComponent is called with a non-queryable list Value Object.`,
       type: CodyResponseType.Error,
       details: `This should never happen and is a bug in the source code. Please contact the prooph board team for bugfixing.`
     }
@@ -259,6 +260,19 @@ const deriveColumnsFromSchema = (vo: Node, voMeta: ValueObjectMetadata, itemVO: 
   const columns: TableColumnUiSchema[] = [];
 
   const itemSchema = itemVOMeta.schema;
+
+
+  if(isScalarSchema(itemSchema)) {
+    const name = itemSchema.title || names(itemVO.getName()).className;
+    columns.push({
+      field: name,
+      headerName: camelCaseToTitle(name),
+      flex: 1,
+      value: [{rule: "always", then: {assign: {variable: "value", value: "row"}}}]
+    })
+
+    return columns;
+  }
 
   if(!isObjectSchema(itemSchema)) {
     return {

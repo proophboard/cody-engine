@@ -32,14 +32,15 @@ export interface PlayValueObjectMetadataRaw {
   querySchema?: any;
   resolve?: ResolveConfig;
   ns?: string;
-  collection?: string;
+  collection?: string | boolean;
   initialize?: Rule[];
   uiSchema?: UiSchema & TableUiSchema;
 }
 
 export interface ResolveConfig {
   where?: Rule,
-  orderBy?: SortOrderItem | SortOrder
+  orderBy?: SortOrderItem | SortOrder,
+  rules?: Rule[],
 }
 
 export interface RefTableColumn {
@@ -147,6 +148,12 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
   const hasIdentifier = !!meta.identifier;
   const isQueryable = !!meta.querySchema;
 
+  let isNotStored = false;
+
+  if(typeof meta.collection === "boolean" && !meta.collection) {
+    isNotStored = true;
+  }
+
   const convertedMeta: PlayValueObjectMetadata = {
     schema: normalizedSchema,
     ns,
@@ -158,11 +165,6 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
 
   if(hasIdentifier) {
     convertedMeta.identifier = meta.identifier;
-  }
-
-  if(isQueryable) {
-    convertedMeta.querySchema = playNormalizeRefs(meta.querySchema, service) as JSONSchema7;
-    convertedMeta.collection = meta.collection || voNames.constantName.toLowerCase() + '_collection';
   }
 
   if(meta.initialize) {
@@ -186,21 +188,25 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
     convertedMeta.itemType = refVORuntimeInfo.desc.name;
 
     if(isQueryable) {
-      if(!isStateDescription(refVORuntimeInfo.desc)) {
-        return {
-          cody: `The queryable list value object "${vo.getName()}" references value object: "${refVORuntimeInfo.desc.name}", which is not a state value object. This combination is not supported.`,
-          type: CodyResponseType.Error,
-          details: `Define an identifier for "${refVORuntimeInfo.desc.name}" in its metadata and tell me about it.`
-        }
+      if(isStateDescription(refVORuntimeInfo.desc)) {
+        convertedMeta.hasIdentifier = true;
+        convertedMeta.identifier = refVORuntimeInfo.desc.identifier;
       }
-      convertedMeta.hasIdentifier = true;
-      convertedMeta.identifier = refVORuntimeInfo.desc.identifier;
 
       if(isQueryableStateDescription(refVORuntimeInfo.desc)) {
         convertedMeta.collection = refVORuntimeInfo.desc.collection;
       }
     }
   }
+
+  if(isQueryable) {
+    convertedMeta.querySchema = meta.querySchema as JSONSchema7;
+    if(!convertedMeta.collection && convertedMeta.hasIdentifier && (typeof meta.collection === "undefined" || typeof meta.collection === "string")) {
+      convertedMeta.collection = meta.collection || voNames.constantName.toLowerCase() + '_collection';
+    }
+  }
+
+  convertedMeta.isNotStored = isNotStored;
 
   return convertedMeta;
 }

@@ -74,6 +74,7 @@ export interface ValueObjectDescriptionFlags {
   isList: boolean;
   hasIdentifier: boolean;
   isQueryable: boolean;
+  isNotStored?: boolean;
 }
 
 export interface ValueObjectDescription extends ProophBoardDescription, ValueObjectDescriptionFlags {
@@ -114,6 +115,14 @@ export const isQueryableStateDescription = (desc: ValueObjectDescriptionFlags): 
   return isStateDescription(desc) && desc.isQueryable;
 }
 
+export interface QueryableNotStoredStateDescription extends StateDescription {
+  query: string;
+}
+
+export const isQueryableNotStoredStateDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableNotStoredStateDescription => {
+  return isStateDescription(desc) && desc.isQueryable && !!desc.isNotStored;
+}
+
 export interface QueryableStateListDescription extends StateListDescription {
   query: string;
   collection: string;
@@ -124,12 +133,25 @@ export const isQueryableStateListDescription = (desc: ValueObjectDescriptionFlag
   return isStateListDescription(desc) && desc.isQueryable;
 }
 
-export type ValueObjectDescriptionType = "ValueObjectDescription" | "StateDescription" | "StateListDescription" | "QueryableValueObjectDescription" | "QueryableStateDescription" | "QueryableStateListDescription";
+export interface QueryableListDescription extends ValueObjectDescription {
+  query: string;
+  itemType: string;
+}
+
+export const isQueryableListDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableListDescription => {
+  return desc.isList && !desc.hasIdentifier && desc.isQueryable;
+}
+
+export type ValueObjectDescriptionType = "ValueObjectDescription" | "StateDescription" | "StateListDescription" | "QueryableValueObjectDescription" | "QueryableStateDescription" | "QueryableNotStoredStateDescription" | "QueryableStateListDescription" | "QueryableListDescription";
 
 export const detectDescriptionType = (desc: ValueObjectDescriptionFlags): ValueObjectDescriptionType => {
   switch (true) {
     case isQueryableStateListDescription(desc):
       return "QueryableStateListDescription";
+    case isQueryableListDescription(desc):
+      return "QueryableListDescription";
+    case isQueryableNotStoredStateDescription(desc):
+      return "QueryableNotStoredStateDescription";
     case isQueryableStateDescription(desc):
       return "QueryableStateDescription";
     case isStateListDescription(desc):

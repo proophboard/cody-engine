@@ -5,7 +5,11 @@ import {asyncWithErrorCheck, CodyResponseException, withErrorCheck} from "./util
 import {getUiMetadata} from "./utils/ui/get-ui-metadata";
 import {getNodeFromSyncedNodes} from "./utils/node-tree";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
-import {isQueryableStateDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {
+  isQueryableListDescription, isQueryableNotStoredStateDescription,
+  isQueryableStateDescription,
+  isQueryableStateListDescription
+} from "@event-engine/descriptions/descriptions";
 import {isTopLevelPage} from "./utils/ui/is-top-level-page";
 import {detectRoute} from "./utils/ui/detect-route";
 import {loadPageDefinition} from "./utils/ui/load-page-definition";
@@ -31,7 +35,7 @@ export const onUi: CodyHook<Context> = async (ui, ctx) => {
       const syncedVm = withErrorCheck(getNodeFromSyncedNodes, [vM, ctx.syncedNodes]);
       const vMMeta = withErrorCheck(getVoMetadata, [syncedVm, ctx]);
 
-      if(isQueryableStateDescription(vMMeta)) {
+      if(isQueryableStateDescription(vMMeta) || isQueryableNotStoredStateDescription(vMMeta)) {
         if(!routeParams.includes(vMMeta.identifier)) {
           routeParams.push(vMMeta.identifier);
         }
@@ -77,11 +81,11 @@ export const onUi: CodyHook<Context> = async (ui, ctx) => {
     for (const viewModel of viewModels) {
       const viewModelMeta = withErrorCheck(getVoMetadata, [viewModel, ctx]);
 
-      if(isQueryableStateListDescription(viewModelMeta)) {
+      if(isQueryableStateListDescription(viewModelMeta) || isQueryableListDescription(viewModelMeta)) {
         await asyncWithErrorCheck(upsertListViewComponent, [viewModel, viewModelMeta, ctx, tree]);
       }
 
-      if(isQueryableStateDescription(viewModelMeta)) {
+      if(isQueryableStateDescription(viewModelMeta) || isQueryableNotStoredStateDescription(viewModelMeta)) {
         await asyncWithErrorCheck(upsertStateViewComponent, [viewModel, viewModelMeta, ctx, tree]);
       }
     }

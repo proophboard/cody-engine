@@ -3,7 +3,10 @@ import {Context} from "../../context";
 import {getSourcesOfType, isCodyError} from "@proophboard/cody-utils";
 import {getNodeFromSyncedNodes} from "../node-tree";
 import {getVoMetadata} from "../value-object/get-vo-metadata";
-import {isQueryableStateDescription} from "@event-engine/descriptions/descriptions";
+import {
+  isQueryableNotStoredStateDescription,
+  isQueryableStateDescription
+} from "@event-engine/descriptions/descriptions";
 import {UiMetadata} from "@cody-engine/cody/hooks/utils/ui/types";
 
 export const isTopLevelPage = (ui: Node, uiMeta: UiMetadata, ctx: Context): boolean | CodyResponse => {
@@ -36,7 +39,7 @@ export const isTopLevelPage = (ui: Node, uiMeta: UiMetadata, ctx: Context): bool
       return false;
     }
 
-    if(isQueryableStateDescription(vMMeta)) {
+    if(isQueryableStateDescription(vMMeta) || isQueryableNotStoredStateDescription(vMMeta)) {
       isTopLevelPage = false;
     }
   })

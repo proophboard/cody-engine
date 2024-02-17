@@ -11,14 +11,15 @@ export interface ValueObjectMetadataRaw {
   querySchema?: any;
   resolve?: ResolveConfig;
   ns?: string;
-  collection?: string;
+  collection?: string | boolean;
   initialize?: Rule[];
   uiSchema?: UiSchema & TableUiSchema;
 }
 
 export interface ResolveConfig {
   where?: Rule,
-  orderBy?: SortOrderItem | SortOrder
+  orderBy?: SortOrderItem | SortOrder,
+  rules?: Rule[],
 }
 
 export interface RefTableColumn {
