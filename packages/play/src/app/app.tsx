@@ -37,6 +37,7 @@ import {PlayMessageBox} from "@cody-play/infrastructure/message-box/play-message
 import {
   getConfiguredPlayReadModelProjector
 } from "@cody-play/infrastructure/multi-model-store/configured-play-read-model-projector";
+import PageDataProvider from "@frontend/app/providers/PageData";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -131,11 +132,13 @@ export function App() {
     <QueryClientProvider client={queryClient!}>
       <User>
         <PlayConfigProvider>
-          <CodyMessageServerInjection>
-            <PendingChanges>
-              <RouterProvider router={router} />
-            </PendingChanges>
-          </CodyMessageServerInjection>
+          <PageDataProvider>
+            <CodyMessageServerInjection>
+              <PendingChanges>
+                <RouterProvider router={router} />
+              </PendingChanges>
+            </CodyMessageServerInjection>
+          </PageDataProvider>
         </PlayConfigProvider>
       </User>
       <ReactQueryDevtools initialIsOpen={false} />

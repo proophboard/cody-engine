@@ -7,6 +7,8 @@ import {Plus} from "mdi-material-ui";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {User} from "@app/shared/types/core/user/user";
 import {useUser} from "@frontend/hooks/use-user";
+import {PageData} from "@app/shared/types/core/page-data/page-data";
+import {usePageData} from "@frontend/hooks/use-page-data";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -50,7 +52,7 @@ export const commandTitle = (cmd: CommandRuntimeInfo): string => {
   return title as string;
 }
 
-const determineButtonConfig = (props: CommandButtonProps, user: User):
+const determineButtonConfig = (props: CommandButtonProps, user: User, page: PageData):
   {
     variant: "text" | "outlined" | "contained",
     color: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
@@ -78,7 +80,7 @@ const determineButtonConfig = (props: CommandButtonProps, user: User):
     }
 
     if(typeof btnCDisabled === "string") {
-      disabled = jexl.evalSync(btnCDisabled, {data: {...props.formData}, user});
+      disabled = jexl.evalSync(btnCDisabled, {data: {...props.formData}, user, page});
     }
   }
 
@@ -94,7 +96,7 @@ const determineButtonConfig = (props: CommandButtonProps, user: User):
     }
 
     if(typeof btnCHidden === "string") {
-      hidden = jexl.evalSync(btnCHidden, {data: {...props.formData}, user});
+      hidden = jexl.evalSync(btnCHidden, {data: {...props.formData}, user, page});
     }
   }
 
@@ -110,7 +112,8 @@ const determineButtonConfig = (props: CommandButtonProps, user: User):
 const CommandButton = (props: CommandButtonProps) => {
   const {desc} = props.command;
   const [user,] = useUser();
-  const {variant, color, disabled, style, hidden} = determineButtonConfig(props, user);
+  const [page,] = usePageData();
+  const {variant, color, disabled, style, hidden} = determineButtonConfig(props, user, page);
   const newAggregate = isAggregateCommandDescription(desc) && desc.newAggregate;
 
   if(hidden) {

@@ -1,13 +1,15 @@
 import Grid2 from "@mui/material/Unstable_Grid2";
 import {useParams} from "react-router-dom";
 import CommandBar from "@frontend/app/layout/CommandBar";
-import React, {useContext} from "react";
+import React, {useContext, useEffect} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
 import {PlayInformationRegistry} from "@cody-play/state/types";
 import {isQueryableListDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import PlayTableView from "@cody-play/app/components/core/PlayTableView";
 import PlayStateView from "@cody-play/app/components/core/PlayStateView";
+import {usePageData} from "@frontend/hooks/use-page-data";
+import {PageDataContext} from "@frontend/app/providers/PageData";
 
 interface Props {
   page: string
@@ -16,6 +18,13 @@ interface Props {
 export const PlayStandardPage = (props: Props) => {
   const routeParams = useParams();
   const {config} = useContext(configStore);
+  const {reset} = useContext(PageDataContext);
+
+  useEffect(() => {
+    return () => {
+      reset();
+    }
+  }, []);
 
   const page = config.pages[props.page];
 

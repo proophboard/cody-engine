@@ -29,9 +29,12 @@ import {
   ValueObjectMetadata
 } from "@cody-engine/cody/hooks/utils/value-object/types";
 import {isScalarSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-scalar-schema";
+import {namespaceNames} from "@cody-engine/cody/hooks/utils/value-object/namespace";
+import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 
 export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetadata, ctx: Context, tree: FsTree): Promise<boolean|CodyResponse> => {
   const service = detectService(vo, ctx);
+  const ns = namespaceNames(voMeta.ns);
   voMeta = {...voMeta};
 
   if(voMeta.uiSchema) {
@@ -47,6 +50,8 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
 
   const serviceNames = names(service);
   const voNames = names(vo.getName());
+  const voRegistryId = `${serviceNames.className}${ns.JSONPointer}${voNames.className}`;
+  const dataReference = registryIdToDataReference(voRegistryId);
 
   if(!isQueryableStateListDescription(voMeta) && !isQueryableListDescription(voMeta)) {
     return {
@@ -94,6 +99,7 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
     pageSizeConfig,
     density,
     hideToolbar,
+    dataReference,
     imports: imports.join(";\n"),
     hooks: hooks.join(";\n"),
     ...voNames,

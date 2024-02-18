@@ -1,5 +1,7 @@
 import {CircularProgress} from "@mui/material";
 import StateView from "@frontend/app/components/core/StateView";
+import {usePageData} from "@frontend/hooks/use-page-data";
+import {useEffect} from "react";
 import {useGet<%= className %>} from "@frontend/queries/<%= serviceNames.fileName %>/use-get-<%= fileName %>";
 import {<%= serviceNames.className %><%= nsClassName %><%= className %>VORuntimeInfo} from "@app/shared/types/<%= serviceNames.fileName %><%= nsFilename %><%= fileName %>";
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
@@ -8,7 +10,12 @@ import {<%= serviceNames.className %>Get<%= className %>QueryRuntimeInfo} from "
 type <%= className %>Props = Record<string, string> & {<%= identifier %>: string};
 
 const <%= className %> = (props: <%= className %>Props) => {
+  const [,addQueryResult] = usePageData();
   const query = useGet<%= className %>(determineQueryPayload(props, <%= serviceNames.className %>Get<%= className %>QueryRuntimeInfo));
+
+  useEffect(() => {
+    addQueryResult('<%= dataReference %>', query);
+  }, []);
 
   return <>
     {query.isLoading && <CircularProgress />}
