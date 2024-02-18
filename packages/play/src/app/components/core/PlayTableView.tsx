@@ -42,6 +42,8 @@ import {
 } from "@cody-engine/cody/hooks/utils/value-object/types";
 import {PageDefinition} from "@frontend/app/pages/page-definitions";
 import {JSONSchema7} from "json-schema";
+import {usePageData} from "@frontend/hooks/use-page-data";
+import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc)) {
@@ -49,6 +51,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
   }
 
   const {config: {queries, types, pages, definitions}} = useContext(configStore);
+  const [,addQueryResult] = usePageData();
 
   const query = useApiQuery(informationInfo.desc.query, params);
 
@@ -67,6 +70,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
+    addQueryResult(registryIdToDataReference(informationInfo.desc.name), query);
   }, [params]);
 
   const columns: GridColDef[] = compileTableColumns(

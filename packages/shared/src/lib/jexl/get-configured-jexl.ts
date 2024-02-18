@@ -6,6 +6,7 @@ import {User} from "@app/shared/types/core/user/user";
 import {UserRole} from "@app/shared/types/core/user/user-role";
 import {registerArrayExtensions} from "@app/shared/jexl/array-extension/register";
 import {registerDateTimeExtensions} from "@app/shared/jexl/datetime-extension/register";
+import {PageData} from "@app/shared/types/core/page-data/page-data";
 
 let configuredJexl: Jexl;
 
@@ -16,6 +17,7 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addFunction('uuid', generateUuuid);
     configuredJexl.addFunction('isRole', isRole);
     configuredJexl.addFunction('userAttr', getAttribute);
+    configuredJexl.addFunction('pageData', getPageData);
 
     registerArrayExtensions(configuredJexl);
     registerDateTimeExtensions(configuredJexl);
@@ -64,6 +66,22 @@ const getAttribute = (user: User, attrName: string, notSetValue: any = null): an
   }
 
   return user.attributes[attrName];
+}
+
+const getPageData = (pageData: PageData | undefined, name: string, defaultValue: any): any => {
+  if(!pageData) {
+    return defaultValue;
+  }
+
+  if(!pageData[name]) {
+    return defaultValue;
+  }
+
+  if(!pageData[name].isSuccess) {
+    return defaultValue;
+  }
+
+  return pageData[name].data;
 }
 
 export default getConfiguredJexl();
