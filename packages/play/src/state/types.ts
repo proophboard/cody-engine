@@ -1,4 +1,4 @@
-import {PageDefinition, TopLevelPage} from "@frontend/app/pages/page-definitions";
+import {PageDefinition, TopLevelGroup, TopLevelPage} from "@frontend/app/pages/page-definitions";
 import React from "react";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {
@@ -25,7 +25,7 @@ import {Persona} from "@app/shared/extensions/personas";
 /* UI */
 export type PlayPageDefinition = Omit<PageDefinition, 'breadcrumb'> & {breadcrumb: string | DynamicBreadcrumbMetadata, service: string};
 
-export type PlayTopLevelPage = Omit<Omit<TopLevelPage, 'sidebar'>, 'breadcrumb'> & {sidebar: {label: string, icon: string, invisible?: string | boolean}} & PlayPageDefinition;
+export type PlayTopLevelPage = Omit<Omit<TopLevelPage, 'sidebar'>, 'breadcrumb'> & {sidebar: {label: string, icon: string, invisible?: string | boolean, group?: string | TopLevelGroup}} & PlayPageDefinition;
 
 export interface PlaySubLevelPage extends PlayPageDefinition {
   routeParams: string[];

@@ -1,15 +1,21 @@
 import * as React from 'react';
-import {Box, Button, Drawer, List, ListItem, useMediaQuery, useTheme} from "@mui/material";
-import {NavLink} from "react-router-dom";
-import {isTopLevelPage, PageDefinition} from "@frontend/app/pages/page-definitions";
-import jexl from "@app/shared/jexl/get-configured-jexl";
+import {Box, Drawer, List, useMediaQuery, useTheme} from "@mui/material";
+import {
+  belongsToGroup,
+  isTopLevelPage,
+  PageDefinition,
+  TopLevelGroup,
+  TopLevelPage
+} from "@frontend/app/pages/page-definitions";
 import {useUser} from "@frontend/hooks/use-user";
 import {useContext} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import {PlayTopLevelPage} from "@cody-play/state/types";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
-import PlaySidebarSubMenu from "@cody-play/app/layout/PlaySidebarSubMenu";
+import {makeSidebarItem} from "@frontend/app/layout/Sidebar";
+import SidebarNavGroup from "@frontend/app/layout/SidebarNavGroup";
+import {names} from "@event-engine/messaging/helpers";
 
 interface OwnProps {
   open: boolean;
@@ -17,6 +23,7 @@ interface OwnProps {
 }
 
 type SidebarProps = OwnProps;
+type Group = {config: TopLevelGroup, pages: PlayTopLevelPage[]};
 
 const Sidebar = (props: SidebarProps) => {
 
@@ -28,56 +35,41 @@ const Sidebar = (props: SidebarProps) => {
     defaultMatches: true,
   });
 
+  const groups: Record<string, Group> = {};
   const topLevelPages: PlayTopLevelPage[] = Object.values(config.pages).filter(p => isTopLevelPage(p as unknown as PageDefinition)) as PlayTopLevelPage[];
-  const topLevelPageItems = topLevelPages.map(({route, sidebar: {label, icon, invisible}}) => {
-    if(typeof invisible === "boolean" && invisible) {
-      return <></>
+
+  const topLevelPagesWithoutGroups = topLevelPages.filter(p => {
+    const pGroup = belongsToGroup(p);
+
+    if(!pGroup) {
+      return true;
     }
 
-    if(typeof invisible === "string" && jexl.evalSync(invisible, {user})) {
-      return <></>
+    if(groups[pGroup.label]) {
+      groups[pGroup.label].pages.push(p);
+      if(pGroup.icon !== 'square') {
+        groups[pGroup.label].config.icon = pGroup.icon;
+      }
+      return false;
     }
 
-    return <div key={route}><ListItem
-      key={route}
-      disableGutters={true}
-      sx={{
-        display: 'flex',
-        paddingTop: 0,
-        paddingBottom: 0,
-      }}
-    >
-      <Button
-        sx={{
-          color: 'inherit',
-          padding: '10px 8px',
-          justifyContent: 'flex-start',
-          textTransform: 'none',
-          letterSpacing: 0,
-          width: '100%',
-          fontWeight: theme.typography.fontWeightMedium,
-          "&.active": {
-            color: theme.palette.primary.main,
-            fontWeight: theme.typography.fontWeightMedium,
-          }
-        }}
-        component={NavLink}
-        to={route}
-      >
-        <Box component={"div"} sx={{
-          width: 24,
-          height: 24,
-          display: 'flex',
-          alignItems: 'center',
-          marginRight: theme.spacing(1),
-        }}>
-          <MdiIcon  icon={icon} />
-        </Box>
-        {label}
-      </Button>
-    </ListItem>
-      {pageMatch.pathname.includes(route) && <PlaySidebarSubMenu/>}
-    </div>
+    groups[pGroup.label] = {config: pGroup, pages: [p]};
+    // Keep first group page in list, so that we can insert group at the same index
+    return true;
+  })
+
+  const topLevelPageItems = topLevelPagesWithoutGroups.map(({route, sidebar: {label, icon, invisible, group}}) => {
+    const pGroup = belongsToGroup({sidebar: {group}})
+    if(pGroup) {
+      const cachedPGroup = groups[pGroup.label];
+      return <SidebarNavGroup name={'group-' + names(cachedPGroup.config.label).fileName}
+                              label={cachedPGroup.config.label}
+                              Icon={<MdiIcon icon={cachedPGroup.config.icon} />}
+                              pages={cachedPGroup.pages.map(p => makeSidebarItem(p.route, p.sidebar.label, <MdiIcon icon={p.sidebar.icon} />, theme, user, pageMatch, p.sidebar.invisible))}
+      />
+    }
+
+    return makeSidebarItem(route, label, <MdiIcon  icon={icon} />, theme, user, pageMatch, invisible)
   });
 
   return <Drawer

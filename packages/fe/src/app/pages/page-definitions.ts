@@ -14,13 +14,30 @@ export interface PageDefinition {
 }
 
 export interface TopLevelPage extends PageDefinition {
-  sidebar: {label: string, Icon: typeof SvgIcon, invisible?: string | boolean}
+  sidebar: {label: string, Icon: typeof SvgIcon, invisible?: string | boolean, group?: string | TopLevelGroup}
+}
+
+export interface TopLevelGroup {
+  label: string,
+  icon: string,
 }
 
 export type TopLevelPageWithProophBoardDescription = TopLevelPage & ProophBoardDescription;
 
 export const isTopLevelPage = (page: PageDefinition): page is TopLevelPage => {
   return page.topLevel;
+}
+
+export const belongsToGroup = (page: {sidebar: {group?: string | TopLevelGroup}}): TopLevelGroup | undefined => {
+  if(!page.sidebar.group) {
+    return;
+  }
+
+  if(typeof page.sidebar.group === "string") {
+    return {label: page.sidebar.group, icon: 'square'}
+  }
+
+  return page.sidebar.group;
 }
 
 export interface SubLevelPage extends PageDefinition {

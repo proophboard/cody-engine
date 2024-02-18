@@ -2,11 +2,21 @@ import * as React from 'react';
 import {PropsWithChildren, useEffect, useState} from "react";
 import {Card, CardActions, CardHeader, Divider, useTheme} from "@mui/material";
 
-interface OwnProps {
+export interface Tab {
+  label: string;
+  route: string;
+  active: boolean;
+}
 
+interface OwnProps {
+  tabs?: Tab[];
 }
 
 type CommandBarProps = OwnProps & PropsWithChildren;
+
+// const renderTabs = (tabs: Tab[]) {
+//   const tabComponents = tabs.map(tab =>  )
+// }
 
 const CommandBar = (props: CommandBarProps) => {
   const [fixed, setFixed] = useState<boolean>(false);
