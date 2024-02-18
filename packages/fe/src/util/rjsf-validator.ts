@@ -5,7 +5,7 @@ let validator: ValidatorType;
 
 export const getRjsfValidator = (): ValidatorType => {
   if(!validator) {
-    validator = customizeValidator({ajvOptionsOverrides: {$data: true, useDefaults: true}})
+    validator = customizeValidator({ajvOptionsOverrides: {$data: true, useDefaults: true, strict: false}})
   }
 
   return validator;
