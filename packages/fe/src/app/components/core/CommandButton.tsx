@@ -61,8 +61,21 @@ const determineButtonConfig = (props: CommandButtonProps, user: User, page: Page
     hidden: boolean
   } => {
   const uiSchema = props.command.uiSchema || {};
+  const jexlCtx = {data: {...props.formData}, user, page};
 
   const uiButtonConfig = uiSchema['ui:button'] || {};
+
+  if(uiButtonConfig['variantExpr']) {
+    uiButtonConfig['variant'] = jexl.evalSync(uiButtonConfig['variantExpr'], jexlCtx);
+  }
+
+  if(uiButtonConfig['colorExpr']) {
+    uiButtonConfig['color'] = jexl.evalSync(uiButtonConfig['colorExpr'], jexlCtx);
+  }
+
+  if(uiButtonConfig['styleExpr']) {
+    uiButtonConfig['style'] = jexl.evalSync(uiButtonConfig['styleExpr'], jexlCtx);
+  }
 
   const variant = props.variant || uiButtonConfig['variant'] || 'contained';
   const color = props.buttonColor || uiButtonConfig['color'] || 'primary';
@@ -80,7 +93,7 @@ const determineButtonConfig = (props: CommandButtonProps, user: User, page: Page
     }
 
     if(typeof btnCDisabled === "string") {
-      disabled = jexl.evalSync(btnCDisabled, {data: {...props.formData}, user, page});
+      disabled = jexl.evalSync(btnCDisabled, jexlCtx);
     }
   }
 
@@ -96,7 +109,7 @@ const determineButtonConfig = (props: CommandButtonProps, user: User, page: Page
     }
 
     if(typeof btnCHidden === "string") {
-      hidden = jexl.evalSync(btnCHidden, {data: {...props.formData}, user, page});
+      hidden = jexl.evalSync(btnCHidden, jexlCtx);
     }
   }
 
