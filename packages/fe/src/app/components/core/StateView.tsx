@@ -116,6 +116,7 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
 const StateView = (props: StateViewProps) => {
   const theme = useTheme();
   const [user,] = useUser();
+  const [pageData,] = useUser();
 
   const resolvedUiSchema = resolveUiSchema(props.description.schema as any, types);
   const mainUiSchema = props.description.uiSchema;
@@ -123,7 +124,7 @@ const StateView = (props: StateViewProps) => {
   const uiSchema = Object.keys(mergedUiSchema).length > 0
     ? {
       "ui:readonly": true,
-      ...normalizeUiSchema(mergedUiSchema, {data: props.state, user})
+      ...normalizeUiSchema(mergedUiSchema, {form: props.state, user, page: pageData})
     }
     : {"ui:readonly": true};
 
@@ -142,6 +143,7 @@ const StateView = (props: StateViewProps) => {
         validator={getRjsfValidator()}
         children={<></>}
         formData={props.state}
+        formContext={{data: props.state}}
         uiSchema={uiSchema}
         className="stateview"
         templates={
