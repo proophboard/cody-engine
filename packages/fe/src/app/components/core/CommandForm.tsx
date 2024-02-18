@@ -30,6 +30,7 @@ import {getRjsfValidator} from "@frontend/util/rjsf-validator";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+import {usePageData} from "@frontend/hooks/use-page-data";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -58,6 +59,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   const [liveValidate, setLiveValidate] = useState(false);
   const [submittedFormData, setSubmittedFormData] = useState<{[prop: string]: any}>();
   const [user,] = useUser();
+  const [pageData,] = usePageData();
   const mutation = useMutation({
     mutationKey: [props.command.desc.name],
     mutationFn: props.commandFn,
@@ -134,7 +136,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
 
   const mainUiSchema = props.command.uiSchema ? props.command.uiSchema : undefined;
   const resolvedUiSchema = resolveUiSchema(props.command.schema as any, types);
-  const uiSchema = normalizeUiSchema({...resolvedUiSchema, ...mainUiSchema}, {data: formData, user});
+  const uiSchema = normalizeUiSchema({...resolvedUiSchema, ...mainUiSchema}, {form: formData, user, page: pageData});
 
   const schema = resolveRefs(cloneSchema(props.command.schema as any), props.definitions) as RJSFSchema;
 
@@ -156,7 +158,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
               ref={(form) => formRef = form}
               onSubmit={handleSubmit}
               formData={formData}
-              formContext={formData}
+              formContext={{data: formData}}
               uiSchema={uiSchema}
               liveValidate={liveValidate}
               showErrorList={false}

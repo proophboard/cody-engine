@@ -19,6 +19,7 @@ import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {names} from "@event-engine/messaging/helpers";
 import {mapProperties} from "@app/shared/utils/map-properties";
 import {useUser} from "@frontend/hooks/use-user";
+import {usePageData} from "@frontend/hooks/use-page-data";
 
 // Copied from: https://github.com/rjsf-team/react-jsonschema-form/blob/main/packages/material-ui/src/SelectWidget/SelectWidget.tsx
 // and modified to use useApiQuery and turn result into select options
@@ -31,6 +32,7 @@ interface ParsedUiOptions {
   value: string,
   addItemCommand: string | null,
   query: Record<string, string>,
+  filter?: string,
 }
 
 const getVOFromTypes = (refOrFQCN: string, rootSchema: JSONSchemaWithId): ValueObjectRuntimeInfo => {
@@ -77,6 +79,7 @@ const parseOptions = (options: any, rootSchema: JSONSchemaWithId): ParsedUiOptio
     value: options.value,
     addItemCommand: options.addItemCommand || null,
     query: options.query || {},
+    filter: options.filter,
   }
 }
 
@@ -112,15 +115,16 @@ export default function DataSelectWidget<
   const parsedOptions = parseOptions(options, registry.rootSchema as JSONSchemaWithId);
   const routeParams = useParams();
   const [user,] = useUser();
+  const [pageData,] = usePageData();
 
   const hasQueryMapping = Object.keys(parsedOptions.query).length > 0;
 
   const mappedParams: Record<string, any> = hasQueryMapping ? {} : routeParams;
   const propertyMapping: Record<string, string> = {};
 
-  if(hasQueryMapping) {
-    const mappingCtx = {...routeParams, user};
+  const jexlCtx = {...routeParams, form: formContext?.data || {}, user, page: pageData};
 
+  if(hasQueryMapping) {
     for (const mappedKey in parsedOptions.query) {
       const mappingExpr = parsedOptions.query[mappedKey];
 
@@ -129,20 +133,26 @@ export default function DataSelectWidget<
         continue;
       }
 
-      mappedParams[mappedKey] = jexl.evalSync(mappingExpr, mappingCtx);
+      mappedParams[mappedKey] = jexl.evalSync(mappingExpr, jexlCtx);
     }
   }
 
   const query = useApiQuery(parsedOptions.data.query, mapProperties(mappedParams, propertyMapping));
 
   if(query.isSuccess) {
-    (query.data as any[]).forEach(item => {
-      selectOptions.push({
-        label: jexl.evalSync(parsedOptions.label, {data: item}),
-        value: jexl.evalSync(parsedOptions.value, {data: item}),
-        readonly: false
-      });
-    })
+    (query.data as any[])
+      .filter(item => {
+        if(parsedOptions.filter) {
+          return jexl.evalSync(parsedOptions.filter, {...jexlCtx, data: item})
+        }
+      })
+      .forEach(item => {
+        selectOptions.push({
+          label: jexl.evalSync(parsedOptions.label, {...jexlCtx, data: item}),
+          value: jexl.evalSync(parsedOptions.value, {...jexlCtx, data: item}),
+          readonly: false
+        });
+      })
 
     if(!required) {
       selectOptions.push({

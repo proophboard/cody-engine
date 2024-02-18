@@ -7,6 +7,7 @@ import {UserRole} from "@app/shared/types/core/user/user-role";
 import {registerArrayExtensions} from "@app/shared/jexl/array-extension/register";
 import {registerDateTimeExtensions} from "@app/shared/jexl/datetime-extension/register";
 import {PageData} from "@app/shared/types/core/page-data/page-data";
+import {registerStringExtensions} from "@app/shared/jexl/string-extension/register";
 
 let configuredJexl: Jexl;
 
@@ -14,11 +15,13 @@ const getConfiguredJexl = (): Jexl => {
   if(!configuredJexl) {
     configuredJexl = new jexl.Jexl() as Jexl;
     configuredJexl.addFunction('count', count);
+    configuredJexl.addFunction('merge', merge);
     configuredJexl.addFunction('uuid', generateUuuid);
     configuredJexl.addFunction('isRole', isRole);
     configuredJexl.addFunction('userAttr', getAttribute);
     configuredJexl.addFunction('pageData', getPageData);
 
+    registerStringExtensions(configuredJexl);
     registerArrayExtensions(configuredJexl);
     registerDateTimeExtensions(configuredJexl);
 
@@ -46,6 +49,24 @@ const count = (val: any) => {
   }
 
   return val ? 1 : 0;
+}
+
+const merge = (val1: any, val2: any) => {
+  if(Array.isArray(val1)) {
+    if(!Array.isArray(val2)) {
+      val2 = [val2];
+    }
+    return [...val1, ...val2];
+  }
+
+  if(typeof val1 === "object") {
+    if(typeof val2 !== "object") {
+      val2 = {merged: val2};
+    }
+    return {...val1, ...val2};
+  }
+
+  return val1.toString() + val2.toString();
 }
 
 const generateUuuid = () => {
