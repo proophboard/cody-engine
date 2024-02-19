@@ -79,8 +79,6 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       mergedCommands.push(...commands.toArray());
     }
 
-    let invisible: string | undefined;
-
     const page = topLevelPage ? ({
       service: serviceNames.className,
       route,
@@ -92,6 +90,7 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
         icon: 'square'
       },
       breadcrumb: meta.breadcrumb,
+      tab: meta.tab,
     } as PlayTopLevelPage) : ({
       service: serviceNames.className,
       route,
@@ -99,7 +98,8 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       commands: mergedCommands,
       components: mergedComponents,
       topLevel: false,
-      breadcrumb: meta.breadcrumb
+      breadcrumb: meta.breadcrumb,
+      tab: meta.tab,
     } as PlaySubLevelPage);
 
     dispatch({

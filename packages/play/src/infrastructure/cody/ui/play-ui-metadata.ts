@@ -10,7 +10,7 @@ import {playConvertToRoleCheck} from "@cody-play/infrastructure/role/play-conver
 export type PlayUiMetadata = UiMetadata & {sidebar?: {label: string, icon: string, invisible: string}};
 
 export const playUiMetadata = (ui: Node, ctx: ElementEditedContext): PlayUiMetadata | CodyResponse => {
-  const meta = playParseJsonMetadata(ui) as UiMetadata;
+  const meta = playParseJsonMetadata(ui) as UiMetadata & {sidebar?: {hidden?: string}};
 
   if(playIsCodyError(meta)) {
     return meta;
@@ -22,6 +22,10 @@ export const playUiMetadata = (ui: Node, ctx: ElementEditedContext): PlayUiMetad
     metadata.sidebar.icon = names(metadata.sidebar.icon).className;
   }
 
+  if(metadata.tab?.icon) {
+    metadata.tab.icon = names(metadata.tab.icon).className;
+  }
+
   if(metadata.sidebar) {
     const allowedRoles = playAllowedRoles(ui, ctx);
 
@@ -29,7 +33,11 @@ export const playUiMetadata = (ui: Node, ctx: ElementEditedContext): PlayUiMetad
       return allowedRoles;
     }
 
-    metadata.sidebar.invisible = allowedRoles.count() ? playConvertToRoleCheck(allowedRoles) : undefined;
+    if(metadata.sidebar.hidden) {
+      metadata.sidebar.invisible = metadata.sidebar.hidden;
+    }
+
+    metadata.sidebar.invisible = allowedRoles.count() ? playConvertToRoleCheck(allowedRoles) : metadata.sidebar.invisible;
   }
 
   return metadata as PlayUiMetadata;

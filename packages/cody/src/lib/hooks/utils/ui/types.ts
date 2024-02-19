@@ -1,4 +1,6 @@
 import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {SxProps} from "@mui/material";
+import {Tab} from "@frontend/app/pages/page-definitions";
 
 export interface DynamicBreadcrumbMetadata {
   data: string;
@@ -10,6 +12,7 @@ export interface UiMetadata {
   routeParams?: string[];
   sidebar?: { label?: string; icon?: string; show?: boolean | Rule[], invisible?: string };
   breadcrumb?: string | DynamicBreadcrumbMetadata;
+  tab?: Tab;
 }
 
 export const isDynamicBreadcrumb = (breadcrumb: string | DynamicBreadcrumbMetadata | undefined): breadcrumb is DynamicBreadcrumbMetadata => {

@@ -1,13 +1,22 @@
-import {PageDefinition} from "@frontend/app/pages/page-definitions";
+import {PageDefinition, Tab} from "@frontend/app/pages/page-definitions";
 import Grid2 from "@mui/material/Unstable_Grid2";
-import {useParams} from "react-router-dom";
+import {generatePath, useParams} from "react-router-dom";
 import CommandBar from "@frontend/app/layout/CommandBar";
 import {loadCommandComponent} from "@frontend/util/components/load-command-components";
-import {views as viewComponents} from "@frontend/app/components/views";
 import {loadViewComponent} from "@frontend/util/components/load-view-components";
+import {PageRegistry, pages} from "@frontend/app/pages/index";
 
 interface Props {
   page: PageDefinition
+}
+
+const findTabGroup = (groupName: string, pages: PageRegistry, routeParams: Readonly<Record<string, string>>): Tab[] => {
+  return Object.values(pages).filter(p => p.tab && p.tab.group === groupName).map(p => {
+    return {
+      ...p.tab!,
+      route: generatePath(p.route, routeParams)
+    }
+  });
 }
 
 export const StandardPage = (props: Props) => {
@@ -18,7 +27,13 @@ export const StandardPage = (props: Props) => {
     return <Command key={commandName} {...routeParams} />
   });
 
-  const commandBar = cmdBtns.length ? <Grid2 xs={12}><CommandBar>{cmdBtns}</CommandBar></Grid2> : <></>;
+  let tabs;
+
+  if(props.page.tab) {
+    tabs = findTabGroup(props.page.tab.group, pages, routeParams as Readonly<Record<string, string>>);
+  }
+
+  const commandBar = cmdBtns.length || tabs ? <Grid2 xs={12}><CommandBar tabs={tabs}>{cmdBtns}</CommandBar></Grid2> : <></>;
 
   const components = props.page.components.map((valueObjectName, index) => {
     const ViewComponent = loadViewComponent(valueObjectName);
