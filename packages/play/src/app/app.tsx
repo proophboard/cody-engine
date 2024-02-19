@@ -64,7 +64,6 @@ export function App() {
 
   document.title = config.appName;
 
-
   if(!messageBoxRef) {
     const es = getConfiguredPlayEventStore();
     messageBoxRef = getConfiguredPlayMessageBox(config);

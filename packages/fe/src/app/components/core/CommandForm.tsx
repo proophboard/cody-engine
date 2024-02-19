@@ -58,6 +58,7 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 const CommandForm = (props: CommandFormProps, ref: any) => {
   let formRef: any = useRef();
+  const [isInitialized, setInitialized] = useState(false);
   const [formData, setFormData] = useState<{[prop: string]: any}>({});
   const [liveValidate, setLiveValidate] = useState(false);
   const [user,] = useUser();
@@ -78,6 +79,11 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   useEffect(() => {
     mutation.reset();
     setFormData({...props.formData});
+    setInitialized(true);
+
+    return () => {
+      setInitialized(false);
+    }
   }, [props.command]);
 
   useEffect(() => {
@@ -106,13 +112,17 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   }
 
   const handleChange = (e: IChangeEvent<any>) => {
+    if(!isInitialized) {
+      return;
+    }
+
     if(debounceTimer) {
       clearTimeout(debounceTimer);
     }
 
     debounceTimer = setTimeout(() => {
       setFormData(cloneDeepJSON(e.formData));
-      console.log("on change");
+      console.log("on change", e);
     }, 300);
 
     if(props.onChange) {
