@@ -1,5 +1,5 @@
 import {QueryClient} from "@tanstack/react-query";
-import {SvgIcon} from "@mui/material";
+import {SvgIcon, SxProps} from "@mui/material";
 import {ProophBoardDescription} from "@event-engine/descriptions/descriptions";
 
 export type UnsubscribeBreadcrumbListener = () => void;
@@ -11,6 +11,7 @@ export interface PageDefinition {
   breadcrumb: BreadcrumbFn;
   components: string[];
   commands: string[];
+  tab?: Omit<Tab, "route">;
 }
 
 export interface TopLevelPage extends PageDefinition {
@@ -20,6 +21,17 @@ export interface TopLevelPage extends PageDefinition {
 export interface TopLevelGroup {
   label: string,
   icon: string,
+}
+
+export interface Tab {
+  group: string;
+  label: string;
+  route: string;
+  icon?: string;
+  style?: SxProps;
+  styleExpr?: string;
+  hidden?: string;
+  disabled?: string;
 }
 
 export type TopLevelPageWithProophBoardDescription = TopLevelPage & ProophBoardDescription;

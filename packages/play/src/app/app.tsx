@@ -14,7 +14,7 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import queryClient from "@frontend/extensions/http/configured-react-query";
 import MainLayout from "@cody-play/app/layout/MainLayout";
-import React, {useContext, useEffect, useRef, useState} from "react";
+import React, {useContext, useEffect, useState} from "react";
 import {SnackbarProvider} from "notistack";
 import ScrollToTop from "@frontend/app/components/core/ScrollToTop";
 import User from "@frontend/app/providers/User";
@@ -30,8 +30,7 @@ import CodyMessageServerInjection from "@cody-play/app/components/core/CodyMessa
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
 import {PlayStreamListener} from "@cody-play/infrastructure/multi-model-store/make-stream-listener";
 import PlayToggleColorMode from "@cody-play/app/layout/PlayToggleColorMode";
-import PendingChanges, {PendingChangesContext} from "@cody-play/infrastructure/multi-model-store/PendingChanges";
-import {MessageBox} from "@event-engine/messaging/message-box";
+import PendingChanges from "@cody-play/infrastructure/multi-model-store/PendingChanges";
 import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";
 import {PlayMessageBox} from "@cody-play/infrastructure/message-box/play-message-box";
 import {

@@ -1,22 +1,34 @@
 import Grid2 from "@mui/material/Unstable_Grid2";
-import {useParams} from "react-router-dom";
+import {generatePath, useParams} from "react-router-dom";
 import CommandBar from "@frontend/app/layout/CommandBar";
 import React, {useContext, useEffect} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
-import {PlayInformationRegistry} from "@cody-play/state/types";
+import {PlayInformationRegistry, PlayPageRegistry} from "@cody-play/state/types";
 import {isQueryableListDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import PlayTableView from "@cody-play/app/components/core/PlayTableView";
 import PlayStateView from "@cody-play/app/components/core/PlayStateView";
-import {usePageData} from "@frontend/hooks/use-page-data";
 import {PageDataContext} from "@frontend/app/providers/PageData";
+import {usePageMatch} from "@frontend/util/hook/use-page-match";
+import {Tab} from "@frontend/app/pages/page-definitions";
 
 interface Props {
   page: string
 }
 
+const findTabGroup = (groupName: string, pages: PlayPageRegistry, routeParams: Readonly<Record<string, string>>): Tab[] => {
+  return Object.values(pages).filter(p => p.tab && p.tab.group === groupName).map(p => {
+    return {
+      ...p.tab!,
+      route: generatePath(p.route, routeParams)
+    }
+  });
+}
+
+
 export const PlayStandardPage = (props: Props) => {
   const routeParams = useParams();
+  const pageMatch = usePageMatch();
   const {config} = useContext(configStore);
   const {reset} = useContext(PageDataContext);
 
@@ -32,7 +44,13 @@ export const PlayStandardPage = (props: Props) => {
     return <PlayCommand key={commandName} command={config.commands[commandName as string]} />
   });
 
-  const commandBar = cmdBtns.length ? <Grid2 xs={12}><CommandBar>{cmdBtns}</CommandBar></Grid2> : <></>;
+  let tabs;
+
+  if(page.tab) {
+    tabs = findTabGroup(page.tab.group, config.pages, routeParams as Readonly<Record<string, string>>);
+  }
+
+  const commandBar = cmdBtns.length || tabs ? <Grid2 xs={12}><CommandBar tabs={tabs}>{cmdBtns}</CommandBar></Grid2> : <></>;
 
   const components = page.components.map((valueObjectName, index) => {
     if(!config.views[valueObjectName]) {

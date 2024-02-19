@@ -1,12 +1,17 @@
 import * as React from 'react';
 import {PropsWithChildren, useEffect, useState} from "react";
-import {Card, CardActions, CardHeader, Divider, useTheme} from "@mui/material";
+import {Button, Card, CardActions, CardHeader, Divider, SxProps, Theme, useTheme} from "@mui/material";
+import {User} from "@app/shared/types/core/user/user";
+import {PageData} from "@app/shared/types/core/page-data/page-data";
+import jexl from "@app/shared/jexl/get-configured-jexl";
+import MdiIcon from "@cody-play/app/components/core/MdiIcon";
+import {NavLink} from "react-router-dom";
+import {useUser} from "@frontend/hooks/use-user";
+import {usePageData} from "@frontend/hooks/use-page-data";
+import {makeButtonSx} from "@frontend/app/layout/Sidebar";
+import {Tab} from "@frontend/app/pages/page-definitions";
 
-export interface Tab {
-  label: string;
-  route: string;
-  active: boolean;
-}
+
 
 interface OwnProps {
   tabs?: Tab[];
@@ -14,19 +19,63 @@ interface OwnProps {
 
 type CommandBarProps = OwnProps & PropsWithChildren;
 
-// const renderTabs = (tabs: Tab[]) {
-//   const tabComponents = tabs.map(tab =>  )
-// }
+type TabConfig = {
+  disabled: boolean,
+  style: SxProps,
+  hidden: boolean
+};
+
+const determineTabConfig = (tab: Tab, user: User, page: PageData): TabConfig => {
+  const jexlCtx = {user, page};
+
+  const config = {
+    style: tab.style || {},
+    disabled: tab.disabled || 'false',
+    hidden: tab.hidden || 'false'
+  };
+
+
+  if(tab.styleExpr) {
+    config.style = jexl.evalSync(tab.styleExpr, jexlCtx);
+  }
+
+  return {
+    style: config.style,
+    disabled: jexl.evalSync(config.disabled, jexlCtx),
+    hidden: jexl.evalSync(config.hidden, jexlCtx),
+  }
+}
+
+const renderTabs = (tabs: Tab[], user: User, page: PageData, theme: Theme) => {
+  const tabComponents = tabs.map(tab => {
+    const config = determineTabConfig(tab, user, page);
+    return <Button
+      sx={{...makeButtonSx(theme), width: 'auto', minWidth: '150px', justifyContent: 'center', ...config.style} as SxProps}
+      disabled={config.disabled}
+      hidden={config.hidden}
+      startIcon={tab.icon? <MdiIcon icon={tab.icon} /> : undefined}
+      children={tab.label}
+      key={tab.route}
+      component={NavLink}
+      to={tab.route}
+    />
+  })
+
+  return <>{tabComponents}</>
+}
 
 const CommandBar = (props: CommandBarProps) => {
   const [fixed, setFixed] = useState<boolean>(false);
+  const [user,] = useUser();
+  const [pageData,] = usePageData();
   const theme = useTheme();
+  const hasCommands = Array.isArray(props.children) && props.children.length;
 
   useEffect(() => {
     const listener = () => {
       const scrollTop = window.scrollY;
 
-      if(scrollTop >= 80) {
+      if(scrollTop >= 80 && hasCommands) {
         setFixed(true);
       } else {
         setFixed(false);
@@ -53,7 +102,7 @@ const CommandBar = (props: CommandBarProps) => {
   </CardActions>;
 
   return <>
-    <Card sx={fixed? {
+    <Card sx={fixed ? {
       position: 'fixed',
       zIndex: 1000,
       top: '60px',
@@ -68,12 +117,12 @@ const CommandBar = (props: CommandBarProps) => {
     } : {
       width: 'auto',
     }}>
-      {!fixed && <CardHeader title="Actions"/>}
+      {!fixed && (props.tabs ? renderTabs(props.tabs, user, pageData, theme) : <CardHeader title="Actions"/>)}
       {!fixed && <Divider/>}
       {cardActions}
     </Card>
     {fixed && /* Mirror card to keep same space in the DOM */ <Card>
-      <CardHeader title="Actions"/>
+      {props.tabs? renderTabs(props.tabs, user, pageData, theme) : <CardHeader title="Actions"/>}
       <Divider/>
       {cardActions}
     </Card>}

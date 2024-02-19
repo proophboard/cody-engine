@@ -67,7 +67,7 @@ export const upsertTopLevelPage = async (
     return allowedRoles;
   }
 
-  const invisible = allowedRoles.count() ? convertToRoleCheck(allowedRoles): undefined;
+  const invisible = allowedRoles.count() ? convertToRoleCheck(allowedRoles): uiMeta.sidebar?.invisible;
 
   const sidebarIcon = uiMeta.sidebar?.icon || 'SquareRoundedOutline';
 
@@ -79,6 +79,8 @@ export const upsertTopLevelPage = async (
     invisible,
   };
 
+  const isTab = !!uiMeta.tab;
+
   generateFiles(tree, __dirname + '/../../ui-files/page-files/top-level', ctx.feSrc + '/app/pages', {
     ...pbInfo,
     tmpl: '',
@@ -86,6 +88,8 @@ export const upsertTopLevelPage = async (
     ...uiNames,
     route,
     sidebar,
+    isTab,
+    tab: uiMeta.tab,
     toJSON,
     breadcrumb,
     imports: imports.join(";\n"),
@@ -139,6 +143,8 @@ export const upsertSubLevelPage = async (
 
   const [breadcrumb, breadcrumbImports] = breadcrumbInfo;
 
+  const isTab = !!uiMeta.tab;
+
   generateFiles(tree, __dirname + '/../../ui-files/page-files/sub-level', ctx.feSrc + '/app/pages', {
     ...pbInfo,
     tmpl: '',
@@ -146,6 +152,8 @@ export const upsertSubLevelPage = async (
     ...uiNames,
     route,
     routeParams,
+    isTab,
+    tab: uiMeta.tab,
     toJSON,
     breadcrumb,
     breadcrumbImports: breadcrumbImports.join(";\n"),
