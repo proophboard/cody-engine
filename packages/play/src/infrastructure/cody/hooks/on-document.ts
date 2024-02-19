@@ -136,6 +136,7 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         ...pbInfo,
         name: voName,
         hasIdentifier: true,
+        identifier: voMeta.identifier,
         isList: false,
         isQueryable: true,
         query: queryName,

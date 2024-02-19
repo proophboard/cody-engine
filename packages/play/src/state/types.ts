@@ -73,10 +73,20 @@ export interface PlayAddPageAction {
   page: PlayPageDefinition,
 }
 
+export interface PlayRemovePageAction {
+  type: 'REMOVE_PAGE',
+  name: string,
+}
+
 export interface PlayAddCommandAction {
   type: 'ADD_COMMAND',
   name: string,
   command: PlayCommandRuntimeInfo,
+}
+
+export interface PlayRemoveCommandAction {
+  type: 'REMOVE_COMMAND',
+  name: string,
 }
 
 export interface PlayAddTypeAction {
@@ -89,11 +99,26 @@ export interface PlayAddTypeAction {
   }
 }
 
+export interface PlayRemoveTypeAction {
+  type: 'REMOVE_TYPE',
+  name: string,
+}
+
 export interface PlayAddQueryAction {
   type: 'ADD_QUERY',
   name: string,
   query: PlayQueryRuntimeInfo,
   resolver: ResolveConfig,
+}
+
+export interface PlayRemoveQueryAction {
+  type: 'REMOVE_QUERY',
+  name: string,
+}
+
+export interface PlayRemoveViewAction {
+  type: 'REMOVE_VIEW',
+  name: string,
 }
 
 export interface PlayAddAggregateAction {
@@ -104,6 +129,16 @@ export interface PlayAddAggregateAction {
   businessRules: AnyRule[]
 }
 
+export interface PlayRemoveAggregateAction {
+  type: 'REMOVE_AGGREGATE',
+  name: string,
+}
+
+export interface PlayRemoveCommandHandlerAction {
+  type: 'REMOVE_COMMAND_HANDLER',
+  name: string,
+}
+
 export interface PlayAddAggregateEventAction {
   type: 'ADD_AGGREGATE_EVENT',
   name: string,
@@ -112,11 +147,23 @@ export interface PlayAddAggregateEventAction {
   reducer: AnyRule[],
 }
 
+export interface PlayRemoveAggregateEventAction {
+  type: 'REMOVE_AGGREGATE_EVENT',
+  name: string,
+  aggregate: string,
+}
+
 export interface PlayAddEventPolicyAction {
   type: 'ADD_EVENT_POLICY',
   name: string,
   event: string,
   desc: PlayEventPolicyDescription,
+}
+
+export interface PlayRemoveEventPolicyAction {
+  type: 'REMOVE_EVENT_POLICY',
+  name: string,
+  event: string,
 }
 
 /* Commands */

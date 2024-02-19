@@ -7,6 +7,7 @@ import {
   getConfiguredPlayReadModelProjector
 } from "@cody-play/infrastructure/multi-model-store/configured-play-read-model-projector";
 import {MetadataMatcher} from "@event-engine/infrastructure/EventStore";
+import {Action, CodyPlayConfig} from "@cody-play/state/config-store";
 
 document.title = 'Cody Play';
 
@@ -24,7 +25,9 @@ document.title = 'Cody Play';
         run: (streamName: string, metadataMatcher?: MetadataMatcher, projectionName?: string, fromEventId?: string, limit?: number): Promise<void> => {
           throw new Error('Cody Play Config is not initialized. Please wait a moment and try again!')
         }
-      }
+      },
+      config: undefined, // Set in main.tsx
+      dispatch: (action: Action) => { /* is overridden in config-store.ts */ }
     }
 
     // Wait a moment, so that DS and ES can load data from local storage

@@ -1,13 +1,31 @@
 
 import {
-  PlayAddAggregateAction, PlayAddAggregateEventAction,
-  PlayAddCommandAction, PlayAddEventPolicyAction,
-  PlayAddPageAction, PlayAddPersona, PlayAddQueryAction, PlayAddTypeAction,
-  PlayAggregateRegistry, PlayApplyRulesRegistry, PlayChangeTheme, PlayCommandHandlerRegistry,
-  PlayCommandRegistry, PlayEventPolicyRegistry, PlayEventRegistry, PlayInformationRegistry,
+  PlayAddAggregateAction,
+  PlayAddAggregateEventAction,
+  PlayAddCommandAction,
+  PlayAddEventPolicyAction,
+  PlayAddPageAction,
+  PlayAddPersona,
+  PlayAddQueryAction,
+  PlayAddTypeAction,
+  PlayAggregateRegistry,
+  PlayApplyRulesRegistry,
+  PlayChangeTheme,
+  PlayCommandHandlerRegistry,
+  PlayCommandRegistry,
+  PlayEventPolicyRegistry,
+  PlayEventRegistry,
+  PlayInformationRegistry,
   PlayInitAction,
-  PlayPageRegistry, PlayQueryRegistry, PlayRenameApp, PlayResolverRegistry,
-  PlaySchemaDefinitions, PlaySetPersonas, PlayTopLevelPage,
+  PlayPageRegistry,
+  PlayQueryRegistry, PlayRemoveAggregateAction, PlayRemoveAggregateEventAction,
+  PlayRemoveCommandAction, PlayRemoveCommandHandlerAction, PlayRemoveEventPolicyAction,
+  PlayRemovePageAction, PlayRemoveQueryAction, PlayRemoveTypeAction, PlayRemoveViewAction,
+  PlayRenameApp,
+  PlayResolverRegistry,
+  PlaySchemaDefinitions,
+  PlaySetPersonas,
+  PlayTopLevelPage,
   PlayViewRegistry
 } from "@cody-play/state/types";
 import {createContext, PropsWithChildren, useEffect, useReducer} from "react";
@@ -21,6 +39,10 @@ import {Persona} from "@app/shared/extensions/personas";
 import {types as sharedTypes} from "@app/shared/types";
 import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
 import _ from "lodash";
+import {
+  playDefinitionIdFromFQCN,
+  playFQCNFromDefinitionId
+} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -116,8 +138,10 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction | PlayRenameApp | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayAddPageAction | PlayAddCommandAction | PlayAddTypeAction
-  | PlayAddQueryAction | PlayAddAggregateAction | PlayAddAggregateEventAction | PlayAddEventPolicyAction;
+type Action = PlayInitAction | PlayRenameApp | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayAddPageAction | PlayRemovePageAction
+  | PlayAddCommandAction | PlayRemoveCommandAction | PlayAddTypeAction | PlayRemoveTypeAction
+  | PlayAddQueryAction | PlayRemoveQueryAction | PlayRemoveViewAction | PlayAddAggregateAction | PlayRemoveAggregateAction | PlayRemoveCommandHandlerAction
+  | PlayAddAggregateEventAction | PlayRemoveAggregateEventAction | PlayAddEventPolicyAction | PlayRemoveEventPolicyAction;
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
 
@@ -167,9 +191,17 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.pages = {...config.pages};
         config.pages[action.name] = action.page;
         return {...config};
+      case "REMOVE_PAGE":
+        config.pages = {...config.pages};
+        delete config.pages[action.name];
+        return {...config};
       case "ADD_COMMAND":
         config.commands = {...config.commands};
         config.commands[action.name] = action.command;
+        return {...config};
+      case "REMOVE_COMMAND":
+        config.commands = {...config.commands};
+        delete config.commands[action.name];
         return {...config};
       case "ADD_TYPE":
         config.types = {...config.types};
@@ -179,6 +211,13 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
 
         syncTypesWithSharedRegistry(config);
         return {...config};
+      case "REMOVE_TYPE":
+        config.types = {...config.types};
+        config.definitions = {...config.definitions};
+
+        delete config.types[action.name];
+        delete config.definitions[playDefinitionIdFromFQCN(action.name)];
+        return {...config};
       case "ADD_QUERY":
         config.queries = {...config.queries};
         config.resolvers = {...config.resolvers};
@@ -187,11 +226,33 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.resolvers[action.name] = action.resolver;
         config.views[action.query.desc.returnType] = {information: action.query.desc.returnType};
         return {...config};
+      case "REMOVE_QUERY":
+        config.queries = {...config.queries};
+        config.resolvers = {...config.resolvers};
+
+        delete config.queries[action.name];
+        delete config.resolvers[action.name];
+        return {...config};
+      case "REMOVE_VIEW":
+        config.views = {...config.views};
+        delete config.views[action.name];
+        return {...config};
       case "ADD_AGGREGATE":
         config.aggregates = {...config.aggregates};
         config.commandHandlers = {...config.commandHandlers};
         config.aggregates[action.name] = action.aggregate;
         config.commandHandlers[action.command] = action.businessRules;
+        return {...config};
+      case "REMOVE_AGGREGATE":
+        config.aggregates = {...config.aggregates};
+        config.eventReducers = {...config.eventReducers};
+
+        delete config.aggregates[action.name];
+        delete config.eventReducers[action.name];
+        return {...config};
+      case "REMOVE_COMMAND_HANDLER":
+        config.commandHandlers = {...config.commandHandlers};
+        delete config.commandHandlers[action.name];
         return {...config};
       case "ADD_AGGREGATE_EVENT":
         config.events = {...config.events};
@@ -200,10 +261,24 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.events[action.name] = action.event;
         config.eventReducers[action.aggregate][action.name] = action.reducer;
         return {...config};
+      case "REMOVE_AGGREGATE_EVENT":
+        config.events = {...config.events};
+        config.eventReducers = {...config.eventReducers};
+        config.eventReducers[action.aggregate] = {...config.eventReducers[action.aggregate]};
+
+        delete config.events[action.name];
+        delete config.eventReducers[action.aggregate][action.name];
+        return {...config};
       case "ADD_EVENT_POLICY":
         config.eventPolicies = {...config.eventPolicies};
         config.eventPolicies[action.event] = {...config.eventPolicies[action.event]};
         config.eventPolicies[action.event][action.name] = action.desc;
+        return {...config};
+      case "REMOVE_EVENT_POLICY":
+        config.eventPolicies = {...config.eventPolicies};
+        config.eventPolicies[action.event] = {...config.eventPolicies[action.event]};
+
+        delete config.eventPolicies[action.event][action.name];
         return {...config};
       default:
         return config;
@@ -222,6 +297,10 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
   injectCustomApiQuery(makeLocalApiQuery(config, user));
 
   currentDispatch = dispatch;
+
+  (window as any).$CP.dispatch = (action: Action) => {
+    currentDispatch(action);
+  }
 
   return <Provider value={{ config, dispatch }}>{props.children}</Provider>;
 }
