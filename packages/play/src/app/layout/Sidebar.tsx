@@ -13,7 +13,7 @@ import {configStore} from "@cody-play/state/config-store";
 import {PlayTopLevelPage} from "@cody-play/state/types";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
-import {makeSidebarItem} from "@frontend/app/layout/Sidebar";
+import {isVisibleInSidebar, makeSidebarItem} from "@frontend/app/layout/Sidebar";
 import SidebarNavGroup from "@frontend/app/layout/SidebarNavGroup";
 import {names} from "@event-engine/messaging/helpers";
 
@@ -36,7 +36,8 @@ const Sidebar = (props: SidebarProps) => {
   });
 
   const groups: Record<string, Group> = {};
-  const topLevelPages: PlayTopLevelPage[] = Object.values(config.pages).filter(p => isTopLevelPage(p as unknown as PageDefinition)) as PlayTopLevelPage[];
+  const topLevelPages: PlayTopLevelPage[] = Object.values(config.pages)
+    .filter(p => isTopLevelPage(p as unknown as PageDefinition) && isVisibleInSidebar(p as unknown as TopLevelPage, user)) as PlayTopLevelPage[];
 
   const topLevelPagesWithoutGroups = topLevelPages.filter(p => {
     const pGroup = belongsToGroup(p);

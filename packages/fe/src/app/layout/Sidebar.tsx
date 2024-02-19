@@ -53,6 +53,20 @@ export const makeIconBoxSx = (theme: Theme): SxProps => {
   };
 }
 
+export const isVisibleInSidebar = (p: {sidebar?: {invisible?: boolean | string}}, user: User): boolean => {
+  const invisible = p.sidebar?.invisible;
+
+  if(typeof invisible === "boolean" && invisible) {
+    return false;
+  }
+
+  if(typeof invisible === "string" && jexl.evalSync(invisible, {user})) {
+    return false
+  }
+
+  return true;
+}
+
 export const makeSidebarItem = (route: string, label: string, Icon: JSX.Element, theme: Theme, user: User, pageMatch: {pathname: string}, invisible?: string | boolean) => {
   if(typeof invisible === "boolean" && invisible) {
     return <></>
@@ -94,7 +108,7 @@ const Sidebar = (props: SidebarProps) => {
   });
 
   const groups: Record<string, Group> = {};
-  const topLevelPages: TopLevelPage[] = Object.values(pages).filter(p => isTopLevelPage(p)) as TopLevelPage[];
+  const topLevelPages: TopLevelPage[] = Object.values(pages).filter(p => isTopLevelPage(p) && isVisibleInSidebar(p, user)) as TopLevelPage[];
 
   const topLevelPagesWithoutGroups = topLevelPages.filter(p => {
     const pGroup = belongsToGroup(p);
