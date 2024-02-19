@@ -3,12 +3,10 @@ import {JSONSchema7} from "json-schema-to-ts";
 import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
 import {PlayInformationRegistry, PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {names} from "@event-engine/messaging/helpers";
+import {playFQCNFromDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
 export const playResolveRef = (schema: RefSchema, parentSchema: JSONSchema7, node: Node, types: PlayInformationRegistry): PlayInformationRuntimeInfo | CodyResponse => {
-  const ref = schema['$ref'].replace('/definitions/', '')
-    .split("/")
-    .map(r => names(r).className)
-    .join(".");
+  const ref = playFQCNFromDefinitionId(schema['$ref'])
 
   if(!types[ref]) {
     return {

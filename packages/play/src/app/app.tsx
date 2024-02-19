@@ -23,7 +23,7 @@ import {
   clearAfterDispatchListener,
   PlayConfigProvider,
   configStore,
-  CodyPlayConfig
+  CodyPlayConfig, Action
 } from "@cody-play/state/config-store";
 import {PlayPageRegistry} from "@cody-play/state/types";
 import CodyMessageServerInjection from "@cody-play/app/components/core/CodyMessageServer";
@@ -41,8 +41,9 @@ import PageDataProvider from "@frontend/app/providers/PageData";
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
 
-const updateGlobalProjector = (config: CodyPlayConfig) => {
+const updateConfigAndGlobalProjector = (config: CodyPlayConfig) => {
   (window as any).$CP.projector = getConfiguredPlayReadModelProjector(config);
+  (window as any).$CP.config = config;
 }
 
 export function App() {
@@ -64,7 +65,6 @@ export function App() {
   document.title = config.appName;
 
 
-
   if(!messageBoxRef) {
     const es = getConfiguredPlayEventStore();
     messageBoxRef = getConfiguredPlayMessageBox(config);
@@ -73,7 +73,7 @@ export function App() {
 
     const writeModelStreamListener = new PlayStreamListener(es, 'write_model_stream', messageBoxRef);
     writeModelStreamListener.startProcessing();
-    updateGlobalProjector(config);
+    updateConfigAndGlobalProjector(config);
   }
 
   const makeRouter = (pages: PlayPageRegistry, makeInitialRouter = false) => {
@@ -119,7 +119,7 @@ export function App() {
       setRouter(makeRouter(updatedState.pages));
 
       messageBoxRef.updateConfig(updatedState);
-      updateGlobalProjector(updatedState);
+      updateConfigAndGlobalProjector(updatedState);
     })
 
     return () => {

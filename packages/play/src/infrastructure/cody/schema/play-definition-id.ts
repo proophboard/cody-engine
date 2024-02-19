@@ -38,3 +38,10 @@ export const playFQCNFromDefinitionId = (definitionId: string): string => {
 
   return fqcnParts.map(p => names(p).className).join(".");
 }
+
+export const playDefinitionIdFromFQCN = (fqcn: string): string => {
+  return '/definitions/' + fqcn
+    .split(".")
+    .map(r => names(r).fileName)
+    .join("/");
+}
