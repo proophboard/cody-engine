@@ -31,6 +31,7 @@ import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {usePageData} from "@frontend/hooks/use-page-data";
+import {TimeoutError} from "cypress/types/bluebird";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -53,11 +54,12 @@ interface OwnProps {
 
 type CommandFormProps = OwnProps;
 
+let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
 const CommandForm = (props: CommandFormProps, ref: any) => {
   let formRef: any = useRef();
-  let formData: {[prop: string]: any} = {};
+  const [formData, setFormData] = useState<{[prop: string]: any}>({});
   const [liveValidate, setLiveValidate] = useState(false);
-  const [submittedFormData, setSubmittedFormData] = useState<{[prop: string]: any}>();
   const [user,] = useUser();
   const [pageData,] = usePageData();
   const mutation = useMutation({
@@ -68,14 +70,14 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   useImperativeHandle(ref, () => ({
     submit: (): void => {
       setLiveValidate(true);
-      setSubmittedFormData(formRef.state.formData)
+      setFormData(cloneDeepJSON(formRef.state.formData));
       formRef.submit();
     },
   }));
 
   useEffect(() => {
     mutation.reset();
-    setSubmittedFormData(undefined);
+    setFormData({...props.formData});
   }, [props.command]);
 
   useEffect(() => {
@@ -103,34 +105,35 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     }
   }
 
-  const handleChange = () => {
+  const handleChange = (e: IChangeEvent<any>) => {
+    if(debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+
+    debounceTimer = setTimeout(() => {
+      setFormData(cloneDeepJSON(e.formData));
+      console.log("on change");
+    }, 300);
+
     if(props.onChange) {
       props.onChange();
     }
   }
 
   const handleSubmit = (e: IChangeEvent<any>) => {
-    let formData = cloneDeepJSON(e.formData);
+    let unsubmittedFormData = cloneDeepJSON(e.formData);
     if(props.onBeforeSubmitting) {
-      formData = props.onBeforeSubmitting(formData);
+      unsubmittedFormData = props.onBeforeSubmitting(unsubmittedFormData);
     }
-    mutation.mutate(formData);
+    mutation.mutate(unsubmittedFormData);
     setLiveValidate(false);
+    setFormData(unsubmittedFormData);
     if(props.onSubmitted) {
       props.onSubmitted();
     }
   }
 
   const {desc} = props.command;
-
-
-  if(props.formData) {
-    formData = {...formData, ...props.formData};
-  }
-
-  if(submittedFormData) {
-    formData = submittedFormData;
-  }
 
   const userWidgets = props.widgets || {};
 

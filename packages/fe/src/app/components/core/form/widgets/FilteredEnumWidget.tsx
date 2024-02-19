@@ -22,12 +22,13 @@ const FilteredEnumWidget = (props: FilteredEnumWidgetProps) => {
   const enumVals = props.options.enumOptions || [];
   const filter = props.options.filter as string || 'true';
   const map = props.options.map as string || 'item';
+  const selectedVal = props.value;
 
   const filteredProps = {
     ...props, options: {
       ...props.options,
       enumOptions: enumVals
-        .filter(item => jexl.evalSync(filter, {...jexlCtx, item: item}))
+        .filter(item => item.value === selectedVal || jexl.evalSync(filter, {...jexlCtx, item: item}))
         .map(item => jexl.evalSync(map, {...jexlCtx, item: item}))
     }
   };
