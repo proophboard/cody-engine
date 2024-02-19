@@ -9,6 +9,10 @@ export const registerArrayExtensions = (jexl: Jexl): void => {
 }
 
 const arrayPush = (arr: Array<unknown>, val: unknown): Array<unknown> => {
+  if(!arr) {
+    arr = [];
+  }
+
   if(!Array.isArray(arr)) {
     return [arr, val];
   }
@@ -26,8 +30,12 @@ const arrayContains = (arr: Array<unknown>, val: unknown): boolean => {
 }
 
 const filter = (arr: Array<unknown>, expr: string, ctx: object, jexl: Jexl): Array<unknown> => {
+  if(!arr) {
+    arr = [];
+  }
+
   if(!Array.isArray(arr)) {
-    return arr;
+    throw new Error(`First argument of jexl filter() needs to be an array. ${typeof arr} given.`);
   }
 
   const filtered: Array<unknown> = [];
@@ -44,6 +52,10 @@ const filter = (arr: Array<unknown>, expr: string, ctx: object, jexl: Jexl): Arr
 }
 
 const map = (arr: Array<unknown>, expr: string, ctx: object, jexl: Jexl): Array<unknown> => {
+  if(!arr) {
+    arr = [];
+  }
+
   if(!Array.isArray(arr)) {
     throw new Error(`First argument of jexl map() needs to be an array. ${typeof arr} given.`);
   }
