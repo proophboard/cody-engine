@@ -161,7 +161,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
               ref={(form) => formRef = form}
               onSubmit={handleSubmit}
               formData={formData}
-              formContext={{data: formData}}
+              formContext={{data: formData, setFormData}}
               uiSchema={uiSchema}
               liveValidate={liveValidate}
               showErrorList={false}

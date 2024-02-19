@@ -20,6 +20,9 @@ import {names} from "@event-engine/messaging/helpers";
 import {mapProperties} from "@app/shared/utils/map-properties";
 import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
+import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {makeSyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
 // Copied from: https://github.com/rjsf-team/react-jsonschema-form/blob/main/packages/material-ui/src/SelectWidget/SelectWidget.tsx
 // and modified to use useApiQuery and turn result into select options
@@ -33,6 +36,7 @@ interface ParsedUiOptions {
   addItemCommand: string | null,
   query: Record<string, string>,
   filter?: string,
+  updateForm?: Rule[]
 }
 
 const getVOFromTypes = (refOrFQCN: string, rootSchema: JSONSchemaWithId): ValueObjectRuntimeInfo => {
@@ -73,6 +77,10 @@ const parseOptions = (options: any, rootSchema: JSONSchemaWithId): ParsedUiOptio
     throw new Error(`DataSelect: ui:options "addItemCommand" is not a valid command name`)
   }
 
+  if(options.updateForm && !Array.isArray(options.updateForm)) {
+    throw new Error(`DataSelect: ui:options "updateForm" must be an array of rules`)
+  }
+
   return {
     data: vo.desc,
     label: options.label || options.text,
@@ -80,6 +88,7 @@ const parseOptions = (options: any, rootSchema: JSONSchemaWithId): ParsedUiOptio
     addItemCommand: options.addItemCommand || null,
     query: options.query || {},
     filter: options.filter,
+    updateForm: options.updateForm,
   }
 }
 
@@ -111,7 +120,7 @@ export default function DataSelectWidget<
       ...textFieldProps
     }: WidgetProps<T, S, F>) {
 
-  const selectOptions: {label: string, value: string, readonly: boolean}[] = [];
+  const selectOptions: {label: string, value: string, readonly: boolean, fullDataSet: any}[] = [];
   const parsedOptions = parseOptions(options, registry.rootSchema as JSONSchemaWithId);
   const routeParams = useParams();
   const [user,] = useUser();
@@ -150,7 +159,8 @@ export default function DataSelectWidget<
         selectOptions.push({
           label: jexl.evalSync(parsedOptions.label, {...jexlCtx, data: item}),
           value: jexl.evalSync(parsedOptions.value, {...jexlCtx, data: item}),
-          readonly: false
+          readonly: false,
+          fullDataSet: item
         });
       })
 
@@ -158,11 +168,13 @@ export default function DataSelectWidget<
       selectOptions.push({
         label: "- Empty -",
         value: "",
-        readonly: false
+        readonly: false,
+        fullDataSet: null
       })
     }
+
   } else {
-    selectOptions.push({label: "Loading ...", value: "", readonly: true});
+    selectOptions.push({label: "Loading ...", value: "", readonly: true, fullDataSet: null});
   }
 
   multiple = typeof multiple === 'undefined' ? false : !!multiple;
@@ -170,8 +182,22 @@ export default function DataSelectWidget<
   const emptyValue = multiple ? [] : '';
   const isEmpty = typeof value === 'undefined' || (multiple && value.length < 1) || (!multiple && value === emptyValue);
 
-  const _onChange = ({ target: { value } }: ChangeEvent<{ value: string }>) =>
+  const _onChange = ({ target: { value } }: ChangeEvent<{ value: string }>) => {
+    if(parsedOptions.updateForm && formContext) {
+      const selectedOption = selectOptions.find(opt => opt.value === value);
+
+      if(selectedOption) {
+        const updateFormExe = makeSyncExecutable(parsedOptions.updateForm);
+
+        const result = updateFormExe({...jexlCtx, form: cloneDeepJSON(jexlCtx.form), data: selectedOption.fullDataSet});
+
+        formContext.setFormData(result.form);
+      }
+    }
+
     onChange(value);
+  }
+
   const _onBlur = ({ target: { value } }: FocusEvent<HTMLInputElement>) =>
     onBlur(id, value);
   const _onFocus = ({ target: { value } }: FocusEvent<HTMLInputElement>) =>
