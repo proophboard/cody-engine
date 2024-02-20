@@ -38,6 +38,10 @@ export const playUiMetadata = (ui: Node, ctx: ElementEditedContext): PlayUiMetad
     }
 
     metadata.sidebar.invisible = allowedRoles.count() ? playConvertToRoleCheck(allowedRoles) : metadata.sidebar.invisible;
+
+    if(typeof metadata.sidebar.position === "undefined") {
+      metadata.sidebar.position = 5;
+    }
   }
 
   return metadata as PlayUiMetadata;

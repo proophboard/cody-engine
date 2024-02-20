@@ -7,7 +7,8 @@ export const Dashboard: TopLevelPage = {
   components: ["Core.Welcome"],
   sidebar: {
     label: "Dashboard",
-    Icon: ViewDashboard
+    Icon: ViewDashboard,
+    position: -1
   },
   route: "/dashboard",
   topLevel: true,

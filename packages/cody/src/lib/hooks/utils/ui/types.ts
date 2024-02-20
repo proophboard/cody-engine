@@ -10,7 +10,7 @@ export interface DynamicBreadcrumbMetadata {
 export interface UiMetadata {
   route?: string;
   routeParams?: string[];
-  sidebar?: { label?: string; icon?: string; show?: boolean | Rule[], invisible?: string };
+  sidebar?: { label?: string; icon?: string; show?: boolean | Rule[], invisible?: string, position: number };
   breadcrumb?: string | DynamicBreadcrumbMetadata;
   tab?: Tab;
 }

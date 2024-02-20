@@ -67,6 +67,13 @@ export const isVisibleInSidebar = (p: {sidebar?: {invisible?: boolean | string}}
   return true;
 }
 
+export const sortTopLevelPages = (a: {sidebar: {position?: number}}, b: {sidebar: {position?: number}}) => {
+  const aPos = typeof a.sidebar.position === "undefined" ? 5 : a.sidebar.position;
+  const bPos = typeof b.sidebar.position === "undefined" ? 5 : b.sidebar.position;
+
+  return aPos - bPos;
+}
+
 export const makeSidebarItem = (route: string, label: string, Icon: JSX.Element, theme: Theme, user: User, pageMatch: {pathname: string}, invisible?: string | boolean) => {
   if(typeof invisible === "boolean" && invisible) {
     return <></>
@@ -109,6 +116,8 @@ const Sidebar = (props: SidebarProps) => {
 
   const groups: Record<string, Group> = {};
   const topLevelPages: TopLevelPage[] = Object.values(pages).filter(p => isTopLevelPage(p) && isVisibleInSidebar(p, user)) as TopLevelPage[];
+
+  topLevelPages.sort(sortTopLevelPages);
 
   const topLevelPagesWithoutGroups = topLevelPages.filter(p => {
     const pGroup = belongsToGroup(p);

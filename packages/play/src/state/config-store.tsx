@@ -82,7 +82,8 @@ const initialPlayConfig: CodyPlayConfig = {
       components: ["Core.Welcome"],
       sidebar: {
         label: "Dashboard",
-        icon: "ViewDashboard"
+        icon: "ViewDashboard",
+        position: -1
       },
       route: "/dashboard",
       topLevel: true,

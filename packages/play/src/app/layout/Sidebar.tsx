@@ -13,7 +13,7 @@ import {configStore} from "@cody-play/state/config-store";
 import {PlayTopLevelPage} from "@cody-play/state/types";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
-import {isVisibleInSidebar, makeSidebarItem} from "@frontend/app/layout/Sidebar";
+import {isVisibleInSidebar, makeSidebarItem, sortTopLevelPages} from "@frontend/app/layout/Sidebar";
 import SidebarNavGroup from "@frontend/app/layout/SidebarNavGroup";
 import {names} from "@event-engine/messaging/helpers";
 
@@ -57,7 +57,7 @@ const Sidebar = (props: SidebarProps) => {
     groups[pGroup.label] = {config: pGroup, pages: [p]};
     // Keep first group page in list, so that we can insert group at the same index
     return true;
-  })
+  }).sort(sortTopLevelPages);
 
   const topLevelPageItems = topLevelPagesWithoutGroups.map(({route, sidebar: {label, icon, invisible, group}}) => {
     const pGroup = belongsToGroup({sidebar: {group}})

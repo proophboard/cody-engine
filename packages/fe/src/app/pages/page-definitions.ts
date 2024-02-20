@@ -15,7 +15,7 @@ export interface PageDefinition {
 }
 
 export interface TopLevelPage extends PageDefinition {
-  sidebar: {label: string, Icon: typeof SvgIcon, invisible?: string | boolean, group?: string | TopLevelGroup}
+  sidebar: {label: string, Icon: typeof SvgIcon, invisible?: string | boolean, group?: string | TopLevelGroup, position?: number}
 }
 
 export interface TopLevelGroup {

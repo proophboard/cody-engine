@@ -87,7 +87,8 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       topLevel: topLevelPage,
       sidebar: meta.sidebar || {
         label: ui.getName(),
-        icon: 'square'
+        icon: 'square',
+        position: 5
       },
       breadcrumb: meta.breadcrumb,
       tab: meta.tab,

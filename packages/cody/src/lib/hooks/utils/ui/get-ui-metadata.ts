@@ -24,5 +24,11 @@ export const getUiMetadata = (ui: Node, ctx: Context): UiMetadata | CodyResponse
     meta.sidebar.invisible = meta.sidebar.hidden;
   }
 
+  if(meta && meta.sidebar) {
+    if(typeof meta.sidebar.position === "undefined") {
+      meta.sidebar.position = 5;
+    }
+  }
+
   return meta;
 }

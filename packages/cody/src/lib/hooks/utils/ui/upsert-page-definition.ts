@@ -77,6 +77,7 @@ export const upsertTopLevelPage = async (
     label: uiMeta.sidebar?.label || uiNames.name,
     icon: sidebarIcon,
     invisible,
+    position: uiMeta.sidebar?.position || 5,
   };
 
   const isTab = !!uiMeta.tab;
