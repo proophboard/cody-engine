@@ -124,7 +124,7 @@ export default function DataSelectWidget<
       ...textFieldProps
     }: WidgetProps<T, S, F>) {
 
-  const selectOptions: {label: string, value: string, readonly: boolean, fullDataSet: any}[] = [];
+  const selectOptions: {label: string, value: string | undefined, readonly: boolean, fullDataSet: any}[] = [];
   const parsedOptions = parseOptions(options, registry.rootSchema as JSONSchemaWithId);
   const routeParams = useParams();
   const [user,] = useUser();
@@ -172,14 +172,14 @@ export default function DataSelectWidget<
     if(!required) {
       selectOptions.push({
         label: "- Empty -",
-        value: "",
+        value: undefined,
         readonly: false,
         fullDataSet: null
       })
     }
 
   } else {
-    selectOptions.push({label: "Loading ...", value: "", readonly: true, fullDataSet: null});
+    selectOptions.push({label: "Loading ...", value: undefined, readonly: true, fullDataSet: null});
   }
 
   multiple = typeof multiple === 'undefined' ? false : !!multiple;
