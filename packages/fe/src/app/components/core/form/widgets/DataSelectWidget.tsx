@@ -10,7 +10,7 @@ import {
 import {MenuItem, TextField, TextFieldProps} from "@mui/material";
 import {types} from "@app/shared/types";
 import {
-  isQueryableListDescription,
+  isQueryableListDescription, isQueryableNotStoredStateListDescription,
   isQueryableStateListDescription, QueryableListDescription,
   QueryableStateListDescription
 } from "@event-engine/descriptions/descriptions";
@@ -65,7 +65,7 @@ const parseOptions = (options: any, rootSchema: JSONSchemaWithId): ParsedUiOptio
 
   const vo = getVOFromTypes(options.data, rootSchema);
 
-  if(!isQueryableStateListDescription(vo.desc) && !isQueryableListDescription(vo.desc)) {
+  if(!isQueryableStateListDescription(vo.desc) && !isQueryableListDescription(vo.desc) && !isQueryableNotStoredStateListDescription(vo.desc)) {
     throw new Error(`DataSelect: Type "${options.data}" is not a queryable list`);
   }
 
@@ -149,7 +149,6 @@ export default function DataSelectWidget<
       mappedParams[mappedKey] = jexl.evalSync(mappingExpr, jexlCtx);
     }
   }
-
   const query = useApiQuery(parsedOptions.data.query, mapProperties(mappedParams, propertyMapping));
 
   if(query.isSuccess) {
@@ -158,6 +157,8 @@ export default function DataSelectWidget<
         if(parsedOptions.filter) {
           return jexl.evalSync(parsedOptions.filter, {...jexlCtx, data: item})
         }
+
+        return true;
       })
       .forEach(item => {
         selectOptions.push({

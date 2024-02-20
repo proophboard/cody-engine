@@ -6,7 +6,7 @@ import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {
   isQueryableListDescription,
-  isQueryableNotStoredStateDescription,
+  isQueryableNotStoredStateDescription, isQueryableNotStoredStateListDescription,
   isQueryableStateDescription,
   isQueryableStateListDescription,
   isQueryableValueObjectDescription, QueryableListDescription, QueryableNotStoredStateDescription,
@@ -78,6 +78,16 @@ export const makeLocalApiQuery = (store: CodyPlayConfig, user: User): ApiQuery =
 
     if(isQueryableStateDescription(informationDesc)) {
       return await resolveStateQuery(informationDesc, informationInfo.factory, queryInfo, resolvedCtx.query);
+    }
+
+    if(isQueryableNotStoredStateListDescription(informationDesc)) {
+      const itemInfo = store.types[informationDesc.itemType];
+
+      if(!itemInfo) {
+        throw new Error(`[CodyPlay] List item type "${informationDesc.itemType}" is unknown. Did you forget to pass it from prooph board to Cody Play?`)
+      }
+
+      return await resolveNotStoredListQuery(informationDesc, itemInfo.factory, queryInfo, resolve, resolvedCtx);
     }
 
     if(isQueryableStateListDescription(informationDesc)) {

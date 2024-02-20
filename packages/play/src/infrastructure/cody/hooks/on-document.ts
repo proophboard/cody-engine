@@ -167,6 +167,18 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         collection: voMeta.collection,
 
       } as QueryableStateListDescription);
+    case "QueryableNotStoredStateListDescription":
+      return ({
+        ...pbInfo,
+        name: voName,
+        hasIdentifier: true,
+        isList: true,
+        isQueryable: true,
+        itemIdentifier: voMeta.identifier,
+        itemType: voMeta.itemType,
+        query: queryName,
+        isNotStored: true,
+      } as QueryableStateListDescription);
     case "QueryableListDescription":
       return ({
         ...pbInfo,
