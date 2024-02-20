@@ -39,7 +39,7 @@ const Sidebar = (props: SidebarProps) => {
   const topLevelPages: PlayTopLevelPage[] = Object.values(config.pages)
     .filter(p => isTopLevelPage(p as unknown as PageDefinition) && isVisibleInSidebar(p as unknown as TopLevelPage, user)) as PlayTopLevelPage[];
 
-  const topLevelPagesWithoutGroups = topLevelPages.filter(p => {
+  const topLevelPagesWithoutGroups = topLevelPages.sort(sortTopLevelPages).filter(p => {
     const pGroup = belongsToGroup(p);
 
     if(!pGroup) {
@@ -57,7 +57,7 @@ const Sidebar = (props: SidebarProps) => {
     groups[pGroup.label] = {config: pGroup, pages: [p]};
     // Keep first group page in list, so that we can insert group at the same index
     return true;
-  }).sort(sortTopLevelPages);
+  });
 
   const topLevelPageItems = topLevelPagesWithoutGroups.map(({route, sidebar: {label, icon, invisible, group}}) => {
     const pGroup = belongsToGroup({sidebar: {group}})
