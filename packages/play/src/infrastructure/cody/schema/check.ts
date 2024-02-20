@@ -7,7 +7,7 @@ export interface ListSchema {
 }
 
 export const isListSchema = (schema: any): schema is ListSchema => {
-  return !!schema['type'] && schema['type'] === "array" && schema['items'];
+  return !!schema['type'] && schema['type'] === "array" && schema['items'] && isRefSchema(schema['items']);
 }
 
 export interface ObjectSchema {
