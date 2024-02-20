@@ -9,7 +9,11 @@ import {
 } from '@rjsf/utils';
 import {MenuItem, TextField, TextFieldProps} from "@mui/material";
 import {types} from "@app/shared/types";
-import {isQueryableStateListDescription, QueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {
+  isQueryableListDescription,
+  isQueryableStateListDescription, QueryableListDescription,
+  QueryableStateListDescription
+} from "@event-engine/descriptions/descriptions";
 import {useApiQuery} from "@frontend/queries/use-api-query";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {commands} from "@frontend/app/components/commands";
@@ -30,7 +34,7 @@ import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 type JSONSchemaWithId = JSONSchema7 & {$id: string};
 
 interface ParsedUiOptions {
-  data: QueryableStateListDescription,
+  data: QueryableStateListDescription | QueryableListDescription,
   label: string,
   value: string,
   addItemCommand: string | null,
@@ -61,7 +65,7 @@ const parseOptions = (options: any, rootSchema: JSONSchemaWithId): ParsedUiOptio
 
   const vo = getVOFromTypes(options.data, rootSchema);
 
-  if(!isQueryableStateListDescription(vo.desc)) {
+  if(!isQueryableStateListDescription(vo.desc) && !isQueryableListDescription(vo.desc)) {
     throw new Error(`DataSelect: Type "${options.data}" is not a queryable list`);
   }
 
