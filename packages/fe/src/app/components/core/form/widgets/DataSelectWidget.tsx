@@ -194,9 +194,9 @@ export default function DataSelectWidget<
       if(selectedOption) {
         const updateFormExe = makeSyncExecutable(parsedOptions.updateForm);
 
-        const result = updateFormExe({...jexlCtx, form: cloneDeepJSON(jexlCtx.form), data: selectedOption.fullDataSet});
+        const result = updateFormExe({...jexlCtx, form: cloneDeepJSON(jexlCtx.form), data: selectedOption.fullDataSet, update: {}});
 
-        formContext.setFormData(result.form);
+        formContext.updateForm(result.update);
       }
     }
 

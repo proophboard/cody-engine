@@ -32,6 +32,7 @@ import {JSONSchema7} from "json-schema";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {TimeoutError} from "cypress/types/bluebird";
+import {merge} from "lodash";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -84,7 +85,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     return () => {
       setInitialized(false);
     }
-  }, [props.command]);
+  }, [props.command.desc.name]);
 
   useEffect(() => {
     if(props.tryAgain) {
@@ -121,8 +122,9 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     }
 
     debounceTimer = setTimeout(() => {
-      setFormData(cloneDeepJSON(e.formData));
-      console.log("on change", e);
+      if(formRef) {
+        setFormData(cloneDeepJSON(formRef.state.formData));
+      }
     }, 300);
 
     if(props.onChange) {
@@ -141,6 +143,14 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     if(props.onSubmitted) {
       props.onSubmitted();
     }
+  }
+
+  const handleUpdateFormFromContext = (fD: {[prop: string]: any}) => {
+    setTimeout(() => {
+      if(formRef) {
+        setFormData({...formRef.state.formData, ...fD});
+      }
+    }, 310) /* wait until debounce timer of onChange fired */
   }
 
   const {desc} = props.command;
@@ -171,7 +181,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
               ref={(form) => formRef = form}
               onSubmit={handleSubmit}
               formData={formData}
-              formContext={{data: formData, setFormData}}
+              formContext={{data: formData, updateForm: handleUpdateFormFromContext}}
               uiSchema={uiSchema}
               liveValidate={liveValidate}
               showErrorList={false}
