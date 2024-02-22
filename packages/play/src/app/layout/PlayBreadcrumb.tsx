@@ -10,6 +10,7 @@ import {playGetVoRuntimeInfoFromDataReference} from "@cody-play/state/play-get-v
 import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
 import {dynamicLabel} from "@frontend/util/breadcrumb/dynamic-label";
 import {
+  isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
   isQueryableStateListDescription,
   isQueryableValueObjectDescription
@@ -61,7 +62,7 @@ export const getBreadcrumbFnFromPlayPage = (page: PlayPageDefinition, config: Co
     const vo = playGetVoRuntimeInfoFromDataReference(page.breadcrumb.data, page.service, config.types);
     const voDesc = vo.desc;
 
-    if(!isQueryableStateDescription(voDesc) || isQueryableValueObjectDescription(voDesc) || isQueryableStateListDescription(voDesc)) {
+    if(!isQueryableStateDescription(voDesc) || !isQueryableValueObjectDescription(voDesc) || !isQueryableNotStoredValueObjectDescription(voDesc) || isQueryableStateListDescription(voDesc)) {
       return staticLabel(`Error! "${voDesc.name}" is not queryable`);
     }
 

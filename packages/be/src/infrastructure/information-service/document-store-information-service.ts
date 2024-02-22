@@ -2,6 +2,7 @@ import {InformationService} from "@server/infrastructure/information-service/inf
 import {DocumentStore, SortOrder} from "@event-engine/infrastructure/DocumentStore";
 import {types} from "@app/shared/types";
 import {
+  isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
   isQueryableStateListDescription,
   isQueryableValueObjectDescription
@@ -115,7 +116,7 @@ export class DocumentStoreInformationService implements InformationService {
       return this.detectSingleVoRuntimeInfo(runtimeInfo.desc.itemType);
     }
 
-    if(isQueryableStateDescription(runtimeInfo.desc) || isQueryableValueObjectDescription(runtimeInfo.desc)) {
+    if(isQueryableStateDescription(runtimeInfo.desc) || isQueryableValueObjectDescription(runtimeInfo.desc) || isQueryableNotStoredValueObjectDescription(runtimeInfo.desc)) {
       return runtimeInfo;
     }
 

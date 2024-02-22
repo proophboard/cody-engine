@@ -10,7 +10,7 @@ import {
   isForEach,
   isIfConditionRule,
   isIfNotConditionRule,
-  isInsertInformation,
+  isInsertInformation, isLookupUser, isLookupUsers,
   isRecordEvent,
   isReplaceInformation,
   isThrowError,
@@ -26,7 +26,7 @@ import {
   ThenExecuteRules,
   ThenFindInformation,
   ThenForEach,
-  ThenInsertInformation,
+  ThenInsertInformation, ThenLookupUser, ThenLookupUsers,
   ThenRecordEvent,
   ThenReplaceInformation,
   ThenThrowError,
@@ -45,10 +45,7 @@ import {getVOFromDataReference} from "@cody-engine/cody/hooks/utils/value-object
 import {voRegistryId} from "@cody-engine/cody/hooks/utils/value-object/vo-registry-id";
 import {makeFilter} from "@cody-engine/cody/hooks/utils/query/make-query-resolver";
 import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
-import {visitRulesThen} from "@cody-engine/cody/hooks/utils/rule-engine/visit-rule-then";
 import {validateResolverRules} from "@cody-engine/cody/hooks/utils/rule-engine/validate-resolver-rules";
-import {getVoMetadata} from "@cody-engine/cody/hooks/utils/value-object/get-vo-metadata";
-import {isQueryableListDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 
 export interface Variable {
   name: string;
@@ -330,6 +327,10 @@ const convertThen = (node: Node, ctx: Context, then: ThenType, rule: Rule, lines
       return convertThenForEach(node, ctx, then as ThenForEach, rule, lines, indent, evalSync);
     case isCallService(then):
       return convertThenCallService(node, ctx, then as ThenCallService, rule, lines, indent, evalSync);
+    case isLookupUsers(then):
+      return convertThenLookupUsers(node, ctx, then as ThenLookupUsers, rule, lines, indent, evalSync);
+    case isLookupUser(then):
+      return convertThenLookupUser(node, ctx, then as ThenLookupUser, rule, lines, indent, evalSync);
     case isFindInformation(then):
       return convertThenFind(node, ctx, then as ThenFindInformation, rule, lines, indent, evalSync);
     case isCountInformation(then):
@@ -476,6 +477,53 @@ const convertThenCallService = (node: Node, ctx: Context, then: ThenCallService,
   } else {
     lines.push(`${indent}ctx['${then.call.result.variable}'] = ${invokeService}`);
   }
+
+  return true;
+}
+
+const convertThenLookupUsers = (node: Node, ctx: Context, then: ThenLookupUsers, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
+  if(evalSync) {
+    return {
+      cody: `Lookup users rules can only be used in async components like query resolvers, policies, and command handlers. Please check rule configuration of ${node.getName()}`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  const variable = then.lookup.users.variable || 'users';
+
+
+  lines.push(`${indent}if(!ctx['AuthService']) { throw new Error('Cannot lookup users. "AuthService" is missing in the query dependencies! Please check the prooph board configuration.'); }`)
+
+  lines.push(`${indent}ctx['${variable}'] = await ctx['AuthService'].find(`);
+  makeFilter(then.lookup.users.filter, lines, indent + '  ');
+  if(typeof then.lookup.users.skip !== 'undefined') {
+    lines.push(`${indent}  , ${then.lookup.users.skip}`);
+  }
+  if(typeof then.lookup.users.limit !== 'undefined') {
+    lines.push(`${indent}  , ${then.lookup.users.limit}`);
+  }
+  if(then.lookup.users.orderBy) {
+    lines.push(`${indent}  , ${JSON.stringify(then.lookup.users.orderBy)}`);
+  }
+
+  lines.push(`${indent});`);
+
+  return true;
+}
+
+const convertThenLookupUser = (node: Node, ctx: Context, then: ThenLookupUser, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
+  if(evalSync) {
+    return {
+      cody: `Lookup user rules can only be used in async components like query resolvers, policies, and command handlers. Please check rule configuration of ${node.getName()}`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  lines.push(`${indent}if(!ctx['AuthService']) { throw new Error('Cannot lookup user. "AuthService" is missing in the query dependencies! Please check the prooph board configuration.'); }`)
+
+  const variable = then.lookup.variable || 'user';
+
+  lines.push(`${indent}ctx['${variable}'] = await ctx['AuthService'].get(${wrapExpression(then.lookup.user)});`);
 
   return true;
 }

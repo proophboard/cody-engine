@@ -7,6 +7,7 @@ import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
 import {areValuesEqualForAllSorts, getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
 import {Filesystem, NodeFilesystem} from "@event-engine/infrastructure/helpers/fs";
 import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";
+import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 
 export type Documents = {[collectionName: string]: {[docId: string]: {doc: object, version: number}}};
 
@@ -136,7 +137,7 @@ export class InMemoryDocumentStore implements DocumentStore {
   }
 
   public async getPartialDoc<D extends object>(collectionName: string, docId: string, partialSelect: PartialSelect): Promise<D | null> {
-    return new Promise(resolve => resolve(null));
+    throw new Error(`@TODO: implement getPartialDoc`);
   }
 
   public async getDocAndVersion<D extends object>(collectionName: string, docId: string): Promise<{doc: D, version: number} | null> {
@@ -210,37 +211,17 @@ export class InMemoryDocumentStore implements DocumentStore {
       return asyncEmptyIterator(); // @todo supposed to not throw an error?
     }
 
-    if(typeof skip === 'undefined') {
-      skip = 0;
-    }
+    const collection: [string, D, number][] = [];
 
-    let count = 0;
-    const resultSet: [string, D, number][] = [];
-
-    const filterFunction = this.filterProcessor.process(filter);
-
-    for(const docId in this.documents[collectionName]) {
-      if(!this.documents[collectionName].hasOwnProperty(docId)) {
-        continue;
-      }
-
-      const doc = this.documents[collectionName][docId] as {doc: D, version: number};
-
-      if(!filterFunction(doc.doc, docId)) {
-        continue;
-      }
-
-      count++;
-      if(skip && count <= skip) continue;
-      if(limit && (count - skip) > limit) break;
-
-      resultSet.push([docId, doc.doc, doc.version]);
+    for (const docId in this.documents[collectionName]) {
+      const {doc, version} = this.documents[collectionName][docId];
+      collection.push([docId, doc as D, version])
     }
 
     if(orderBy) {
       const comparedSorts: SortOrder = [];
       orderBy.forEach(sort => {
-        resultSet.sort((aResult, bResult) => {
+        collection.sort((aResult, bResult) => {
           if(!areValuesEqualForAllSorts(comparedSorts, aResult[1], bResult[1])) {
             return 0;
           }
@@ -268,6 +249,33 @@ export class InMemoryDocumentStore implements DocumentStore {
       })
     }
 
+    if(typeof skip === 'undefined') {
+      skip = 0;
+    }
+
+    let count = 0;
+    const resultSet: [string, D, number][] = [];
+
+    const filterFunction = this.filterProcessor.process(filter);
+
+    for(const [docId,] of collection) {
+      if(!this.documents[collectionName].hasOwnProperty(docId)) {
+        continue;
+      }
+
+      const doc = this.documents[collectionName][docId] as {doc: D, version: number};
+
+      if(!filterFunction(doc.doc, docId)) {
+        continue;
+      }
+
+      count++;
+      if(skip && count <= skip) continue;
+      if(limit && (count - skip) > limit) break;
+
+      resultSet.push([docId, doc.doc, doc.version]);
+    }
+
     const iter = async function *() {
       for (const result of resultSet) {
         yield result;
@@ -278,11 +286,20 @@ export class InMemoryDocumentStore implements DocumentStore {
   }
 
   public async findPartialDocs<D extends object>(collectionName: string, partialSelect: PartialSelect, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<AsyncIterable<[string, D, number]>> {
-    return undefined as any;
+    const cursor = await this.findDocs<D>(collectionName, filter, skip, limit, orderBy);
+
+    throw new Error(`@TODO: implement findPartialDocs`);
+
+    return asyncMap(cursor, ([docId, doc, version]) => {
+
+      return [docId, doc, version];
+    });
   }
 
   public async findDocIds(collectionName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<string[]> {
-    return [];
+    const cursor = await this.findDocs(collectionName, filter, skip, limit, orderBy);
+
+    return asyncIteratorToArray(asyncMap(cursor, ([docId,]) => docId));
   }
 
   public async countDocs(collectionName: string, filter: Filter): Promise<number> {

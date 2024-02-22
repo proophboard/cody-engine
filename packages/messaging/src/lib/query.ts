@@ -57,4 +57,5 @@ export const makeQuery = <P extends Payload, M extends Meta = any>(
 };
 
 export type QueryResolver<S extends Payload = any> = (query: Query<S>) => Promise<S>;
-export type QueryResolverRegistry = {[queryName: string]: QueryResolver<any>};
+export type QueryResolverWithDependencies<S extends Payload = any, D = any> = (query: Query<S>, dependencies: D) => Promise<S>;
+export type QueryResolverRegistry = {[queryName: string]: QueryResolver<any> | QueryResolverWithDependencies<any, any>};

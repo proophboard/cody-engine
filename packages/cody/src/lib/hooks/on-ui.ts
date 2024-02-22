@@ -6,9 +6,9 @@ import {getUiMetadata} from "./utils/ui/get-ui-metadata";
 import {getNodeFromSyncedNodes} from "./utils/node-tree";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {
-  isQueryableListDescription, isQueryableNotStoredStateDescription,
+  isQueryableListDescription, isQueryableNotStoredStateDescription, isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
-  isQueryableStateListDescription
+  isQueryableStateListDescription, isQueryableValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
 import {isTopLevelPage} from "./utils/ui/is-top-level-page";
 import {detectRoute} from "./utils/ui/detect-route";
@@ -85,7 +85,7 @@ export const onUi: CodyHook<Context> = async (ui, ctx) => {
         await asyncWithErrorCheck(upsertListViewComponent, [viewModel, viewModelMeta, ctx, tree]);
       }
 
-      if(isQueryableStateDescription(viewModelMeta) || isQueryableNotStoredStateDescription(viewModelMeta)) {
+      if(isQueryableStateDescription(viewModelMeta) || isQueryableNotStoredStateDescription(viewModelMeta) || isQueryableValueObjectDescription(viewModelMeta) || isQueryableNotStoredValueObjectDescription(viewModelMeta)) {
         await asyncWithErrorCheck(upsertStateViewComponent, [viewModel, viewModelMeta, ctx, tree]);
       }
     }

@@ -1,10 +1,15 @@
 import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
 import {Context} from "../../context";
 import {
-  isQueryableListDescription, isQueryableNotStoredStateDescription,
+  isQueryableListDescription,
+  isQueryableNotStoredStateDescription,
+  isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
   isQueryableStateListDescription,
-  isQueryableValueObjectDescription, QueryableListDescription, QueryableNotStoredStateDescription,
+  isQueryableValueObjectDescription,
+  QueryableListDescription,
+  QueryableNotStoredStateDescription,
+  QueryableNotStoredValueObjectDescription,
   QueryableStateDescription,
   QueryableStateListDescription,
   QueryableValueObjectDescription
@@ -74,6 +79,10 @@ export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Co
     return makeSingleValueObjectQueryResolver(vo, voMeta, ctx);
   }
 
+  if(isQueryableNotStoredValueObjectDescription(voMeta)) {
+    return makeSingleValueObjectQueryResolver(vo, voMeta, ctx);
+  }
+
   return {
     cody: `Oh, something went wrong. A queryable value object is passed to makeQueryResolver, but it is neither queryable state nor queryable state list. The value object node is: "${vo.getName()}"`,
     type: CodyResponseType.Error,
@@ -81,7 +90,7 @@ export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Co
   }
 }
 
-const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata & (QueryableValueObjectDescription | QueryableNotStoredStateDescription), ctx: Context): string | CodyResponse => {
+const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata & (QueryableValueObjectDescription | QueryableNotStoredStateDescription | QueryableNotStoredValueObjectDescription), ctx: Context): string | CodyResponse => {
   const voNames = names(vo.getName());
   const querySchema = meta.querySchema;
 
@@ -103,7 +112,7 @@ const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata 
 
   if(meta.resolve) {
     if(meta.resolve.where || meta.resolve.rules) {
-      jexlInit = `const ctx: any = {query: query.payload, meta: query.meta}\nctx[INFORMATION_SERVICE_NAME] = infoService;\n`;
+      jexlInit = `const ctx: any = {...deps, query: query.payload, meta: query.meta}\nctx[INFORMATION_SERVICE_NAME] = infoService;\n`;
     }
 
     if(meta.resolve.rules) {
@@ -200,7 +209,7 @@ const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & (QueryableS
 
   if(meta.resolve) {
     if(meta.resolve.where || meta.resolve.rules) {
-      jexlInit = `const ctx: any = {query: query.payload, meta: query.meta}\n  ctx[INFORMATION_SERVICE_NAME] = infoService;\n`;
+      jexlInit = `const ctx: any = {...deps, query: query.payload, meta: query.meta}\n  ctx[INFORMATION_SERVICE_NAME] = infoService;\n`;
     }
 
     if(meta.resolve.rules) {

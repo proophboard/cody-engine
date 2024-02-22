@@ -15,7 +15,7 @@ import {getExternalServiceOrThrow} from "@server/extensions/get-external-service
 <% if (isList || isSingleVOQuery) { %>import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";<% } %>
 <% if (isList || isSingleVOQuery) { %>import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";<% } %>
 
-export const resolve<%= className %> = async (query: Query<<%= className %>>): Promise<<%= voNames.className %>> => {
+export const resolve<%= className %> = async (query: Query<<%= className %>>, deps: object): Promise<<%= voNames.className %>> => {
   const ds = getConfiguredDocumentStore();
   <% if (isList || isSingleVOQuery) { %>const infoService = getExternalServiceOrThrow<InformationService>(INFORMATION_SERVICE_NAME, {});<% } %>
 

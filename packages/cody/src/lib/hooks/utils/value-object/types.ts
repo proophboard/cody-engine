@@ -1,7 +1,7 @@
 import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {GridDensity} from "@mui/x-data-grid";
-import {ValueObjectDescriptionFlags} from "@event-engine/descriptions/descriptions";
+import {DependencyRegistry, ValueObjectDescriptionFlags} from "@event-engine/descriptions/descriptions";
 import {JSONSchema7} from "json-schema-to-ts";
 import {UiSchema} from "@rjsf/utils";
 
@@ -10,6 +10,7 @@ export interface ValueObjectMetadataRaw {
   schema: any;
   querySchema?: any;
   resolve?: ResolveConfig;
+  queryDependencies?: DependencyRegistry;
   ns?: string;
   collection?: string | boolean;
   initialize?: Rule[];
@@ -73,5 +74,6 @@ export interface ValueObjectMetadata extends ValueObjectDescriptionFlags {
   initialize?: Rule[];
   itemType?: string;
   resolve?: ResolveConfig;
+  queryDependencies?: DependencyRegistry;
   uiSchema?: UiSchema & TableUiSchema;
 }

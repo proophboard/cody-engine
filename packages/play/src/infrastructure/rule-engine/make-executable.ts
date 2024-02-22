@@ -2,14 +2,14 @@ import {
   isAssignVariable, isCallService, isCountInformation, isDeleteInformation,
   isExecuteRules, isFindInformation, isForEach,
   isIfConditionRule,
-  isIfNotConditionRule, isInsertInformation,
+  isIfNotConditionRule, isInsertInformation, isLookupUser, isLookupUsers,
   isRecordEvent, isReplaceInformation,
   isThrowError,
   isTriggerCommand, isUpdateInformation, isUpsertInformation,
   PropMapping,
   Rule,
   ThenAssignVariable, ThenCallService, ThenCountInformation, ThenDeleteInformation,
-  ThenExecuteRules, ThenFindInformation, ThenForEach, ThenInsertInformation,
+  ThenExecuteRules, ThenFindInformation, ThenForEach, ThenInsertInformation, ThenLookupUser, ThenLookupUsers,
   ThenRecordEvent, ThenReplaceInformation,
   ThenThrowError, ThenTriggerCommand,
   ThenType, ThenUpdateInformation, ThenUpsertInformation
@@ -31,6 +31,7 @@ import {
 } from "@server/infrastructure/information-service/information-service";
 import {makeFilter} from "@cody-play/queries/make-filters";
 import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 
 type ExecutionContext = any;
 
@@ -139,6 +140,9 @@ const execThenSync = (then: ThenType, ctx: ExecutionContext): ExecutionContext =
       return execTriggerCommandSync(then as ThenTriggerCommand, ctx);
     case isCallService(then):
       return execCallServiceSync(then as ThenCallService, ctx);
+    case isLookupUser(then):
+    case isLookupUsers(then):
+      throw new Error(`User lookup rules can only be used in asynchronous contexts like query resolvers, policies or processors`);
     case isFindInformation(then):
     case isCountInformation(then):
       throw new Error(`Information find rules can only be used in asynchronous contexts like query resolvers, policies or processors`);
@@ -170,6 +174,10 @@ const execThenAsync = async (then: ThenType, ctx: ExecutionContext): Promise<Exe
       return await execTriggerCommandAsync(then as ThenTriggerCommand, ctx);
     case isCallService(then):
       return await execCallServiceAsync(then as ThenCallService, ctx);
+    case isLookupUsers(then):
+      return await execLookupUsers(then as ThenLookupUsers, ctx);
+    case isLookupUser(then):
+      return await execLookupUser(then as ThenLookupUser, ctx);
     case isFindInformation(then):
       return await execFindInformation(then as ThenFindInformation, ctx);
     case isCountInformation(then):
@@ -281,6 +289,39 @@ const execCallServiceAsync = async (then: ThenCallService, ctx: ExecutionContext
   } else {
     ctx[then.call.result.variable] = result;
   }
+
+  return ctx;
+}
+
+const execLookupUsers = async (then: ThenLookupUsers, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const authService: AuthService = ctx['AuthService'];
+
+  if(!authService) {
+    throw new Error(`Cannot execute rule: lookup users. "AuthService" not found. Please check your dependency configuration for spelling mistakes e.g. if you use an alias.`);
+  }
+
+  const variable = then.lookup.users.variable || 'users';
+
+  ctx[variable] = await authService.find(
+    makeFilter(then.lookup.users.filter, ctx),
+    then.lookup.users.skip,
+    then.lookup.users.limit,
+    then.lookup.users.orderBy ? mapOrderBy(then.lookup.users.orderBy) : undefined
+  );
+
+  return ctx;
+}
+
+const execLookupUser = async (then: ThenLookupUser, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const authService: AuthService = ctx['AuthService'];
+
+  if(!authService) {
+    throw new Error(`Cannot execute rule: lookup users. "AuthService" not found. Please check your dependency configuration for spelling mistakes e.g. if you use an alias.`);
+  }
+
+  const variable = then.lookup.variable || 'user';
+
+  ctx[variable] = authService.get(await execExprAsync(then.lookup.user, ctx));
 
   return ctx;
 }

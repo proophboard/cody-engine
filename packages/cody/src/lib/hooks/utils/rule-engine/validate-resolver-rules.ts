@@ -1,7 +1,7 @@
 import {
-  isAssignVariable,
+  isAssignVariable, isCallService,
   isCountInformation, isExecuteRules,
-  isFindInformation, isForEach, isThrowError,
+  isFindInformation, isForEach, isLookupUser, isLookupUsers, isThrowError,
   Rule
 } from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {visitRulesThen} from "@cody-engine/cody/hooks/utils/rule-engine/visit-rule-then";
@@ -9,6 +9,9 @@ import {visitRulesThen} from "@cody-engine/cody/hooks/utils/rule-engine/visit-ru
 export const validateResolverRules = (rules: Rule[]): void => {
   visitRulesThen(rules, then => {
     switch (true) {
+      case isCallService(then):
+      case isLookupUsers(then):
+      case isLookupUser(then):
       case isFindInformation(then):
       case isCountInformation(then):
       case isAssignVariable(then):

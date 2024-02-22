@@ -11,9 +11,9 @@ import {generateFiles} from "@nx/devkit";
 import {toJSON} from "../to-json";
 import {getVoMetadata} from "../value-object/get-vo-metadata";
 import {
-  isQueryableListDescription, isQueryableNotStoredStateDescription,
+  isQueryableListDescription, isQueryableNotStoredStateDescription, isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
-  isQueryableStateListDescription
+  isQueryableStateListDescription, isQueryableValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
 import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
 import {getNodesOfTypeNearby} from "../node-tree";
@@ -229,7 +229,9 @@ const getComponentNames = (viewModels: List<Node>, ctx: Context, existingPageDef
       return service;
     }
 
-    if(isQueryableStateDescription(voMeta) || isQueryableNotStoredStateDescription(voMeta) || isQueryableStateListDescription(voMeta) || isQueryableListDescription(voMeta)) {
+    if(isQueryableStateDescription(voMeta) || isQueryableNotStoredStateDescription(voMeta)
+      || isQueryableValueObjectDescription(voMeta) || isQueryableNotStoredValueObjectDescription(voMeta)
+      || isQueryableStateListDescription(voMeta) || isQueryableListDescription(voMeta)) {
       const componentName = `${names(service).className}.${names(vo.getName()).className}`;
       if(!componentNames.includes(componentName)) {
         componentNames.push(componentName);

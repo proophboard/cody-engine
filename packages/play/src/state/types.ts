@@ -5,7 +5,7 @@ import {
   AggregateCommandDescription,
   AggregateDescription,
   AggregateEventDescription,
-  CommandDescription,
+  CommandDescription, DependencyRegistry,
   EventDescription, PolicyDescription, QueryableStateDescription, QueryableStateListDescription,
   QueryableValueObjectDescription,
   QueryDescription,
@@ -109,6 +109,7 @@ export interface PlayAddQueryAction {
   name: string,
   query: PlayQueryRuntimeInfo,
   resolver: ResolveConfig,
+  dependencies?: DependencyRegistry,
 }
 
 export interface PlayRemoveQueryAction {

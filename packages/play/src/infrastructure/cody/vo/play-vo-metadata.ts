@@ -3,6 +3,7 @@ import {ElementEditedContext} from "@cody-play/infrastructure/cody/cody-message-
 import {names} from "@event-engine/messaging/helpers";
 import {isShorthand} from "@cody-engine/cody/hooks/utils/json-schema/shorthand";
 import {
+  DependencyRegistry,
   isQueryableStateDescription,
   isStateDescription,
   ValueObjectDescriptionFlags
@@ -35,6 +36,7 @@ export interface PlayValueObjectMetadataRaw {
   collection?: string | boolean;
   initialize?: Rule[];
   uiSchema?: UiSchema & TableUiSchema;
+  queryDependencies?: DependencyRegistry;
 }
 
 export interface ResolveConfig {
@@ -95,6 +97,7 @@ export interface PlayValueObjectMetadata extends ValueObjectDescriptionFlags {
   itemType?: string;
   resolve?: ResolveConfig;
   uiSchema?: UiSchema & TableUiSchema;
+  queryDependencies?: DependencyRegistry;
 }
 
 export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayInformationRegistry): PlayValueObjectMetadata | CodyResponse => {
@@ -207,6 +210,10 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
   }
 
   convertedMeta.isNotStored = isNotStored;
+
+  if(meta.queryDependencies) {
+    convertedMeta.queryDependencies = meta.queryDependencies;
+  }
 
   return convertedMeta;
 }

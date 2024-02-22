@@ -10,8 +10,12 @@ import {PlayValueObjectMetadata, playVoMetadata} from "@cody-play/infrastructure
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {playEnsureAllRefsAreKnown} from "@cody-play/infrastructure/cody/schema/play-ensure-all-refs-are-known";
 import {
-  detectDescriptionType, QueryableListDescription, QueryableNotStoredStateDescription,
-  QueryableStateDescription, QueryableStateListDescription,
+  detectDescriptionType,
+  QueryableListDescription,
+  QueryableNotStoredStateDescription,
+  QueryableNotStoredValueObjectDescription,
+  QueryableStateDescription,
+  QueryableStateListDescription,
   QueryableValueObjectDescription,
   StateDescription,
   StateListDescription,
@@ -75,12 +79,13 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
         desc: {
           ...queryPbInfo,
           name: queryName,
-          returnType: voFQCN
+          returnType: voFQCN,
+          dependencies: voMeta.queryDependencies,
         },
         schema: voMeta.querySchema || {} as JSONSchema7,
         factory: []
       },
-      resolver: voMeta.resolve || {}
+      resolver: voMeta.resolve || {},
     })
 
     return {
@@ -188,6 +193,16 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         isQueryable: true,
         query: queryName,
       } as QueryableListDescription);
+    case "QueryableNotStoredValueObjectDescription":
+      return ({
+        ...pbInfo,
+        name: voName,
+        hasIdentifier: false,
+        isList: false,
+        isQueryable: true,
+        query: queryName,
+        isNotStored: true,
+      } as QueryableNotStoredValueObjectDescription);
     default:
       return ({
         ...pbInfo,

@@ -7,7 +7,7 @@ import {<%= serviceNames.className %><%= nsClassName %><%= className %>VORuntime
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {<%= serviceNames.className %>Get<%= className %>QueryRuntimeInfo} from "@app/shared/queries/<%= serviceNames.fileName %>/get-<%= fileName %>";
 
-type <%= className %>Props = Record<string, string> & {<%= identifier %>: string};
+type <%= className %>Props = Record<string, string><% if (identifier) { %> & {<%= identifier %>: string}<% } %>;
 
 const <%= className %> = (props: <%= className %>Props) => {
   const [,addQueryResult] = usePageData();

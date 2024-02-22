@@ -35,7 +35,8 @@ export const isIfNotConditionRule = (rule: any): rule is IfNotConditionRule => {
 }
 
 export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenExecuteRules | ThenForEach
-  | ThenFilter | ThenFindInformation | ThenCountInformation | ThenInsertInformation | ThenUpsertInformation | ThenUpdateInformation | ThenReplaceInformation | ThenDeleteInformation;
+  | ThenFilter | ThenFindInformation | ThenCountInformation | ThenInsertInformation | ThenUpsertInformation | ThenUpdateInformation | ThenReplaceInformation | ThenDeleteInformation
+  | ThenLookupUsers | ThenLookupUser;
 
 export type PropMapping = {[name: string]: string | string[]};
 
@@ -117,6 +118,29 @@ export interface ThenFindInformation {
 }
 
 export const isFindInformation = (then: any): then is ThenFindInformation => typeof then.find !== "undefined";
+
+export interface ThenLookupUsers {
+  lookup: {
+    users: {
+      filter: Filter,
+      skip?: number;
+      limit?: number;
+      orderBy?: SortOrder;
+      variable?: string;
+    }
+  }
+}
+
+export const isLookupUsers = (then: any): then is ThenLookupUsers => typeof then.lookup === "object" && typeof then.lookup.users !== "undefined";
+
+export interface ThenLookupUser {
+  lookup: {
+    user: string,
+    variable?: string,
+  }
+}
+
+export const isLookupUser = (then: any): then is ThenLookupUser => typeof then.lookup === "object" && typeof then.lookup.user !== "undefined";
 
 export interface ThenCountInformation {
   count: {

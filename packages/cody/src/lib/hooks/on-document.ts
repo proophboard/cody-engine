@@ -11,7 +11,10 @@ import {
 } from "./utils/value-object/namespace";
 import {voPath} from "./utils/value-object/vo-path";
 import {
-  detectDescriptionType, isQueryableListDescription, isQueryableNotStoredStateDescription,
+  detectDescriptionType,
+  isQueryableListDescription,
+  isQueryableNotStoredStateDescription,
+  isQueryableNotStoredValueObjectDescription,
   isQueryableStateListDescription,
   isQueryableValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
@@ -75,6 +78,8 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
 
       withErrorCheck(ensureAllRefsAreKnown, [vo, voMeta.querySchema!]);
 
+      const dependencies = voMeta.queryDependencies;
+
       generateFiles(tree, __dirname + '/query-files/shared', ctx.sharedSrc, {
         tmpl: "",
         service: serviceNames.fileName,
@@ -82,6 +87,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
         voNames,
         ns,
         schema: voMeta.querySchema,
+        dependencies,
         toJSON,
         ...queryNames,
         ...withErrorCheck(updateProophBoardInfo, [vo, ctx, tree])
@@ -95,7 +101,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
         itemNames = names(voClassNameFromFQCN(voMeta.itemType));
         itemNS = namespaceNames(valueObjectNamespaceFromFQCN(voMeta.itemType));
         isList = true;
-      } else if (isQueryableValueObjectDescription(voMeta) || isQueryableNotStoredStateDescription(voMeta)) {
+      } else if (isQueryableValueObjectDescription(voMeta) || isQueryableNotStoredStateDescription(voMeta) || isQueryableNotStoredValueObjectDescription(voMeta)) {
         isSingleVOQuery = true;
       }
 

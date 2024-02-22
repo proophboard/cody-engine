@@ -6,10 +6,14 @@ import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {
   isQueryableListDescription,
-  isQueryableNotStoredStateDescription, isQueryableNotStoredStateListDescription,
+  isQueryableNotStoredStateDescription,
+  isQueryableNotStoredStateListDescription,
+  isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
   isQueryableStateListDescription,
-  isQueryableValueObjectDescription, QueryableListDescription, QueryableNotStoredStateDescription,
+  isQueryableValueObjectDescription,
+  QueryableListDescription,
+  QueryableNotStoredStateDescription, QueryableNotStoredValueObjectDescription,
   QueryableStateDescription,
   QueryableStateListDescription,
   QueryableValueObjectDescription
@@ -35,6 +39,8 @@ import {
 import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
 import {validateResolverRules} from "@cody-engine/cody/hooks/utils/rule-engine/validate-resolver-rules";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
+import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
+import {makeQueryFactory} from "@cody-play/queries/make-query-factory";
 
 type ResolvedCtx = {query: Record<string, unknown>, meta: {user: User}, information?: unknown} & Record<string, unknown>;
 
@@ -60,11 +66,13 @@ export const makeLocalApiQuery = (store: CodyPlayConfig, user: User): ApiQuery =
 
     const informationDesc = informationInfo.desc;
     const resolve = store.resolvers[queryName] || {};
+    const queryFactory = makeQueryFactory(queryInfo, store.definitions);
+    const dependencies = await playLoadDependencies(queryFactory(params, {user}), 'query', queryInfo.desc.dependencies || {}, store);
 
-    let resolvedCtx: ResolvedCtx = {query: params, meta: {user}};
+    let resolvedCtx: ResolvedCtx = {...dependencies, query: params, meta: {user}};
 
     if(resolve.rules) {
-      const rulesCtx: Record<string, unknown> = {query: params, meta: {user}};
+      const rulesCtx: Record<string, unknown> = {...dependencies, query: params, meta: {user}};
       rulesCtx[INFORMATION_SERVICE_NAME] = infoService;
 
       validateResolverRules(resolve.rules);
@@ -106,6 +114,10 @@ export const makeLocalApiQuery = (store: CodyPlayConfig, user: User): ApiQuery =
       return await resolveSingleValueObjectQuery(informationDesc, informationInfo.factory, queryInfo, resolve, resolvedCtx.query, user);
     }
 
+    if(isQueryableNotStoredValueObjectDescription(informationDesc)) {
+      return await resolveNotStoredValueObjectQuery(informationDesc, informationInfo.factory, queryInfo, resolvedCtx);
+    }
+
     if(isQueryableListDescription(informationDesc)) {
       let itemInfo = store.types[informationDesc.itemType];
 
@@ -130,6 +142,20 @@ const resolveNotStoredStateQuery = async (desc: QueryableNotStoredStateDescripti
   }
 
   console.log(`[CodyPlay] Performed not stored state query "${desc.name}" {${desc.identifier}: "${ctx.query[desc.identifier]}"}`, doc);
+
+  const exe = makeInformationFactory(factory);
+
+  return exe(doc);
+}
+
+const resolveNotStoredValueObjectQuery = async (desc: QueryableNotStoredValueObjectDescription, factory: AnyRule[], queryInfo: PlayQueryRuntimeInfo, ctx: ResolvedCtx): Promise<any> => {
+  const doc = ctx.information;
+
+  if(!doc) {
+    throw new NotFoundError(`"${desc.name}" with "${ctx.query}" not found!`);
+  }
+
+  console.log(`[CodyPlay] Performed not stored value object query "${desc.name}" with "${ctx.query}"`, doc);
 
   const exe = makeInformationFactory(factory);
 

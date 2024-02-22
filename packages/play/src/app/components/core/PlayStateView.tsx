@@ -5,6 +5,7 @@ import {useContext, useEffect} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import {useApiQuery} from "@frontend/queries/use-api-query";
 import {
+  isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
   isQueryableValueObjectDescription,
   QueryableStateDescription
@@ -24,7 +25,7 @@ const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo)
     addQueryResult(registryIdToDataReference(desc.name), query);
   }, [params]);
 
-  if(!isQueryableStateDescription(desc) && !isQueryableValueObjectDescription(desc)) {
+  if(!isQueryableStateDescription(desc) && !isQueryableValueObjectDescription(desc) && !isQueryableNotStoredValueObjectDescription(desc)) {
     return <Alert severity="error" >Unable to render view. Referenced Information "{informationInfo.desc.name}" is not queryable and cannot be loaded from the database. You have to define a query schema and resolve configuration in the Cody Wizard.</Alert>
   }
 

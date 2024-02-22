@@ -2,16 +2,24 @@ import {AuthService, UnregisteredUser} from "@server/infrastructure/auth-service
 import {Persona} from "@app/shared/extensions/personas";
 import {v4} from "uuid";
 import {User} from "@app/shared/types/core/user/user";
+import {SortOrder} from "@event-engine/infrastructure/DocumentStore";
+import {areValuesEqualForAllSorts, getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
+import {FilterProcessor} from "@event-engine/infrastructure/DocumentStore/FilterProcessor";
+import {InMemoryFilterProcessor} from "@event-engine/infrastructure/DocumentStore/InMemory/InMemoryFilterProcessor";
+import {makeFilter} from "@cody-play/queries/make-filters";
+import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 
 export type OnPersonaAdded = (newPersona: Persona) => void;
 
 export class PlayAuthService implements AuthService {
   private readonly personas: Persona[];
   private readonly onPersonaAdded: OnPersonaAdded;
+  private filterProcessor: FilterProcessor;
 
   public constructor(personas: Persona[], onPersonaAdded: OnPersonaAdded) {
     this.personas = personas;
     this.onPersonaAdded = onPersonaAdded;
+    this.filterProcessor = new InMemoryFilterProcessor();
   }
 
   public async register(user: UnregisteredUser): Promise<string> {
@@ -46,6 +54,61 @@ export class PlayAuthService implements AuthService {
       email: 'unknown@anonymous.local',
       roles: []
     }
+  }
+
+  public async find(filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<User[]> {
+
+    const collection: Array<[string, Persona, number]> = this.personas.map(p => [p.userId, p, 1]);
+
+    if(orderBy) {
+      const comparedSorts: SortOrder = [];
+      orderBy.forEach(sort => {
+        collection.sort((aResult, bResult) => {
+          if(!areValuesEqualForAllSorts(comparedSorts, aResult[1], bResult[1])) {
+            return 0;
+          }
+
+          const aDocVal: any = getValueFromPath(sort.prop, aResult[1]);
+          const bDocVal: any = getValueFromPath(sort.prop, bResult[1]);
+          const sortNumber = sort.sort === 'asc'? -1 : 1;
+
+          if(typeof aDocVal === 'undefined' && typeof bDocVal !== 'undefined') {
+            return sortNumber * -1;
+          }
+
+          if(typeof aDocVal !== 'undefined' && typeof bDocVal === 'undefined' ) {
+            return sortNumber
+          }
+
+          if(typeof aDocVal === 'undefined' && typeof bDocVal === 'undefined') {
+            return 0;
+          }
+
+          return aDocVal < bDocVal ? sortNumber : sortNumber * -1;
+        })
+
+        comparedSorts.push(sort);
+      })
+    }
+
+    let count = 0;
+    const resultSet: User[] = [];
+
+    const filterFunction = this.filterProcessor.process(filter);
+
+    for (const [userId, persona] of collection) {
+      if(!filterFunction(persona, persona.userId)) {
+        continue;
+      }
+
+      count++;
+      if(skip && count <= skip) continue;
+      if(limit && (count - (skip || 0)) > limit) break;
+
+      resultSet.push(persona);
+    }
+
+    return resultSet;
   }
 
   public async exportPersonas(): Promise<Persona[]> {

@@ -125,5 +125,9 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
 
   convertedMeta.isNotStored = isNotStored;
 
+  if(meta.queryDependencies) {
+    convertedMeta.queryDependencies = meta.queryDependencies;
+  }
+
   return convertedMeta;
 }
