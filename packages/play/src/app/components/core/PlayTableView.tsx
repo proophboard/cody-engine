@@ -16,7 +16,11 @@ import {
   PlayQueryRegistry,
   PlaySchemaDefinitions
 } from "@cody-play/state/types";
-import {isQueryableListDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {
+  isQueryableListDescription,
+  isQueryableNotStoredStateListDescription,
+  isQueryableStateListDescription
+} from "@event-engine/descriptions/descriptions";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {UiSchema} from "@rjsf/utils";
 import {
@@ -205,7 +209,7 @@ const compileTableColumns = (
 
           const refListDesc = refListVo.desc;
 
-          if (!isQueryableStateListDescription(refListDesc)) {
+          if (!isQueryableStateListDescription(refListDesc) && !isQueryableNotStoredStateListDescription(refListDesc)) {
             throw new Error(`The ref in column "${column.field}" is not a list! Only lists can be used to load reference data.`);
           }
 

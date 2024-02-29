@@ -7,7 +7,11 @@ import {names} from "@event-engine/messaging/helpers";
 import {
   getVoMetadata
 } from "../value-object/get-vo-metadata";
-import {isQueryableListDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {
+  isQueryableListDescription,
+  isQueryableNotStoredStateListDescription,
+  isQueryableStateListDescription
+} from "@event-engine/descriptions/descriptions";
 import {FQCNFromDefinitionId} from "../value-object/definitions";
 import {getVoFromSyncedNodes} from "../value-object/get-vo-from-synced-nodes";
 import {isObjectSchema} from "../json-schema/is-object-schema";
@@ -346,7 +350,7 @@ const prepareDataValueGetter = (columnName: string, vo: Node, listVo: Node, valu
     return listVoService;
   }
 
-  if(!isQueryableStateListDescription(listVoMeta)) {
+  if(!isQueryableStateListDescription(listVoMeta) && !isQueryableNotStoredStateListDescription(listVoMeta)) {
     return {
       cody: `Data of a column reference needs to be a queryable state list, but column "${columnName}" references data type "${listVo.getName()}", which is not a list or not queryable.`,
       type: CodyResponseType.Error
