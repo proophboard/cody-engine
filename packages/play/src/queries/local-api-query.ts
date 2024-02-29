@@ -67,7 +67,8 @@ export const makeLocalApiQuery = (store: CodyPlayConfig, user: User): ApiQuery =
     const informationDesc = informationInfo.desc;
     const resolve = store.resolvers[queryName] || {};
     const queryFactory = makeQueryFactory(queryInfo, store.definitions);
-    const dependencies = await playLoadDependencies(queryFactory(params, {user}), 'query', queryInfo.desc.dependencies || {}, store);
+    const payload = determineQueryPayload(params, queryInfo as unknown as QueryRuntimeInfo)
+    const dependencies = await playLoadDependencies(queryFactory(payload, {user}), 'query', queryInfo.desc.dependencies || {}, store);
 
     let resolvedCtx: ResolvedCtx = {...dependencies, query: params, meta: {user}};
 
