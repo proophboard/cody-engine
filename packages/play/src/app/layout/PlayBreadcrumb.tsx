@@ -62,7 +62,7 @@ export const getBreadcrumbFnFromPlayPage = (page: PlayPageDefinition, config: Co
     const vo = playGetVoRuntimeInfoFromDataReference(page.breadcrumb.data, page.service, config.types);
     const voDesc = vo.desc;
 
-    if(!isQueryableStateDescription(voDesc) || !isQueryableValueObjectDescription(voDesc) || !isQueryableNotStoredValueObjectDescription(voDesc) || isQueryableStateListDescription(voDesc)) {
+    if(!isQueryableStateDescription(voDesc) && !isQueryableValueObjectDescription(voDesc) && !isQueryableNotStoredValueObjectDescription(voDesc) && isQueryableStateListDescription(voDesc)) {
       return staticLabel(`Error! "${voDesc.name}" is not queryable`);
     }
 
