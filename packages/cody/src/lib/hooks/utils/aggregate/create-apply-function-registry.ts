@@ -9,17 +9,16 @@ import {getVoMetadata} from "../value-object/get-vo-metadata";
 import {generateFiles} from "@nx/devkit";
 import {namespaceToFilePath} from "../value-object/namespace";
 
-export const createApplyFunctionRegistryIfNotExists = (aggregate: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+export const createApplyFunctionRegistryIfNotExists = (aggregateState: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
   try {
-    const aggregateNames = names(aggregate.getName());
-    const service = withErrorCheck(detectService, [aggregate, ctx]);
+    const aggregateNames = names(aggregateState.getName());
+    const service = withErrorCheck(detectService, [aggregateState, ctx]);
     const serviceNames = names(service);
 
     if(tree.exists(`${ctx.beSrc}/event-reducers/${serviceNames.fileName}/${aggregateNames.fileName}/index.ts`)) {
       return true;
     }
 
-    const aggregateState = withErrorCheck(findAggregateState, [aggregate, ctx]);
     const aggregateStateNames = names(aggregateState.getName());
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
 

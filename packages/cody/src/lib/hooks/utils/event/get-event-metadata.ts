@@ -10,6 +10,7 @@ import {FQCNFromDefinitionId, normalizeRefs} from "../value-object/definitions";
 import {addSchemaTitles} from "../json-schema/add-schema-titles";
 import {jsonSchemaFromShorthand} from "../json-schema/json-schema-from-shorthand";
 import {isShorthand} from "../json-schema/shorthand";
+import {findAggregateState} from "@cody-engine/cody/hooks/utils/aggregate/find-aggregate-state";
 
 interface EventMetaRaw {
   schema: any;
@@ -53,13 +54,13 @@ export const getEventMetadata = (event: Node, ctx: Context): EventMeta | CodyRes
   if(meta.public) {
     schema['$id'] = `/definitions/${serviceNames.fileName}/${eventNames.fileName}`;
   } else {
-    const aggregate = getSingleSource(event, NodeType.aggregate);
+    const aggregateState = findAggregateState(event, ctx);
 
-    if(isCodyError(aggregate)) {
-      return aggregate;
+    if(isCodyError(aggregateState)) {
+      return aggregateState;
     }
 
-    const aggregateNames = names(aggregate.getName());
+    const aggregateNames = names(aggregateState.getName());
 
     schema['$id'] = `/definitions/${serviceNames.fileName}/${aggregateNames.fileName}/${eventNames.fileName}`;
   }

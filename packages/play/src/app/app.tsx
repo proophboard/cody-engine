@@ -37,6 +37,7 @@ import {
   getConfiguredPlayReadModelProjector
 } from "@cody-play/infrastructure/multi-model-store/configured-play-read-model-projector";
 import PageDataProvider from "@frontend/app/providers/PageData";
+import ErrorBoundary from "@frontend/app/components/core/ErrorBoundary";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -53,7 +54,7 @@ export function App() {
         <SnackbarProvider maxSnack={3}>
           <MainLayout>
             <ScrollToTop />
-            <Outlet />
+              <Outlet />
           </MainLayout>
         </SnackbarProvider>
       </PlayToggleColorMode>
@@ -82,7 +83,8 @@ export function App() {
       return {
         path: p.route,
         handle: {page: p},
-        element: <PlayStandardPage page={pName} key={p.route}/>
+        element: <PlayStandardPage page={pName} key={p.route}/>,
+        errorElement: <ErrorBoundary />
       }
     });
 
@@ -98,6 +100,7 @@ export function App() {
     const rootRoute: RouteObject = {
       element: <Layout />,
       children: routeObjects,
+      errorElement: <ErrorBoundary />
     }
 
     return createBrowserRouter([rootRoute]);

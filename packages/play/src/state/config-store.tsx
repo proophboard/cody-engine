@@ -124,12 +124,24 @@ const syncTypesWithSharedRegistry = (config: CodyPlayConfig): void => {
   }
 }
 
+export const enhanceConfigWithDefaults = (config: CodyPlayConfig): CodyPlayConfig => {
+  return {
+    ...initialPlayConfig,
+    ...config,
+    pages: {
+      ...config.pages,
+      Dashboard: initialPlayConfig.pages.Dashboard,
+    },
+    views: {
+      ...config.views,
+      "Core.Welcome": initialPlayConfig.views['Core.Welcome'],
+    }
+  }
+}
+
 const storedConfigStr = localStorage.getItem(CONFIG_STORE_LOCAL_STORAGE_KEY + currentBoardId());
 
-const defaultPlayConfig = storedConfigStr ? JSON.parse(storedConfigStr) : initialPlayConfig;
-
-defaultPlayConfig.pages.Dashboard = initialPlayConfig.pages.Dashboard;
-defaultPlayConfig.views['Core.Welcome'] = initialPlayConfig.views['Core.Welcome'];
+const defaultPlayConfig = storedConfigStr ? enhanceConfigWithDefaults(JSON.parse(storedConfigStr) as CodyPlayConfig) : initialPlayConfig;
 
 syncTypesWithSharedRegistry(defaultPlayConfig);
 
@@ -164,9 +176,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
     console.log(`[PlayConfigStore] Going to apply action: `, action);
     switch (action.type) {
       case "INIT":
-        const newConfig = _.isEmpty(action.payload)? initialPlayConfig : { ...action.payload };
-        newConfig.pages.Dashboard = initialPlayConfig.pages.Dashboard;
-        newConfig.views["Core.Welcome"] = initialPlayConfig.views["Core.Welcome"];
+        const newConfig = _.isEmpty(action.payload)? initialPlayConfig : enhanceConfigWithDefaults(action.payload);
         syncTypesWithSharedRegistry(newConfig);
         return newConfig;
       case "RENAME_APP":

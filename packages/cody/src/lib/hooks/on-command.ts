@@ -1,19 +1,19 @@
-import {CodyHook, Node, NodeType} from "@proophboard/cody-types";
+import {CodyHook, Node, NodeRecord, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
 import {JSONSchema} from "json-schema-to-ts";
 import {ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
 import {names} from "@event-engine/messaging/helpers";
-import {flushChanges, FsTree} from "nx/src/generators/tree";
+import {flushChanges} from "nx/src/generators/tree";
 import {formatFiles, generateFiles} from "@nx/devkit";
 import {
+  getSingleTarget,
+  getTargetsOfType,
   isCodyError,
   nodeNameToPascalCase,
-  parseJsonMetadata,
-  getSingleTarget
+  parseJsonMetadata
 } from "@proophboard/cody-utils";
 import {detectService} from "./utils/detect-service";
 import {findAggregateState} from "./utils/aggregate/find-aggregate-state";
-import {getNodeFromSyncedNodes} from "./utils/node-tree";
 import {asyncWithErrorCheck, CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
@@ -28,6 +28,8 @@ import {jsonSchemaFromShorthand} from "./utils/json-schema/json-schema-from-shor
 import {ensureAllRefsAreKnown} from "./utils/json-schema/ensure-all-refs-are-known";
 import {upsertCommandComponent} from "./utils/ui/upsert-command-component";
 import {isShorthand} from "./utils/json-schema/shorthand";
+import {onAggregate} from "@cody-engine/cody/hooks/on-aggregate";
+import {List} from "immutable";
 
 export interface CommandMeta {
   newAggregate: boolean;
@@ -60,22 +62,24 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
 
     const uiSchema = meta.uiSchema || {};
 
-    const isAggregateCommand = !isCodyError(aggregate);
+    let isAggregateCommand = !isCodyError(aggregate);
 
-    if(!isAggregateCommand) {
-      return {
-        cody: `Skipping command ${command.getName()}. It's not connected to an aggregate.`
-      }
-    }
-
-    const syncedAggregate = withErrorCheck(getNodeFromSyncedNodes, [aggregate, ctx.syncedNodes]);
-    const aggregateState = withErrorCheck(findAggregateState, [syncedAggregate, ctx]);
+    const aggregateState = withErrorCheck(findAggregateState, [command, ctx]);
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
     const dependencies = meta.dependencies;
     const deleteState = meta.deleteState;
     const deleteHistory = meta.deleteHistory;
 
     withErrorCheck(ensureAllRefsAreKnown, [command, schema]);
+
+    if(!isAggregateCommand) {
+      const events = getTargetsOfType(command, NodeType.event);
+
+      if(!isCodyError(events)) {
+        await asyncWithErrorCheck(onAggregate, [makeTempAggregateFromCommand(command, aggregateState, events), ctx]);
+        isAggregateCommand = true;
+      }
+    }
 
     const {tree} = ctx;
 
@@ -89,7 +93,7 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
       serviceNames,
       isAggregateCommand,
       newAggregate: meta.newAggregate,
-      aggregateName: nodeNameToPascalCase(aggregate),
+      aggregateName: nodeNameToPascalCase(aggregateState),
       aggregateIdentifier: aggregateStateMeta.identifier,
       toJSON,
       ...cmdNames,
@@ -120,4 +124,15 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
 
     throw e;
   }
+}
+
+const makeTempAggregateFromCommand = (command: Node, aggregateState: Node, events: List<Node>): Node => {
+  return new NodeRecord({
+    id: 'tmp_ar_from_cmd_' + command.getId(),
+    name: aggregateState.getName(),
+    type: NodeType.aggregate,
+    link: command.getLink(),
+    sourcesList: List([command]),
+    targetsList: events,
+  })
 }

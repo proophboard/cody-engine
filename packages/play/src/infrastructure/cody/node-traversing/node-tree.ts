@@ -1,6 +1,8 @@
 import {
   CodyResponse,
-  CodyResponseType, GraphPoint, GraphPointRecord,
+  CodyResponseType,
+  GraphPoint,
+  GraphPointRecord,
   Node,
   NodeMap,
   NodeType
@@ -155,11 +157,39 @@ export const playGetTargetsOfType = (node: Node, expectedType: NodeType, ignoreO
   return targets;
 }
 
-export const playFindAggregateState = (aggregate: Node, ctx: ElementEditedContext, types: PlayInformationRegistry): Success | Error => {
-  const events = playGetTargetsOfType(aggregate, NodeType.event);
+export const playFindAggregateState = (commandEventOrAggregate: Node, ctx: ElementEditedContext, types: PlayInformationRegistry): Success | Error => {
+  let events = List<Node>();
 
-  if(playIsCodyError(events)) {
-    return events;
+  if(commandEventOrAggregate.getType() === NodeType.aggregate) {
+    const eventsOrError = playGetTargetsOfType(commandEventOrAggregate, NodeType.event);
+
+    if(playIsCodyError(eventsOrError)) {
+      return eventsOrError;
+    }
+
+    events = eventsOrError;
+  } else if (commandEventOrAggregate.getType() === NodeType.command) {
+    const cmdAggregate = playGetSingleTarget(commandEventOrAggregate, NodeType.aggregate);
+
+    if(playIsCodyError(cmdAggregate)) {
+      const cmdEventsOrError = playGetTargetsOfType(commandEventOrAggregate, NodeType.event);
+
+      if(playIsCodyError(cmdEventsOrError)) {
+        return cmdEventsOrError;
+      }
+
+      events = cmdEventsOrError;
+    } else {
+      const syncedAggregate = playGetNodeFromSyncedNodes(cmdAggregate, ctx.syncedNodes);
+
+      if(playIsCodyError(syncedAggregate)) {
+        return syncedAggregate;
+      }
+
+      return playFindAggregateState(syncedAggregate, ctx, types);
+    }
+  } else if (commandEventOrAggregate.getType() === NodeType.event) {
+    events = events.push(commandEventOrAggregate);
   }
 
   for (const event of events) {
@@ -189,9 +219,9 @@ export const playFindAggregateState = (aggregate: Node, ctx: ElementEditedContex
   }
 
   return {
-    cody: `I cannot find an information card that defines the state for the aggregate: ${aggregate.getName()}.`,
+    cody: `I cannot find an information card that defines the state for: ${commandEventOrAggregate.getName()}.`,
     type: CodyResponseType.Error,
-    details: `Aggregate state needs to be an object with an identifier and it should be the result of an event.`,
+    details: `State information needs to be of type object and should have an identifier. It should also be the result of an event.`,
   }
 }
 

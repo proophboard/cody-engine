@@ -14,7 +14,8 @@ interface OwnProps {
   open: boolean;
   onClose: () => void;
   commandDialogCommand: CommandRuntimeInfo;
-  commandFn: UseMutateAsyncFunction<AxiosResponse, unknown, any>;
+  commandFn?: UseMutateAsyncFunction<AxiosResponse, unknown, any>;
+  incompleteCommandConfigError?: string;
   stateInfo: PlayInformationRuntimeInfo;
   definitions?: {[id: string]: DeepReadonly<JSONSchema7>};
 }
@@ -30,6 +31,7 @@ const PlayExistingStateCommandDialog = (props: PlayExistingStateCommandDialogPro
     onClose={props.onClose}
     commandDialogCommand={props.commandDialogCommand}
     commandFn={props.commandFn}
+    incompleteCommandConfigError={props.incompleteCommandConfigError}
     definitions={props.definitions}
     aggregateState={query.isSuccess ? query.data : {}}
     />

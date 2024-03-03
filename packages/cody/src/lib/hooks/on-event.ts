@@ -1,10 +1,8 @@
-import {CodyHook, Node, NodeType} from "@proophboard/cody-types";
+import {CodyHook, Node} from "@proophboard/cody-types";
 import {Context} from "./context";
 import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {names} from "@event-engine/messaging/helpers";
-import {getSingleSource, isCodyError} from "@proophboard/cody-utils";
 import {detectService} from "./utils/detect-service";
-import {getNodeFromSyncedNodes} from "./utils/node-tree";
 import {findAggregateState} from "./utils/aggregate/find-aggregate-state";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {flushChanges} from "nx/src/generators/tree";
@@ -26,25 +24,14 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
   try {
     event = getOriginalEvent(event, ctx);
     const eventNames = names(event.getName());
-    const aggregate = getSingleSource(event, NodeType.aggregate);
-
     const service = withErrorCheck(detectService, [event, ctx]);
     const serviceNames = names(service);
     const meta = withErrorCheck(getEventMetadata, [event, ctx]) as EventMeta;
 
-    const isAggregateEvent = !isCodyError(aggregate);
-
-    if(isCodyError(aggregate)) {
-      // @TODO: handle non-aggregate event
-      return aggregate;
-    }
-
-    const aggregateNames = names(aggregate.getName());
-
-    const syncedAggregate = withErrorCheck(getNodeFromSyncedNodes, [aggregate, ctx.syncedNodes]);
-    const aggregateState = withErrorCheck(findAggregateState, [syncedAggregate, ctx]);
+    const aggregateState = withErrorCheck(findAggregateState, [event, ctx]);
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
     const aggregateStateNames = names(aggregateState.getName());
+    const aggregateNames = names(aggregateState.getName());
 
     withErrorCheck(ensureAllRefsAreKnown, [event, meta.schema]);
 
@@ -60,7 +47,7 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
         ...aggregateStateNames,
         classNameWithNamespace: `${namespaceToJSONPointer(aggregateStateMeta.ns)}${aggregateStateNames.className}`,
       },
-      isAggregateEvent,
+      isAggregateEvent: true,
       aggregateIdentifier: aggregateStateMeta.identifier,
       toJSON,
       ...eventNames,
@@ -69,7 +56,7 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
     });
 
     withErrorCheck(register, [event, ctx, tree]);
-    withErrorCheck(createApplyFunctionRegistryIfNotExists, [syncedAggregate, ctx, tree]);
+    withErrorCheck(createApplyFunctionRegistryIfNotExists, [aggregateState, ctx, tree]);
 
     const rules = meta.applyRules || [];
 
@@ -91,7 +78,7 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
       rules: withErrorCheck(convertRuleConfigToEventReducerRules, [event, ctx, rules]),
     });
 
-    withErrorCheck(registerEventReducer, [service, event, syncedAggregate, ctx, tree]);
+    withErrorCheck(registerEventReducer, [service, event, aggregateState, ctx, tree]);
 
     await formatFiles(tree);
 

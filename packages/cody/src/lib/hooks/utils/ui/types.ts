@@ -15,6 +15,11 @@ export interface UiMetadata {
   tab?: Tab;
 }
 
+export type RawUiMetadata = UiMetadata & {
+  sidebar?: {hidden?: string | boolean, 'hidden:expr'?: string},
+  tab?: {hidden?: string | boolean, 'hidden:expr'?: string, disabled?: string | boolean, 'disabled:expr'?: string, 'style:expr'?: string}
+};
+
 export const isDynamicBreadcrumb = (breadcrumb: string | DynamicBreadcrumbMetadata | undefined): breadcrumb is DynamicBreadcrumbMetadata => {
   if (!breadcrumb || typeof breadcrumb === "string") {
     return false;

@@ -21,6 +21,7 @@ import ScrollToTop from "@frontend/app/components/core/ScrollToTop";
 import ToggleColorMode from "@frontend/app/providers/ToggleColorMode";
 import User from "@frontend/app/providers/User";
 import PageDataProvider from "@frontend/app/providers/PageData";
+import ErrorBoundary from "@frontend/app/components/core/ErrorBoundary";
 
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
@@ -43,7 +44,8 @@ export function App() {
   const routeObjects: RouteObject[] = Object.values(pages).map(p => ({
     path: p.route,
     handle: {page: p},
-    element: <StandardPage page={p} key={p.route}/>
+    element: <StandardPage page={p} key={p.route}/>,
+    errorElement: <ErrorBoundary codyEngine={true} />,
   }));
 
   routeObjects.unshift({
@@ -54,6 +56,7 @@ export function App() {
   const rootRoute: RouteObject = {
     element: <Layout />,
     children: routeObjects,
+    errorElement: <ErrorBoundary codyEngine={true} />,
   }
 
   const router = createBrowserRouter([rootRoute]);

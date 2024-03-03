@@ -31,12 +31,10 @@ import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {usePageData} from "@frontend/hooks/use-page-data";
-import {TimeoutError} from "cypress/types/bluebird";
-import {merge} from "lodash";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
-  commandFn: UseMutateAsyncFunction;
+  commandFn?: UseMutateAsyncFunction;
   definitions: {[id: string]: DeepReadonly<JSONSchema7>};
   onBeforeSubmitting?: (formData: {[prop: string]: any}) => {[prop: string]: any};
   onSubmitted?: () => void;
@@ -79,7 +77,17 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
 
   useEffect(() => {
     mutation.reset();
-    setFormData({...props.formData});
+
+    const initialFormData = props.formData || {};
+
+    if(
+      isAggregateCommandDescription(desc) && desc.newAggregate && desc.aggregateIdentifier
+      && schema.properties && schema.properties[desc.aggregateIdentifier]
+    ) {
+      initialFormData[desc.aggregateIdentifier] = v4();
+    }
+
+    setFormData({...initialFormData});
     setInitialized(true);
 
     return () => {
@@ -162,13 +170,6 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   const uiSchema = normalizeUiSchema({...resolvedUiSchema, ...mainUiSchema}, {form: formData, user, page: pageData});
 
   const schema = resolveRefs(cloneSchema(props.command.schema as any), props.definitions) as RJSFSchema;
-
-  if(
-    isAggregateCommandDescription(desc) && desc.newAggregate && desc.aggregateIdentifier
-    && schema.properties && schema.properties[desc.aggregateIdentifier]
-  ) {
-    formData[desc.aggregateIdentifier] = v4();
-  }
 
   return (
     <div>

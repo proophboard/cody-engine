@@ -12,7 +12,7 @@ import {
   playJsonSchemaFromShorthand,
   ShorthandObject
 } from "@cody-play/infrastructure/cody/schema/play-json-schema-from-shorthand";
-import {playGetSingleSource} from "@cody-play/infrastructure/cody/node-traversing/node-tree";
+import {playFindAggregateState, playGetSingleSource} from "@cody-play/infrastructure/cody/node-traversing/node-tree";
 import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-normalize-refs";
 import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
 import {playFQCNFromDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
@@ -59,7 +59,7 @@ export const playEventMetadata = (event: Node, ctx: ElementEditedContext, types:
   if(meta.public) {
     schema['$id'] = `/definitions/${serviceNames.fileName}/${eventNames.fileName}`;
   } else {
-    const aggregate = playGetSingleSource(event, NodeType.aggregate);
+    const aggregate = playFindAggregateState(event, ctx, types);
 
     if(playIsCodyError(aggregate)) {
       return aggregate;

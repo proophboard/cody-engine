@@ -17,20 +17,12 @@ export const upsertCommandComponent = async (command: Node, ctx: Context, tree: 
 
   try {
     const service = withErrorCheck(detectService, [command, ctx]);
-    const aggregate = getSingleTarget(command, NodeType.aggregate);
     const commandMeta = withErrorCheck(parseJsonMetadata, [command]) as CommandMeta;
     const uiSchema = commandMeta.uiSchema || {};
     const buttonIcon = uiSchema['ui:button']?.icon ? names(uiSchema['ui:button'].icon).className : undefined;
 
-    const isAggregateCommand = !isCodyError(aggregate);
 
-    if(!isAggregateCommand) {
-      // @TODO: handle non-aggregate command
-      return aggregate;
-    }
-
-    const syncedAggregate = withErrorCheck(getNodeFromSyncedNodes, [aggregate, ctx.syncedNodes]);
-    const aggregateState = withErrorCheck(findAggregateState, [syncedAggregate, ctx]);
+    const aggregateState = withErrorCheck(findAggregateState, [command, ctx]);
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
 
     const serviceNames = names(service);

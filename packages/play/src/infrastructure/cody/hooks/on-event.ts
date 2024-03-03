@@ -8,8 +8,6 @@ import {
 import {names} from "@event-engine/messaging/helpers";
 import {
   playFindAggregateState,
-  playGetNodeFromSyncedNodes,
-  playGetSingleSource
 } from "@cody-play/infrastructure/cody/node-traversing/node-tree";
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {playEventMetadata} from "@cody-play/infrastructure/cody/event/play-event-metadata";
@@ -21,16 +19,15 @@ import {playVoFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-
 
 export const onEvent = async (event: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
-    const eventNames = names(event.getName());
-    let aggregate = playGetSingleSource(event, NodeType.aggregate);
+    let aggregateState = playFindAggregateState(event, ctx,  config.types);
 
-    if(playIsCodyError(aggregate) && event.getTags().contains('pb:connected')) {
+    if(playIsCodyError(aggregateState) && event.getTags().contains('pb:connected')) {
       for (const [, syncedNode] of ctx.syncedNodes) {
         if(syncedNode.getType() === NodeType.event && syncedNode.getName() === event.getName()
           && syncedNode.getTags().contains('pb:connected')) {
-          aggregate = playGetSingleSource(syncedNode, NodeType.aggregate);
+          aggregateState = playFindAggregateState(syncedNode, ctx, config.types);
 
-          if(!playIsCodyError(aggregate)) {
+          if(!playIsCodyError(aggregateState)) {
             event = syncedNode;
             break;
           }
@@ -42,18 +39,15 @@ export const onEvent = async (event: Node, dispatch: PlayConfigDispatch, ctx: El
     const serviceNames = names(service);
     const meta = playwithErrorCheck(playEventMetadata, [event, ctx, config.types]);
 
-    const isAggregateEvent = !playIsCodyError(aggregate);
+    const isAggregateEvent = !playIsCodyError(aggregateState);
 
-    if(playIsCodyError(aggregate)) {
+    if(playIsCodyError(aggregateState)) {
       // @TODO: handle non-aggregate event
-      return aggregate;
+      return aggregateState;
     }
 
-    const aggregateNames = names(aggregate.getName());
+    const aggregateNames = names(aggregateState.getName());
 
-    const syncedAggregate = playwithErrorCheck(playGetNodeFromSyncedNodes, [aggregate, ctx.syncedNodes]);
-    const aggregateState = playwithErrorCheck(playFindAggregateState, [syncedAggregate, ctx, config.types]);
-    const aggregateStateNames = names(aggregateState.getName());
     const aggregateStateMeta = playwithErrorCheck(playVoMetadata, [aggregateState, ctx, config.types]);
     const pbInfo = playwithErrorCheck(playUpdateProophBoardInfo, [event, ctx, config.events[meta.fqcn]?.desc]);
 

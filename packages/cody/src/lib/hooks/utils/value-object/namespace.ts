@@ -22,6 +22,10 @@ export const valueObjectNamespaceFromFQCN = (fqcn: string): string => {
   return prepareNs(fqcn.split(".").slice(1, -1).join("/"));
 }
 
+export const valueObjectNameFromFQCN = (fqcn: string): string => {
+  return fqcn.split(".").pop() || '';
+}
+
 export const namespaceToJSONPointer = (ns: string): string => {
   ns = prepareNs(ns);
 

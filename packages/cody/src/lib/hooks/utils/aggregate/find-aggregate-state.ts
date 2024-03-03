@@ -1,18 +1,47 @@
 import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "../../context";
-import {getTargetsOfType, isCodyError} from "@proophboard/cody-utils";
+import {getSingleTarget, getTargetsOfType, isCodyError} from "@proophboard/cody-utils";
 import {getNodeFromSyncedNodes} from "../node-tree";
 import {getVoMetadata} from "../value-object/get-vo-metadata";
 import {isStateDescription} from "@event-engine/descriptions/descriptions";
+import {List} from "immutable";
 
 type Success = Node;
 type Error = CodyResponse;
 
-export const findAggregateState = (aggregate: Node, ctx: Context): Success | Error => {
-  const events = getTargetsOfType(aggregate, NodeType.event);
+export const findAggregateState = (commandEventOrAggregate: Node, ctx: Context): Success | Error => {
+  let events = List<Node>();
 
-  if(isCodyError(events)) {
-    return events;
+  if(commandEventOrAggregate.getType() === NodeType.aggregate) {
+    const eventsOrError = getTargetsOfType(commandEventOrAggregate, NodeType.event);
+
+    if(isCodyError(eventsOrError)) {
+      return eventsOrError;
+    }
+
+    events = eventsOrError;
+  } else if (commandEventOrAggregate.getType() === NodeType.command) {
+    const cmdAggregate = getSingleTarget(commandEventOrAggregate, NodeType.aggregate);
+
+    if(isCodyError(cmdAggregate)) {
+      const cmdEventsOrError = getTargetsOfType(commandEventOrAggregate, NodeType.event);
+
+      if(isCodyError(cmdEventsOrError)) {
+        return cmdEventsOrError;
+      }
+
+      events = cmdEventsOrError;
+    } else {
+      const syncedAggregate = getNodeFromSyncedNodes(cmdAggregate, ctx.syncedNodes);
+
+      if(isCodyError(syncedAggregate)) {
+        return syncedAggregate;
+      }
+
+      return findAggregateState(syncedAggregate, ctx);
+    }
+  } else if (commandEventOrAggregate.getType() === NodeType.event) {
+    events = events.push(commandEventOrAggregate);
   }
 
   for (const event of events) {
@@ -42,8 +71,8 @@ export const findAggregateState = (aggregate: Node, ctx: Context): Success | Err
   }
 
   return {
-    cody: `I cannot find an information card that defines the state for the aggregate: ${aggregate.getName()}.`,
+    cody: `I cannot find an information card that defines the state for: ${commandEventOrAggregate.getName()}.`,
     type: CodyResponseType.Error,
-    details: `Aggregate state needs to be an object with an identifier and it should be the result of an event.`,
+    details: `State information needs to be of type object and should have an identifier. It should also be the result of an event.`,
   }
 }

@@ -23,6 +23,7 @@ import {getEventMetadata} from "./event/get-event-metadata";
 import {getNodeFromSyncedNodes} from "./node-tree";
 import {ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {getOriginalEvent} from "@cody-engine/cody/hooks/utils/event/get-original-event";
+import {findAggregateState} from "@cody-engine/cody/hooks/utils/aggregate/find-aggregate-state";
 
 const project = new Project({
   compilerOptions: {
@@ -184,11 +185,11 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       break;
     case NodeType.event:
       const eventNames = names(node.getName());
-      const evtAggregate = getSingleSource(node, NodeType.aggregate);
-      if(isCodyError(evtAggregate)) {
-        return evtAggregate;
+      const evtAggregateState = findAggregateState(node, ctx);
+      if(isCodyError(evtAggregateState)) {
+        return evtAggregateState;
       }
-      const evtArNames = names(evtAggregate.getName());
+      const evtArNames = names(evtAggregateState.getName());
 
       registryPath = sharedRegistryPath('events.ts');
       registryVarName = 'events';
@@ -445,10 +446,10 @@ export const registerViewComponent = (service: string, vo: Node, ctx: Context, t
   return true;
 }
 
-export const registerEventReducer = (service: string, event: Node, aggregate: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+export const registerEventReducer = (service: string, event: Node, aggregateState: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
   const serviceNames = names(service);
   const eventNames = names(event.getName());
-  const aggregateNames = names(aggregate.getName());
+  const aggregateNames = names(aggregateState.getName());
 
   if(!isNewFile(
     joinPathFragments(ctx.beSrc, 'event-reducers', serviceNames.fileName, aggregateNames.fileName, `apply-${eventNames.fileName}.ts`),

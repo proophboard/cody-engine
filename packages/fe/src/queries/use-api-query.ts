@@ -1,7 +1,7 @@
 import {AxiosResponse} from "axios";
 import {Api} from "@frontend/api";
 import {QueryError} from "@frontend/queries/error/query-error";
-import {useQuery} from "@tanstack/react-query";
+import {useQuery, UseQueryResult} from "@tanstack/react-query";
 
 export type ApiQuery = (queryName: string, params: any) => Promise<any>;
 

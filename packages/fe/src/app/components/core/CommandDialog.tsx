@@ -42,7 +42,8 @@ interface OwnProps {
   open: boolean;
   onClose: () => void;
   commandDialogCommand: CommandRuntimeInfo;
-  commandFn: UseMutateAsyncFunction<AxiosResponse, unknown, any>;
+  commandFn?: UseMutateAsyncFunction<AxiosResponse, unknown, any>;
+  incompleteCommandConfigError?: string;
   definitions?: {[id: string]: DeepReadonly<JSONSchema7>};
   aggregateIdentifier?: AggregateIdentifier;
   aggregateState?: {[stateKey: string]: any};
@@ -193,21 +194,23 @@ const CommandDialog = (props: CommandDialogProps) => {
       </DialogContent>
       <DialogActions>
         {transactionState.isValidationError && <Alert severity="error">Validation failed! Please check your inputs.</Alert>}
-        <Button
-          children={transactionState.isSubmitted? 'Close' : 'Cancel'}
+        {props.commandFn && <Button
+          children={transactionState.isSubmitted ? 'Close' : 'Cancel'}
           onClick={handleCancel}
           color={'secondary'}
-        />
-        <Button
+        />}
+        {props.commandFn && <Button
           variant={props.button?.variant || 'contained'}
           color={props.button?.color || 'primary'}
-          startIcon={transactionState.isSubmitting? <CircularProgress size={20} /> : props.button?.startIcon || <Send />}
-          sx={{ textTransform: 'none', margin: '5px', ...props.button?.style }}
+          startIcon={transactionState.isSubmitting ? <CircularProgress size={20}/> : props.button?.startIcon || <Send/>}
+          sx={{textTransform: 'none', margin: '5px', ...props.button?.style}}
           onClick={handleExecuteCommand}
           disabled={transactionState.isSubmitting}
         >
-          {transactionState.isError? 'Try again' : commandTitle(props.commandDialogCommand)}
-        </Button>
+          {transactionState.isError ? 'Try again' : commandTitle(props.commandDialogCommand)}
+        </Button>}
+        {!props.commandFn && !props.incompleteCommandConfigError && <Alert severity="warning">Cannot process the command. It is not connected to an event that results in a state change (state = Information with identifier). Please check your prooph board configuration.</Alert>}
+        {!props.commandFn && props.incompleteCommandConfigError && <Alert severity="error">{props.incompleteCommandConfigError}</Alert>}
       </DialogActions>
     </Dialog>
   );

@@ -38,10 +38,13 @@ export interface PlayCommandMeta {
 }
 
 export const playCommandMetadata = (command: Node, ctx: ElementEditedContext): PlayCommandMeta | CodyResponse => {
-  const meta = playParseJsonMetadata<RawCommandMeta>(command);
+  let meta = playParseJsonMetadata<RawCommandMeta>(command);
 
   if(playIsCodyError(meta)) {
-    return meta;
+    meta = {
+      newAggregate: true,
+      schema: {"type": "object"},
+    };
   }
 
   const service = playService(command, ctx);

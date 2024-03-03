@@ -4,12 +4,13 @@ import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {Map} from "immutable";
 import {checkQuestion, handleReply, Reply, test} from "@proophboard/cody-server/lib/src/http/question";
 import {ElementEdited} from "@proophboard/cody-server/lib/src/http/elementEdited";
-import {Action, CodyPlayConfig} from "@cody-play/state/config-store";
+import {Action, CodyPlayConfig, enhanceConfigWithDefaults} from "@cody-play/state/config-store";
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
 import {Documents, InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
 import {InMemoryEventStore, InMemoryStreamStore} from "@event-engine/infrastructure/EventStore/InMemoryEventStore";
 import {v4} from "uuid";
 import {Record} from "mdi-material-ui";
+import {saveToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-to-local-storage";
 
 interface Message {
   messageId: string;
@@ -231,6 +232,8 @@ export class CodyMessageServer {
   }
 
   private async initPlayshot(playshot: Playshot): Promise<CodyResponse> {
+    window.location.pathname = "/dashboard";
+
     this.dispatch({
       type: "INIT",
       payload: playshot.playConfig,
@@ -238,6 +241,8 @@ export class CodyMessageServer {
 
     await this.es.importStreams(playshot.playData.streams || {});
     await this.ds.importDocuments(playshot.playData.documents || {});
+
+    await saveToLocalStorage(enhanceConfigWithDefaults(playshot.playConfig), this.ds, this.es, playshot.boardId);
 
     return {
       cody: `Playshot "${playshot.name}" loaded successfully.`

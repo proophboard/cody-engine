@@ -26,6 +26,7 @@ import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-ad
 import {isListSchema} from "@cody-play/infrastructure/cody/schema/check";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {GridDensity} from "@mui/x-data-grid";
+import {namespaceToClassName, valueObjectNameFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 
 export interface PlayValueObjectMetadataRaw {
   identifier?: string;
@@ -198,6 +199,8 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
 
       if(isQueryableStateDescription(refVORuntimeInfo.desc)) {
         convertedMeta.collection = refVORuntimeInfo.desc.collection;
+      } else {
+        convertedMeta.collection = names(valueObjectNameFromFQCN(refVORuntimeInfo.desc.name)).constantName.toLowerCase() + '_collection';
       }
     }
   }
