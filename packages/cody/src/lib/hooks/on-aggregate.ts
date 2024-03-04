@@ -20,7 +20,7 @@ import {AggregateMetadata} from "./utils/aggregate/metadata";
 
 export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Context) => {
   try {
-    const aggregateNames = names(aggregate.getName());
+
     const service = withErrorCheck(detectService, [aggregate, ctx]);
     const serviceNames = names(service);
     const command = withErrorCheck(getSingleSource, [aggregate, NodeType.command]);
@@ -30,6 +30,7 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
     const aggregateStateNames = names(aggregateState.getName());
     const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
     const meta = aggregate.getMetadata()? withErrorCheck(parseJsonMetadata, [aggregate]) as AggregateMetadata : {};
+    const aggregateNames = names(aggregateState.getName());
 
     const collection = aggregateStateMeta.collection || aggregateStateNames.constantName.toLowerCase() + '_collection';
     const stream = meta.stream || 'write_model_stream';

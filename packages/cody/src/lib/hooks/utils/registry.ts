@@ -175,7 +175,12 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       importPath = `@app/shared/commands/${serviceNames.fileName}/${commandNames.fileName}`;
       break;
     case NodeType.aggregate:
-      const arNames = names(nodeNameToPascalCase(node));
+      const aggregateState = findAggregateState(node, ctx);
+      if(isCodyError(aggregateState)) {
+        return aggregateState;
+      }
+
+      const arNames = names(nodeNameToPascalCase(aggregateState));
 
       registryPath = sharedRegistryPath('aggregates.ts');
       registryVarName = 'aggregates';
@@ -344,11 +349,18 @@ const registerPolicyForEvent = (service: string, policyFQCN: string, policy: Nod
 export const registerCommandHandler = (service: string, aggregate: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
   const serviceNames = names(service);
   const command = getSingleSource(aggregate, NodeType.command);
+  const aggregateState = findAggregateState(aggregate, ctx);
+
   if(isCodyError(command)) {
     return command;
   }
+
+  if(isCodyError(aggregateState)) {
+    return aggregateState;
+  }
+
   const commandNames = names(command.getName());
-  const aggregateNames = names(aggregate.getName());
+  const aggregateNames = names(aggregateState.getName());
 
   if(!isNewFile(
     joinPathFragments('packages', 'be', 'src', 'command-handlers', serviceNames.fileName, aggregateNames.fileName, `handle-${commandNames.fileName}.ts`),
@@ -372,8 +384,14 @@ export const registerCommandHandler = (service: string, aggregate: Node, ctx: Co
 }
 
 export const registerAggregateRepository = (service: string, aggregate: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const aggregateState = findAggregateState(aggregate, ctx);
+
+  if(isCodyError(aggregateState)) {
+    return aggregateState;
+  }
+
   const serviceNames = names(service);
-  const aggregateNames = names(aggregate.getName());
+  const aggregateNames = names(aggregateState.getName());
 
   if(!isNewFile(
     joinPathFragments('packages', 'be', 'src', 'repositories', serviceNames.fileName, aggregateNames.fileName, `repository.ts`),

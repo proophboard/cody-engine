@@ -23,7 +23,7 @@ import {normalizeThenRecordEventRules} from "@cody-play/infrastructure/rule-engi
 
 export const onAggregate = async (aggregate: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
-    const aggregateNames = names(aggregate.getName());
+
     const service = playwithErrorCheck(playService, [aggregate, ctx]);
     const serviceNames = names(service);
     const command = playwithErrorCheck(playGetSingleSource, [aggregate, NodeType.command]);
@@ -33,6 +33,7 @@ export const onAggregate = async (aggregate: Node, dispatch: PlayConfigDispatch,
     const aggregateStateNames = names(aggregateState.getName());
     const aggregateStateMeta = playwithErrorCheck(playVoMetadata, [aggregateState, ctx, config.types]);
     const meta = aggregate.getMetadata()? playwithErrorCheck(playParseJsonMetadata, [aggregate]) as AggregateMetadata : {};
+    const aggregateNames = names(aggregateState.getName());
 
     if(!isStateDescription(aggregateStateMeta)) {
       return {
