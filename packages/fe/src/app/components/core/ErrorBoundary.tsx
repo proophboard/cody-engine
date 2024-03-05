@@ -15,6 +15,10 @@ const ErrorBoundary = (props: ErrorBoundaryProps) => {
     window.location.reload();
   }
 
+  if(error instanceof Error && error.message.indexOf('Minified React error #310') === 0) {
+    window.location.reload();
+  }
+
   return <>
     {error instanceof Error
       ? <Alert severity="error">{error.name + ': ' + error.message}</Alert>

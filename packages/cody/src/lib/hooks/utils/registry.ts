@@ -62,7 +62,7 @@ const addRegistryEntry = (registryPath: string, registryVarName: string, entryId
     SyntaxKind.ObjectLiteralExpression
   ) as ObjectLiteralExpression;
 
-  if(registryObject.getProperty(`"${entryId}"`)) {
+  if(registryObject.getProperty(`"${entryId}"`) || registryObject.getProperty(`'${entryId}'`)) {
     return;
   }
 

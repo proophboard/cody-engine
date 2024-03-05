@@ -1,3 +1,6 @@
+import {JSONSchema7} from "json-schema";
+import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
+
 export type Payload = { readonly [k: string]: any };
 export type Meta = { readonly [k: string]: any };
 
@@ -40,3 +43,39 @@ export const setMessageMetadata = <P extends Payload, M extends Meta>(
     meta: changedMeta,
   };
 };
+
+export const enforceUndefinedProperties = <P extends Payload>(payload: P, schema: DeepReadonly<JSONSchema7>): P => {
+  if(schema.type !== "object" || typeof schema.properties === "undefined") {
+    return payload;
+  }
+
+  const props = Object.keys(schema.properties);
+  const requiredProps = schema.required || [];
+
+  const optionalProps = props.filter(prop => !requiredProps.includes(prop));
+  const normalizedPayload: {[prop: string]: any} = {...payload};
+
+  optionalProps.forEach(oProp => {
+    if(typeof payload[oProp] === "undefined") {
+      normalizedPayload[oProp] = undefined;
+    }
+  })
+
+  return normalizedPayload as P;
+}
+
+export const cleanUndefinedProperties = <P extends Payload>(payload: P): P => {
+  if(typeof payload !== "object") {
+    return payload;
+  }
+
+  const cleanedPayload: {[prop: string]: any} = {};
+
+  for (const payloadKey in payload) {
+    if(typeof payload[payloadKey] !== "undefined") {
+      cleanedPayload[payloadKey] = payload[payloadKey];
+    }
+  }
+
+  return cleanedPayload as P;
+}

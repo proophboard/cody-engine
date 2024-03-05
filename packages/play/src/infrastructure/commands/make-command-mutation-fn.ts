@@ -121,7 +121,7 @@ export const makeAggregateRepository = (
     aggregateDesc.collection,
     aggregateDesc.name,
     aggregateDesc.identifier,
-    makeEventReducers(eventReducers),
+    makeEventReducers(eventReducers, config),
     makeInformationFactory(stateInfo.factory),
     getConfiguredPlayAuthService(),
     playInformationServiceFactory(),
@@ -129,11 +129,11 @@ export const makeAggregateRepository = (
   )
 }
 
-const makeEventReducers = (eventReducers: PlayEventReducers): {[eventName: string]: ApplyFunction<any>} => {
+const makeEventReducers = (eventReducers: PlayEventReducers, config: CodyPlayConfig): {[eventName: string]: ApplyFunction<any>} => {
   const mappedReducers: {[eventName: string]: ApplyFunction<any>} = {};
 
   for (const eventName in eventReducers) {
-    mappedReducers[eventName] = makeEventReducer(eventReducers[eventName]);
+    mappedReducers[eventName] = makeEventReducer(eventReducers[eventName], config);
   }
 
   return mappedReducers;

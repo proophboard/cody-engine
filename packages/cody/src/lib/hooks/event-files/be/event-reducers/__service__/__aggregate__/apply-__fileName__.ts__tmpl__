@@ -1,15 +1,16 @@
 import {Event} from "@event-engine/messaging/event";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {<%= aggregateStateNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %><%= aggregateStateNames.fileNameWithNamespace %>";
-import {<%= className %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= aggregateNames.fileName %>/<%= fileName %>";
+import {<%= className %>, <%= runtimeInfoId %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= aggregateNames.fileName %>/<%= fileName %>";
+import {cleanUndefinedProperties, enforceUndefinedProperties} from "@event-engine/messaging/message";
 
 export const apply<%= className %> = async (information: <%= aggregateStateNames.className %>, event: Event<<%= className %>>): Promise<<%= aggregateStateNames.className %>> => {
   const ctx: any = {};
   ctx['information'] = information;
-  ctx['event'] = event.payload;
+  ctx['event'] = enforceUndefinedProperties(event.payload, <%= runtimeInfoId %>.schema);
   ctx['meta'] = event.meta;
 
   <%- rules %>
 
-  return ctx['information'];
+  return cleanUndefinedProperties(ctx['information']);
 }

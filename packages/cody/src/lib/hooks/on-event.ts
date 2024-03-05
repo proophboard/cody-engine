@@ -64,12 +64,15 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
       rules.push(withErrorCheck(alwaysMapPayload, [event, aggregateState, ctx]));
     }
 
+    const runtimeInfoId =  `${serviceNames.className}${aggregateNames.className}${eventNames.className}RuntimeInfo`;
+
     generateFiles(tree, __dirname + '/event-files/be', ctx.beSrc, {
       'tmpl': '',
       'service': serviceNames.fileName,
       'aggregate': aggregateNames.fileName,
       serviceNames,
       aggregateNames,
+      runtimeInfoId,
       aggregateStateNames: {
         ...aggregateStateNames,
         fileNameWithNamespace: `${namespaceToFilePath(aggregateStateMeta.ns)}${aggregateStateNames.fileName}`,

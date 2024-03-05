@@ -33,6 +33,10 @@ const FilteredEnumWidget = (props: FilteredEnumWidgetProps) => {
     }
   };
 
+  if(!props.required) {
+    filteredProps.options.enumOptions.push({label: "- Empty -",value: undefined});
+  }
+
   return <SelectWidget {...filteredProps} />
 };
 

@@ -97,7 +97,7 @@ export class InMemoryDocumentStore implements DocumentStore {
 
   public async upsertDoc(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): Promise<void> {
     if (await this.getDoc(collectionName, docId)) {
-      await this.updateDoc(collectionName, docId, doc, metadata, version);
+      await this.replaceDoc(collectionName, docId, doc, metadata, version);
       return;
     }
 
