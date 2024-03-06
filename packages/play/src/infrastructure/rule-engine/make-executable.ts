@@ -369,7 +369,7 @@ const execInsertInformationAsync = async (then: ThenInsertInformation, ctx: Exec
 
   const data = await execMappingAsync(then.insert.set, ctx);
 
-  const metadata = then.insert.metadata? await execMappingAsync(then.insert.metadata, ctx) : undefined;
+  const metadata = then.insert.meta? await execMappingAsync(then.insert.meta, ctx) : undefined;
 
   await infoService.insert(then.insert.information, await execExprAsync(then.insert.id, ctx), data, metadata, then.insert.version);
 
@@ -385,7 +385,7 @@ const execUpsertInformationAsync = async (then: ThenUpsertInformation, ctx: Exec
 
   const data = await execMappingAsync(then.upsert.set, ctx);
 
-  const metadata = then.upsert.metadata? await execMappingAsync(then.upsert.metadata, ctx) : undefined;
+  const metadata = then.upsert.meta? await execMappingAsync(then.upsert.meta, ctx) : undefined;
 
   await infoService.upsert(then.upsert.information, await execExprAsync(then.upsert.id, ctx), data, metadata, then.upsert.version);
 
@@ -401,7 +401,7 @@ const execUpdateInformationAsync = async (then: ThenUpdateInformation, ctx: Exec
 
   const filter = makeFilter(then.update.filter, ctx);
   const data = await execMappingAsync(then.update.set, ctx);
-  const metadata = then.update.metadata? await execMappingAsync(then.update.metadata, ctx) : undefined;
+  const metadata = then.update.meta? await execMappingAsync(then.update.meta, ctx) : undefined;
 
   await infoService.update(then.update.information, filter, data, metadata, then.update.version);
 
@@ -417,7 +417,7 @@ const execReplaceInformationAsync = async (then: ThenReplaceInformation, ctx: Ex
 
   const filter = makeFilter(then.replace.filter, ctx);
   const data = await execMappingAsync(then.replace.set, ctx);
-  const metadata = then.replace.metadata? await execMappingAsync(then.replace.metadata, ctx) : undefined;
+  const metadata = then.replace.meta? await execMappingAsync(then.replace.meta, ctx) : undefined;
 
   await infoService.replace(then.replace.information, filter, data, metadata, then.replace.version);
 

@@ -1,17 +1,18 @@
 import {Node, NodeType} from "@proophboard/cody-types";
 import {getSingleSource, isCodyError} from "@proophboard/cody-utils";
 import {Context} from "@cody-engine/cody/hooks/context";
+import {findAggregateState} from "@cody-engine/cody/hooks/utils/aggregate/find-aggregate-state";
 
 export const getOriginalEvent = (event: Node, ctx: Context): Node => {
-  let aggregate = getSingleSource(event, NodeType.aggregate);
+  let aggregateState = findAggregateState(event, ctx);
 
-  if(isCodyError(aggregate) && event.getTags().contains('pb:connected')) {
+  if(isCodyError(aggregateState) && event.getTags().contains('pb:connected')) {
     for (const [, syncedNode] of ctx.syncedNodes) {
       if(syncedNode.getType() === NodeType.event && syncedNode.getName() === event.getName()
         && syncedNode.getTags().contains('pb:connected')) {
-        aggregate = getSingleSource(syncedNode, NodeType.aggregate);
+        aggregateState = findAggregateState(syncedNode, ctx);
 
-        if(!isCodyError(aggregate)) {
+        if(!isCodyError(aggregateState)) {
           event = syncedNode;
           break;
         }

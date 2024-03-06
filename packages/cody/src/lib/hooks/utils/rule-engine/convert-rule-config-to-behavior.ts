@@ -587,8 +587,8 @@ const convertThenInsertInformation = (node: Node, ctx: Context, then: ThenInsert
   let invokeInfoService = `${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].insert('${registryId}', ${wrapExpression(then.insert.id, evalSync)}, `
     + withErrorCheck(convertMapping, [node, ctx, then.insert.set, rule, indent + '  ', evalSync]);
 
-  if(then.insert.metadata) {
-    invokeInfoService += ', ' + withErrorCheck(convertMapping, [node, ctx, then.insert.metadata, rule, indent + '  ', evalSync]);
+  if(then.insert.meta) {
+    invokeInfoService += ', ' + withErrorCheck(convertMapping, [node, ctx, then.insert.meta, rule, indent + '  ', evalSync]);
   }
 
   if(then.insert.version) {
@@ -610,8 +610,8 @@ const convertThenUpsertInformation = (node: Node, ctx: Context, then: ThenUpsert
   let invokeInfoService = `${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].upsert('${registryId}', ${wrapExpression(then.upsert.id, evalSync)}, `
     + withErrorCheck(convertMapping, [node, ctx, then.upsert.set, rule, indent + '  ', evalSync]);
 
-  if(then.upsert.metadata) {
-    invokeInfoService += ', ' + withErrorCheck(convertMapping, [node, ctx, then.upsert.metadata, rule, indent + '  ', evalSync]);
+  if(then.upsert.meta) {
+    invokeInfoService += ', ' + withErrorCheck(convertMapping, [node, ctx, then.upsert.meta, rule, indent + '  ', evalSync]);
   }
 
   if(then.upsert.version) {
@@ -633,8 +633,8 @@ const convertThenUpdateInformation = (node: Node, ctx: Context, then: ThenUpdate
   lines.push(`${indent}${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].update('${registryId}',`);
   makeFilter(then.update.filter, lines, indent + '  ', ',');
   lines.push(withErrorCheck(convertMapping, [node, ctx, then.update.set, rule, indent + '  ', evalSync]));
-  if(then.update.metadata) {
-    lines.push(`${indent}  , ` + withErrorCheck(convertMapping, [node, ctx, then.update.metadata, rule, indent + '  ', evalSync]));
+  if(then.update.meta) {
+    lines.push(`${indent}  , ` + withErrorCheck(convertMapping, [node, ctx, then.update.meta, rule, indent + '  ', evalSync]));
   }
   if(then.update.version) {
     lines.push(`${indent}  , ${then.update.version}`)
@@ -654,8 +654,8 @@ const convertThenReplaceInformation = (node: Node, ctx: Context, then: ThenRepla
   makeFilter(then.replace.filter, lines, indent + '  ', ',');
   lines.push(withErrorCheck(convertMapping, [node, ctx, then.replace.set, rule, indent + '  ', evalSync]));
 
-  if(then.replace.metadata) {
-    lines.push(`${indent}  , ` + withErrorCheck(convertMapping, [node, ctx, then.replace.metadata, rule, indent + '  ', evalSync]));
+  if(then.replace.meta) {
+    lines.push(`${indent}  , ` + withErrorCheck(convertMapping, [node, ctx, then.replace.meta, rule, indent + '  ', evalSync]));
   }
   if(then.replace.version) {
     lines.push(`${indent}  , ${then.replace.version}`)

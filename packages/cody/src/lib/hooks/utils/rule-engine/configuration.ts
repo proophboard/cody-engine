@@ -157,7 +157,7 @@ export interface ThenInsertInformation {
     information: string;
     id: string;
     set: string | PropMapping;
-    metadata?: string | PropMapping;
+    meta?: string | PropMapping;
     version?: number;
   }
 }
@@ -169,7 +169,7 @@ export interface ThenUpsertInformation {
     information: string;
     id: string;
     set: string | PropMapping;
-    metadata?: string | PropMapping;
+    meta?: string | PropMapping;
     version?: number;
   }
 }
@@ -181,7 +181,7 @@ export interface ThenUpdateInformation {
     information: string;
     filter: Filter;
     set: string | PropMapping;
-    metadata?: string | PropMapping;
+    meta?: string | PropMapping;
     version?: number;
   }
 }
@@ -193,7 +193,7 @@ export interface ThenReplaceInformation {
     information: string;
     filter: Filter;
     set: string | PropMapping;
-    metadata?: string | PropMapping;
+    meta?: string | PropMapping;
     version?: number;
   }
 }
