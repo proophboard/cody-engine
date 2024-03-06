@@ -229,6 +229,10 @@ export class InMemoryEventStore implements EventStore {
     return this.streams;
   }
 
+  public syncExportStreams(): InMemoryStreamStore {
+    return this.streams;
+  }
+
   public async republish(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<void> {
     const events = await this.load(streamName, metadataMatcher, fromEventId, limit);
 

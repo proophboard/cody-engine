@@ -345,6 +345,10 @@ export class InMemoryDocumentStore implements DocumentStore {
     return this.documents;
   }
 
+  public syncExportDocuments(): Documents {
+    return this.documents;
+  }
+
   private migrateDocs(documents: Documents): Documents {
     // Keep BC, convert old format (without dedicated version property) to new format
     // This mostly influences aggregate state, because the aggregate version was stored as part of the document
