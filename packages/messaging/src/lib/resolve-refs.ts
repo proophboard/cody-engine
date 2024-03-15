@@ -17,13 +17,38 @@ export const cloneSchema = (schema: JSONSchema7): JSONSchema7 => {
   return JSON.parse(JSON.stringify(schema));
 }
 
+export const isPropertyRef = (ref: string): boolean => {
+  return ref.indexOf(':') !== -1;
+}
+
+export const splitPropertyRef = (ref: string): [string, string] => {
+  const split = ref.split(':');
+
+  if(split.length === 1) {
+    split.push('');
+  }
+  return split as [string, string];
+}
+
 export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: string]: ValueObjectRuntimeInfo }): UiSchema | undefined => {
   if(schema['$ref']) {
-    const fqcn = FQCNFromDefinitionId(schema['$ref']);
+
+    const isPropRef = isPropertyRef(schema['$ref']);
+    const [ref, prop] = isPropRef ? splitPropertyRef(schema['$ref']) : [schema['$ref'], ''];
+
+    const fqcn = FQCNFromDefinitionId(ref);
 
     const refUiSchema = types[fqcn]?.uiSchema;
 
-    return refUiSchema && Object.keys(refUiSchema).length > 0 ? refUiSchema : undefined;
+    if(refUiSchema && Object.keys(refUiSchema).length > 0) {
+      if(!isPropRef) {
+        return refUiSchema;
+      }
+
+      return refUiSchema[prop];
+    }
+
+    return undefined;
   }
 
   const uiSchema: UiSchema = {};
@@ -51,8 +76,11 @@ export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: 
 
 export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: DeepReadonly<JSONSchema7>}): JSONSchema7 => {
   if(schema['$ref']) {
-    if(definitions[schema['$ref']]) {
-      let resolvedSchema = cloneSchema(definitions[schema['$ref']] as Writable<JSONSchema7>);
+    const isPropRef = isPropertyRef(schema['$ref']);
+    const [ref, prop] = isPropRef ? splitPropertyRef(schema['$ref']) : [schema['$ref'], ''];
+
+    if(definitions[ref]) {
+      let resolvedSchema = cloneSchema(definitions[ref] as Writable<JSONSchema7>);
 
       // Remove $id from resolved schema to avoid ajv complaining about ambiguous schemas
       if(typeof resolvedSchema['$id'] !== 'undefined') {
@@ -62,6 +90,15 @@ export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: Dee
       if(resolvedSchema.type && (resolvedSchema.type === 'object' || resolvedSchema.type === 'array')) {
         resolvedSchema = resolveRefs(resolvedSchema, definitions);
       }
+
+      if(isPropRef) {
+        if(!resolvedSchema.type || resolvedSchema.type !== "object" || !resolvedSchema.properties || typeof resolvedSchema.properties[prop] === "undefined") {
+          throw new Error(`The reference "${schema['$ref']}" cannot be resolved. Property "${prop}" is not found in the resolved schema of "${ref}"!`);
+        }
+
+        return resolvedSchema.properties[prop] as JSONSchema7;
+      }
+
       return resolvedSchema as JSONSchema7;
     }
     throw new Error(`The reference "${schema['$ref']}" cannot be resolved. It is not listed in types/definitions.ts!`);

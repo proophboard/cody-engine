@@ -1,9 +1,13 @@
 import {names} from "@event-engine/messaging/helpers";
 import {JSONSchema7} from "json-schema";
+import {isPropertyRef, splitPropertyRef} from "@event-engine/messaging/resolve-refs";
 
 export const playNormalizeRefs = (schema: JSONSchema7, service: string): JSONSchema7 => {
   return visitRef(schema, ref => {
-    const refParts = ref.split("/");
+    const isPropRef = isPropertyRef(ref);
+    const [refWithoutProp, prop] = isPropRef ? splitPropertyRef(ref) : [ref, ''];
+
+    const refParts = refWithoutProp.split("/");
     if(refParts.length === 0) {
       return ref;
     }
@@ -23,7 +27,9 @@ export const playNormalizeRefs = (schema: JSONSchema7, service: string): JSONSch
       refParts.splice(1, 0, serviceNames.fileName);
     }
 
-    return '/' + refParts.map(p => names(p).fileName).join('/');
+
+
+    return '/' + refParts.map(p => names(p).fileName).join('/') + (isPropRef? ':'+prop : '');
   })
 }
 

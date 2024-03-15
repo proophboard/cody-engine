@@ -6,6 +6,7 @@ import {detectService} from "../detect-service";
 import {isCodyError} from "@proophboard/cody-utils";
 import {namespaceToFilePath, namespaceToJSONPointer} from "./namespace";
 import {ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
+import {isPropertyRef, splitPropertyRef} from "@event-engine/messaging/resolve-refs";
 
 export const definitionId = (vo: Node, ns: string, ctx: Context): string | CodyResponse => {
   const service = detectService(vo, ctx);
@@ -72,7 +73,10 @@ export const voNamespaceJSONPointerFromFQCN = (fqcn: string): string => {
 
 export const normalizeRefs = (schema: JSONSchema, service: string): JSONSchema => {
   return visitRef(schema, ref => {
-    const refParts = ref.split("/");
+    const isPropRef = isPropertyRef(ref);
+    const [refWithoutProp, prop] = isPropRef ? splitPropertyRef(ref) : [ref, ''];
+
+    const refParts = refWithoutProp.split("/");
     if(refParts.length === 0) {
       return ref;
     }
@@ -92,7 +96,7 @@ export const normalizeRefs = (schema: JSONSchema, service: string): JSONSchema =
       refParts.splice(1, 0, serviceNames.fileName);
     }
 
-    return '/' + refParts.map(p => names(p).fileName).join('/');
+    return '/' + refParts.map(p => names(p).fileName).join('/') + (isPropRef? ':'+prop : '');
   })
 }
 

@@ -33,7 +33,6 @@ import {names} from "@event-engine/messaging/helpers";
 import {informationTitle} from "@cody-play/infrastructure/information/titelize";
 import {UseQueryResult} from "@tanstack/react-query";
 import {isListSchema} from "@cody-engine/cody/hooks/utils/json-schema/list-schema";
-import {resolveRef} from "@cody-play/infrastructure/json-schema/resolve-ref";
 import {camelCaseToTitle} from "@frontend/util/string";
 import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {makeSyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
@@ -48,6 +47,7 @@ import {PageDefinition} from "@frontend/app/pages/page-definitions";
 import {JSONSchema7} from "json-schema";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
+import {resolveRefs} from "@event-engine/messaging/resolve-refs";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc)) {
@@ -136,7 +136,7 @@ const compileTableColumns = (
     throw new Error(`Cannot render table. Schema of "${information.desc.name}" is not a list.`);
   }
 
-  const columns = getColumns(information, uiSchema, resolveRef(schema.items, schemaDefinitions));
+  const columns = getColumns(information, uiSchema, resolveRefs(schema.items, schemaDefinitions));
 
   const columnQueries: RefQueryMap = {};
 
