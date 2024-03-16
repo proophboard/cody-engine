@@ -21,6 +21,8 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addFunction('userAttr', getAttribute);
     configuredJexl.addFunction('pageData', getPageData);
 
+    configuredJexl.addTransform('default', getValOrDefault)
+
     registerStringExtensions(configuredJexl);
     registerArrayExtensions(configuredJexl);
     registerDateTimeExtensions(configuredJexl);
@@ -104,5 +106,24 @@ const getPageData = (pageData: PageData | undefined, name: string, defaultValue:
 
   return pageData[name].data;
 }
+
+const getValOrDefault = (val: any, notSetVal: any, strict?: boolean) => {
+  if(strict) {
+    return typeof val === "undefined" ? notSetVal : val;
+  } else {
+    switch (typeof val) {
+      case "object":
+        if(Array.isArray(val)) {
+          return val.length ? val : notSetVal;
+        } else {
+          return JSON.stringify(val) === "{}" ? notSetVal : val;
+        }
+      case "boolean":
+        return val;
+      default:
+        return val ? val : notSetVal;
+    }
+  }
+};
 
 export default getConfiguredJexl();
