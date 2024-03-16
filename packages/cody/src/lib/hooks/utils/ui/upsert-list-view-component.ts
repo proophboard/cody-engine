@@ -91,6 +91,9 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
   const density = getTableDensity(voMeta);
   const hideToolbar = !!voMeta?.uiSchema?.table?.hideToolbar;
 
+  imports.push('import {useUser} from "@frontend/hooks/use-user";')
+  hooks.push('const [user,] = useUser();');
+
   // @todo: handle render cell with Rule[]
   // @see: car-list.tsx
 
@@ -329,7 +332,7 @@ const prepareValueGetter = (vo: Node, valueGetter: Rule[], ctx: Context, indent:
   const expr = convertRuleConfigToTableColumnValueGetterRules(vo, ctx, valueGetter, indent + '  ');
 
   return `(params) => {
-${indent}  const ctx: any = params;
+${indent}  const ctx: any = {...params, user};
 ${indent}      
 ${indent}  ${expr};
 ${indent}
@@ -374,7 +377,7 @@ ${indent}    ${columnNames.propertyName}ColumnQuery,
 ${indent}    "${listVoMeta.identifier}",
 ${indent}    params.value,
 ${indent}    (data) => {
-${indent}      const ctx: any = {data};
+${indent}      const ctx: any = {data, user};
 ${indent}      ${expr};
 ${indent}      return ctx.value;
 ${indent}    }

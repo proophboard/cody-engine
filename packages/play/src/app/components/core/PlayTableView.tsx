@@ -48,6 +48,8 @@ import {JSONSchema7} from "json-schema";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 import {resolveRefs} from "@event-engine/messaging/resolve-refs";
+import {useUser} from "@frontend/hooks/use-user";
+import {User} from "@app/shared/types/core/user/user";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc)) {
@@ -56,6 +58,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
 
   const {config: {queries, types, pages, definitions}} = useContext(configStore);
   const [,addQueryResult] = usePageData();
+  const [user] = useUser();
 
   const query = useApiQuery(informationInfo.desc.query, params);
 
@@ -83,6 +86,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
     uiSchema,
     queries,
     pages,
+    user,
     types,
     definitions
   );
@@ -127,6 +131,7 @@ const compileTableColumns = (
   uiSchema: TableUiSchema,
   queries: PlayQueryRegistry,
   pages: PlayPageRegistry,
+  user: User,
   types: PlayInformationRegistry,
   schemaDefinitions: PlaySchemaDefinitions
 ): GridColDef[] => {
@@ -185,7 +190,7 @@ const compileTableColumns = (
           break;
         case "value":
           gridColDef.valueGetter = (rowParams) => {
-            let ctx = {...rowParams, value: ''};
+            let ctx = {...rowParams, value: '', user};
 
             if (typeof cValue === 'string') {
               return jexl.evalSync(cValue, ctx);
@@ -236,7 +241,7 @@ const compileTableColumns = (
               refListDesc.itemIdentifier,
               rowParams.value,
               (data: any) => {
-                let ctx = {data, value: ''};
+                let ctx = {data, value: '', user};
 
                 if (typeof value === 'string') {
                   return jexl.evalSync(value, ctx);
