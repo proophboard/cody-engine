@@ -11,6 +11,8 @@ export const registerArrayExtensions = (jexl: Jexl): void => {
   jexl.addTransform('map', (arr: Array<unknown>, expr: string, ctx?: object) => map(arr, expr, ctx || {}, jexl));
   jexl.addFunction('join', (arr: Array<unknown>, separator?: string) => arr.join(separator));
   jexl.addTransform('join', (arr: Array<unknown>, separator?: string) => arr.join(separator));
+  jexl.addTransform('first', (arr: Array<unknown>, notSetValue?: any) => arr.length? arr[0] : notSetValue);
+  jexl.addTransform('last', (arr: Array<unknown>, notSetValue?: any) => arr.length? arr[arr.length-1] : notSetValue);
 }
 
 const arrayPush = (arr: Array<unknown>, val: unknown): Array<unknown> => {
@@ -46,7 +48,7 @@ const filter = (arr: Array<unknown>, expr: string, ctx: object, jexl: Jexl): Arr
   const filtered: Array<unknown> = [];
 
   arr.forEach(item => {
-    const itemCtx = {...ctx, item};
+    const itemCtx = {...ctx, item, _: item};
 
     if(jexl.evalSync(expr, itemCtx)) {
       filtered.push(item);
@@ -66,7 +68,7 @@ const map = (arr: Array<unknown>, expr: string, ctx: object, jexl: Jexl): Array<
   }
 
   return arr.map(item => {
-    return jexl.evalSync(expr, {...ctx, item});
+    return jexl.evalSync(expr, {...ctx, item, _: item});
   })
 }
 

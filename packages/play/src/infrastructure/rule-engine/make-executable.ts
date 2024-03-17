@@ -219,6 +219,7 @@ const execForEachSync = (then: ThenForEach, ctx: ExecutionContext): ExecutionCon
   if(ctx[then.forEach.variable] && Array.isArray(ctx[then.forEach.variable])) {
     for (const itemIndex in ctx[then.forEach.variable]) {
       ctx['item'] = ctx[then.forEach.variable][itemIndex];
+      ctx['_'] = ctx['item'];
       ctx['itemIndex'] = itemIndex;
 
       ctx = execThenSync(then.forEach.then, ctx);
@@ -232,6 +233,7 @@ const execForEachAsync = async (then: ThenForEach, ctx: ExecutionContext): Promi
   if(ctx[then.forEach.variable] && Array.isArray(ctx[then.forEach.variable])) {
     for (const itemIndex in ctx[then.forEach.variable]) {
       ctx['item'] = ctx[then.forEach.variable][itemIndex];
+      ctx['_'] = ctx['item'];
       ctx['itemIndex'] = itemIndex;
 
       ctx = await execThenAsync(then.forEach.then, ctx);
