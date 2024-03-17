@@ -24,6 +24,7 @@ import {getNodeFromSyncedNodes} from "./node-tree";
 import {ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {getOriginalEvent} from "@cody-engine/cody/hooks/utils/event/get-original-event";
 import {findAggregateState} from "@cody-engine/cody/hooks/utils/aggregate/find-aggregate-state";
+import {isObjectSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-object-schema";
 
 const project = new Project({
   compilerOptions: {
@@ -142,6 +143,34 @@ const addArrayRegistryItem = (registryPath: string, registryVarName: string, ent
       moduleSpecifier: importPath
     });
   }
+
+  registrySource.formatText({indentSize: 2});
+  tree.write(registryPath, registrySource.getText());
+}
+
+const addArrayRegistryItemIfNotExists = (registryPath: string, registryVarName: string, entryValue: string,  tree: FsTree) => {
+  const registryFilename = getFilenameFromPath(registryPath);
+  const registryFileContent = tree.read(registryPath)!.toString();
+
+  const registrySource = project.createSourceFile(registryFilename, registryFileContent, {overwrite: true});
+
+  const typeAlias = registrySource.getTypeAliasOrThrow(registryVarName);
+  const tuple = typeAlias.getTypeNodeOrThrow() as TupleTypeNode;
+
+  let tupleText = tuple.getText();
+
+  if(tupleText.indexOf(entryValue) !== -1) {
+    return;
+  }
+
+  if(tupleText === '[]') {
+    tupleText = tuple.getText().replace("]", `\n  ${entryValue}\n]`);
+  } else {
+    const searchVal = tuple.getText().indexOf("\n]") !== -1 ? "\n]" : "]";
+    tupleText = tuple.getText().replace(searchVal, `,\n  ${entryValue}\n]`);
+  }
+
+  tuple.replaceWithText(tupleText);
 
   registrySource.formatText({indentSize: 2});
   tree.write(registryPath, registrySource.getText());
@@ -521,6 +550,17 @@ export const registerValueObjectDefinition = (service: string, vo: Node, voMeta:
   const refImportPath = `@app/shared/types/${serviceNames.fileName}${nsFilename}${voNames.fileName}.schema`;
 
   addArrayRegistryItem(refPath, refVarName, refEntryValue, refImportName, refImportPath, tree);
+
+  const schema = voMeta.schema;
+
+  if(isObjectSchema(schema)) {
+    const properties = schema.properties || {};
+
+    Object.keys(properties).forEach(prop => {
+      addArrayRegistryItemIfNotExists(refPath, refVarName, `${refEntryValue}.properties.${prop}`, tree);
+    })
+  }
+
   return true;
 }
 

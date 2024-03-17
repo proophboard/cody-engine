@@ -6,6 +6,7 @@ import {
 import {JSONSchema} from "json-schema-to-typescript";
 import {CodyResponse} from "@proophboard/cody-types";
 import {isCodyError} from "@proophboard/cody-utils";
+import {isObjectSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-object-schema";
 
 const normalizeShorthandString = (shorthand: string): string => {
   shorthand = shorthand.replace('string|enum:', 'enum:');

@@ -2,10 +2,15 @@ import {Jexl} from "@event-engine/infrastructure/jexl/jexl";
 
 export const registerArrayExtensions = (jexl: Jexl): void => {
   jexl.addFunction('push', arrayPush);
+  jexl.addTransform('push', arrayPush);
   jexl.addFunction('contains', arrayContains);
+  jexl.addTransform('contains', arrayContains);
   jexl.addFunction('filter', (arr: Array<unknown>, expr: string, ctx: object) => filter(arr, expr, ctx, jexl));
+  jexl.addTransform('filter', (arr: Array<unknown>, expr: string, ctx?: object) => filter(arr, expr, ctx || {}, jexl))
   jexl.addFunction('map', (arr: Array<unknown>, expr: string, ctx: object) => map(arr, expr, ctx, jexl));
+  jexl.addTransform('map', (arr: Array<unknown>, expr: string, ctx?: object) => map(arr, expr, ctx || {}, jexl));
   jexl.addFunction('join', (arr: Array<unknown>, separator?: string) => arr.join(separator));
+  jexl.addTransform('join', (arr: Array<unknown>, separator?: string) => arr.join(separator));
 }
 
 const arrayPush = (arr: Array<unknown>, val: unknown): Array<unknown> => {

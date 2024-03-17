@@ -13,6 +13,7 @@ import {addSchemaTitles} from "../json-schema/add-schema-titles";
 import {jsonSchemaFromShorthand} from "../json-schema/json-schema-from-shorthand";
 import {isShorthand} from "../json-schema/shorthand";
 import {ValueObjectMetadata, ValueObjectMetadataRaw} from "@cody-engine/cody/hooks/utils/value-object/types";
+import {addPropertySchemaIds} from "@cody-engine/cody/hooks/utils/json-schema/add-property-schema-ids";
 
 export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | CodyResponse => {
   const meta = parseJsonMetadata<ValueObjectMetadataRaw>(vo);
@@ -39,6 +40,8 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
   }
 
   meta.schema['$id'] = definitionId(vo, ns, ctx);
+
+  meta.schema = addPropertySchemaIds(meta.schema, meta.schema.$id);
 
   const service = detectService(vo, ctx);
 
