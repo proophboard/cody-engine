@@ -1,5 +1,5 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { DataGrid, GridColDef, GridToolbar } from '@mui/x-data-grid';
+import {DataGrid, GridColDef, GridRenderCellParams, GridToolbar} from '@mui/x-data-grid';
 import {useContext, useEffect} from 'react';
 import { triggerSideBarAnchorsRendered } from '@frontend/util/sidebar/trigger-sidebar-anchors-rendered';
 import NoRowsOverlay from '@frontend/app/components/core/table/NoRowsOverlay';
@@ -147,6 +147,20 @@ const compileTableColumns = (
 
   const gridColDefs: GridColDef[] = [];
 
+  const getColValueWithExpr = (rowParams: GridRenderCellParams, cValue: string | AnyRule[]): any => {
+    let ctx = {...rowParams, value: '', user};
+
+    if (typeof cValue === 'string') {
+      return jexl.evalSync(cValue, ctx);
+    }
+
+    const exe = makeSyncExecutable(cValue as AnyRule[]);
+
+    ctx = exe(ctx);
+
+    return ctx.value;
+  }
+
   for (let column of columns) {
     // @TODO: Validate column
 
@@ -190,17 +204,7 @@ const compileTableColumns = (
           break;
         case "value":
           gridColDef.valueGetter = (rowParams) => {
-            let ctx = {...rowParams, value: '', user};
-
-            if (typeof cValue === 'string') {
-              return jexl.evalSync(cValue, ctx);
-            }
-
-            const exe = makeSyncExecutable(cValue as AnyRule[]);
-
-            ctx = exe(ctx);
-
-            return ctx.value;
+            return getColValueWithExpr(rowParams, cValue as any);
           }
 
           hasValueGetter = true;
@@ -236,10 +240,16 @@ const compileTableColumns = (
           const value = (cValue as RefTableColumn).value;
 
           gridColDef.valueGetter = (rowParams) => {
+            let rowParamsVal = rowParams.value;
+
+            if(typeof column !== "string" && column['value']) {
+              rowParamsVal = getColValueWithExpr(rowParams, column['value']);
+            }
+
             return dataValueGetter(
               columnQueries[field],
               refListDesc.itemIdentifier,
-              rowParams.value,
+              rowParamsVal,
               (data: any) => {
                 let ctx = {data, value: '', user};
 
