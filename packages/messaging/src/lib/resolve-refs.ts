@@ -74,7 +74,7 @@ export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: 
   return Object.keys(uiSchema).length > 0 ? uiSchema : undefined;
 }
 
-export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: DeepReadonly<JSONSchema7>}): JSONSchema7 => {
+export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: DeepReadonly<JSONSchema7>}, isNested?: boolean): JSONSchema7 => {
   if(schema['$ref']) {
     const isPropRef = isPropertyRef(schema['$ref']);
     const [ref, prop] = isPropRef ? splitPropertyRef(schema['$ref']) : [schema['$ref'], ''];
@@ -83,7 +83,7 @@ export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: Dee
       let resolvedSchema = cloneSchema(definitions[ref] as Writable<JSONSchema7>);
 
       // Remove $id from resolved schema to avoid ajv complaining about ambiguous schemas
-      if(typeof resolvedSchema['$id'] !== 'undefined') {
+      if(typeof resolvedSchema['$id'] !== 'undefined' && isNested) {
         delete resolvedSchema['$id'];
       }
 
@@ -106,12 +106,12 @@ export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: Dee
 
   if(schema && schema.properties) {
     for (const prop in schema.properties) {
-      schema.properties[prop] = resolveRefs(schema.properties[prop] as JSONSchema7, definitions);
+      schema.properties[prop] = resolveRefs(schema.properties[prop] as JSONSchema7, definitions, true);
     }
   }
 
   if(schema && schema.items) {
-    schema.items = resolveRefs(schema.items as JSONSchema7, definitions);
+    schema.items = resolveRefs(schema.items as JSONSchema7, definitions, true);
   }
 
   return schema;
