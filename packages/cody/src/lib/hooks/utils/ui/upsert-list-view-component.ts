@@ -197,6 +197,10 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
           objStr += `${indent}renderCell: rowParams => <PageLink page={${pageName}} params={mapProperties({...rowParams.row, ...params}, ${JSON.stringify(pageLinkConfig.mapping)})}>{rowParams.value}</PageLink>,\n`
           break;
         case "value":
+          if(hasValueGetter || column.ref) {
+            // Ref will use value getter before ref look up
+            break;
+          }
           imports = addImport('import jexl from "@app/shared/jexl/get-configured-jexl"', imports);
           const valueGetter = prepareValueGetter(vo, cValue as Rule[], ctx, indent);
           if(isCodyError(valueGetter)) {
@@ -217,7 +221,7 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
             return refListVo;
           }
 
-          const dataValueGetterResult = prepareDataValueGetter(column.field, vo, refListVo, (cValue as RefTableColumn).value, ctx, imports, indent);
+          const dataValueGetterResult = prepareDataValueGetter(column, vo, refListVo, (cValue as RefTableColumn).value, ctx, imports, indent);
 
           if(isCodyError(dataValueGetterResult)) {
             return dataValueGetterResult;
@@ -331,8 +335,12 @@ const preparePageLink = (linkedPage: PageLinkTableColumn, vo: Node, ctx: Context
 const prepareValueGetter = (vo: Node, valueGetter: Rule[], ctx: Context, indent: string): string | CodyResponse => {
   const expr = convertRuleConfigToTableColumnValueGetterRules(vo, ctx, valueGetter, indent + '  ');
 
+  if(isCodyError(expr)) {
+    return expr;
+  }
+
   return `(params) => {
-${indent}  const ctx: any = {...params, user};
+${indent}  const ctx: any = {...params, value: '', user};
 ${indent}      
 ${indent}  ${expr};
 ${indent}
@@ -340,8 +348,9 @@ ${indent}  return ctx.value;
 ${indent}}`;
 }
 
-const prepareDataValueGetter = (columnName: string, vo: Node, listVo: Node, valueGetter: Rule[] | string, ctx: Context, imports: string[], indent: string): [string[], string, string] | CodyResponse => {
+const prepareDataValueGetter = (column: TableColumnUiSchema, vo: Node, listVo: Node, valueGetter: Rule[] | string, ctx: Context, imports: string[], indent: string): [string[], string, string] | CodyResponse => {
   const listVoMeta = getVoMetadata(listVo, ctx);
+  const columnName = column.field;
 
   if(isCodyError(listVoMeta)) {
     return listVoMeta;
@@ -371,13 +380,24 @@ const prepareDataValueGetter = (columnName: string, vo: Node, listVo: Node, valu
 
   const expr = convertRuleConfigToTableColumnValueGetterRules(vo, ctx, valueGetter, indent + '  ');
 
-  const valueGetterFn = `(params) => {
+  let innerValueGetter = 'rowParams.value';
+
+  if(column.value) {
+    const preparedValueGetter = prepareValueGetter(vo, column.value as Rule[], ctx, indent + '  ');
+    if(isCodyError(preparedValueGetter)) {
+      return preparedValueGetter;
+    }
+    innerValueGetter = '('+preparedValueGetter+')(rowParams)';
+  }
+
+  const valueGetterFn = `(rowParams) => {
+${indent}  const columnValue = ${innerValueGetter};
 ${indent}  return dataValueGetter(
 ${indent}    ${columnNames.propertyName}ColumnQuery,
 ${indent}    "${listVoMeta.identifier}",
-${indent}    params.value,
+${indent}    columnValue,
 ${indent}    (data) => {
-${indent}      const ctx: any = {data, user};
+${indent}      const ctx: any = {data, value: '', user};
 ${indent}      ${expr};
 ${indent}      return ctx.value;
 ${indent}    }
