@@ -156,7 +156,7 @@ const resolveNotStoredValueObjectQuery = async (desc: QueryableNotStoredValueObj
     throw new NotFoundError(`"${desc.name}" with "${ctx.query}" not found!`);
   }
 
-  console.log(`[CodyPlay] Performed not stored value object query "${desc.name}" with "${ctx.query}"`, doc);
+  console.log(`[CodyPlay] Performed not stored ValueObject query "${desc.name}" with "${ctx.query}"`, doc);
 
   const exe = makeInformationFactory(factory);
 
@@ -174,7 +174,7 @@ const resolveStateQuery = async (desc: QueryableStateDescription, factory: AnyRu
     throw new NotFoundError(`"${desc.name}" with "${desc.identifier}": "${params[desc.identifier]}" not found!`);
   }
 
-  console.log(`[CodyPlay] Performed state query "${desc.name}" {${desc.identifier}: "${params[desc.identifier]}"}`, doc);
+  console.log(`[CodyPlay] Performed State query "${desc.name}" {${desc.identifier}: "${params[desc.identifier]}"}`, doc);
 
   const exe = makeInformationFactory(factory);
 
@@ -196,7 +196,11 @@ const resolveStateListQuery = async (desc: QueryableStateListDescription, factor
 
   const cursor = await ds.findDocs<any>(desc.collection, filters, undefined, undefined, orderBy);
 
-  return asyncIteratorToArray(asyncMap(cursor, ([, d]) => exe(d)));
+  const result = asyncIteratorToArray(asyncMap(cursor, ([, d]) => exe(d)));
+
+  console.log(`[CodyPlay] Performed StateList query "${desc.name}":`, queryPayload, result);
+
+  return result;
 }
 
 const resolveSingleValueObjectQuery = async (desc: QueryableValueObjectDescription, factory: AnyRule[], queryInfo: PlayQueryRuntimeInfo, resolve: ResolveConfig, params: any, user: User): Promise<any> => {
@@ -222,7 +226,7 @@ const resolveSingleValueObjectQuery = async (desc: QueryableValueObjectDescripti
     throw new NotFoundError(`"${desc.name}" with "${JSON.stringify(params)}" not found!`);
   }
 
-  console.log(`[CodyPlay] Performed state query "${desc.name}" {${filters}"}`, result[0]);
+  console.log(`[CodyPlay] Performed SingleValueObject query "${desc.name}" {${filters}"}`, result[0]);
 
   return result[0];
 }
@@ -240,8 +244,7 @@ const resolveNotStoredListQuery = async (desc: QueryableListDescription, factory
     throw new Error(`[CodyPlay] Query resolver "information" result for ${desc.name} is not a list, but the data schema is defined as a list. Please check your prooph board query resolver rules.`)
   }
 
-
-  console.log(`[CodyPlay] Performed list query "${desc.name}"`, ctx, result);
+  console.log(`[CodyPlay] Performed not stored List query "${desc.name}"`, ctx, result);
 
   return result.map(item => exe(item));
 }

@@ -145,11 +145,25 @@ const CommandDialog = (props: CommandDialogProps) => {
 
       if(isAggregateCommandDescription(props.commandDialogCommand.desc) && props.commandDialogCommand.desc.deleteState) {
         const routeParts = location.pathname.split("/");
-        routeParts.pop();
-        if(routeParts.length < 2) {
-          routeParts.push("");
+        const filteredRouteParts: string[] = [];
+        let identifierPartMatched = false;
+
+        routeParts.forEach(p => {
+          if(identifierPartMatched) {
+            return;
+          }
+
+          if(props.aggregateIdentifier && p === props.aggregateIdentifier.value) {
+            identifierPartMatched = true;
+          } else {
+            filteredRouteParts.push(p);
+          }
+        })
+
+        if(filteredRouteParts.length < 2) {
+          filteredRouteParts.push("");
         }
-        navigate(routeParts.join("/"));
+        navigate(filteredRouteParts.join("/"));
       }
     }, 10);
   }
