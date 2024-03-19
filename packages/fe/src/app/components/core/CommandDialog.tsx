@@ -147,13 +147,14 @@ const CommandDialog = (props: CommandDialogProps) => {
         const routeParts = location.pathname.split("/");
         const filteredRouteParts: string[] = [];
         let identifierPartMatched = false;
+        const aggregateId = props.aggregateIdentifier ? props.aggregateIdentifier.value : props.aggregateState ? props.aggregateState[props.commandDialogCommand.desc.aggregateIdentifier] : '';
 
         routeParts.forEach(p => {
           if(identifierPartMatched) {
             return;
           }
 
-          if(props.aggregateIdentifier && p === props.aggregateIdentifier.value) {
+          if(p === aggregateId) {
             identifierPartMatched = true;
           } else {
             filteredRouteParts.push(p);
