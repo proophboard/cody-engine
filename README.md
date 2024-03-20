@@ -1,12 +1,12 @@
 # CodyEngine
 
-Looking for a way to bridge the gap between Event Storming and prototyping or even production-ready solutions?
+Looking for a way to bridge the gap between Event Modeling and prototyping or even production-ready solutions?
 
 [Cody]({{site.baseUrl}}/cody/introduction.html) sounds nice, but developing your own code generator on top of it is too much of a hassle?
 
 We've got you covered! 💪
 
-Cody Engine is a **ready-to-use** Open Source solution to transform an [Event Map]({{site.baseUrl}}/continuous_event_storming/event-map-design.html)
+Cody Engine is a **ready-to-use** Open Source solution to transform [Event Modeling on prooph board](https://wiki.prooph-board.com/event_modeling/event-modeling-on-prooph-board.html)
 into a prototype and if you want also into a production-ready system.
 
 ## Installation 
@@ -82,12 +82,36 @@ production system, please get in touch with the [prooph board team](https://proo
 
 ## Extension Points
 
-Cody will generate fully working source code for frontend and backend. However, we are aware that a lowcode platform has its
-limitations. At some point you'll hit a use case that can't be handled without some custom development be it in the frontend or backend.
+Cody will generate fully working source code for frontend and backend. However, low code has limitations. 
+At some point you'll hit a use case that can't be handled without some custom development be it in the frontend or backend.
 Therefor, Cody Engine ships with many extension points to let you override code generated behavior.
 
-You'll find `extensions` directories in all main packages (fe, be, shared) with annotated files to guide you how to inject your own logic.
+You'll find `extensions` directories in all main packages (fe, be, shared) with files to guide you how to inject your own logic.
 As long as you only modify or add files in the `extensions` directories, you should be able to pull updates from the `cody-engine` upstream repository.
+
+### Example
+
+Let's say you want to override a handler function for a specific command. You can add your custom command handler to:
+`packages/be/src/extensions/command-handlers.ts`
+
+```ts
+import {CommandHandlerRegistry} from "@event-engine/infrastructure/commandHandling";
+import {handleCommandWithCustomHandler} from "@server/extensions/command-handlers/handle-command-with-custom-handler"
+
+export const commandHandlerExtensions: CommandHandlerRegistry = {
+  'MyService.CommandWithCustomHandler': handleCommandWithCustomHander,
+};
+```
+
+*Please Note: Every extension registry file (like the one shown in the example above) uses a specific registry type (e.g. CommandHandlerRegistry). Check the type, to learn how to add custom functions. TypeScript should complain, if you're missing something.*
+
+### Theming
+
+Theming is based on [material-ui](https://mui.com/material-ui/customization/theming/).
+
+You'll find a theme file in `packages/fe/src/extensions/app/layout/theme.ts`
+
+**Please Note: Changing the layout itself is not yet supported. If you want to change the layout structure (different sidebar, topbar, ...), you need to change the respective files directly. This might conflict with future updates of Cody Engine, especially when we add support for custom layouts, but it's the only way for now. Sorry :(**
 
 ## Testing
 
