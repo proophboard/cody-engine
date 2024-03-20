@@ -77,8 +77,11 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
-    addQueryResult(registryIdToDataReference(informationInfo.desc.name), query);
   }, [params]);
+
+  useEffect(() => {
+    addQueryResult(registryIdToDataReference(informationInfo.desc.name), query);
+  }, [params, query.isLoading]);
 
   const columns: GridColDef[] = compileTableColumns(
     params,

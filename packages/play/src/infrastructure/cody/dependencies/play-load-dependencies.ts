@@ -50,7 +50,7 @@ export const playLoadDependencies = async (message: Message, type: PlayMessageTy
             payload[prop] = await jexl.eval(dep.options.query[prop], {...loadedDependencies, ...messageDep});
           }
 
-          dep.options.query = payload;
+          message = {...message, payload};
         }
 
         loadedDependencies[depName] = await loadQueryDependency(dependencyKey, message, dep.options, config.queries, config);
@@ -78,7 +78,7 @@ const loadQueryDependency = (queryName: string, message: Message, options: any, 
 
   const queryRuntimeInfo = queries[queryName];
   const keyMapping = options?.mapping || {};
-  const queryPayload = options?.query || message.payload;
+  const queryPayload = message.payload;
 
   const queryParams = determineQueryPayload(queryPayload, queryRuntimeInfo as unknown as QueryRuntimeInfo, keyMapping);
 

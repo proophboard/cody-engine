@@ -20,19 +20,21 @@ export const PageDataContext = React.createContext({
   reset: () => {}
 });
 
+let currentPageData: PageData = {};
+
 const PageDataProvider = (props: PageDataProviderProps) => {
   const [pageData, setPageData] = useState(EmptyPageData);
 
   const addQueryResult: AddQueryResult = (name: string, result: UseQueryResult) => {
-    if(!pageData[name]) {
-      const newPageData = {...pageData};
-      newPageData[name] = result;
-      setPageData(newPageData);
-    }
+    const newPageData = {...currentPageData};
+    newPageData[name] = result;
+    currentPageData[name] = result;
+    setPageData(newPageData);
   }
 
   const reset = () => {
     setPageData(EmptyPageData);
+    currentPageData = {};
   }
 
   return <PageDataContext.Provider value={{pageData, addQueryResult, reset}}>

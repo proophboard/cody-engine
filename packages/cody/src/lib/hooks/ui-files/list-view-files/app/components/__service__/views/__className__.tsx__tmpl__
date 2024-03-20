@@ -15,8 +15,11 @@ const <%= className %> = (params: Get<%= className %>) => {
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
-    addQueryResult('<%= dataReference %>', query);
   }, [params]);
+
+  useEffect(() => {
+    addQueryResult('<%= dataReference %>', query);
+  }, [query.isLoading])
 
   const columns: GridColDef[] = [
     <%- columns %>
