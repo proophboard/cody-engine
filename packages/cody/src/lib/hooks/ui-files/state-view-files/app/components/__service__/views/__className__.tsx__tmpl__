@@ -15,7 +15,7 @@ const <%= className %> = (props: <%= className %>Props) => {
 
   useEffect(() => {
     addQueryResult('<%= dataReference %>', query);
-  }, [query.isLoading]);
+  }, [query.dataUpdatedAt]);
 
   return <>
     {query.isLoading && <CircularProgress />}

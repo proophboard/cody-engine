@@ -81,7 +81,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
 
   useEffect(() => {
     addQueryResult(registryIdToDataReference(informationInfo.desc.name), query);
-  }, [params, query.isLoading]);
+  }, [params, query.dataUpdatedAt]);
 
   const columns: GridColDef[] = compileTableColumns(
     params,

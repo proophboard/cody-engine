@@ -23,7 +23,7 @@ const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo)
 
   useEffect(() => {
     addQueryResult(registryIdToDataReference(desc.name), query);
-  }, [params, query.isLoading]);
+  }, [params, query.dataUpdatedAt]);
 
   if(!isQueryableStateDescription(desc) && !isQueryableValueObjectDescription(desc) && !isQueryableNotStoredValueObjectDescription(desc)) {
     return <Alert severity="error" >Unable to render view. Referenced Information "{informationInfo.desc.name}" is not queryable and cannot be loaded from the database. You have to define a query schema and resolve configuration in the Cody Wizard.</Alert>

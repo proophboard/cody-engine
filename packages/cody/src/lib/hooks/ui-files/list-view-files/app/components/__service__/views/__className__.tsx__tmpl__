@@ -19,7 +19,7 @@ const <%= className %> = (params: Get<%= className %>) => {
 
   useEffect(() => {
     addQueryResult('<%= dataReference %>', query);
-  }, [query.isLoading])
+  }, [query.dataUpdatedAt])
 
   const columns: GridColDef[] = [
     <%- columns %>
