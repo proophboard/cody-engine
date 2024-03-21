@@ -8,6 +8,7 @@ import {registerArrayExtensions} from "@app/shared/jexl/array-extension/register
 import {registerDateTimeExtensions} from "@app/shared/jexl/datetime-extension/register";
 import {PageData} from "@app/shared/types/core/page-data/page-data";
 import {registerStringExtensions} from "@app/shared/jexl/string-extension/register";
+import {registerObjectExtension} from "@app/shared/jexl/object-extension/register";
 
 let configuredJexl: Jexl;
 
@@ -26,6 +27,7 @@ const getConfiguredJexl = (): Jexl => {
 
     registerStringExtensions(configuredJexl);
     registerArrayExtensions(configuredJexl);
+    registerObjectExtension(configuredJexl);
     registerDateTimeExtensions(configuredJexl);
 
     configuredJexl = extendJexlConfiguration(configuredJexl);
