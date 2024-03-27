@@ -1,4 +1,4 @@
-import {CodyHook, Node} from "@proophboard/cody-types";
+import {CodyHook, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
 import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {names} from "@event-engine/messaging/helpers";
