@@ -109,7 +109,6 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
 }
 
 async function createTestFiles(featureName: string, featureMeta: any, givenNodes : Array<Node>, whenCommand : Node, thenNodes : Array<Node>, ctx: Context): Promise<string> {
-  // if using a service from another board (e.g. Fleet Management), make sure to set this up in the test feature's metadata!
   const service = withErrorCheck(detectService, [whenCommand, ctx]);
 
   let aggregate: Node | undefined;
@@ -136,11 +135,10 @@ async function createTestFiles(featureName: string, featureMeta: any, givenNodes
   const syncedAggregate = withErrorCheck(getNodeFromSyncedNodes, [aggregate, ctx.syncedNodes]);
   const aggregateState = withErrorCheck(findAggregateState, [syncedAggregate, ctx]);
   const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
-  const aggregateStateNames = names(aggregateState.getName());
+  const givenNodeDescriptionObject = JSON.parse('{'+givenNode.getDescription().replaceAll('\'', '"')+'}');
 
   const thenNode = thenNodes[0];
   const body = '{'+thenNode.getDescription().replaceAll('\'', '"')+'}';
-  console.log('Json body: '+ body);
   const thenNodeDescriptionObject = JSON.parse(body);
 
   const aggregateIdentifierProperty = aggregateStateMeta.identifier as keyof typeof thenNodeDescriptionObject;
@@ -156,6 +154,7 @@ async function createTestFiles(featureName: string, featureMeta: any, givenNodes
     "when": featureMeta[whenKey],
     "then": featureMeta[thenKey],
     "givenEvent": names(givenNode.getName()),
+    "givenIdentifier": givenNodeDescriptionObject[aggregateIdentifierProperty],
     "givenAggregateMetaType": givenAggregateMetaType,
     "whenEvent": names(whenCommand.getName()),
     "thenEvent": names(thenNodes[0].getName()),

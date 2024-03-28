@@ -35,7 +35,7 @@ class <%= feature %>Steps {
 
     let event = <%= givenEvent.propertyName %>(payload);
 
-    event = setMessageMetadata(event, AggregateMeta.ID, '<%= expectedIdentifier %>');
+    event = setMessageMetadata(event, AggregateMeta.ID, '<%= givenIdentifier %>');
     event = setMessageMetadata(event, AggregateMeta.TYPE, '<%= givenAggregateMetaType %>');
     event = setMessageMetadata(event, AggregateMeta.VERSION, 1);
 
