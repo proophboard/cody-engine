@@ -37,6 +37,15 @@
         }
       }
     },
+    "cucumber": {
+      "executor": "nx:run-commands",
+      "defaultConfiguration": "development",
+      "options": {
+        "cwd": "packages/be",
+        "color": true,
+        "command": "npm run cucumber"
+      }
+    },
     "serve": {
       "executor": "nx:run-commands",
       "defaultConfiguration": "development",

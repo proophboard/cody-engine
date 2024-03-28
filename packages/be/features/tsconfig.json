@@ -1,0 +1,9 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "types": ["node"]
+  },
+  "include": ["step_definitions/**/*.ts"]
+}
