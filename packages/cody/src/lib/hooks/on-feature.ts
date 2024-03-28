@@ -91,7 +91,6 @@ export const onFeature: CodyHook<Context> = async (feature: Node, ctx: Context) 
     loggedNodes.push(whenCommand.getName());
     loggedNodes.push("THEN");
     thenNodes.forEach(function(node) {
-      //@ToDo extract and slice expectedIdentifier
       loggedNodes.push(node.getName());
     });
 
@@ -161,7 +160,8 @@ async function createTestFiles(featureName: string, featureMeta: any, givenNodes
     "givenPayload": givenNode.getDescription(),
     "whenPayload": whenCommand.getDescription(),
     "thenPayload": thenNodes[0].getDescription(),
-    "aggregate": names(aggregate.getName()).fileName,
+    "aggregate": names(aggregate.getName()).className,
+    "aggregateNames": names(aggregate.getName()),
     "expectedIdentifier": thenNodeDescriptionObject[aggregateIdentifierProperty]
   }
 

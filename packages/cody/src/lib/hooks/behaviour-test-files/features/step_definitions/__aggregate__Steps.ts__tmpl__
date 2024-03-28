@@ -1,0 +1,98 @@
+import { before, binding, given, then, when } from "cucumber-tsflow";
+import {<%= whenEvent.propertyName %>} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= whenEvent.fileName %>";
+import { Event } from "@event-engine/messaging/event";
+import { getConfiguredMessageBox } from "@server/infrastructure/configuredMessageBox";
+import { getConfiguredEventStore, PUBLIC_STREAM, WRITE_MODEL_STREAM } from "@server/infrastructure/configuredEventStore";
+import {<%= givenEvent.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= aggregateNames.fileName %>/<%= givenEvent.fileName %>";
+import {<%= thenEvent.propertyName %>} from "@app/shared/events/<%= serviceNames.fileName %>/<%= aggregateNames.fileName %>/<%= thenEvent.fileName %>";
+import expect from "expect";
+import { setMessageMetadata } from "@event-engine/messaging/message";
+import { AggregateMeta } from "@event-engine/infrastructure/AggregateRepository";
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+type FeaturePayload = {
+  given: {
+    events: [{[key: string]: {
+      payload: { [key: string]: string | number },
+      id: string,
+      aggregate: string
+    }}]
+  },
+  when: {
+    commands: [{[key: string]: {
+      payload: { [key: string]: string|number }
+    }}]
+  },
+  then: {
+    events: [{[key: string]: {
+      payload: { [key: string]: string|number },
+      id: string
+    }}]
+  },
+};
+
+@binding()
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+class <%= feature %>Steps {
+  private messageBox = getConfiguredMessageBox();
+  private eventStore = getConfiguredEventStore();
+  private events: Event[] = [];
+  private payloads: FeaturePayload | undefined;
+
+  @before()
+  public setup(scenario: any): void {
+    const scenarioName = scenario.pickle?.name;
+    this.payloads = JSON.parse(readFileSync(join(__dirname,'..','payloads', scenarioName.replaceAll(' ', '')+'Feature.json'), 'utf-8'));
+    const listener = (streamName: string, events: Event[]) => {
+      this.events.push(...events);
+    };
+
+    this.eventStore.createStream(WRITE_MODEL_STREAM);
+    this.eventStore.createStream(PUBLIC_STREAM);
+    this.eventStore.attachAppendToListener(listener);
+  }
+
+  @given('<%= given %>')
+  public async given<%= givenEvent.className %>(): Promise<void> {
+    const eventInfo = this.payloads!.given.events[0].<%= givenEvent.propertyName %>;
+
+    // @ts-ignore
+    let event = <%= givenEvent.propertyName %>(eventInfo.payload);
+
+    event = setMessageMetadata(event, AggregateMeta.ID, eventInfo.id);
+    event = setMessageMetadata(event, AggregateMeta.TYPE, eventInfo.aggregate);
+    event = setMessageMetadata(event, AggregateMeta.VERSION, 1);
+
+    await this.eventStore.appendTo(WRITE_MODEL_STREAM, [event]);
+    await this.messageBox.dispatch(event.name, event.payload, event.meta);
+  }
+
+  @when('<%= when %>')
+  public async when<%= whenEvent.className %>(): Promise<void> {
+    const whenCommandInfo = this.payloads!.when.commands[0].<%= whenEvent.propertyName %>;
+
+    // @ts-ignore
+    const command = <%= whenEvent.propertyName %>(whenCommandInfo.payload);
+
+    await this.messageBox.dispatch(command.name, command.payload, command.meta);
+  }
+
+  @then('<%= then %>')
+  public async then<%= thenEvent.className %>(): Promise<void> {
+    const thenEventInfo = this.payloads!.then.events[0].<%= thenEvent.propertyName %>;
+
+    // @ts-ignore
+    const expectedEvent = <%= thenEvent.propertyName %>(thenEventInfo.payload);
+
+    const newestEventToCompare = this.events.
+    filter((event: Event) => {
+      return event.name === expectedEvent.name && event.meta.aggregateId === thenEventInfo.id;
+    }).sort((event1, event2) => {
+      return event2.createdAt.getTime() - event1.createdAt.getTime();
+    }).pop();
+
+    expect(newestEventToCompare).toBeDefined();
+    expect(newestEventToCompare?.payload).toEqual(thenEventInfo.payload);
+  }
+}

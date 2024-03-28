@@ -1,0 +1,36 @@
+{
+  "given": {
+    "events": [{
+      "<%= givenEvent.propertyName %>": {
+        "payload": {
+          <%- givenPayload %>
+        },
+        "id": "<%= givenIdentifier %>",
+        "aggregate": "<%= givenAggregateMetaType %>"
+      }
+    }]
+  },
+  "when": {
+    "commands": [
+      {
+        "<%= whenEvent.propertyName %>": {
+          "payload": {
+            <%- whenPayload %>
+          }
+        }
+      }
+    ]
+  },
+  "then": {
+    "events": [
+      {
+        "<%= thenEvent.propertyName %>": {
+          "payload": {
+            <%- thenPayload %>
+          },
+          "id": "<%= expectedIdentifier %>"
+        }
+      }
+    ]
+  }
+}
