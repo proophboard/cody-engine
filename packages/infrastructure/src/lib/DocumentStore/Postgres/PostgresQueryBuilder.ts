@@ -98,8 +98,8 @@ export class PostgresQueryBuilder {
       : '';
 
     const queryString = `
-      INSERT INTO ${tableName} (id, doc ${metaKeys})
-      VALUES ($1, $2 $3 ${metaBindings})
+      INSERT INTO ${tableName} (id, doc, version ${metaKeys})
+      VALUES ($1, $2, $3 ${metaBindings})
       ON CONFLICT (id)
       DO
         UPDATE SET doc = (to_jsonb(${tableName}.doc) || EXCLUDED.doc) ${conflictMetaUpdateClause}, ${version? 'version = $3' : 'version = version + 1'}
