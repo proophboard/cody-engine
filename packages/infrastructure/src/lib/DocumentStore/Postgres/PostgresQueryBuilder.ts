@@ -102,7 +102,7 @@ export class PostgresQueryBuilder {
       VALUES ($1, $2, $3 ${metaBindings})
       ON CONFLICT (id)
       DO
-        UPDATE SET doc = (to_jsonb(${tableName}.doc) || EXCLUDED.doc) ${conflictMetaUpdateClause}, ${version? 'version = $3' : 'version = version + 1'}
+        UPDATE SET doc = (to_jsonb(${tableName}.doc) || EXCLUDED.doc) ${conflictMetaUpdateClause}, ${version? 'version = $3' : tableName + '.version = version + 1'}
         WHERE ${tableName}.id = EXCLUDED.id;
     `;
 
