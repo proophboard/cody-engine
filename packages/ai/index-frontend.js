@@ -12,5 +12,5 @@ app.get('/', (req, res) => {
 });
 
 app.listen(6010, () => {
-  console.log("Static Server is running on port 6010");
+  console.log("AI Frontend Server is running on port 6010");
 });
