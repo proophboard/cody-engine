@@ -3,13 +3,15 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "serve": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run-many -t serve & cd packages/ai && npm run start-ollama",
+    "serve": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run-many -t serve",
+    "serve-ai": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run-many -t serve & cd packages/ai && npm run start-ollama",
     "play": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run play:spinup",
     "prepare-contribution": "npx nx g @cody-engine/contribution:prepare-contribution",
     "test": "npx nx run-many -t test -p be fe shared",
     "test-be": "npx nx run be:test",
     "test-fe": "npx nx run fe:test",
-    "test-shared": "npx nx run shared:test"
+    "test-shared": "npx nx run shared:test",
+    "postinstall": "cd packages/ai && npm install"
   },
   "private": false,
   "devDependencies": {
