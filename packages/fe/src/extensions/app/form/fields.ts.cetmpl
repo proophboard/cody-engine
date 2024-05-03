@@ -1,0 +1,3 @@
+import {FieldRegistry} from "@frontend/app/components/core/form/fields";
+
+export const customFields: FieldRegistry = {};

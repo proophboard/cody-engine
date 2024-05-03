@@ -1,0 +1,3 @@
+import {WidgetRegistry} from "@frontend/app/components/core/form/widgets";
+
+export const customWidgets: WidgetRegistry = {};
