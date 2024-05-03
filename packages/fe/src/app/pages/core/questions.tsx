@@ -1,14 +1,13 @@
 import {TopLevelPage} from "@frontend/app/pages/page-definitions";
 import {staticLabel} from "@frontend/util/breadcrumb/static-label";
-import {ViewDashboard} from "mdi-material-ui";
-import { QuestionMark, QuestionMarkOutlined, QuestionMarkRounded } from '@mui/icons-material';
+import {Article} from '@mui/icons-material';
 
 export const Questions: TopLevelPage = {
   commands: [],
   components: ["Core.Questions"],
   sidebar: {
-    label: "Questions AI",
-    Icon: QuestionMark,
+    label: "Questionnaire AI",
+    Icon: Article ,
     position: 0
   },
 
