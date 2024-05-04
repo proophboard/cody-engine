@@ -9,6 +9,7 @@ import {useApiQuery} from "@frontend/queries/use-api-query";
 import {QueryableStateDescription} from "@event-engine/descriptions/descriptions";
 import {useParams} from "react-router-dom";
 import CommandDialog from "@frontend/app/components/core/CommandDialog";
+import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidget";
 
 interface OwnProps {
   open: boolean;
@@ -34,6 +35,9 @@ const PlayExistingStateCommandDialog = (props: PlayExistingStateCommandDialogPro
     incompleteCommandConfigError={props.incompleteCommandConfigError}
     definitions={props.definitions}
     aggregateState={query.isSuccess ? query.data : {}}
+    widgets={{
+      DataSelect: PlayDataSelectWidget
+    }}
     />
 };
 

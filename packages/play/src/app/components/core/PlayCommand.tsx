@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {PlayCommandRuntimeInfo} from "@cody-play/state/types";
 import {useContext, useState} from "react";
-import CommandButton from "@frontend/app/components/core/CommandButton";
+import CommandButton, {CommandButtonProps} from "@frontend/app/components/core/CommandButton";
 import CommandDialog from "@frontend/app/components/core/CommandDialog";
 import {CommandRuntimeInfo} from "@event-engine/messaging/command";
 import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-command-factory";
@@ -12,9 +12,11 @@ import {makeCommandMutationFn} from "@cody-play/infrastructure/commands/make-com
 import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
 import {useUser} from "@frontend/hooks/use-user";
 import PlayExistingStateCommandDialog from "@cody-play/app/components/core/PlayExistingStateCommandDialog";
+import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidget";
 
 interface OwnProps {
-  command: PlayCommandRuntimeInfo
+  command: PlayCommandRuntimeInfo,
+  buttonProps?: Partial<CommandButtonProps>
 }
 
 type PlayCommandProps = OwnProps;
@@ -46,7 +48,7 @@ const PlayCommand = (props: PlayCommandProps) => {
         <CommandButton
           command={runtimeInfo}
           onClick={handleOpenDialog}
-          {...{ startIcon: getButtonIcon(runtimeInfo.uiSchema) }}
+          {...{ startIcon: getButtonIcon(runtimeInfo.uiSchema), ...props.buttonProps }}
         />
         <CommandDialog
           open={dialogOpen}
@@ -100,7 +102,7 @@ const PlayCommand = (props: PlayCommandProps) => {
       <CommandButton
         command={runtimeInfo}
         onClick={handleOpenDialog}
-        {...{ startIcon: getButtonIcon(runtimeInfo.uiSchema) }}
+        {...{ startIcon: getButtonIcon(runtimeInfo.uiSchema), ...props.buttonProps }}
       />
       {commandDesc.newAggregate && <CommandDialog
         open={dialogOpen}
@@ -109,6 +111,9 @@ const PlayCommand = (props: PlayCommandProps) => {
         commandFn={incompleteCommandConfigError?  undefined : commandFn}
         incompleteCommandConfigError={incompleteCommandConfigError}
         definitions={definitions}
+        widgets={{
+          DataSelect: PlayDataSelectWidget
+        }}
       />}
       {!commandDesc.newAggregate && <PlayExistingStateCommandDialog
           open={dialogOpen}

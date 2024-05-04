@@ -13,6 +13,7 @@ import {
 import {Alert, CircularProgress} from "@mui/material";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
+import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidget";
 
 const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
   const {config: {definitions}} = useContext(configStore);
@@ -35,6 +36,9 @@ const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo)
         state={query.data}
         description={{...informationInfo, factory: makeInformationFactory(informationInfo.factory)}}
         definitions={definitions}
+        widgets={{
+          DataSelect: PlayDataSelectWidget
+        }}
       />
     }
   </>
