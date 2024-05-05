@@ -27,6 +27,7 @@
       "@event-engine/infrastructure/*": ["packages/infrastructure/src/lib/*"],
       "@event-engine/messaging/*": ["packages/messaging/src/lib/*"],
       "@frontend/*": ["packages/fe/src/*"],
+      "@frontend-ai/*": ["packages/fe-ai/src/*"],
       "@server/*": ["packages/be/src/*"]
     }
   },
