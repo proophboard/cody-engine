@@ -1,6 +1,8 @@
-const express = require("express");
-const path = require('path');
+import express from 'express';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 // Statische Dateien aus dem "src"-Ordner hosten

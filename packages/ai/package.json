@@ -6,11 +6,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
-    "start-ollama": "nodemon index-ollama.js & nodemon index-frontend.js",
+    "start-ollama": "nodemon main.js & nodemon frontend.js",
+    "start-obama": "nodemon frontend.js",
     "debug": "node index.js"
   },
   "author": "",
   "license": "ISC",
+  "type": "module",
   "dependencies": {
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
