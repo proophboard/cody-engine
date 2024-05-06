@@ -1,3 +1,5 @@
+//Diese Datei ist die schnittstelle zur AI. Hier wird gemanaget welche AI angesprochen wird.
+
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
 

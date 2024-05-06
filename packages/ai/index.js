@@ -1,3 +1,5 @@
+//Deprecated Datei die man braucht um zu sehen wie es am anfang war evt.
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const OpenAI = require('openai');

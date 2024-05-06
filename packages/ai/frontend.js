@@ -1,3 +1,5 @@
+//In dieser Datei wird der Frontendserver gemanaget/hostet. Diese Datei wird nicht mehr gebraucht wenn wir es schaffen direkt am packages/fe-ai Ordner rumzufummeln
+
 import express from 'express';
 import { fileURLToPath } from 'url';
 import path from 'path';

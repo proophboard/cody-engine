@@ -1,13 +1,15 @@
-// Backend Data importieren
+//Hier wird  der Prompt gemeinsam mit den Backend Daten ausgewertet. 
 import { askAI } from './AI.js'
 
+//prompt: Die Informationen die der Nutzer im Frontend gegeben hat
+//return: Die Antwort der KI.
 export async function modifyPrompt(prompt){
 
     
     const finishedPrompt = {
         messages: [
           { role: 'system', content: 'GENERATE ONLY HTML/CSS and nothing else: Based on the following information, format the response using only HTML with inline CSS:' },
-          { role: 'user', content: "Mache eine website von einem Annanasverkäufer!" }
+          { role: 'user', content: "Mach eine Jule seite" }
         ],
         model: 'llama3:latest',
       }

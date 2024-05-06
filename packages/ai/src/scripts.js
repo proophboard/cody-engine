@@ -1,4 +1,4 @@
-//Diese Datei braucht man nur um sich selbst im Frontend die KI ausgabe zu visualisieren
+//die js datei für unsere index.html test frontend
 
 
 //Diese Methode erzeugt einen Promt direkt aus der eingabe. Das man entspannt debuggen kann und einfach selbst bisschen testen.
