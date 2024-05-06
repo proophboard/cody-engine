@@ -43,13 +43,13 @@ const Questionnaire: React.FC = () => {
 
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
-    console.log(responses)
+    console.log(responses);
     fetch('http://localhost:3000/converse', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(responses),
+      body: JSON.stringify({message: responses }),
     })
       .then(response => {
         if (!response.ok) {
