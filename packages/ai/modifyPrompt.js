@@ -1,7 +1,7 @@
 // Backend Data importieren
 import { askAI } from './AI.js'
 
-export async function makePrompt(prompt){
+export async function modifyPrompt(prompt){
 
     
     const finishedPrompt = {

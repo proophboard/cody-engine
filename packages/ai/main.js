@@ -1,5 +1,5 @@
 //Diese Datei ist der Main controller von hier wird alles gemanaget. Siehe Prooph board.
-import { makePrompt } from './modifyPrompt.js'
+import { modifyPrompt } from './modifyPrompt.js'
 import { pushUIDataDummy } from './pushUiData.js'
 import express from "express";
 import bodyParser from "body-parser";
@@ -25,7 +25,7 @@ app.post("/converse", async (req, res) => {
   try {
     //Hier wird die Nachricht im Body an ModifyPrompt geschickt. (Muss noch verändert werden, da der Body gerade aus nur einem String
     //aus dem bootleg Frontend besteht 06.05.2024)
-    response = await makePrompt(message) } 
+    response = await modifyPrompt(message) } 
   
   catch (error) {
     console.error(error);

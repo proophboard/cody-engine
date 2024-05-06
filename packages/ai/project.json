@@ -1,0 +1,59 @@
+{
+    "name": "ai",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/ai/src",
+    "projectType": "application",
+    "targets": {
+      "build": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": ["{options.outputPath}"],
+        "defaultConfiguration": "production",
+        "options": {
+          "platform": "node",
+          "outputPath": "dist/packages/ai",
+          "format": ["cjs"],
+          "bundle": false,
+          "main": "packages/ai/index-ollama.js",
+          "assets": ["packages/ai/src/assets"],
+          "generatePackageJson": true,
+          "esbuildOptions": {
+            "sourcemap": true,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        },
+        "configurations": {
+          "development": {},
+          "production": {
+            "generateLockfile": true,
+            "esbuildOptions": {
+              "sourcemap": false,
+              "outExtension": {
+                ".js": ".js"
+              }
+            }
+          }
+        }
+      },
+      "serve": {
+        "executor": "nx:run-commands",
+        "defaultConfiguration": "development",
+        "options": {
+          "cwd": "packages/ai",
+          "color": true,
+          "command": "nodemon index-ollama.js"
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "ai:build:development"
+          },
+          "production": {
+            "buildTarget": "ai:build:production"
+          }
+        }
+      }
+    },
+    "tags": []
+  }
+  
