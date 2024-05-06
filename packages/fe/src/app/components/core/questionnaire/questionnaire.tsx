@@ -12,10 +12,10 @@ const Questionnaire: React.FC = () => {
 
   // Edit/Add Questions and options here
   const questions: Question[] = [
-    { id: 1, text: 'Question 1?' },
-    { id: 2, text: 'Question 2?' },
+    { id: 1, text: 'Mögen sie es Kantig??' },
+    { id: 2, text: 'Was ist ihre lieblingsuhrzeit?' },
     { id: 3, text: 'Question 3?', options: ['Option 1', 'Option 2', 'Option 3'] },
-    { id: 4, text: 'Question 4: Pick a color', colorPicker: true },
+    { id: 4, text: 'Wählen Sie ihre lieblingsfarbe!', colorPicker: true },
   ];
 
   // Set default response if no value was given by the user
@@ -44,13 +44,13 @@ const Questionnaire: React.FC = () => {
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     console.log(responses);
-    fetch('http://localhost:3000/converse', {
+    fetch('http://localhost:3000/generate-with-ai', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({message: responses }),
-    })
+    }) //brauchen wir den part ab hier überhaupt? wir werden ja hier nichts machen mit der response. (Die response ist eh leer.)
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
