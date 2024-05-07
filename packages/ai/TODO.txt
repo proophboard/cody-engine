@@ -14,7 +14,7 @@ Ausgabe schön machen:
 Features maybe:
 
 Ladeicon iwo das man sieht das llama läd? Also zwischen "fragt KI" und KI hat aw"
-
+Zumindest das man sieht das was passiert wenn submit gedrückt wurde.
 
 Gedanken:
 

@@ -28,6 +28,8 @@ app.post("/generate-with-ai", async (req, res) => {
     //Hier wird die Nachricht im Body an ModifyPrompt geschickt. (Muss noch verändert werden, da der Body gerade aus nur einem String
     //aus dem bootleg Frontend besteht 06.05.2024)
     console.log("Schickt in mod prompt")
+    console.log("Prompt:");
+    console.log(message)
     response = await modifyPrompt(message) 
     console.log("Kommt aus mod prompt") }
   catch (error) {
