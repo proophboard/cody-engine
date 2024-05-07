@@ -9,7 +9,7 @@ export async function modifyPrompt(prompt){
     const finishedPrompt = {
         messages: [
           { role: 'system', content: 'GENERATE ONLY HTML/CSS and nothing else: Based on the following information, format the response using only HTML with inline CSS:' },
-          { role: 'user', content: "Mach eine Jule seite" }
+          { role: 'user', content: "Mach eine Weihnachtsen themend seite mit html und inline css auf der verschiedenen weihnachtliche dinge verkauft werden. Denk dir gerne noch weitere features für die Seite aus und mach Sie interessant!." }
         ],
         model: 'llama3:latest',
       }
