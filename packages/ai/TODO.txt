@@ -19,3 +19,7 @@ Zumindest das man sieht das was passiert wenn submit gedrückt wurde.
 Gedanken:
 
 06.05.24- Evt. noch eine datei erstellen in der die daten aus dem Backend geholt werden? Das nicht alles in Modifyprompt passiert.
+
+07.05.2024 Wenn man es mehrmals der KI gibt wird sie dann immer besser? So mäßig verschönere den code oder füge details hinzu. evt auch nur 1-2 details pro durchlauf.
+        zb eine Iteration macht den grundaufbau. In der nächsten wird ein titel hinzugefügt falls es ihn nicht schon gibt. So kann man "sichergehen" das features geaddet
+        ohne die prompts ewig lang zu machen

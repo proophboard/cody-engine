@@ -19,7 +19,7 @@ export async function modifyPrompt(prompt){
             <div></div>
           </body>
           </html>` },
-          { role: 'user', content: `In the following sentences you will always get a Question and an answer for it. Based on the  answers, create a big creative, interactive, userfriendly website ${prompt[1].question}  ${prompt[1].answer}.  ${prompt[2].question}  ${prompt[2].answer}.  ${prompt[3].question}  ${prompt[3].answer}.  ${prompt[4].question}  ${prompt[4].answer}`  }
+          { role: 'user', content: `In the following sentences you will always get a Question and an answer for it. Based on the  answers, create a big creative, interactive, userfriendly website and create a title for the shop based on the information of the answers ${prompt[1].question}  ${prompt[1].answer}.  ${prompt[2].question}  ${prompt[2].answer}.  ${prompt[3].question}  ${prompt[3].answer}.  ${prompt[4].question}  ${prompt[4].answer}`  }
         ],
         model: 'llama3:latest',
       }
@@ -32,7 +32,8 @@ export async function modifyPrompt(prompt){
       console.log(response.choices[0].message.content)
       //Das ist nur für testzwecke da wir ja noch mit dem bootleg Frontend arbeiten 06.05.2024
       
-      const regex = /^```[\s\S]*?```$/gm;
+      //bereinigt den unwichten text vor und nach dem html basierend auf den ``` die oft das html unschließen
+      const regex = /^```[\s\S]*?```$/gm; //funktioniert nicht immer, kommt auf ausgabe an
       const cleanedResponse = response.choices[0].message.content.replace(regex, '');
       console.log("Cleaned Response:");
       console.log(cleanedResponse)
@@ -67,6 +68,11 @@ export async function modifyPromptTestAI(prompt){
     console.log("KI hat aw");
 
     //Das ist nur für testzwecke da wir ja noch mit dem bootleg Frontend arbeiten 06.05.2024
+    const regex = /^```[\s\S]*?```$/gm;
+    const cleanedResponse = response.choices[0].message.content.replace(regex, '');
+    console.log("Cleaned Response:");
+    console.log(cleanedResponse)
+    
     return `
     <!DOCTYPE html>
     <html>
@@ -74,8 +80,7 @@ export async function modifyPromptTestAI(prompt){
       <title>Chat Result</title>
     </head>
     <body>
-      <h1>Chat Result</h1>
-      <p>${response.choices[0].message.content}</p>
+      <div>${cleanedResponse}</div>
     </body>
     </html>`;
 
