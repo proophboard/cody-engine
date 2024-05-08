@@ -1,3 +1,7 @@
+Command zum Port checken:
+lsof -ti:3000; lsof -ti:3311; lsof -ti:4200; lsof -ti:4250; lsof -ti:6010
+kill $(lsof -ti:3000; lsof -ti:3311; lsof -ti:4200; lsof -ti:4250; lsof -ti:6010)
+
 Falls ihr die hier seht bitte erst mich (Jan) fragen ob ihr was ändern könnt.
 
 TODO:
@@ -23,3 +27,5 @@ Gedanken:
 07.05.2024 Wenn man es mehrmals der KI gibt wird sie dann immer besser? So mäßig verschönere den code oder füge details hinzu. evt auch nur 1-2 details pro durchlauf.
         zb eine Iteration macht den grundaufbau. In der nächsten wird ein titel hinzugefügt falls es ihn nicht schon gibt. So kann man "sichergehen" das features geaddet
         ohne die prompts ewig lang zu machen
+
+08.05.2024 Kunde kann selbst eine Frage mit einer Antwort stellen?

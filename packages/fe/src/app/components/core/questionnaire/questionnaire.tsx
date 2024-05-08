@@ -12,10 +12,10 @@ const Questionnaire: React.FC = () => {
 
   // Edit/Add Questions and options here
   const questions: Question[] = [
-    { id: 1, text: 'Mögen sie es Kantig??' },
-    { id: 2, text: 'Was ist ihre lieblingsuhrzeit?' },
-    { id: 3, text: 'Question 3?', options: ['Option 1', 'Option 2', 'Option 3'] },
-    { id: 4, text: 'Wählen Sie ihre lieblingsfarbe!', colorPicker: true },
+    { id: 1, text: 'Which product do you want to sell?' },
+    { id: 2, text: 'Which Font should the text have?' },
+    { id: 3, text: 'Pick a homepage style!', options: ['Big Areas', 'Much Information', 'Big Pictures'] },
+    { id: 4, text: 'Pick a color scheme!', colorPicker: true },
   ];
 
   // Set default response if no value was given by the user
