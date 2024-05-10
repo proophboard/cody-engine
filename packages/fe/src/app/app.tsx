@@ -1,6 +1,6 @@
-import {QueryClientProvider} from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import {StandardPage} from "@frontend/app/pages/standard-page";
+import { StandardPage } from "@frontend/app/pages/standard-page";
 import {
   createBrowserRouter,
   RouteObject,
@@ -15,8 +15,8 @@ import '@fontsource/roboto/700.css';
 import queryClient from "@frontend/extensions/http/configured-react-query";
 import MainLayout from "@frontend/app/layout/MainLayout";
 import React from "react";
-import {pages} from "@frontend/app/pages";
-import {SnackbarProvider} from "notistack";
+import { pages } from "@frontend/app/pages";
+import { SnackbarProvider } from "notistack";
 import ScrollToTop from "@frontend/app/components/core/ScrollToTop";
 import ToggleColorMode from "@frontend/app/providers/ToggleColorMode";
 import User from "@frontend/app/providers/User";
@@ -29,12 +29,12 @@ export function App() {
       <User>
         <PageDataProvider>
           <ToggleColorMode>
-            <SnackbarProvider maxSnack={3} >
-              <MainLayout>
-                <ScrollToTop />
-                <Outlet />
-              </MainLayout>
-            </SnackbarProvider>
+              <SnackbarProvider maxSnack={3} >
+                <MainLayout>
+                  <ScrollToTop />
+                  <Outlet />
+                </MainLayout>
+              </SnackbarProvider>
           </ToggleColorMode>
         </PageDataProvider>
       </User>
@@ -43,8 +43,8 @@ export function App() {
 
   const routeObjects: RouteObject[] = Object.values(pages).map(p => ({
     path: p.route,
-    handle: {page: p},
-    element: <StandardPage page={p} key={p.route}/>,
+    handle: { page: p },
+    element: <StandardPage page={p} key={p.route} />,
     errorElement: <ErrorBoundary codyEngine={true} />,
   }));
 
