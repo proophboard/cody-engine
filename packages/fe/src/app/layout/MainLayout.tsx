@@ -2,7 +2,6 @@ import React, { useState, useContext } from 'react';
 import { Box, CssBaseline, Button } from "@mui/material";
 import TopBar from "@frontend/app/layout/TopBar";
 import Sidebar from "@frontend/app/layout/Sidebar";
-import { ColorModeContext } from "@frontend/app/providers/ToggleColorMode"; // Updated import to use new context
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -10,7 +9,6 @@ interface MainLayoutProps {
 
 const MainLayout = (props: MainLayoutProps) => {
   const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
-  const { toggleTheme } = useContext(ColorModeContext);  // Use useContext to access the toggleTheme function
 
   const handleOpenSidebar = (sidebarOpenFromTopBar: boolean) => {
     setSideBarOpen(sidebarOpenFromTopBar);
@@ -36,7 +34,6 @@ const MainLayout = (props: MainLayoutProps) => {
         backgroundColor: (theme) => theme.palette.background.default
       }}>
         {props.children}
-        <Button onClick={toggleTheme}>Toggle Theme</Button>
       </Box>
     </Box>
   );
