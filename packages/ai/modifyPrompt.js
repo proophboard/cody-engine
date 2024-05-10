@@ -34,7 +34,7 @@ export async function modifyPrompt(prompt){
       
       //bereinigt den unwichten text vor und nach dem html basierend auf den ``` die oft das html unschließen
       //const regex = /^```[\s\S]*?```$/gm; //funktioniert nicht immer, kommt auf ausgabe an
-      const cleanedResponse = response.choices[0].message.content.replace(regex, '');
+      const cleanedResponse = response.choices[0].message.content //.replace(regex, '');
       console.log("Cleaned Response:");
       console.log(cleanedResponse)
       
