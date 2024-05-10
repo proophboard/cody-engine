@@ -16,14 +16,19 @@ const ToggleColorMode = ({ children }: Props) => {
   const [themeConfig, setThemeConfig] = useState({
     primaryColor: '#1976d2',
     secondaryColor: '#dc004e',
-    textColor: '#000000',
+    textColor: mode === 'light' ? '#000000' : '#ffffff',
     fontFamily: 'Arial',
-    backgroundColor: '#ffffff',
+    backgroundColor: mode === 'light' ? '#ffffff' : '#424242',
     borderRadius: '4px'
   });
 
   const toggleColorMode = () => {
     setMode(prevMode => prevMode === 'light' ? 'dark' : 'light');
+    setThemeConfig(prevConfig => ({
+      ...prevConfig,
+      textColor: mode === 'light' ? '#ffffff' : '#000000',
+      backgroundColor: mode === 'light' ? '#424242' : '#ffffff'
+    }));
   };
 
   const getRandomColor = () => {
@@ -47,7 +52,7 @@ const ToggleColorMode = ({ children }: Props) => {
       textColor: getRandomColor(),
       fontFamily: getRandomFont(),
       backgroundColor: getRandomColor(),
-      borderRadius: `${Math.floor(Math.random() * 20) + 4}px` 
+      borderRadius: `${Math.floor(Math.random() * 20) + 4}px`
     };
     setThemeConfig(newThemeConfig);
   };
@@ -62,11 +67,11 @@ const ToggleColorMode = ({ children }: Props) => {
         main: themeConfig.secondaryColor,
       },
       background: {
-        default: themeConfig.backgroundColor, 
+        default: themeConfig.backgroundColor,
       },
       text: {
         primary: themeConfig.textColor,
-        secondary: '#ffffff'
+        secondary: mode === 'light' ? '#424242' : '#ffffff' // Secondary text color also adapts to mode
       }
     },
     typography: {
