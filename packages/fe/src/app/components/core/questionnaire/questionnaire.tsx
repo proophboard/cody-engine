@@ -1,4 +1,7 @@
 import React, { ChangeEvent, useState } from 'react';
+import ColorPickerQuestion from '@frontend/app/components/core/questionnaire/ColorPickerQuestion';
+import OptionsQuestion from '@frontend/app/components/core/questionnaire/OptionsQuestion';
+import TextQuestion from '@frontend/app/components/core/questionnaire/TextQuestion';
 
 interface Question {
   id: number;
@@ -12,10 +15,10 @@ const Questionnaire: React.FC = () => {
 
   // Edit/Add Questions and options here
   const questions: Question[] = [
-    { id: 1, text: 'Question 1?' },
-    { id: 2, text: 'Question 2?' },
-    { id: 3, text: 'Question 3?', options: ['Option 1', 'Option 2', 'Option 3'] },
-    { id: 4, text: 'Question 4: Pick a color', colorPicker: true },
+    { id: 1, text: 'Which product do you want to sell?' },
+    { id: 2, text: 'Which Font should the text have?' },
+    { id: 3, text: 'Pick a homepage style!', options: ['Big Areas', 'Much Information', 'Big Pictures'] },
+    { id: 4, text: 'Pick a color scheme!', colorPicker: true },
   ];
 
   // Set default response if no value was given by the user
@@ -31,7 +34,7 @@ const Questionnaire: React.FC = () => {
   const [responses, setResponses] = useState<Record<any, any>>(defaultResponses);
 
   // Update State when <input> is changed
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: number) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement >, id: number) => {
     setResponses({
       ...responses,
       [id]: {
@@ -68,48 +71,41 @@ const Questionnaire: React.FC = () => {
 
   // UI
   return (
-    <div style={{ margin: '0 auto', width: '50%', textAlign: 'center' }}>
+    <div style={{ margin: '0 auto', width: '80%', textAlign: 'center' }}>
       {questions.map((question) => (
-        <div key={question.id} style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontWeight: 'bold' }}>{question.text}</label>
-          {question.options ? (
-            <select style={
-              {
-                width: '100%',
-                height: '30px'
-              }
-            } onChange={(e) => handleInputChange(e, question.id)}>
-              {question.options.map((option, index) => (
-                <option key={index} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          ) : question.colorPicker ? (
-            <input type="color" style={
-              {
-                width: '100%',
-                height: '30px'
-              }
-            } onChange={(e) => handleInputChange(e, question.id)} />
-          ) : (
-            <input type="text" style={
-              {
-                width: '100%',
-                height: '30px'
-              }
-            } onChange={(e) => handleInputChange(e, question.id)} />
+        // Render the correct component based on the question type
+        <div key={question.id} style={
+          {
+            padding: '40px',
+            marginBottom: '20px',
+            backgroundColor: 'rgb(253,225,188)',
+            borderRadius: '30px',
+            maxWidth: '600px',
+          }
+        }>
+          <label style={
+            {
+              display: 'block',
+              textAlign: "start",
+              fontSize: '2rem',
+              fontWeight: 'lighter',
+              margin: "10px"
+            }
+          }>{question.text}</label>
+          {     question.options ? ( <OptionsQuestion handleInputChange={handleInputChange} question={question}/>
+          ) :   question.colorPicker ? (<ColorPickerQuestion handleInputChange={handleInputChange} question={question} />
+          ) : ( <TextQuestion handleInputChange={handleInputChange} question={question}/>
           )}
         </div>
       ))}
-
       <button style={
         {
           padding: '10px 20px',
-          backgroundColor: '#007BFF',
-          color: 'white', border: 'none',
+          backgroundColor: 'rgb(252,206,137)',
+          color: 'black', border: 'none',
+          fontWeight: 'bold',
           borderRadius: '4px',
-          cursor: 'pointer'
+          cursor: 'pointer',
         }
       } onClick={(e) => handleSubmit(e)}>Submit</button>
     </div>
