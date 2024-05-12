@@ -71,7 +71,7 @@ const Questionnaire: React.FC = () => {
 
   // UI
   return (
-    <div style={{ margin: '0 auto', width: '80%', textAlign: 'center' }}>
+    <div style={{maxWidth: '600px', display: "flex", flexDirection: "column", }}>
       {questions.map((question) => (
         // Render the correct component based on the question type
         <div key={question.id} style={
@@ -80,16 +80,13 @@ const Questionnaire: React.FC = () => {
             marginBottom: '20px',
             backgroundColor: 'rgb(253,225,188)',
             borderRadius: '30px',
-            maxWidth: '600px',
           }
         }>
           <label style={
             {
-              display: 'block',
               textAlign: "start",
               fontSize: '2rem',
               fontWeight: 'lighter',
-              margin: "10px"
             }
           }>{question.text}</label>
           {     question.options ? ( <OptionsQuestion handleInputChange={handleInputChange} question={question}/>
@@ -102,12 +99,20 @@ const Questionnaire: React.FC = () => {
         {
           padding: '10px 20px',
           backgroundColor: 'rgb(252,206,137)',
-          color: 'black', border: 'none',
+          color: 'black',
+          border: 'none',
           fontWeight: 'bold',
-          borderRadius: '4px',
+          borderRadius: '10px',
           cursor: 'pointer',
+          fontSize: '1.2rem',
         }
-      } onClick={(e) => handleSubmit(e)}>Submit</button>
+      } onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgb(252,186,107)'} // Change color on hover
+        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgb(252,206,137)'} // Change color back on mouse out
+        onMouseDown={(e) => e.currentTarget.style.backgroundColor = 'rgb(252,166,77)'} // Change color on click
+        onMouseUp={(e) => e.currentTarget.style.backgroundColor = 'rgb(252,186,107)'} // Change color on click
+              onClick={(e) => {
+          handleSubmit(e);
+        }}>Submit</button>
     </div>
   );
 };
