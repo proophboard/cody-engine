@@ -28,7 +28,6 @@ app.post('/api/generate-with-ai', async (req, res) => {
         // Anfrage an die KI senden und Antwort speichern
         const response = await askAI(AIprompt);
         storedThemeConfig = response;
-        console.log('AI Response:', response);
         res.json({ success: true }); 
     } catch (error) {
         console.error('AI Request failed:', error);
@@ -38,7 +37,6 @@ app.post('/api/generate-with-ai', async (req, res) => {
 
 // Route zum Abrufen der gespeicherten Theme-Konfiguration
 app.get('/api/theme-config', (req, res) => {
-    console.log('Received request for theme config');
     if (Object.keys(storedThemeConfig).length > 0) {
         // Wenn eine Konfiguration vorhanden ist, sende sie zurück
         res.json(storedThemeConfig);

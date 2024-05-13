@@ -23,8 +23,6 @@ export async function askAI(AIprompt) {
             temperature: 0.7,
             max_tokens: 8000,
         });
-        // Ausgabe der KI-Antwort
-        console.log("KI-Antwort:", response.choices[0].message.content);
         // Rückgabe der KI-Antwort
         return response.choices[0].message.content;
     } catch (error) {
