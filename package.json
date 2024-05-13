@@ -92,6 +92,7 @@
     "@swc/helpers": "~0.5.0",
     "@tanstack/react-query": "^4.29.7",
     "@tanstack/react-query-devtools": "^4.29.7",
+    "@uiw/react-color-circle": "^2.3.0",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
     "axios": "^1.4.0",
