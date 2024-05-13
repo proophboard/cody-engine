@@ -1,5 +1,8 @@
 import React, { ChangeEvent, useContext, useEffect, useState } from 'react';
 import { ThemeContext } from '../../../providers/ToggleColorMode';
+import ColorPickerQuestion from '@frontend/app/components/core/questionnaire/ColorPickerQuestion';
+import OptionsQuestion from '@frontend/app/components/core/questionnaire/OptionsQuestion';
+import TextQuestion from '@frontend/app/components/core/questionnaire/TextQuestion';
 
 interface Question {
   id: number;
@@ -34,7 +37,7 @@ const Questionnaire: React.FC = () => {
   const [responses, setResponses] = useState<Record<any, any>>(defaultResponses);
 
   // Update State when <input> is changed
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>, id: number) => {
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement >, id: number) => {
     setResponses({
       ...responses,
       [id]: {
@@ -155,50 +158,48 @@ const Questionnaire: React.FC = () => {
 
   // UI
   return (
-    <div style={{ margin: '0 auto', width: '50%', textAlign: 'center' }}>
+    <div style={{maxWidth: '600px', display: "flex", flexDirection: "column", }}>
       {questions.map((question) => (
-        <div key={question.id} style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontWeight: 'bold' }}>{question.text}</label>
-          {question.options ? (
-            <select style={
-              {
-                width: '100%',
-                height: '30px'
-              }
-            } onChange={(e) => handleInputChange(e, question.id)}>
-              {question.options.map((option, index) => (
-                <option key={index} value={option}>
-                  {option}
-                </option>
-              ))}
-            </select>
-          ) : question.colorPicker ? (
-            <input type="color" style={
-              {
-                width: '100%',
-                height: '30px'
-              }
-            } onChange={(e) => handleInputChange(e, question.id)} />
-          ) : (
-            <input type="text" style={
-              {
-                width: '100%',
-                height: '30px'
-              }
-            } onChange={(e) => handleInputChange(e, question.id)} />
+        // Render the correct component based on the question type
+        <div key={question.id} style={
+          {
+            padding: '40px',
+            marginBottom: '20px',
+            backgroundColor: 'rgb(253,225,188)',
+            borderRadius: '30px',
+          }
+        }>
+          <label style={
+            {
+              textAlign: "start",
+              fontSize: '2rem',
+              fontWeight: 'lighter',
+            }
+          }>{question.text}</label>
+          {     question.options ? ( <OptionsQuestion handleInputChange={handleInputChange} question={question}/>
+          ) :   question.colorPicker ? (<ColorPickerQuestion handleInputChange={handleInputChange} question={question} />
+          ) : ( <TextQuestion handleInputChange={handleInputChange} question={question}/>
           )}
         </div>
       ))}
-
       <button style={
         {
           padding: '10px 20px',
-          backgroundColor: '#007BFF',
-          color: 'white', border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer'
+          backgroundColor: 'rgb(252,206,137)',
+          color: 'black',
+          border: 'none',
+          fontWeight: 'bold',
+          borderRadius: '10px',
+          cursor: 'pointer',
+          fontSize: '1.2rem',
         }
-      } onClick={(e) => handleSubmit(e)}>Submit</button>
+      } onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgb(252,186,107)'} // Change color on hover
+        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'rgb(252,206,137)'} // Change color back on mouse out
+        onMouseDown={(e) => e.currentTarget.style.backgroundColor = 'rgb(252,166,77)'} // Change color on click
+        onMouseUp={(e) => e.currentTarget.style.backgroundColor = 'rgb(252,186,107)'} // Change color on click
+              onClick={(e) => {
+          handleSubmit(e);
+        }}>Submit</button>
     </div>
   );
 };
