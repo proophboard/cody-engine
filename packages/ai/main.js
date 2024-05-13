@@ -1,6 +1,7 @@
 import express from 'express';
 import { askAI } from './aiInterface.js';
 import cors from 'cors';
+import generateAIPrompt from './promptGenerator.js';
 
 // Erstellen einer neuen Express-Anwendung
 const app = express();
@@ -15,14 +16,7 @@ app.use(express.json());
 
 // Route zum Generieren der Theme-Konfiguration mit KI
 app.post('/api/generate-with-ai', async (req, res) => {
-    // Erstellen des KI-Prompts
-    const AIprompt = JSON.stringify({
-        messages: [
-            { role: 'system', content: 'Generate a Material-UI theme configuration based on user input.' },
-            { role: 'user', content: req.body.preferences } 
-        ],
-        model: 'llama3',
-    });
+    const AIprompt = generateAIPrompt(req.body.preferences);
 
     try {
         // Anfrage an die KI senden und Antwort speichern
