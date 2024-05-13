@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon index.js",
-    "start-ollama": "nodemon main.js & nodemon frontend.js",
+    "start-ollama": "nodemon main.js",
     "start-obama": "nodemon frontend.js",
     "debug": "node index.js"
   },
