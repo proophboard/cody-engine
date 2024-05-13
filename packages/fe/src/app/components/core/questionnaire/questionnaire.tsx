@@ -1,4 +1,5 @@
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useContext, useEffect, useState } from 'react';
+import { ThemeContext } from '../../../providers/ToggleColorMode';
 
 interface Question {
   id: number;
@@ -9,6 +10,8 @@ interface Question {
 }
 
 const Questionnaire: React.FC = () => {
+
+  const { applyTheme } = useContext(ThemeContext);
 
   // Edit/Add Questions and options here
   const questions: Question[] = [
@@ -44,27 +47,111 @@ const Questionnaire: React.FC = () => {
   const handleSubmit = (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     console.log(responses);
-    fetch('http://localhost:3000/generate-with-ai', {
+    fetch('http://localhost:3000/api/generate-with-ai', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({message: responses }),
-    }) //brauchen wir den part ab hier überhaupt? wir werden ja hier nichts machen mit der response. (Die response ist eh leer.)
+    })
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
-        }
-        return response.json();
+        } else
+          fetchThemeConfig();
       })
-      .then(data => {
-        console.log('Success:', data);
-        // Do something with the response if needed
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
   };
+
+
+  const fetchThemeConfig = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/api/theme-config');
+      const themeConfig = await response.json();
+
+
+      const mockThemeConfig = {
+        "palette": {
+          "primary": {
+            "main": "#123456",
+            "light": "#CFD8DC",
+            "dark": "#455A64",
+            "contrastText": "#FFFFFF"
+          },
+          "secondary": {
+            "main": "#FF5722",
+            "light": "#FFCCBC",
+            "dark": "#E64A19",
+            "contrastText": "#000000"
+          },
+          "error": {
+            "main": "#F44336",
+            "light": "#FFCDD2",
+            "dark": "#D32F2F",
+            "contrastText": "#FFFFFF"
+          },
+          "warning": {
+            "main": "#FFC107",
+            "light": "#FFECB3",
+            "dark": "#FFA000",
+            "contrastText": "#212121"
+          },
+          "info": {
+            "main": "#03A9F4",
+            "light": "#B3E5FC",
+            "dark": "#0288D1",
+            "contrastText": "#000000"
+          },
+          "success": {
+            "main": "#4CAF50",
+            "light": "#C8E6C9",
+            "dark": "#388E3C",
+            "contrastText": "#FFFFFF"
+          },
+          "common": {
+            "black": "#000000",
+            "white": "#FFFFFF"
+          }
+        },
+        "typography": {
+          "fontFamily": "\"Roboto\", \"Arial\", sans-serif",
+          "fontSize": 14,
+          "h1": {
+            "fontFamily": "\"Roboto\", \"Arial\", sans-serif",
+            "fontWeight": 300,
+            "fontSize": "6rem",
+            "lineHeight": 1.167,
+            "letterSpacing": "-0.01562em"
+          }
+        },
+        "transitions": {
+          "easing": {
+            "easeInOut": "cubic-bezier(0.4, 0, 0.2, 1)",
+            "easeOut": "cubic-bezier(0.0, 0, 0.2, 1)",
+            "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
+            "sharp": "cubic-bezier(0.4, 0, 0.6, 1)"
+          },
+          "duration": {
+            "shortest": 150,
+            "shorter": 200,
+            "short": 250,
+            "standard": 300,
+            "complex": 375,
+            "enteringScreen": 225,
+            "leavingScreen": 195
+          }
+        },
+        "shape": {
+          "borderRadius": 4
+        }
+      };
+
+
+      applyTheme(mockThemeConfig);
+    } catch (error) {
+      console.error('Failed to fetch theme config:', error);
+    }
+  };
+
 
   // UI
   return (

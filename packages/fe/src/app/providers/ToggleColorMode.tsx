@@ -1,40 +1,49 @@
-import React, {ReactNode} from "react";
+import React, { ReactNode, useEffect, useState, useMemo } from "react";
 import { ThemeProvider } from '@mui/material/styles';
-import {createTheme} from "@frontend/app/layout/theme";
+import { createTheme } from "@frontend/app/layout/theme";
 
 interface Props {
   children: ReactNode
 }
 
-export const ColorModeContext = React.createContext({mode: 'light', toggleColorMode: () => {} });
+export const ThemeContext = React.createContext({ 
+  mode: 'light', 
+  toggleColorMode: () => { },
+  themeConfig: null, 
+  applyTheme: (config: any) => { } 
+});
 
-const ToggleColorMode = ({children}: Props) => {
-  const [mode, setMode] = React.useState<'light' | 'dark'>('light');
-  const colorMode = {
-      mode,
-      toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-      },
-    };
+const ToggleColorMode = ({ children }: Props) => {
+  const [mode, setMode] = useState<'light' | 'dark'>('light');
+  const [themeConfig, setThemeConfig] = useState<any>(null);
 
-  const theme = React.useMemo(
+  const themeContextValue = {
+    mode,
+    toggleColorMode: () => {
+      setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+    },
+    themeConfig,
+    applyTheme: (config: any) => {
+      setThemeConfig(config);
+    },
+  };
+
+  const theme = useMemo(
     () =>
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      createTheme({
+      createTheme(themeConfig || {
         palette: {
           mode,
         },
       }),
-    [mode],
+    [mode, themeConfig],
   );
 
   return (
-    <ColorModeContext.Provider value={colorMode}>
+    <ThemeContext.Provider value={themeContextValue}>
       <ThemeProvider theme={theme}>
         {children}
       </ThemeProvider>
-    </ColorModeContext.Provider>
+    </ThemeContext.Provider>
   );
 }
 
