@@ -6,6 +6,7 @@ interface Props {
   children: ReactNode
 }
 
+// Erstellen des ThemeContexts
 export const ThemeContext = React.createContext({ 
   mode: 'light', 
   toggleColorMode: () => { },
@@ -13,10 +14,13 @@ export const ThemeContext = React.createContext({
   applyTheme: (config: any) => { } 
 });
 
+// Hauptkomponente
 const ToggleColorMode = ({ children }: Props) => {
+  // Zustandsvariablen
   const [mode, setMode] = useState<'light' | 'dark'>('light');
   const [themeConfig, setThemeConfig] = useState<any>(null);
 
+  // Kontextwert
   const themeContextValue = {
     mode,
     toggleColorMode: () => {
@@ -28,6 +32,7 @@ const ToggleColorMode = ({ children }: Props) => {
     },
   };
 
+  // Erstellen des Themes
   const theme = useMemo(
     () =>
       createTheme(themeConfig || {
@@ -38,6 +43,7 @@ const ToggleColorMode = ({ children }: Props) => {
     [mode, themeConfig],
   );
 
+  // Rendern der Komponente
   return (
     <ThemeContext.Provider value={themeContextValue}>
       <ThemeProvider theme={theme}>
