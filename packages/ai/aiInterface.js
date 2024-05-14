@@ -17,9 +17,7 @@ export async function askAI(AIprompt) {
         // Erstellen und Senden der Anfrage
         const response = await openai.chat.completions.create({
             model: "llama3",
-            messages: [
-                { role: 'user', content: AIprompt }
-            ],
+            messages: JSON.parse(AIprompt).messages,
             temperature: 0.7,
             max_tokens: 8000,
         });
