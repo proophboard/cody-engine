@@ -3,7 +3,8 @@ import { ThemeContext } from '../../../providers/ToggleColorMode';
 import ColorPickerQuestion from '@frontend/app/components/core/questionnaire/ColorPickerQuestion';
 import OptionsQuestion from '@frontend/app/components/core/questionnaire/OptionsQuestion';
 import TextQuestion from '@frontend/app/components/core/questionnaire/TextQuestion';
-import { Box, Button, Container, Typography, useTheme } from '@mui/material';
+import { Box, Button, CircularProgress, Container, Typography, useTheme } from '@mui/material';
+import Backdrop from '@mui/material/Backdrop';
 
 interface Question {
   id: number;
@@ -33,6 +34,7 @@ const Questionnaire: React.FC = () => {
 
   // Handle State (answers)
   const [responses, setResponses] = useState<Record<any, any>>(defaultResponses);
+  const [loading, setLoading] = useState(false);
 
   // Update State when <input> is changed
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>, id: number) => {
@@ -45,30 +47,33 @@ const Questionnaire: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
-    console.log(responses);
-    fetch('http://localhost:3000/api/generate-with-ai', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ message: responses }),
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        } else
-          fetchThemeConfig();
-      })
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:3000/api/generate-with-ai', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: responses }),
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      } else {
+        await fetchThemeConfig();
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchThemeConfig = async () => {
     try {
       const response = await fetch('http://localhost:3000/api/theme-config');
-      console.log(response);
       const themeConfig = await response.json();
-
       applyTheme(themeConfig);
     } catch (error) {
       console.error('Failed to fetch theme config:', error);
@@ -113,6 +118,12 @@ const Questionnaire: React.FC = () => {
           Submit
         </Button>
       </Box>
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading}
+      >
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </Container>
   );
 };
