@@ -59,7 +59,7 @@ async function retryAskAI(AIprompt, retries = 3) {
 
 // Endpunkt zum Generieren einer Theme-Konfiguration mit KI
 app.post('/api/generate-with-ai', async (req, res) => {
-  const userPreferences = req.body.preferences;
+  const userPreferences = req.body;
   let AIprompt = generateAIPrompt(userPreferences);
 
   try {
