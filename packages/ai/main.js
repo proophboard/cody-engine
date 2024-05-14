@@ -25,14 +25,13 @@ function isValidJSON(jsonString) {
 }
 
 // Funktion um die KI-Anfrage zu wiederholen, falls die Antwort nicht den Anforderungen entspricht
-async function retryAskAI(AIprompt, retries = 3) {
+async function retryAskAI(AIprompt, preferences, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const response = await askAI(AIprompt);
       console.log(`AI Response Attempt ${attempt}: ${response}`);
 
-      const jsonMatch = response.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || response.match(/```(?:\s*([\s\S]*?)\s*)```/);
-
+      const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/i) || response.match(/```(?:\s*([\s\S]*?)\s*)```/i) || response.match(/({[\s\S]*})/i);
       if (jsonMatch && jsonMatch[1]) {
         const extractedJSON = jsonMatch[1].trim();
         console.log(`Extracted JSON: ${extractedJSON}`);
@@ -43,15 +42,15 @@ async function retryAskAI(AIprompt, retries = 3) {
           return jsonResponse;
         } else {
           console.warn(`Attempt ${attempt} failed: Extracted JSON is invalid.`);
-          AIprompt = generateFixAIPrompt(response);
+          AIprompt = generateFixAIPrompt(response, preferences);
         }
       } else {
         console.warn(`Attempt ${attempt} failed: No JSON code block found.`);
-        AIprompt = generateFixAIPrompt(response);
+        AIprompt = generateFixAIPrompt(response, preferences);
       }
     } catch (error) {
       console.warn(`Attempt ${attempt} failed: ${error.message}`);
-      AIprompt = generateFixAIPrompt(error.message);
+      AIprompt = generateFixAIPrompt(error.message, preferences);
     }
   }
   throw new Error('All attempts to get a valid AI response failed.');
@@ -63,15 +62,11 @@ app.post('/api/generate-with-ai', async (req, res) => {
   let AIprompt = generateAIPrompt(userPreferences);
 
   try {
-    storedThemeConfig = await retryAskAI(AIprompt);
+    storedThemeConfig = await retryAskAI(AIprompt, userPreferences);
     res.json({ success: true, theme: storedThemeConfig });
   } catch (error) {
     console.error('AI Request failed:', error);
 
-    res.status(500).json({
-      success: false,
-      message: 'AI Request failed. Unable to generate theme configuration.',
-    });
   }
 });
 
