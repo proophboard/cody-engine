@@ -18,10 +18,7 @@ const Questionnaire: React.FC = () => {
 
   // Edit/Add Questions and options here
   const questions: Question[] = [
-    { id: 1, text: 'Which product do you want to sell?' },
-    { id: 2, text: 'Which Font should the text have?' },
-    { id: 3, text: 'Pick a homepage style!', options: ['Big Areas', 'Much Information', 'Big Pictures'] },
-    { id: 4, text: 'Pick a color scheme!', colorPicker: true },
+    { id: 1, text: 'Pick the color the theme should have!', colorPicker: true },
   ];
 
   // Set default response if no value was given by the user
@@ -69,87 +66,10 @@ const Questionnaire: React.FC = () => {
   const fetchThemeConfig = async () => {
     try {
       const response = await fetch('http://localhost:3000/api/theme-config');
+      console.log(response);
       const themeConfig = await response.json();
 
-
-      const mockThemeConfig = {
-        "palette": {
-          "primary": {
-            "main": "#123456",
-            "light": "#CFD8DC",
-            "dark": "#455A64",
-            "contrastText": "#FFFFFF"
-          },
-          "secondary": {
-            "main": "#FF5722",
-            "light": "#FFCCBC",
-            "dark": "#E64A19",
-            "contrastText": "#000000"
-          },
-          "error": {
-            "main": "#F44336",
-            "light": "#FFCDD2",
-            "dark": "#D32F2F",
-            "contrastText": "#FFFFFF"
-          },
-          "warning": {
-            "main": "#FFC107",
-            "light": "#FFECB3",
-            "dark": "#FFA000",
-            "contrastText": "#212121"
-          },
-          "info": {
-            "main": "#03A9F4",
-            "light": "#B3E5FC",
-            "dark": "#0288D1",
-            "contrastText": "#000000"
-          },
-          "success": {
-            "main": "#4CAF50",
-            "light": "#C8E6C9",
-            "dark": "#388E3C",
-            "contrastText": "#FFFFFF"
-          },
-          "common": {
-            "black": "#000000",
-            "white": "#FFFFFF"
-          }
-        },
-        "typography": {
-          "fontFamily": "\"Roboto\", \"Arial\", sans-serif",
-          "fontSize": 14,
-          "h1": {
-            "fontFamily": "\"Roboto\", \"Arial\", sans-serif",
-            "fontWeight": 300,
-            "fontSize": "6rem",
-            "lineHeight": 1.167,
-            "letterSpacing": "-0.01562em"
-          }
-        },
-        "transitions": {
-          "easing": {
-            "easeInOut": "cubic-bezier(0.4, 0, 0.2, 1)",
-            "easeOut": "cubic-bezier(0.0, 0, 0.2, 1)",
-            "easeIn": "cubic-bezier(0.4, 0, 1, 1)",
-            "sharp": "cubic-bezier(0.4, 0, 0.6, 1)"
-          },
-          "duration": {
-            "shortest": 150,
-            "shorter": 200,
-            "short": 250,
-            "standard": 300,
-            "complex": 375,
-            "enteringScreen": 225,
-            "leavingScreen": 195
-          }
-        },
-        "shape": {
-          "borderRadius": 4
-        }
-      };
-
-
-      applyTheme(mockThemeConfig);
+      applyTheme(themeConfig);
     } catch (error) {
       console.error('Failed to fetch theme config:', error);
     }
