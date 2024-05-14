@@ -24,24 +24,6 @@ function isValidJSON(jsonString) {
   }
 }
 
-// Helper Funktion zum Überprüfen, ob alle Felder in der Theme-Konfiguration ausgefüllt sind
-function areAllFieldsFilled(themeConfig) {
-  const { palette, typography } = themeConfig;
-  const paletteKeys = ['primary', 'secondary', 'error', 'warning', 'info', 'success'];
-
-  for (let key of paletteKeys) {
-    if (!palette[key] || !palette[key].main || !palette[key].light || !palette[key].dark || !palette[key].contrastText) {
-      return false;
-    }
-  }
-
-  if (!typography.fontFamily) {
-    return false;
-  }
-
-  return true;
-}
-
 // Funktion um die KI-Anfrage zu wiederholen, falls die Antwort nicht den Anforderungen entspricht
 async function retryAskAI(AIprompt, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
