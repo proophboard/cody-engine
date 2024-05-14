@@ -9,7 +9,6 @@ function generateAIPrompt(preferences) {
 \`\`\`json
 {
   "palette": {
-    "mode": "light",
     "primary": {
       "main": "",
       "light": "",
@@ -22,30 +21,6 @@ function generateAIPrompt(preferences) {
       "dark": "",
       "contrastText": ""
     },
-    "error": {
-      "main": "",
-      "light": "",
-      "dark": "",
-      "contrastText": ""
-    },
-    "warning": {
-      "main": "",
-      "light": "",
-      "dark": "",
-      "contrastText": ""
-    },
-    "info": {
-      "main": "",
-      "light": "",
-      "dark": "",
-      "contrastText": ""
-    },
-    "success": {
-      "main": "",
-      "light": "",
-      "dark": "",
-      "contrastText": ""
-    }
   },
   "typography": {
     "htmlFontSize": 16,
@@ -77,7 +52,6 @@ function generateFixAIPrompt(previousResponse) {
 \`\`\`json
 {
   "palette": {
-    "mode": "light",
     "primary": {
       "main": "",
       "light": "",
@@ -90,30 +64,6 @@ function generateFixAIPrompt(previousResponse) {
       "dark": "",
       "contrastText": ""
     },
-    "error": {
-      "main": "",
-      "light": "",
-      "dark": "",
-      "contrastText": ""
-    },
-    "warning": {
-      "main": "",
-      "light": "",
-      "dark": "",
-      "contrastText": ""
-    },
-    "info": {
-      "main": "",
-      "light": "",
-      "dark": "",
-      "contrastText": ""
-    },
-    "success": {
-      "main": "",
-      "light": "",
-      "dark": "",
-      "contrastText": ""
-    }
   },
   "typography": {
     "htmlFontSize": 16,

@@ -49,7 +49,7 @@ async function retryAskAI(AIprompt, retries = 3) {
       const response = await askAI(AIprompt);
       console.log(`AI Response Attempt ${attempt}: ${response}`);
 
-      const jsonMatch = response.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      const jsonMatch = response.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || response.match(/```(?:\s*([\s\S]*?)\s*)```/);
 
       if (jsonMatch && jsonMatch[1]) {
         const extractedJSON = jsonMatch[1].trim();
@@ -57,13 +57,8 @@ async function retryAskAI(AIprompt, retries = 3) {
 
         if (isValidJSON(extractedJSON)) {
           const jsonResponse = JSON.parse(extractedJSON);
-          if (areAllFieldsFilled(jsonResponse)) {
-            console.log(`Valid JSON found on attempt ${attempt}`);
-            return jsonResponse;
-          } else {
-            console.warn(`Attempt ${attempt} failed: JSON response contains empty fields.`);
-            AIprompt = generateFixAIPrompt(response);
-          }
+          console.log(`Valid JSON found on attempt ${attempt}`);
+          return jsonResponse;
         } else {
           console.warn(`Attempt ${attempt} failed: Extracted JSON is invalid.`);
           AIprompt = generateFixAIPrompt(response);
