@@ -1,4 +1,4 @@
-function generateAIPrompt(preferences) {
+function generateAIPrompt(preferences: any) {
     console.log('User preferences:', preferences)
     return JSON.stringify({
         messages: [
@@ -42,7 +42,7 @@ function generateAIPrompt(preferences) {
     });
 }
 
-function generateFixAIPrompt(previousResponse) {
+function generateFixAIPrompt(previousResponse: string | null, preferences?: any) {
     return JSON.stringify({
         messages: [
             { role: 'system', content: 'The previous response contained invalid JSON. Please correct the JSON and provide a valid MUI theme configuration.' },

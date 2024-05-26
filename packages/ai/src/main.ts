@@ -1,7 +1,8 @@
 import express from 'express';
-import { askAI } from './aiInterface.js';
+import { askAI } from './aiInterface';
 import cors from 'cors';
-import { generateAIPrompt, generateFixAIPrompt } from './promptGenerator.js';
+import { generateAIPrompt, generateFixAIPrompt } from './promptGenerator';
+import { save, get } from './storageController';
 
 // Erstellen einer neuen Express-Anwendung
 const app = express();
@@ -15,7 +16,7 @@ app.use(cors({ origin: 'http://localhost:4200' }));
 app.use(express.json());
 
 // Helper Funktion zum Überprüfen, ob ein String ein gültiges JSON ist
-function isValidJSON(jsonString) {
+function isValidJSON(jsonString: string) {
   try {
     const parsed = JSON.parse(jsonString);
     return !!parsed && typeof parsed === 'object';
@@ -25,13 +26,17 @@ function isValidJSON(jsonString) {
 }
 
 // Funktion um die KI-Anfrage zu wiederholen, falls die Antwort nicht den Anforderungen entspricht
-async function retryAskAI(AIprompt, preferences, retries = 3) {
+async function retryAskAI(AIprompt: string, preferences: any, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const response = await askAI(AIprompt);
       console.log(`AI Response Attempt ${attempt}: ${response}`);
 
-      const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/i) || response.match(/```(?:\s*([\s\S]*?)\s*)```/i) || response.match(/({[\s\S]*})/i);
+      //Das muss sein weil typescript ohne den if block sagt, dass response null sein könnte
+      let jsonMatch = null
+      if(response){
+      jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/i) || response.match(/```(?:\s*([\s\S]*?)\s*)```/i) || response.match(/({[\s\S]*})/i);
+      } 
       if (jsonMatch && jsonMatch[1]) {
         const extractedJSON = jsonMatch[1].trim();
         console.log(`Extracted JSON: ${extractedJSON}`);
@@ -49,8 +54,14 @@ async function retryAskAI(AIprompt, preferences, retries = 3) {
         AIprompt = generateFixAIPrompt(response, preferences);
       }
     } catch (error) {
-      console.warn(`Attempt ${attempt} failed: ${error.message}`);
-      AIprompt = generateFixAIPrompt(error.message, preferences);
+      //Dieses if else muss auch wegen typescript sein weil man sonst nicht error.message aufrufen kann da er sagt das error vom type "unknown" ist
+      if (error instanceof Error) {
+        console.warn(`Attempt ${attempt} failed: ${error.message}`);
+        AIprompt = generateFixAIPrompt(error.message, preferences);
+    } else {
+        console.warn(`Attempt ${attempt} failed with an unknown error`);
+        AIprompt = generateFixAIPrompt('Unknown error', preferences);
+    }
     }
   }
   throw new Error('All attempts to get a valid AI response failed.');
@@ -79,7 +90,7 @@ app.get('/api/theme-config', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`AI Backend Server running on port ${PORT}`);
 });
 
 export default generateAIPrompt;

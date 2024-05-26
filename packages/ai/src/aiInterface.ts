@@ -11,7 +11,7 @@ const openai = new OpenAI({
 });
 
 // Funktion zum Senden einer Anfrage an die KI
-export async function askAI(AIprompt) {
+export async function askAI(AIprompt: string) {
     console.log("Rufe KI auf...");
     try {
         // Erstellen und Senden der Anfrage

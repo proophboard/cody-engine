@@ -3,8 +3,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "serve": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run-many -t serve",
-    "serve-ai": "nodemon packages/ai/main.js",
+    "serve": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run-many -t serve --all --maxParallel=4",
     "play": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run play:spinup",
     "prepare-contribution": "npx nx g @cody-engine/contribution:prepare-contribution",
     "test": "npx nx run-many -t test -p be fe shared",
