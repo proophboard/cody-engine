@@ -1,15 +1,21 @@
 import Circle from '@uiw/react-color-circle';
-import React, { ChangeEvent, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 
 interface ColorPickerProps {
   handleInputChange: (e: ChangeEvent<HTMLInputElement>, id: number) => void;
   question: { id: number; text: string; };
+  response: { question: string; answer: string };
 }
 
-const ColorPickerQuestion: React.FC<ColorPickerProps> = ({ handleInputChange, question }) => {
-  const [hex, setHex] = useState('#F44E3B');
+const ColorPickerQuestion: React.FC<ColorPickerProps> = ({ handleInputChange, question, response }) => {
+  const [hex, setHex] = useState(response.answer);
+
+  useEffect(() => {
+    setHex(response.answer);
+  }, [response]);
+
   return (
-      <Circle
+    <Circle
       colors={[
         '#f44336',
         '#e91e63',

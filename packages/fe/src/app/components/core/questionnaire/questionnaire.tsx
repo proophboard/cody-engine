@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useContext, useState } from 'react';
+import React, { ChangeEvent, useContext, useEffect, useState } from 'react';
 import { ThemeContext } from '../../../providers/ToggleColorMode';
 import ColorPickerQuestion from '@frontend/app/components/core/questionnaire/ColorPickerQuestion';
 import OptionsQuestion from '@frontend/app/components/core/questionnaire/OptionsQuestion';
@@ -32,18 +32,32 @@ const Questionnaire: React.FC = () => {
     return acc;
   }, {} as Record<any, any>);
 
+  // Retrieve saved responses from localStorage or set to default
+  const savedResponses = JSON.parse(localStorage.getItem('responses') || JSON.stringify(defaultResponses));
+
   // Handle State (answers)
-  const [responses, setResponses] = useState<Record<any, any>>(defaultResponses);
+  const [responses, setResponses] = useState<Record<any, any>>(savedResponses);
   const [loading, setLoading] = useState(false);
+
+  // Save responses to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('responses', JSON.stringify(responses));
+    console.log('Responses saved to localStorage:', responses);
+  }, [responses]);
 
   // Update State when <input> is changed
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>, id: number) => {
-    setResponses({
-      ...responses,
-      [id]: {
-        question: questions.find(question => question.id === id)?.text,
-        answer: e.target.value
-      }
+    const value = e.target.value;
+    setResponses(prevResponses => {
+      const updatedResponses = {
+        ...prevResponses,
+        [id]: {
+          question: questions.find(question => question.id === id)?.text!,
+          answer: value
+        }
+      };
+      console.log('Updated Responses:', updatedResponses);
+      return updatedResponses;
     });
   };
 
@@ -98,9 +112,9 @@ const Questionnaire: React.FC = () => {
               {question.text}
             </Typography>
             {question.options ? (
-              <OptionsQuestion handleInputChange={handleInputChange} question={question} />
+              <OptionsQuestion handleInputChange={handleInputChange} question={question} response={responses[question.id]} />
             ) : question.colorPicker ? (
-              <ColorPickerQuestion handleInputChange={handleInputChange} question={question} />
+              <ColorPickerQuestion handleInputChange={handleInputChange} question={question} response={responses[question.id]} />
             ) : (
               <TextQuestion handleInputChange={handleInputChange} question={question} />
             )}
