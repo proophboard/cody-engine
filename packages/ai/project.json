@@ -43,7 +43,7 @@
       "options": {
         "cwd": "packages/ai",
         "color": true,
-        "command": "nodemon src/main.ts",
+        "command": "ts-node -r tsconfig-paths/register src/main.ts",
         "buildTarget": "ai:build"
       },
       "configurations": {
