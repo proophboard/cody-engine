@@ -32,7 +32,7 @@ export async function saveDoc(id: string, name : string, json: any, questionaire
 //format:
 export async function getDoc(id: any, name: any){
   const fullId = `${prefix}${id}`
-    return await documentStore.getDoc(id, name)
+    return await documentStore.getDoc(fullId, name)
 }
 
 //Gibt true zurück wenn es die ID schon gibt, sonst false
