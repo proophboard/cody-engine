@@ -61,6 +61,85 @@ const Questionnaire: React.FC = () => {
     });
   };
 
+  //Diese Methode wird vom bestätigungs button aufgerufen der direkt beim input feld für die ID ist (input required)
+  const handleTrySetId = async (e: { preventDefault: () => void; }) => {
+    try {
+      const response = await fetch('http://localhost:3000/api/try-set-id', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: "HIER MUSS DIE ID AUS DEM INPUT FELD DANN REIN BITTI ALS STRING" }),
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /api/try-set-id');
+      } 
+      const responseData = await response.json();
+
+      //Hier könnten fehler entstehen falls die json nicht richtig gesendet wird und responseData nicht gesetezt ist ist es ja auch false
+      if (!responseData.success) {
+        //An dieser stelle muss das pop up oder was auch immer aktiviert werden in dem der button für das "force setten" ist und es muss eine fehler meldung angezeigt
+        //werden, dass die ID bereits in use ist
+        console.log('ID bereits vergeben. Wollen Sie trotzdem fortfahren?', responseData);
+      }
+
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //Diese Methode wird vom bestätigungs button aufgerufen nachdem man eine ID eingegeben hat die schon in use ist
+  const handleForceSetId = async (e: { preventDefault: () => void; }) => {
+    try {
+      const response = await fetch('http://localhost:3000/api/force-set-id', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: "HIER MUSS DIE ID AUS DEM INPUT FELD DANN REIN BITTI ALS STRING" }),
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /api/force-set-id');
+      } 
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  //Nachdem der Nutzer bestätigt hat, das er die ID so übernehmen will
+  const handleSave = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:3000/api/save-questionnaire', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: responses, saveUnder: "name unter dem die Responses und Json gespeichert werden (STRING geht das?)" }),
+      });
+      if (!response.ok ) {
+        throw new Error('Fehler bei: /api/save-questionnaire');
+      } 
+      const responseData = await response.json();
+
+      //Hier könnten fehler entstehen falls die json nicht richtig gesendet wird und responseData nicht gesetezt ist ist es ja auch false
+      if (!responseData.success) {
+        //Hier reicht ein einfaches Pop up bei dem gesagt wird das der Name für diese ID schon vergeben ist
+        console.log('Name für diese ID bereits vergeben:');
+      }
+
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     setLoading(true);
@@ -73,7 +152,7 @@ const Questionnaire: React.FC = () => {
         body: JSON.stringify({ message: responses }),
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error('Fehler bei: /api/generate-with-ai');
       } else {
         await fetchThemeConfig();
       }

@@ -2,7 +2,7 @@ import express from 'express';
 import { askAI } from './aiInterface';
 import cors from 'cors';
 import { generateAIPrompt, generateFixAIPrompt } from './promptGenerator';
-import { save, get } from './storageController';
+import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting } from './storageController';
 
 // Erstellen einer neuen Express-Anwendung
 const app = express();
@@ -10,6 +10,12 @@ const PORT = 3000;
 
 // Speichern der Theme-Konfiguration
 let storedThemeConfig = {};
+
+// Die ID mit der der User gerade "angemeldet" ist
+let currentID: any;
+
+// Die letzte generierte Json (die gespeichert wird sobald der User "speichern" drückt)
+let lastJson: any;
 
 // CORS und JSON Middleware verwenden
 app.use(cors({ origin: 'http://localhost:4200' }));
@@ -69,15 +75,15 @@ async function retryAskAI(AIprompt: string, preferences: any, retries = 3) {
 
 // Endpunkt zum Generieren einer Theme-Konfiguration mit KI
 app.post('/api/generate-with-ai', async (req, res) => {
+  //userPreferences muss gespeichert werden
+  //storedThemeConfig
   const userPreferences = req.body;
   let AIprompt = generateAIPrompt(userPreferences);
-
   try {
     storedThemeConfig = await retryAskAI(AIprompt, userPreferences);
     res.json({ success: true, theme: storedThemeConfig });
   } catch (error) {
     console.error('AI Request failed:', error);
-
   }
 });
 
@@ -87,6 +93,41 @@ app.get('/api/theme-config', (req, res) => {
   } else {
     res.status(404).send('No theme configuration available');
   }
+});
+
+// Speichert questionaire und json wenn es die ID noch nicht gibt. Wirft ein Error falls es sie gibt
+app.post('/api/try-set-id', async (req, res) => {
+  const data = req.body;
+  const dataAlreadyExists = await checkIfIDInUse(data.id)
+
+  if(dataAlreadyExists){
+    res.json({success : false})
+  } else {
+    currentID = data.id
+    res.json({success : true})
+
+  }
+});
+
+app.post('/api/force-setID', async (req, res) => {
+  const data = req.body;
+  currentID = data.id
+});
+
+// Speichert questionaire und json direkt ab#
+//Habe getestet ab hier funktioniert es. Unten sieht man ein beispiel welches format es sein muss
+//Die generierte KI antwort wird nicht gespeichert da man sie ja bei bedarf aus dem questionaire erstellen kann
+app.post('/api/save-questionnaire', async (req, res) => {
+  const data = req.body;
+
+  if (await checkIfDocIsExisting(currentID, data.saveUnder)){
+    res.json({success : false})
+  } else {
+    await saveDoc(currentID, data.saveUnder, lastJson, data.responses)
+    res.json({success : true})
+  }
+
+  //await saveDoc("ID STRING", "NAME STRING" , {letzteJson : data}, {frage1 : "aw1", frage2 : "aw1"})
 });
 
 app.listen(PORT, () => {
