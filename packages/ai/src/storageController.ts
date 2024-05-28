@@ -30,18 +30,14 @@ export async function saveDoc(id: string, name : string, json: any, questionaire
 
 //returnt eine json datei basierend auf einer id
 //format:
-//{
-//  name: 'Blau und Comic Sans super tolles Questionaaire',
-//  farbe: 'Blau wie das Meer',
-//  font: 'Comic Snans'
-//}
 export async function getDoc(id: any, name: any){
+  const fullId = `${prefix}${id}`
     return await documentStore.getDoc(id, name)
 }
 
 //Gibt true zurück wenn es die ID schon gibt, sonst false
 export async function checkIfIDInUse(id: string) : Promise<boolean> {
-  const fullId = `${prefix}id`
+  const fullId = `${prefix}${id}`
   return await documentStore.hasCollection(fullId);
 };
 

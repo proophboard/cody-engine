@@ -82,6 +82,7 @@ app.post('/api/generate-with-ai', async (req, res) => {
   try {
     storedThemeConfig = await retryAskAI(AIprompt, userPreferences);
     res.json({ success: true, theme: storedThemeConfig });
+    console.log(await getDoc("HI", "HALLO"));
   } catch (error) {
     console.error('AI Request failed:', error);
   }
