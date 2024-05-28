@@ -79,8 +79,7 @@ export class PostgresMultiModelStore implements MultiModelStore {
   }
 
   loadDoc<D extends object>(collectionName: string, docId: string): Promise<{doc: D, version: number} | null> {
-    // @TODO: getDocAndVersion
-    return this.documentStore.getDoc(collectionName, docId);
+    return this.documentStore.getDocAndVersion(collectionName, docId);
   }
 
   loadEvents<P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P, M>>> {
