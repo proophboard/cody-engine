@@ -3,8 +3,10 @@ import { ThemeContext } from '../../../providers/ToggleColorMode';
 import ColorPickerQuestion from '@frontend/app/components/core/questionnaire/ColorPickerQuestion';
 import OptionsQuestion from '@frontend/app/components/core/questionnaire/OptionsQuestion';
 import TextQuestion from '@frontend/app/components/core/questionnaire/TextQuestion';
-import { Box, Button, CircularProgress, Container, Typography, useTheme } from '@mui/material';
+import { Box, Button, CircularProgress, Container, TextField, Typography, useTheme } from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert, { AlertProps } from '@mui/material/Alert';
 
 interface Question {
   id: number;
@@ -12,6 +14,13 @@ interface Question {
   options?: string[];
   colorPicker?: boolean;
 }
+
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
+  props,
+  ref,
+) {
+  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const Questionnaire: React.FC = () => {
   const { applyTheme } = useContext(ThemeContext);
@@ -38,6 +47,18 @@ const Questionnaire: React.FC = () => {
   // Handle State (answers)
   const [responses, setResponses] = useState<Record<any, any>>(savedResponses);
   const [loading, setLoading] = useState(false);
+  const [id, setId] = useState<string>('');
+  const [saveUnder, setSaveUnder] = useState<string>('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [openNameSnackbar, setOpenNameSnackbar] = useState(false);
+  const [nameSnackbarMessage, setNameSnackbarMessage] = useState<string>('');
+  const [currentId, setCurrentId] = useState<string>(() => {
+    return localStorage.getItem('currentId') || '';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('currentId', currentId);
+  }, [currentId]);
 
   // Save responses to localStorage whenever they change
   useEffect(() => {
@@ -61,26 +82,30 @@ const Questionnaire: React.FC = () => {
     });
   };
 
-  //Diese Methode wird vom bestätigungs button aufgerufen der direkt beim input feld für die ID ist (input required)
   const handleTrySetId = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
     try {
       const response = await fetch('http://localhost:3000/api/try-set-id', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: "HIER MUSS DIE ID AUS DEM INPUT FELD DANN REIN BITTI ALS STRING" }),
+        body: JSON.stringify({ id }),
       });
       if (!response.ok) {
         throw new Error('Fehler bei: /api/try-set-id');
       } 
       const responseData = await response.json();
 
-      //Hier könnten fehler entstehen falls die json nicht richtig gesendet wird und responseData nicht gesetezt ist ist es ja auch false
-      if (!responseData.success) {
-        //An dieser stelle muss das pop up oder was auch immer aktiviert werden in dem der button für das "force setten" ist und es muss eine fehler meldung angezeigt
-        //werden, dass die ID bereits in use ist
-        console.log('ID bereits vergeben. Wollen Sie trotzdem fortfahren?', responseData);
+      if (!responseData.success && !responseData.idInUse) {
+        console.log('Die ID darf nicht leer sein!');
+        setNameSnackbarMessage(responseData.message)
+        setOpenNameSnackbar(true)
+      } else if (!responseData.success && responseData.idInUse) {
+        console.log('Die ID ist bereits in verwendung. Trotzdem fortfahren?');
+        setOpenSnackbar(true);
+      } else {
+        setCurrentId(id);
       }
 
     } catch (error) {
@@ -90,27 +115,32 @@ const Questionnaire: React.FC = () => {
     }
   };
 
-  //Diese Methode wird vom bestätigungs button aufgerufen nachdem man eine ID eingegeben hat die schon in use ist
   const handleForceSetId = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
     try {
       const response = await fetch('http://localhost:3000/api/force-set-id', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id: "HIER MUSS DIE ID AUS DEM INPUT FELD DANN REIN BITTI ALS STRING" }),
+        body: JSON.stringify({ id }),
       });
       if (!response.ok) {
         throw new Error('Fehler bei: /api/force-set-id');
-      } 
+      }
+      //auf die response muss hier gewartet werden da sonst setCurrentId durch asynchronität nicht korrekt aufgerufen wird
+      const responseData = await response.json();
+      console.log('Force set ID response:', responseData);
+      setCurrentId(id);
+      
     } catch (error) {
       console.error('Error:', error);
     } finally {
       setLoading(false);
+      setOpenSnackbar(false);
     }
   };
 
-  //Nachdem der Nutzer bestätigt hat, das er die ID so übernehmen will
   const handleSave = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     setLoading(true);
@@ -120,17 +150,17 @@ const Questionnaire: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: responses, saveUnder: "name unter dem die Responses und Json gespeichert werden (STRING geht das?)" }),
+        body: JSON.stringify({ message: responses, saveUnder }),
       });
       if (!response.ok ) {
         throw new Error('Fehler bei: /api/save-questionnaire');
       } 
       const responseData = await response.json();
 
-      //Hier könnten fehler entstehen falls die json nicht richtig gesendet wird und responseData nicht gesetezt ist ist es ja auch false
       if (!responseData.success) {
-        //Hier reicht ein einfaches Pop up bei dem gesagt wird das der Name für diese ID schon vergeben ist
-        console.log('Name für diese ID bereits vergeben:');
+        console.log(responseData.message);
+        setNameSnackbarMessage(responseData.message);
+        setOpenNameSnackbar(true);
       }
 
     } catch (error) {
@@ -154,7 +184,6 @@ const Questionnaire: React.FC = () => {
       if (!response.ok) {
         throw new Error('Fehler bei: /api/generate-with-ai');
       } else {
-        //also dass anstatt die fetchThemeConfig methode
         const responseJson = await response.json()
         applyTheme(responseJson.theme)
       }
@@ -165,12 +194,10 @@ const Questionnaire: React.FC = () => {
     }
   };
 
-  // UI
   return (
     <Container maxWidth="sm">
       <Box display="flex" flexDirection="column" gap={3}>
         {questions.map((question) => (
-          // Render the correct component based on the question type
           <Box
             key={question.id}
             p={4}
@@ -195,20 +222,73 @@ const Questionnaire: React.FC = () => {
           variant="contained"
           color="primary"
           onClick={handleSubmit}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark} // Change color on hover
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main} // Change color back on mouse out
-          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light} // Change color on click
-          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark} // Change color on click
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
         >
           Submit
         </Button>
+        <TextField
+          label="Save Under"
+          variant="outlined"
+          value={saveUnder}
+          onChange={(e) => setSaveUnder(e.target.value)}
+          fullWidth
+        />
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleSave}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.dark}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.main}
+          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.light}
+          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.dark}
+        >
+          Save
+        </Button>
+        <TextField
+          label="ID"
+          variant="outlined"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
+          fullWidth
+        />
+        <Typography variant="h6" gutterBottom>
+        Derzeitige ID: {currentId}
+        </Typography>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleTrySetId}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+        >
+          Set ID
+        </Button>
       </Box>
-      <Backdrop
-        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
-        open={loading}
-      >
+      <Backdrop open={loading}>
         <CircularProgress color="inherit" />
       </Backdrop>
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
+        <Alert onClose={() => setOpenSnackbar(false)} severity="warning">
+          ID already in use. Do you want to force set this ID?
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleForceSetId}
+          >
+            Force Set ID
+          </Button>
+        </Alert>
+      </Snackbar>
+      <Snackbar open={openNameSnackbar} autoHideDuration={6000} onClose={() => setOpenNameSnackbar(false)}>
+        <Alert onClose={() => setOpenNameSnackbar(false)} severity="warning">
+        {nameSnackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };

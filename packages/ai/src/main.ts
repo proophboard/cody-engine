@@ -79,9 +79,6 @@ app.post('/api/generate-with-ai', async (req, res) => {
   try {
     //kann es theoretisch sein das in storedThemeConfig etwas ist was keinen sinn macht?
     storedThemeConfig = await retryAskAI(AIprompt, userPreferences);
-    //warum wird hier storedThemeConfig übergeben? im fe wird nichts damit gemacht
-    //maybe kann man den endpunkt /api/theme-config entfernen und dort direkt die json 
-    //in die themeconfig methode reinmachen
     res.json({ success: true, theme: storedThemeConfig });
   } catch (error) {
     console.error('AI Request failed:', error);
@@ -91,20 +88,25 @@ app.post('/api/generate-with-ai', async (req, res) => {
 // Speichert questionaire und json wenn es die ID noch nicht gibt. Wirft ein Error falls es sie gibt
 app.post('/api/try-set-id', async (req, res) => {
   const data = req.body;
-  const dataAlreadyExists = await checkIfIDInUse(data.id)
+  await checkIfIDInUse(data.id)
 
-  if(dataAlreadyExists){
-    res.json({success : false})
+  if(!data.id){
+    res.json({success : false, idInUse : false, message : "Die ID darf nicht leer sein!"})
+  } else if(await checkIfIDInUse(data.id)){
+    res.json({success : false, idInUse : true, message : "Die ID ist bereits in verwendung"})
   } else {
     currentID = data.id
-    res.json({success : true})
+    //console.log(`Die jetzige ID nach try-set-id ist: ${currentID}`)
+    res.json({success : true, idInUse : false, message : "Alles supi"})
 
   }
 });
 
-app.post('/api/force-setID', async (req, res) => {
+app.post('/api/force-set-ID', async (req, res) => {
   const data = req.body;
   currentID = data.id
+  res.json({success : true})
+  //console.log(`Die jetzige ID ist nach force-set-id ist: ${currentID}`)
 });
 
 // Speichert questionaire und json direkt ab#
@@ -113,17 +115,22 @@ app.post('/api/force-setID', async (req, res) => {
 app.post('/api/save-questionnaire', async (req, res) => {
   const data = req.body;
 
-  if (await checkIfDocIsExisting(currentID, data.saveUnder)){
-    res.json({success : false})
+  if (!data.saveUnder) {
+    res.json({success : false, message : "Der Name darf nicht leer sein!"})
+  } else if (await checkIfDocIsExisting(currentID, data.saveUnder)){
+    res.json({success : false, message : "Name für diese ID bereits vergeben"})
   } else {
-    await saveDoc(currentID, data.saveUnder, storedThemeConfig, data.responses)
-    res.json({success : true})
+    await saveDoc(currentID, data.saveUnder, storedThemeConfig, data.message)
+    res.json({success : true, message : "Alles supi"})
   }
-
+  //dummy
   //await saveDoc("ID STRING", "NAME STRING" , {letzteJson : data}, {frage1 : "aw1", frage2 : "aw1"})
 });
 
+app.get('/getID')
+
 app.listen(PORT, () => {
+  console.log(currentID)
   console.log(`AI Backend Server running on port ${PORT}`);
 });
 
