@@ -8,14 +8,11 @@ import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting } from './storage
 const app = express();
 const PORT = 3000;
 
-// Speichern der Theme-Konfiguration
+// Speichern der Theme-Konfiguration (leztzt generierte antwort der ai)
 let storedThemeConfig = {};
 
 // Die ID mit der der User gerade "angemeldet" ist
 let currentID: any;
-
-// Die letzte generierte Json (die gespeichert wird sobald der User "speichern" drückt)
-let lastJson: any;
 
 // CORS und JSON Middleware verwenden
 app.use(cors({ origin: 'http://localhost:4200' }));
@@ -80,18 +77,14 @@ app.post('/api/generate-with-ai', async (req, res) => {
   const userPreferences = req.body;
   let AIprompt = generateAIPrompt(userPreferences);
   try {
+    //kann es theoretisch sein das in storedThemeConfig etwas ist was keinen sinn macht?
     storedThemeConfig = await retryAskAI(AIprompt, userPreferences);
+    //warum wird hier storedThemeConfig übergeben? im fe wird nichts damit gemacht
+    //maybe kann man den endpunkt /api/theme-config entfernen und dort direkt die json 
+    //in die themeconfig methode reinmachen
     res.json({ success: true, theme: storedThemeConfig });
   } catch (error) {
     console.error('AI Request failed:', error);
-  }
-});
-
-app.get('/api/theme-config', (req, res) => {
-  if (Object.keys(storedThemeConfig).length > 0) {
-    res.json(storedThemeConfig);
-  } else {
-    res.status(404).send('No theme configuration available');
   }
 });
 
@@ -123,7 +116,7 @@ app.post('/api/save-questionnaire', async (req, res) => {
   if (await checkIfDocIsExisting(currentID, data.saveUnder)){
     res.json({success : false})
   } else {
-    await saveDoc(currentID, data.saveUnder, lastJson, data.responses)
+    await saveDoc(currentID, data.saveUnder, storedThemeConfig, data.responses)
     res.json({success : true})
   }
 
