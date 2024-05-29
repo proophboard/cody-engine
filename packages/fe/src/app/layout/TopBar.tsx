@@ -3,7 +3,7 @@ import {AppBar, Box, Toolbar, Typography, IconButton, useTheme, useMediaQuery} f
 import Breadcrumbs from "@frontend/app/layout/Breadcrumbs";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
-import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
+import {ThemeContext} from "@frontend/app/providers/ToggleColorMode";
 import {environment} from "@frontend/environments/environment";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -18,7 +18,7 @@ type TopBarProps = OwnProps;
 
 const TopBar = (props: TopBarProps) => {
   const theme = useTheme();
-  const {mode, toggleColorMode} = useContext(ColorModeContext);
+  const {mode, toggleColorMode} = useContext(ThemeContext);
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });

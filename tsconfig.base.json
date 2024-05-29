@@ -18,6 +18,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@ai/*": ["packages/ai/src/*"],
       "@app/shared/*": ["packages/shared/src/lib/*"],
       "@cody-engine/cody/*": ["packages/cody/src/lib/*"],
       "@cody-engine/contribution": ["packages/contribution/src"],

@@ -3,13 +3,14 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "serve": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run-many -t serve",
+    "serve": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run-many -t serve --all --maxParallel=4",
     "play": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run play:spinup",
     "prepare-contribution": "npx nx g @cody-engine/contribution:prepare-contribution",
     "test": "npx nx run-many -t test -p be fe shared",
     "test-be": "npx nx run be:test",
     "test-fe": "npx nx run fe:test",
-    "test-shared": "npx nx run shared:test"
+    "test-shared": "npx nx run shared:test",
+    "postinstall": "cd packages/ai && npm install"
   },
   "private": false,
   "devDependencies": {
@@ -90,6 +91,7 @@
     "@swc/helpers": "~0.5.0",
     "@tanstack/react-query": "^4.29.7",
     "@tanstack/react-query-devtools": "^4.29.7",
+    "@uiw/react-color-circle": "^2.3.0",
     "ajv": "^8.12.0",
     "ajv-formats": "^2.1.1",
     "axios": "^1.4.0",
@@ -107,6 +109,7 @@
     "react-dom": "18.2.0",
     "react-router-dom": "6.8.1",
     "tslib": "^2.3.0",
+    "uiw": "^4.22.3",
     "uuid": "^9.0.0"
   }
 }

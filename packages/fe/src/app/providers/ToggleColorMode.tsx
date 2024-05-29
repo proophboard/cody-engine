@@ -1,40 +1,55 @@
-import React, {ReactNode} from "react";
+import React, { ReactNode, useEffect, useState, useMemo } from "react";
 import { ThemeProvider } from '@mui/material/styles';
-import {createTheme} from "@frontend/app/layout/theme";
+import { createTheme } from "@frontend/app/layout/theme";
 
 interface Props {
   children: ReactNode
 }
 
-export const ColorModeContext = React.createContext({mode: 'light', toggleColorMode: () => {} });
+// Erstellen des ThemeContexts
+export const ThemeContext = React.createContext({ 
+  mode: 'light', 
+  toggleColorMode: () => { },
+  themeConfig: null, 
+  applyTheme: (config: any) => { } 
+});
 
-const ToggleColorMode = ({children}: Props) => {
-  const [mode, setMode] = React.useState<'light' | 'dark'>('light');
-  const colorMode = {
-      mode,
-      toggleColorMode: () => {
-        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-      },
-    };
+// Hauptkomponente
+const ToggleColorMode = ({ children }: Props) => {
+  // Zustandsvariablen
+  const [mode, setMode] = useState<'light' | 'dark'>('light');
+  const [themeConfig, setThemeConfig] = useState<any>(null);
 
-  const theme = React.useMemo(
+  // Kontextwert
+  const themeContextValue = {
+    mode,
+    toggleColorMode: () => {
+      setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+    },
+    themeConfig,
+    applyTheme: (config: any) => {
+      setThemeConfig(config);
+    },
+  };
+
+  // Erstellen des Themes
+  const theme = useMemo(
     () =>
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      createTheme({
+      createTheme(themeConfig || {
         palette: {
           mode,
         },
       }),
-    [mode],
+    [mode, themeConfig],
   );
 
+  // Rendern der Komponente
   return (
-    <ColorModeContext.Provider value={colorMode}>
+    <ThemeContext.Provider value={themeContextValue}>
       <ThemeProvider theme={theme}>
         {children}
       </ThemeProvider>
-    </ColorModeContext.Provider>
+    </ThemeContext.Provider>
   );
 }
 
