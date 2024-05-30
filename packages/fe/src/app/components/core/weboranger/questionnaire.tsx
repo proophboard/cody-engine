@@ -29,7 +29,7 @@ const Questionnaire: React.FC = () => {
   // Edit/Add Questions and options here
   const questions: Question[] = [
     { id: 1, text: 'What vibe should the theme have?', options: ['Modern', 'Classic', 'Professional', 'Casual'] },
-    { id: 4, text: 'Pick an accent color for the theme!', colorPicker: true },
+    { id: 4, text: 'Pick an accent color for the theme!', colorPicker: true }
   ];
 
   // Set default response if no value was given by the user
@@ -44,8 +44,13 @@ const Questionnaire: React.FC = () => {
   // Retrieve saved responses from localStorage or set to default
   const savedResponses = JSON.parse(localStorage.getItem('responses') || JSON.stringify(defaultResponses));
 
+  const mergedResponses = {
+    ...defaultResponses,
+    ...savedResponses,
+  };
+
   // Handle State (answers)
-  const [responses, setResponses] = useState<Record<any, any>>(savedResponses);
+  const [responses, setResponses] = useState<Record<any, any>>(mergedResponses);
   const [loading, setLoading] = useState(false);
   //Die ID aus dem Input feld
   const [id, setId] = useState<string>('');
