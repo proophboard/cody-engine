@@ -44,29 +44,67 @@ const Adminpanel = () => {
         },
         body: JSON.stringify({ category: category, docName : docName }),
       });
-      console.log("TEST")
       if (!response.ok) {
         throw new Error('Fehler bei: /getDoc');
       } else {
         const responseJson = await response.json()
+        //Eigentlich sind die Daten ja schon in questionaaires gespeichert. Lieber da raus holen? 
         applyTheme(responseJson.theme.json)
       }
     } catch (error) {
       console.error('Error in /getDoc', error);
-    } finally {
-      setLoading(false);
     }
     setSnackbarMessage(`Applying theme for ${category.replace('O4S-ai-', '')} - ${docName}`);
     setOpenSnackbar(true);
   };
 
+  //dev methode alle einträge zu löschen
   const handleDeleteEverything = async () => {
     await fetch('http://localhost:3000/deleteDatabaseEntries', {method: 'POST'})
    }
 
+  const handleDeleteTheme = async (category: string, docName: string) => {
+    try {
+        const response = await fetch('http://localhost:3000/deleteDoc', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ category: category, docName : docName }),
+        });
+        if (!response.ok) {
+          throw new Error('Fehler bei: /deleteDoc');
+        } 
+      } catch (error) {
+        console.error('Error in /deleteDoc', error);
+      }
+      setSnackbarMessage(`Deleted Theme: ${category.replace('O4S-ai-', '')} - ${docName}`);
+      setOpenSnackbar(true);
+  }
+
+  const handleDeleteID = async (category: string) => {
+    try {
+        const response = await fetch('http://localhost:3000/deleteID', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ category: category }),
+        });
+        if (!response.ok) {
+          throw new Error('Fehler bei: /deleteID');
+        } 
+      } catch (error) {
+        console.error('Error in /deleteID', error);
+      }
+      setSnackbarMessage(`Deleted ID: ${category.replace('O4S-ai-', '')}`);
+      setOpenSnackbar(true);
+  }
+
   const setDefaultTheme = async () => {
     applyTheme({})
   }
+
 
   return (
     <Container maxWidth="md">
@@ -83,6 +121,13 @@ const Adminpanel = () => {
                 <Typography variant="h6" gutterBottom>
                   {category.replace('O4S-ai-', '')}
                 </Typography>
+                <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleDeleteID(category)}
+                        >
+                          Delete
+                </Button>
                 <List>
                   {Object.entries(docs).map(([docName]) => (
                     <ListItem key={docName} divider>
@@ -94,6 +139,13 @@ const Adminpanel = () => {
                           onClick={() => handleApplyTheme(category, docName)}
                         >
                           Apply
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => handleDeleteTheme(category, docName)}
+                        >
+                          Delete
                         </Button>
                       </ListItemSecondaryAction>
                     </ListItem>

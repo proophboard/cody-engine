@@ -2,7 +2,7 @@ import express from 'express';
 import { askAI } from './aiInterface';
 import cors from 'cors';
 import { generateAIPrompt, generateFixAIPrompt } from './promptGenerator';
-import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs , deleteEverything} from './storageController';
+import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs , deleteEverything, deleteDoc, deleteID} from './storageController';
 
 // Erstellen einer neuen Express-Anwendung
 const app = express();
@@ -153,6 +153,18 @@ app.post('/getDoc', async (req,res) => {
 
 app.post('/deleteDatabaseEntries', async (req,res) => {
   deleteEverything();
+});
+
+app.post('/deleteDoc', async (req,res) => {
+  const data = req.body
+  const doc = await deleteDoc(data.category, data.docName)
+  res.json({success : true})
+});
+
+app.post('/deleteID', async (req,res) => {
+  const data = req.body
+  const doc = await deleteID(data.category)
+  res.json({success : true})
 });
 
 app.listen(PORT, () => {

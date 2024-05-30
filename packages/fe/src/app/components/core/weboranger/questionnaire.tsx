@@ -58,7 +58,7 @@ const Questionnaire: React.FC = () => {
     return localStorage.getItem('currentId') || '';
   });
 
-  //Holt sich die aktuelle ID vom server wenn die Komponente geladen wird (sie ist in dem fall immer 0)
+  //Holt sich die aktuelle ID vom server wenn die Komponente geladen wird
   useEffect(() => {
     const fetchCurrentId = async () => {
       try {

@@ -59,12 +59,12 @@ export async function getAllDocs() :  Promise<any> {
 
 //Löscht ein Document in einer ID
 export async function deleteDoc(id: any, name: any){
-
+  await documentStore.deleteDoc(id, name)
 }
 
 //Löscht eine ID und alle Dokumente darunter
 export async function deleteID(id: any){
-
+  await documentStore.dropCollection(id)
 }
 
 //Debugmethode für die devs
