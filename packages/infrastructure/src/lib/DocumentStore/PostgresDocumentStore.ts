@@ -32,6 +32,11 @@ export class PostgresDocumentStore implements DocumentStore {
     }
   }
 
+  //O4S Methode die implementiert werden muss weil sie im DocuemntStore interface steht
+  async getAllO4SaiDocs (): Promise<any>{
+    return null //TODO
+  }
+
   async addCollection(collectionName: string, index?: Index): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const _this = this;

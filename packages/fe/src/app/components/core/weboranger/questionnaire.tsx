@@ -47,18 +47,34 @@ const Questionnaire: React.FC = () => {
   // Handle State (answers)
   const [responses, setResponses] = useState<Record<any, any>>(savedResponses);
   const [loading, setLoading] = useState(false);
+  //Die ID aus dem Input feld
   const [id, setId] = useState<string>('');
   const [saveUnder, setSaveUnder] = useState<string>('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [openNameSnackbar, setOpenNameSnackbar] = useState(false);
   const [nameSnackbarMessage, setNameSnackbarMessage] = useState<string>('');
+  //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
   const [currentId, setCurrentId] = useState<string>(() => {
     return localStorage.getItem('currentId') || '';
   });
 
+  //Holt sich die aktuelle ID vom server wenn die Komponente geladen wird (sie ist in dem fall immer 0)
   useEffect(() => {
-    localStorage.setItem('currentId', currentId);
-  }, [currentId]);
+    const fetchCurrentId = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/getID');
+        if (!response.ok) {
+          throw new Error('Fehler bei: /getID');
+        }
+        const data = await response.json();
+        setCurrentId(data.id);
+      } catch (error) {
+        console.error('Error fetching current ID:', error);
+      }
+    };
+
+    fetchCurrentId();
+  }, []);
 
   // Save responses to localStorage whenever they change
   useEffect(() => {
@@ -115,6 +131,16 @@ const Questionnaire: React.FC = () => {
     }
   };
 
+  const testMethod= async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3000/getDocs')
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleForceSetId = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     try {
@@ -157,11 +183,10 @@ const Questionnaire: React.FC = () => {
       } 
       const responseData = await response.json();
 
-      if (!responseData.success) {
-        console.log(responseData.message);
-        setNameSnackbarMessage(responseData.message);
-        setOpenNameSnackbar(true);
-      }
+      console.log(responseData.message);
+      setNameSnackbarMessage(responseData.message);
+      setOpenNameSnackbar(true);
+
 
     } catch (error) {
       console.error('Error:', error);
@@ -267,6 +292,13 @@ const Questionnaire: React.FC = () => {
           onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
         >
           Set ID
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          onClick={testMethod}
+        >
+          TestButton
         </Button>
       </Box>
       <Backdrop open={loading}>

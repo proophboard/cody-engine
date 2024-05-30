@@ -1,14 +1,13 @@
 //import {InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
 import {getConfiguredDocumentStore} from '../../be/src/infrastructure/configuredDocumentStore';
 
+//Eine collection oder ID ist zb die ID eines mitarbeiters
+//Ein doc ist dann die kombination aus questionnaire und json die gespeichert wird.
+
 //Einen präfix den wir brauchen um sicherzustellen, dass man in das Speichermedium dinge speichern kann die nicht ausversehen gleich heißen wie die ID eines USERS
 const prefix = "O4S-ai-"
 const documentStore = getConfiguredDocumentStore();
-//speichert eine json datei basierend auf einer id
-// format: TODO (FORMAT anzeigen wie die gespeicherte json aussehen soll)
-// id ganz oben dann kommen die jsons die alle das selbe format haben aber einen
-// unterschiedlichen namen je nachdem welche json das ist die der nutzer speichern
-// wollte. z.B: { ENTSPANNT : data, AUFREGEND : data, KNALLIG : data}
+//speichert die json für applytheme mit dem questionaire datei basierend auf einer id und einem Namen
 export async function saveDoc(id: string, name : string, json: any, questionaire : any) {
   const fullId = `${prefix}${id}`
 
@@ -18,10 +17,9 @@ export async function saveDoc(id: string, name : string, json: any, questionaire
   }
 
   await documentStore.addDoc(fullId, name, doc);
-  console.log("Dokument hinzugefügt:", doc);
 
   if (await documentStore.getDoc(fullId, name)) {
-    console.log("Dokument erfolgreich hinzugefügt");
+    console.log(`Dokument erfolgreich hinzugefügt mit der ID: ${fullId} und dem namen ${name}`);
   }
   else {
     console.log("MÖP schlecht")
@@ -29,10 +27,11 @@ export async function saveDoc(id: string, name : string, json: any, questionaire
 };
 
 //returnt eine json datei basierend auf einer id
-//format:
+//format: { questionnaire: {...}, json: {...}}
+//Questionnaire sind die fragen und die json ist die json die man 1:1 so in applyTheme setzen kann
+//Hier muss der präfix nicht gesetzt werden weil man den präfix schon in der id mit übergibt
 export async function getDoc(id: any, name: any){
-  const fullId = `${prefix}${id}`
-    return await documentStore.getDoc(fullId, name)
+    return await documentStore.getDoc(id, name)
 }
 
 //Gibt true zurück wenn es die ID schon gibt, sonst false
@@ -51,3 +50,29 @@ export async function checkIfDocIsExisting(id: any, name: any) : Promise<boolean
     return false
   }
 };
+
+//returnt alle Docs in allen ID´s die mit "O4S-ai-" beginnen
+export async function getAllDocs() :  Promise<any> {
+  const docs = await documentStore.getAllO4SaiDocs();
+  return docs
+}
+
+//Löscht ein Document in einer ID
+export async function deleteDoc(id: any, name: any){
+
+}
+
+//Löscht eine ID und alle Dokumente darunter
+export async function deleteID(id: any){
+
+}
+
+//Debugmethode für die devs
+export async function deleteEverything(){
+  const docsToDelete = await documentStore.getAllO4SaiDocs()
+  const keys = Object.keys(docsToDelete)
+
+  for(const key of keys) {
+    await documentStore.dropCollection(key)
+    }  
+  }

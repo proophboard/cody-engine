@@ -2,7 +2,7 @@ import express from 'express';
 import { askAI } from './aiInterface';
 import cors from 'cors';
 import { generateAIPrompt, generateFixAIPrompt } from './promptGenerator';
-import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting } from './storageController';
+import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs , deleteEverything} from './storageController';
 
 // Erstellen einer neuen Express-Anwendung
 const app = express();
@@ -117,20 +117,45 @@ app.post('/api/save-questionnaire', async (req, res) => {
 
   if (!data.saveUnder) {
     res.json({success : false, message : "Der Name darf nicht leer sein!"})
+  } else if (!currentID) {
+    res.json({success : false, message : "Die ID darf nicht leer sein!"})
+  } else if (Object.keys(storedThemeConfig).length === 0) {
+    res.json({success : false, message : "Sie müssen zuerst ihren Fragebogen abschicken! Es wird immer die zuletzt abgeschickte Fragebogen gespeichert."})
   } else if (await checkIfDocIsExisting(currentID, data.saveUnder)){
     res.json({success : false, message : "Name für diese ID bereits vergeben"})
   } else {
     await saveDoc(currentID, data.saveUnder, storedThemeConfig, data.message)
-    res.json({success : true, message : "Alles supi"})
+    res.json({success : true, message : "Theme erfolgreich gespeichert!"})
   }
   //dummy
   //await saveDoc("ID STRING", "NAME STRING" , {letzteJson : data}, {frage1 : "aw1", frage2 : "aw1"})
 });
 
-app.get('/getID')
+//Braucht man um zb die Aktuelle ID zu bekommen nachdem Server neugestartet ist
+app.get('/getID', async (req, res) => {
+  if(!currentID) {
+    res.json({id : ""})
+  } else {
+    res.json({id : currentID})
+  }
+});
+
+app.get('/getDocs', async (req, res) => {
+  const docs = await getAllDocs()
+  res.json(docs)
+});
+
+app.post('/getDoc', async (req,res) => {
+  const data = req.body
+  const doc = await getDoc(data.category, data.docName)
+  res.json({theme : doc})
+})
+
+app.post('/deleteDatabaseEntries', async (req,res) => {
+  deleteEverything();
+});
 
 app.listen(PORT, () => {
-  console.log(currentID)
   console.log(`AI Backend Server running on port ${PORT}`);
 });
 

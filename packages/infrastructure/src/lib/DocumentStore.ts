@@ -35,4 +35,7 @@ export interface DocumentStore {
   findPartialDocs: <D extends object>(collectionName: string, partialSelect: PartialSelect, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder) => Promise<AsyncIterable<[string, D, number]>>;
   findDocIds: (collectionName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder) => Promise<string[]>;
   countDocs: (collectionName: string, filter: Filter) => Promise<number>;
+
+  //Methode mit der man sich alle Dokumente geben lassen kann
+  getAllO4SaiDocs: () => Promise<any>;
 }

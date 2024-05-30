@@ -34,6 +34,20 @@ export class InMemoryDocumentStore implements DocumentStore {
     }
   }
 
+  //Returnt nur die docs die mit O4S-ai- beginnen sodass wir nur unsere eigenen abrufen
+  public async getAllO4SaiDocs(): Promise<any> {
+    // Assuming this.documents is an object where keys are the document names
+    const filteredDocs = Object.keys(this.documents)
+      .filter(key => key.startsWith('O4S-ai-'))
+      .reduce((result, key) => {
+        result[key] = this.documents[key];
+        return result;
+      }, {} as Record<string, any>);
+  
+    return filteredDocs;
+  }
+  
+
   public async addCollection(collectionName: string, index?: Index): Promise<void> {
     if (!this.documents.hasOwnProperty(collectionName)) {
       this.documents[collectionName] = {};
