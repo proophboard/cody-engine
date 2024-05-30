@@ -1,8 +1,8 @@
 import React, { ChangeEvent, useContext, useEffect, useState } from 'react';
 import { ThemeContext } from '../../../providers/ToggleColorMode';
-import ColorPickerQuestion from '@frontend/app/components/core/questionnaire/ColorPickerQuestion';
-import OptionsQuestion from '@frontend/app/components/core/questionnaire/OptionsQuestion';
-import TextQuestion from '@frontend/app/components/core/questionnaire/TextQuestion';
+import ColorPickerQuestion from '@frontend/app/components/core/weboranger/ColorPickerQuestion';
+import OptionsQuestion from '@frontend/app/components/core/weboranger/OptionsQuestion';
+import TextQuestion from '@frontend/app/components/core/weboranger/TextQuestion';
 import { Box, Button, CircularProgress, Container, TextField, Typography, useTheme } from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
 import Snackbar from '@mui/material/Snackbar';
