@@ -53,11 +53,11 @@ const Questionnaire: React.FC = () => {
   const [responses, setResponses] = useState<Record<any, any>>(mergedResponses);
   const [loading, setLoading] = useState(false);
   //Die ID aus dem Input feld
-  const [id, setId] = useState<string>('');
   const [saveUnder, setSaveUnder] = useState<string>('');
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [openNameSnackbar, setOpenNameSnackbar] = useState(false);
-  const [nameSnackbarMessage, setNameSnackbarMessage] = useState<string>('');
+  const [openWarningSnackbar, setWarningSnackbar] = useState(false);
+  const [warningSnackbarMessage, setWarningSnackbarMessage] = useState<string>('');
+  const [openSuccessSnackbar, setSuccessSnackbar] = useState(false);
+  const [successSnackbarMessage, setSuccessSnackbarMessage] = useState<string>('');
   //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
   const [currentId, setCurrentId] = useState<string>(() => {
     return localStorage.getItem('currentId') || '';
@@ -103,74 +103,7 @@ const Questionnaire: React.FC = () => {
     });
   };
 
-  const handleTrySetId = async (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3000/api/try-set-id', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
-      });
-      if (!response.ok) {
-        throw new Error('Fehler bei: /api/try-set-id');
-      } 
-      const responseData = await response.json();
 
-      if (!responseData.success && !responseData.idInUse) {
-        console.log('Die ID darf nicht leer sein!');
-        setNameSnackbarMessage(responseData.message)
-        setOpenNameSnackbar(true)
-      } else if (!responseData.success && responseData.idInUse) {
-        console.log('Die ID ist bereits in verwendung. Trotzdem fortfahren?');
-        setOpenSnackbar(true);
-      } else {
-        setCurrentId(id);
-      }
-
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const testMethod= async (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3000/getDocs')
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleForceSetId = async (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3000/api/force-set-id', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id }),
-      });
-      if (!response.ok) {
-        throw new Error('Fehler bei: /api/force-set-id');
-      }
-      //auf die response muss hier gewartet werden da sonst setCurrentId durch asynchronität nicht korrekt aufgerufen wird
-      const responseData = await response.json();
-      console.log('Force set ID response:', responseData);
-      setCurrentId(id);
-      
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-      setOpenSnackbar(false);
-    }
-  };
 
   const handleSave = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
@@ -188,10 +121,15 @@ const Questionnaire: React.FC = () => {
       } 
       const responseData = await response.json();
 
-      console.log(responseData.message);
-      setNameSnackbarMessage(responseData.message);
-      setOpenNameSnackbar(true);
-
+      if (!responseData.success) {
+        console.log(responseData.message);
+        setWarningSnackbarMessage(responseData.message);
+        setWarningSnackbar(true)
+      } else {
+        console.log(responseData.message);
+        setSuccessSnackbarMessage(responseData.message);
+        setSuccessSnackbar(true);
+      }
 
     } catch (error) {
       console.error('Error:', error);
@@ -219,6 +157,17 @@ const Questionnaire: React.FC = () => {
       }
     } catch (error) {
       console.error('Error in /api/generate-with-ai', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const testMethod= async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3000/getDocs')
+    } catch (error) {
+      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
@@ -277,27 +226,11 @@ const Questionnaire: React.FC = () => {
         >
           Save
         </Button>
-        <TextField
-          label="ID"
-          variant="outlined"
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-          fullWidth
-        />
+
         <Typography variant="h6" gutterBottom>
         Derzeitige ID: {currentId}
         </Typography>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleTrySetId}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
-          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
-          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-        >
-          Set ID
-        </Button>
+
         <Button
           variant="contained"
           color="secondary"
@@ -309,21 +242,14 @@ const Questionnaire: React.FC = () => {
       <Backdrop open={loading}>
         <CircularProgress color="inherit" />
       </Backdrop>
-      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={() => setOpenSnackbar(false)}>
-        <Alert onClose={() => setOpenSnackbar(false)} severity="warning">
-          ID already in use. Do you want to force set this ID?
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={handleForceSetId}
-          >
-            Force Set ID
-          </Button>
+      <Snackbar open={openWarningSnackbar} autoHideDuration={6000} onClose={() => setWarningSnackbar(false)}>
+        <Alert onClose={() => setWarningSnackbar(false)} severity="warning">
+        {warningSnackbarMessage}
         </Alert>
       </Snackbar>
-      <Snackbar open={openNameSnackbar} autoHideDuration={6000} onClose={() => setOpenNameSnackbar(false)}>
-        <Alert onClose={() => setOpenNameSnackbar(false)} severity="warning">
-        {nameSnackbarMessage}
+      <Snackbar open={openSuccessSnackbar} autoHideDuration={6000} onClose={() => setSuccessSnackbar(false)}>
+        <Alert onClose={() => setSuccessSnackbar(false)} severity="success">
+        {successSnackbarMessage}
         </Alert>
       </Snackbar>
     </Container>

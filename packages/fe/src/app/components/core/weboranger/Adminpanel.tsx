@@ -1,7 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackbar, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackbar, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, useTheme } from '@mui/material';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { ThemeContext } from '../../../providers/ToggleColorMode';
+import theme from "@frontend/extensions/app/layout/theme";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -9,11 +10,20 @@ const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props,
 
 const Adminpanel = () => {
   const { applyTheme } = useContext(ThemeContext);
+  const theme = useTheme();
 
   const [questionnaires, setQuestionnaires] = useState<docFormat>({});
+  const [id, setId] = useState<string>('');
   const [loading, setLoading] = useState(false);
-  const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
+  const [successSnackbarMessage, setSuccessSnackbarMessage] = useState('');
+  const [openIDSnackbar, setOpenIDSnackbar] = useState(false);
+  const [openWarningSnackbar, setWarningSnackbar] = useState(false);
+  const [warningSnackbarMessage, setWarningSnackbarMessage] = useState<string>('');
+    //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
+    const [currentId, setCurrentId] = useState<string>(() => {
+      return localStorage.getItem('currentId') || '';
+    });
 
   useEffect(() => {
     const fetchQuestionnaires = async () => {
@@ -53,8 +63,8 @@ const Adminpanel = () => {
     } catch (error) {
       console.error('Error in /getDoc', error);
     }
-    setSnackbarMessage(`Applying theme for ${category.replace('O4S-ai-', '')} - ${docName}`);
-    setOpenSnackbar(true);
+    setSuccessSnackbarMessage(`Applying theme for ${category.replace('O4S-ai-', '')} - ${docName}`);
+    setOpenSuccessSnackbar(true);
   };
 
   //dev methode alle einträge zu löschen
@@ -77,8 +87,8 @@ const Adminpanel = () => {
     } catch (error) {
       console.error('Error in /deleteDoc', error);
     }
-    setSnackbarMessage(`Deleted Theme: ${category.replace('O4S-ai-', '')} - ${docName}`);
-    setOpenSnackbar(true);
+    setSuccessSnackbarMessage(`Deleted Theme: ${category.replace('O4S-ai-', '')} - ${docName}`);
+    setOpenSuccessSnackbar(true);
   };
 
   const handleDeleteID = async (category: string) => {
@@ -96,8 +106,8 @@ const Adminpanel = () => {
     } catch (error) {
       console.error('Error in /deleteID', error);
     }
-    setSnackbarMessage(`Deleted ID: ${category.replace('O4S-ai-', '')}`);
-    setOpenSnackbar(true);
+    setSuccessSnackbarMessage(`Deleted ID: ${category.replace('O4S-ai-', '')}`);
+    setOpenSuccessSnackbar(true);
   };
 
   const setDefaultTheme = async () => {
@@ -147,6 +157,77 @@ const Adminpanel = () => {
     });
 
     return questionCounts;
+  };
+
+  const handleTrySetId = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3000/api/try-set-id', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /api/try-set-id');
+      } 
+      const responseData = await response.json();
+
+      if (!responseData.success && !responseData.idInUse) {
+        console.log('Die ID darf nicht leer sein!');
+        setWarningSnackbarMessage(responseData.message)
+        setWarningSnackbar(true)
+      } else if (!responseData.success && responseData.idInUse) {
+        console.log('Die ID ist bereits in verwendung. Trotzdem fortfahren?');
+        setOpenIDSnackbar(true);
+      } else {
+        const response = await fetch('http://localhost:3000/api/force-set-id', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id }),
+        });
+        if (!response.ok) {
+          throw new Error('Fehler bei: /api/force-set-id');
+        }
+        setCurrentId(id);
+        setSuccessSnackbarMessage("ID was set successfully")
+        setOpenSuccessSnackbar(true)
+      }
+
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForceSetId = async (e: { preventDefault: () => void; }) => {
+    e.preventDefault();
+    try {
+      const response = await fetch('http://localhost:3000/api/force-set-id', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /api/force-set-id');
+      }
+      //auf die response muss hier gewartet werden da sonst setCurrentId durch asynchronität nicht korrekt aufgerufen wird
+      const responseData = await response.json();
+      console.log('Force set ID response:', responseData);
+      setCurrentId(id);
+      
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+      setOpenIDSnackbar(false);
+    }
   };
 
   const questionCounts = aggregateResponses(questionnaires);
@@ -253,16 +334,51 @@ const Adminpanel = () => {
           </>
         )}
       </Box>
-
+      <TextField
+          label="ID"
+          variant="outlined"
+          value={id}
+          onChange={(e) => setId(e.target.value)}
+          fullWidth
+        />
+      <Button
+          variant="contained"
+          color="secondary"
+          onClick={handleTrySetId}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+        >
+          Set ID
+        </Button>              
       <Snackbar
-        open={openSnackbar}
+        open={openSuccessSnackbar}
         autoHideDuration={6000}
-        onClose={() => setOpenSnackbar(false)}
+        onClose={() => setOpenSuccessSnackbar(false)}
       >
-        <Alert onClose={() => setOpenSnackbar(false)} severity="info">
-          {snackbarMessage}
+        <Alert onClose={() => setOpenSuccessSnackbar(false)} severity="success">
+          {successSnackbarMessage}
         </Alert>
       </Snackbar>
+      <Snackbar open={openWarningSnackbar} autoHideDuration={6000} onClose={() => setWarningSnackbar(false)}>
+        <Alert onClose={() => setWarningSnackbar(false)} severity="warning">
+        {warningSnackbarMessage}
+        </Alert>
+      </Snackbar>
+      <Snackbar open={openIDSnackbar} autoHideDuration={6000} onClose={() => setOpenIDSnackbar(false)}>
+        <Alert onClose={() => setOpenIDSnackbar(false)} severity="warning">
+          ID already in use. Do you want to force set this ID?
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleForceSetId}
+          >
+            Force Set ID
+          </Button>
+        </Alert>
+      </Snackbar>
+      
     </Container>
   );
 };
