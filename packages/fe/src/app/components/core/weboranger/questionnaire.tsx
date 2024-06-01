@@ -44,10 +44,16 @@ const Questionnaire: React.FC = () => {
   // Retrieve saved responses from localStorage or set to default
   const savedResponses = JSON.parse(localStorage.getItem('responses') || JSON.stringify(defaultResponses));
 
-  const mergedResponses = {
-    ...defaultResponses,
-    ...savedResponses,
-  };
+  //Diese Methode ist notwendig da wenn man sonst im "questions" Array einträge entfernt (hier im Code) Sie trotzdem lokal im Browser im lokalstorage
+  //bleiben und dann die responses für die Fragen die man nicht mehr sieht an die KI geschickt werden
+  // Filter out stale responses
+  const mergedResponses = Object.keys(savedResponses).reduce((acc, key) => {
+    const id = Number(key);
+    if (questions.find(question => question.id === id)) {
+      acc[id] = savedResponses[key];
+    }
+    return acc;
+  }, {} as Record<any, any>)
 
   // Handle State (answers)
   const [responses, setResponses] = useState<Record<any, any>>(mergedResponses);
