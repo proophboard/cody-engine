@@ -2,7 +2,7 @@ import express from 'express';
 import { askAI } from './aiInterface';
 import cors from 'cors';
 import { generateAIPrompt, generateFixAIPrompt } from './promptGenerator';
-import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs , deleteEverything, deleteDoc, deleteID} from './storageController';
+import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs, deleteEverything, deleteDoc, deleteID } from './storageController';
 
 // Erstellen einer neuen Express-Anwendung
 const app = express();
@@ -37,9 +37,9 @@ async function retryAskAI(AIprompt: string, preferences: any, retries = 3) {
 
       //Das muss sein weil typescript ohne den if block sagt, dass response null sein könnte
       let jsonMatch = null
-      if(response){
-      jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/i) || response.match(/```(?:\s*([\s\S]*?)\s*)```/i) || response.match(/({[\s\S]*})/i);
-      } 
+      if (response) {
+        jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/i) || response.match(/```(?:\s*([\s\S]*?)\s*)```/i) || response.match(/({[\s\S]*})/i);
+      }
       if (jsonMatch && jsonMatch[1]) {
         const extractedJSON = jsonMatch[1].trim();
         console.log(`Extracted JSON: ${extractedJSON}`);
@@ -61,10 +61,10 @@ async function retryAskAI(AIprompt: string, preferences: any, retries = 3) {
       if (error instanceof Error) {
         console.warn(`Attempt ${attempt} failed: ${error.message}`);
         AIprompt = generateFixAIPrompt(error.message, preferences);
-    } else {
+      } else {
         console.warn(`Attempt ${attempt} failed with an unknown error`);
         AIprompt = generateFixAIPrompt('Unknown error', preferences);
-    }
+      }
     }
   }
   throw new Error('All attempts to get a valid AI response failed.');
@@ -90,14 +90,14 @@ app.post('/api/try-set-id', async (req, res) => {
   const data = req.body;
   await checkIfIDInUse(data.id)
 
-  if(!data.id){
-    res.json({success : false, idInUse : false, message : "Die ID darf nicht leer sein!"})
-  } else if(await checkIfIDInUse(data.id)){
-    res.json({success : false, idInUse : true, message : "Die ID ist bereits in verwendung"})
+  if (!data.id) {
+    res.json({ success: false, idInUse: false, message: "Die ID darf nicht leer sein!" })
+  } else if (await checkIfIDInUse(data.id)) {
+    res.json({ success: false, idInUse: true, message: "Die ID ist bereits in verwendung" })
   } else {
     currentID = data.id
     //console.log(`Die jetzige ID nach try-set-id ist: ${currentID}`)
-    res.json({success : true, idInUse : false, message : "Alles supi"})
+    res.json({ success: true, idInUse: false, message: "Alles supi" })
 
   }
 });
@@ -105,7 +105,7 @@ app.post('/api/try-set-id', async (req, res) => {
 app.post('/api/force-set-ID', async (req, res) => {
   const data = req.body;
   currentID = data.id
-  res.json({success : true})
+  res.json({ success: true })
   //console.log(`Die jetzige ID ist nach force-set-id ist: ${currentID}`)
 });
 
@@ -116,16 +116,16 @@ app.post('/api/save-questionnaire', async (req, res) => {
   const data = req.body;
 
   if (!data.saveUnder) {
-    res.json({success : false, message : "Der Name darf nicht leer sein!"})
+    res.json({ success: false, message: "Der Name darf nicht leer sein!" })
   } else if (!currentID) {
-    res.json({success : false, message : "Die ID darf nicht leer sein!"})
+    res.json({ success: false, message: "Die ID darf nicht leer sein!" })
   } else if (Object.keys(storedThemeConfig).length === 0) {
-    res.json({success : false, message : "Sie müssen zuerst ihren Fragebogen abschicken! Es wird immer die zuletzt abgeschickte Fragebogen gespeichert."})
-  } else if (await checkIfDocIsExisting(currentID, data.saveUnder)){
-    res.json({success : false, message : "Name für diese ID bereits vergeben"})
+    res.json({ success: false, message: "Sie müssen zuerst ihren Fragebogen abschicken! Es wird immer die zuletzt abgeschickte Fragebogen gespeichert." })
+  } else if (await checkIfDocIsExisting(currentID, data.saveUnder)) {
+    res.json({ success: false, message: "Name für diese ID bereits vergeben" })
   } else {
     await saveDoc(currentID, data.saveUnder, storedThemeConfig, data.message)
-    res.json({success : true, message : "Theme erfolgreich gespeichert!"})
+    res.json({ success: true, message: "Theme erfolgreich gespeichert!" })
   }
   //dummy
   //await saveDoc("ID STRING", "NAME STRING" , {letzteJson : data}, {frage1 : "aw1", frage2 : "aw1"})
@@ -133,10 +133,10 @@ app.post('/api/save-questionnaire', async (req, res) => {
 
 //Braucht man um zb die Aktuelle ID zu bekommen nachdem Server neugestartet ist
 app.get('/getID', async (req, res) => {
-  if(!currentID) {
-    res.json({id : ""})
+  if (!currentID) {
+    res.json({ id: "" })
   } else {
-    res.json({id : currentID})
+    res.json({ id: currentID })
   }
 });
 
@@ -145,26 +145,31 @@ app.get('/getDocs', async (req, res) => {
   res.json(docs)
 });
 
-app.post('/getDoc', async (req,res) => {
+app.post('/getDoc', async (req, res) => {
   const data = req.body
   const doc = await getDoc(data.category, data.docName)
-  res.json({theme : doc})
+  res.json({ theme: doc })
 })
 
-app.post('/deleteDatabaseEntries', async (req,res) => {
-  deleteEverything();
+app.post('/deleteDatabaseEntries', async (req, res) => {
+  try {
+    await deleteEverything();
+    res.status(200).json({ message: 'All entries deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting entries', error });
+  }
 });
 
-app.post('/deleteDoc', async (req,res) => {
+app.post('/deleteDoc', async (req, res) => {
   const data = req.body
   const doc = await deleteDoc(data.category, data.docName)
-  res.json({success : true})
+  res.json({ success: true })
 });
 
-app.post('/deleteID', async (req,res) => {
+app.post('/deleteID', async (req, res) => {
   const data = req.body
   const doc = await deleteID(data.category)
-  res.json({success : true})
+  res.json({ success: true })
 });
 
 app.listen(PORT, () => {

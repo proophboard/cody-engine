@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackbar, List, ListItem, ListItemText, ListItemSecondaryAction, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, useTheme } from '@mui/material';
+import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackbar, List, ListItem, ListItemText, ListItemSecondaryAction, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, useTheme } from '@mui/material';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { ThemeContext } from '../../../providers/ToggleColorMode';
 import theme from "@frontend/extensions/app/layout/theme";
@@ -20,30 +20,30 @@ const Adminpanel = () => {
   const [openIDSnackbar, setOpenIDSnackbar] = useState(false);
   const [openWarningSnackbar, setWarningSnackbar] = useState(false);
   const [warningSnackbarMessage, setWarningSnackbarMessage] = useState<string>('');
-    //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
-    const [currentId, setCurrentId] = useState<string>(() => {
-      return localStorage.getItem('currentId') || '';
-    });
+  //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
+  const [currentId, setCurrentId] = useState<string>(() => {
+    return localStorage.getItem('currentId') || '';
+  });
 
   useEffect(() => {
-    const fetchQuestionnaires = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch('http://localhost:3000/getDocs');
-        if (!response.ok) {
-          throw new Error('Fehler bei: /getDocs');
-        }
-        const data = await response.json();
-        setQuestionnaires(data);
-      } catch (error) {
-        console.error('Error fetching docFormat:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchQuestionnaires();
   }, []);
+
+  const fetchQuestionnaires = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:3000/getDocs');
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getDocs');
+      }
+      const data = await response.json();
+      setQuestionnaires(data);
+    } catch (error) {
+      console.error('Error fetching docFormat:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleApplyTheme = async (category: string, docName: string) => {
     try {
@@ -52,7 +52,7 @@ const Adminpanel = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ category: category, docName : docName }),
+        body: JSON.stringify({ category: category, docName: docName }),
       });
       if (!response.ok) {
         throw new Error('Fehler bei: /getDoc');
@@ -69,8 +69,23 @@ const Adminpanel = () => {
 
   //dev methode alle einträge zu löschen
   const handleDeleteEverything = async () => {
-    await fetch('http://localhost:3000/deleteDatabaseEntries', { method: 'POST' });
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:3000/deleteDatabaseEntries', { method: 'POST' });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /deleteDatabaseEntries');
+      }
+      await response.json();
+      setQuestionnaires({});
+      setSuccessSnackbarMessage("All entries deleted successfully");
+      setOpenSuccessSnackbar(true);
+    } catch (error) {
+      console.error('Error in /deleteDatabaseEntries', error);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   const handleDeleteTheme = async (category: string, docName: string) => {
     try {
@@ -84,11 +99,19 @@ const Adminpanel = () => {
       if (!response.ok) {
         throw new Error('Fehler bei: /deleteDoc');
       }
+      setQuestionnaires(prevState => {
+        const newState = { ...prevState };
+        delete newState[category][docName];
+        if (Object.keys(newState[category]).length === 0) {
+          delete newState[category];
+        }
+        return newState;
+      });
+      setSuccessSnackbarMessage(`Deleted Theme: ${category.replace('O4S-ai-', '')} - ${docName}`);
+      setOpenSuccessSnackbar(true);
     } catch (error) {
       console.error('Error in /deleteDoc', error);
     }
-    setSuccessSnackbarMessage(`Deleted Theme: ${category.replace('O4S-ai-', '')} - ${docName}`);
-    setOpenSuccessSnackbar(true);
   };
 
   const handleDeleteID = async (category: string) => {
@@ -103,11 +126,16 @@ const Adminpanel = () => {
       if (!response.ok) {
         throw new Error('Fehler bei: /deleteID');
       }
+      setQuestionnaires(prevState => {
+        const newState = { ...prevState };
+        delete newState[category];
+        return newState;
+      });
+      setSuccessSnackbarMessage(`Deleted ID: ${category.replace('O4S-ai-', '')}`);
+      setOpenSuccessSnackbar(true);
     } catch (error) {
       console.error('Error in /deleteID', error);
     }
-    setSuccessSnackbarMessage(`Deleted ID: ${category.replace('O4S-ai-', '')}`);
-    setOpenSuccessSnackbar(true);
   };
 
   const setDefaultTheme = async () => {
@@ -128,7 +156,7 @@ const Adminpanel = () => {
       };
     };
   }
-  
+
   interface QuestionCounts {
     [question: string]: {
       [answer: string]: number;
@@ -171,7 +199,7 @@ const Adminpanel = () => {
       });
       if (!response.ok) {
         throw new Error('Fehler bei: /api/try-set-id');
-      } 
+      }
       const responseData = await response.json();
 
       if (!responseData.success && !responseData.idInUse) {
@@ -221,7 +249,7 @@ const Adminpanel = () => {
       const responseData = await response.json();
       console.log('Force set ID response:', responseData);
       setCurrentId(id);
-      
+
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -234,7 +262,7 @@ const Adminpanel = () => {
 
   return (
     <Container maxWidth="md">
-        <Box display="flex" flexDirection="column" gap={3} mt={4}>
+      <Box display="flex" flexDirection="column" gap={3} mt={4}>
         <Typography variant="h4" gutterBottom>Admin Panel</Typography>
         {loading ? (
           <Backdrop open={loading}>
@@ -335,23 +363,23 @@ const Adminpanel = () => {
         )}
       </Box>
       <TextField
-          label="ID"
-          variant="outlined"
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-          fullWidth
-        />
+        label="ID"
+        variant="outlined"
+        value={id}
+        onChange={(e) => setId(e.target.value)}
+        fullWidth
+      />
       <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleTrySetId}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
-          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
-          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-        >
-          Set ID
-        </Button>              
+        variant="contained"
+        color="secondary"
+        onClick={handleTrySetId}
+        onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+        onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+        onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+        onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+      >
+        Set ID
+      </Button>
       <Snackbar
         open={openSuccessSnackbar}
         autoHideDuration={6000}
@@ -363,7 +391,7 @@ const Adminpanel = () => {
       </Snackbar>
       <Snackbar open={openWarningSnackbar} autoHideDuration={6000} onClose={() => setWarningSnackbar(false)}>
         <Alert onClose={() => setWarningSnackbar(false)} severity="warning">
-        {warningSnackbarMessage}
+          {warningSnackbarMessage}
         </Alert>
       </Snackbar>
       <Snackbar open={openIDSnackbar} autoHideDuration={6000} onClose={() => setOpenIDSnackbar(false)}>
@@ -378,7 +406,6 @@ const Adminpanel = () => {
           </Button>
         </Alert>
       </Snackbar>
-      
     </Container>
   );
 };
