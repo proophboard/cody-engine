@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackbar, List, ListItem, ListItemText, ListItemSecondaryAction, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, useTheme } from '@mui/material';
+import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackbar, List, ListItem, ListItemText, ListItemSecondaryAction, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, useTheme, Divider } from '@mui/material';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { ThemeContext } from '../../../providers/ToggleColorMode';
 import theme from "@frontend/extensions/app/layout/theme";
@@ -263,7 +263,7 @@ const Adminpanel = () => {
   return (
     <Container maxWidth="md">
       <Box display="flex" flexDirection="column" gap={3} mt={4}>
-        <Typography variant="h4" gutterBottom>Admin Panel</Typography>
+        <Typography variant="h4" gutterBottom>Saved Themes</Typography>
         {loading ? (
           <Backdrop open={loading}>
             <CircularProgress color="inherit" />
@@ -309,22 +309,49 @@ const Adminpanel = () => {
                 </Box>
               ))}
             </List>
-            <Button
+            <Box display="flex" justifyContent="flex-start">
+              <Button
               variant="contained"
               color="secondary"
               onClick={handleDeleteEverything}
+              style={{ marginRight: '16px' }}
             >
-              Delete Everything
+            Delete all Data
             </Button>
             <Button
               variant="contained"
               color="secondary"
               onClick={setDefaultTheme}
             >
-              Apply Default
+            Apply Default Theme
             </Button>
+            </Box>
+            <Box>
+            <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 3 }} />
+            <Typography variant="h4" gutterBottom style={{ marginBottom: '10px' }}>Set ID for Questionaire:</Typography>
+            <TextField
+              label="ID"
+              variant="outlined"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              fullWidth
+            />
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={handleTrySetId}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+              onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+              onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+              style={{ marginTop: '16px' }}
+            >
+              Set ID
+            </Button>
+            </Box>
+            <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
             <Box mt={4}>
-              <Typography variant="h5" gutterBottom>Questionnaire Statistics</Typography>
+              <Typography variant="h4" gutterBottom>Questionnaire Statistics</Typography>
               <TableContainer component={Paper}>
                 <Table>
                   <TableHead>
@@ -362,24 +389,6 @@ const Adminpanel = () => {
           </>
         )}
       </Box>
-      <TextField
-        label="ID"
-        variant="outlined"
-        value={id}
-        onChange={(e) => setId(e.target.value)}
-        fullWidth
-      />
-      <Button
-        variant="contained"
-        color="secondary"
-        onClick={handleTrySetId}
-        onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-        onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
-        onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
-        onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-      >
-        Set ID
-      </Button>
       <Snackbar
         open={openSuccessSnackbar}
         autoHideDuration={6000}

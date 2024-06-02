@@ -3,7 +3,7 @@ import { ThemeContext } from '../../../providers/ToggleColorMode';
 import ColorPickerQuestion from '@frontend/app/components/core/weboranger/ColorPickerQuestion';
 import OptionsQuestion from '@frontend/app/components/core/weboranger/OptionsQuestion';
 import TextQuestion from '@frontend/app/components/core/weboranger/TextQuestion';
-import { Box, Button, CircularProgress, Container, TextField, Typography, useTheme } from '@mui/material';
+import { Box, Button, CircularProgress, Container, Divider, TextField, Typography, useTheme } from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
@@ -180,85 +180,86 @@ const Questionnaire: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box display="flex" flexDirection="column" gap={3}>
-        {questions.map((question) => (
-          <Box
-            key={question.id}
-            p={4}
-            mb={2}
-            bgcolor={theme.palette.background.default}
-            borderRadius={2}
-            boxShadow={1}
-          >
-            <Typography variant="h5" fontWeight="light" gutterBottom>
-              {question.text}
-            </Typography>
-            {question.options ? (
-              <OptionsQuestion handleInputChange={handleInputChange} question={question} response={responses[question.id]} />
-            ) : question.colorPicker ? (
-              <ColorPickerQuestion handleInputChange={handleInputChange} question={question} response={responses[question.id]} />
-            ) : (
-              <TextQuestion handleInputChange={handleInputChange} question={question} />
-            )}
-          </Box>
-        ))}
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSubmit}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
-          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
-          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-        >
-          Submit
-        </Button>
-        <TextField
-          label="Save Under"
-          variant="outlined"
-          value={saveUnder}
-          onChange={(e) => setSaveUnder(e.target.value)}
-          fullWidth
-        />
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={handleSave}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.dark}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.main}
-          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.light}
-          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.dark}
-        >
-          Save
-        </Button>
+<Container maxWidth="sm">
+  <Box display="flex" flexDirection="column" gap={3}>
+    <Typography variant="h6" gutterBottom>
+      Derzeitige ID: {currentId}
+    </Typography>
 
-        <Typography variant="h6" gutterBottom>
-        Derzeitige ID: {currentId}
+    {questions.map((question) => (
+      <Box
+        key={question.id}
+        p={4}
+        mb={2}
+        bgcolor={theme.palette.background.default}
+        borderRadius={2}
+        boxShadow={1}
+      >
+        <Typography variant="h5" fontWeight="light" gutterBottom>
+          {question.text}
         </Typography>
-
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={testMethod}
-        >
-          TestButton
-        </Button>
+        {question.options ? (
+          <OptionsQuestion handleInputChange={handleInputChange} question={question} response={responses[question.id]} />
+        ) : question.colorPicker ? (
+          <ColorPickerQuestion handleInputChange={handleInputChange} question={question} response={responses[question.id]} />
+        ) : (
+          <TextQuestion handleInputChange={handleInputChange} question={question} />
+        )}
       </Box>
-      <Backdrop open={loading}>
-        <CircularProgress color="inherit" />
-      </Backdrop>
-      <Snackbar open={openWarningSnackbar} autoHideDuration={6000} onClose={() => setWarningSnackbar(false)}>
-        <Alert onClose={() => setWarningSnackbar(false)} severity="warning">
-        {warningSnackbarMessage}
-        </Alert>
-      </Snackbar>
-      <Snackbar open={openSuccessSnackbar} autoHideDuration={6000} onClose={() => setSuccessSnackbar(false)}>
-        <Alert onClose={() => setSuccessSnackbar(false)} severity="success">
-        {successSnackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Container>
+    ))}
+
+    <Button
+      variant="contained"
+      color="primary"
+      onClick={handleSubmit}
+      onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+      onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+      onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+      onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+    >
+      Submit
+    </Button>
+
+    <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
+
+    <TextField
+      label="Save Under"
+      variant="outlined"
+      value={saveUnder}
+      onChange={(e) => setSaveUnder(e.target.value)}
+      fullWidth
+    />
+
+    <Button
+      variant="contained"
+      color="secondary"
+      onClick={handleSave}
+      onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.dark}
+      onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.main}
+      onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.light}
+      onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.dark}
+    >
+      Save
+    </Button>
+  </Box>
+
+  <Backdrop open={loading}>
+    <CircularProgress color="inherit" />
+  </Backdrop>
+
+  <Snackbar open={openWarningSnackbar} autoHideDuration={6000} onClose={() => setWarningSnackbar(false)}>
+    <Alert onClose={() => setWarningSnackbar(false)} severity="warning">
+      {warningSnackbarMessage}
+    </Alert>
+  </Snackbar>
+
+  <Snackbar open={openSuccessSnackbar} autoHideDuration={6000} onClose={() => setSuccessSnackbar(false)}>
+    <Alert onClose={() => setSuccessSnackbar(false)} severity="success">
+      {successSnackbarMessage}
+    </Alert>
+  </Snackbar>
+</Container>
+
   );
 };
 
