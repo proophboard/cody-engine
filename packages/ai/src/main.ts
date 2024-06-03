@@ -9,7 +9,10 @@ const app = express();
 const PORT = 3000;
 
 // Speichern der Theme-Konfiguration (leztzt generierte antwort der ai)
-let storedThemeConfig = {};
+let latestGeneratedTheme = {};
+
+// Das Theme das gerade angezeigt wird
+let applyedTheme = {};
 
 // Die ID mit der der User gerade "angemeldet" ist
 let currentID: any;
@@ -78,8 +81,9 @@ app.post('/api/generate-with-ai', async (req, res) => {
   let AIprompt = generateAIPrompt(userPreferences);
   try {
     //kann es theoretisch sein das in storedThemeConfig etwas ist was keinen sinn macht?
-    storedThemeConfig = await retryAskAI(AIprompt, userPreferences);
-    res.json({ success: true, theme: storedThemeConfig });
+    latestGeneratedTheme = await retryAskAI(AIprompt, userPreferences);
+    applyedTheme = JSON.parse(JSON.stringify(latestGeneratedTheme));
+    res.json({ success: true, theme: latestGeneratedTheme });
   } catch (error) {
     console.error('AI Request failed:', error);
   }
@@ -119,12 +123,12 @@ app.post('/api/save-questionnaire', async (req, res) => {
     res.json({ success: false, message: "Der Name darf nicht leer sein!" })
   } else if (!currentID) {
     res.json({ success: false, message: "Die ID darf nicht leer sein!" })
-  } else if (Object.keys(storedThemeConfig).length === 0) {
+  } else if (Object.keys(latestGeneratedTheme).length === 0) {
     res.json({ success: false, message: "Sie müssen zuerst ihren Fragebogen abschicken! Es wird immer die zuletzt abgeschickte Fragebogen gespeichert." })
   } else if (await checkIfDocIsExisting(currentID, data.saveUnder)) {
     res.json({ success: false, message: "Name für diese ID bereits vergeben" })
   } else {
-    await saveDoc(currentID, data.saveUnder, storedThemeConfig, data.message)
+    await saveDoc(currentID, data.saveUnder, latestGeneratedTheme, data.message)
     res.json({ success: true, message: "Theme erfolgreich gespeichert!" })
   }
   //dummy
@@ -144,6 +148,17 @@ app.get('/getDocs', async (req, res) => {
   const docs = await getAllDocs()
   res.json(docs)
 });
+
+app.get('/getLastTheme', async (req, res) => {
+  res.json({ theme : applyedTheme })
+});
+
+//Is das ein sicherheitsrisiko wenn man einfach den body einer anfrage nimmt und settet?
+app.post('/setAppliedTheme', async (req,res) => {
+  const data = req.body
+  applyedTheme = data.theme
+  res.json({ success : true })
+})
 
 app.post('/getDoc', async (req, res) => {
   const data = req.body

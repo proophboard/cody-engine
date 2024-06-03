@@ -27,6 +27,7 @@ const Adminpanel = () => {
 
   useEffect(() => {
     fetchQuestionnaires();
+    fetchCurrentTheme();
   }, []);
 
   const fetchQuestionnaires = async () => {
@@ -45,6 +46,20 @@ const Adminpanel = () => {
     }
   };
 
+  const fetchCurrentTheme = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/getLastTheme');
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getLastTheme');
+      }
+      const data = await response.json();
+      console.log(data.theme)
+      applyTheme(data.theme)
+    } catch (error) {
+        console.error('Error fetching current ID:', error);
+    }
+  };
+
   const handleApplyTheme = async (category: string, docName: string) => {
     try {
       const response = await fetch('http://localhost:3000/getDoc', {
@@ -58,6 +73,22 @@ const Adminpanel = () => {
         throw new Error('Fehler bei: /getDoc');
       } else {
         const responseJson = await response.json();
+
+        try {
+          if (!(await fetch('http://localhost:3000/setAppliedTheme', {
+          method: 'POST',
+          headers: {
+          'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ theme : responseJson.theme.json }),
+          })).ok) {
+            throw new Error('Fehler bei: /setAppliedTheme');
+          }
+        
+        } catch (error) {
+          console.error('Error in /setAppliedTheme', error);
+        }
+
         applyTheme(responseJson.theme.json);
       }
     } catch (error) {

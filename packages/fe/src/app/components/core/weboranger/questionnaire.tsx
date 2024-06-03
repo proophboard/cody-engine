@@ -71,21 +71,36 @@ const Questionnaire: React.FC = () => {
 
   //Holt sich die aktuelle ID vom server wenn die Komponente geladen wird
   useEffect(() => {
-    const fetchCurrentId = async () => {
-      try {
-        const response = await fetch('http://localhost:3000/getID');
-        if (!response.ok) {
-          throw new Error('Fehler bei: /getID');
-        }
-        const data = await response.json();
-        setCurrentId(data.id);
-      } catch (error) {
-        console.error('Error fetching current ID:', error);
-      }
-    };
-
+    fetchCurrentTheme();
     fetchCurrentId();
   }, []);
+
+  const fetchCurrentTheme = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/getLastTheme');
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getLastTheme');
+      }
+      const data = await response.json();
+      console.log(data.theme)
+      applyTheme(data.theme)
+    } catch (error) {
+        console.error('Error fetching current ID:', error);
+    }
+  };
+    
+  const fetchCurrentId = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/getID');
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getID');
+      }
+      const data = await response.json();
+      setCurrentId(data.id);
+    } catch (error) {
+        console.error('Error fetching current ID:', error);
+    }
+  };
 
   // Save responses to localStorage whenever they change
   useEffect(() => {
