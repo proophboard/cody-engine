@@ -360,7 +360,7 @@ const Adminpanel = () => {
             </Box>
             <Box>
             <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 3 }} />
-            <Typography variant="h4" gutterBottom style={{ marginBottom: '10px' }}>Set ID for Questionaire:</Typography>
+            <Typography variant="h4" gutterBottom style={{ marginBottom: '10px' }}>Set ID for Questionnaire:</Typography>
             <TextField
               label="ID"
               variant="outlined"
