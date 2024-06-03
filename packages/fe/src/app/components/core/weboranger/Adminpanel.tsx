@@ -292,6 +292,7 @@ const Adminpanel = () => {
                             variant="contained"
                             color="primary"
                             onClick={() => handleApplyTheme(category, docName)}
+                            style={{ marginRight: '10px' }}
                           >
                             Apply
                           </Button>
@@ -312,7 +313,7 @@ const Adminpanel = () => {
             <Box display="flex" justifyContent="flex-start">
               <Button
               variant="contained"
-              color="secondary"
+              color="primary"
               onClick={handleDeleteEverything}
               style={{ marginRight: '16px' }}
             >
@@ -320,7 +321,7 @@ const Adminpanel = () => {
             </Button>
             <Button
               variant="contained"
-              color="secondary"
+              color="primary"
               onClick={setDefaultTheme}
             >
             Apply Default Theme
@@ -338,7 +339,7 @@ const Adminpanel = () => {
             />
             <Button
               variant="contained"
-              color="secondary"
+              color="primary"
               onClick={handleTrySetId}
               onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
               onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
@@ -408,7 +409,7 @@ const Adminpanel = () => {
           ID already in use. Do you want to force set this ID?
           <Button
             variant="contained"
-            color="secondary"
+            color="primary"
             onClick={handleForceSetId}
           >
             Force Set ID

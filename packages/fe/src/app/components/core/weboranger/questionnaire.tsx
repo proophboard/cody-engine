@@ -232,7 +232,7 @@ const Questionnaire: React.FC = () => {
 
     <Button
       variant="contained"
-      color="secondary"
+      color="primary"
       onClick={handleSave}
       onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.dark}
       onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.main}
