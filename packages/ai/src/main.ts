@@ -8,7 +8,7 @@ import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs, dele
 const app = express();
 const PORT = 3000;
 
-// Speichern der Theme-Konfiguration (leztzt generierte antwort der ai)
+// Speichern der Theme-Konfiguration (leztzt generierte antwort der ai) (ehemals storedThemeConfig)
 let latestGeneratedTheme = {};
 
 // Das Theme das gerade angezeigt wird

@@ -249,10 +249,10 @@ const Questionnaire: React.FC = () => {
       variant="contained"
       color="primary"
       onClick={handleSave}
-      onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.dark}
-      onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.main}
-      onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.light}
-      onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.secondary.dark}
+      onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+      onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+      onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+      onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
     >
       Save
     </Button>
