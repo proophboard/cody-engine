@@ -33,7 +33,7 @@ const Questionnaire: React.FC = () => {
     { id: 1, text: 'Welches Thema soll die Anwendung haben?', options: ['Seriös', 'Energiegeladen', 'Fröhlich', 'Naturverbunden', 'Technisch', 'Minimalistisch', 'Premium',] },
     { id: 2, text: 'Gibt es eine bestimmte Farbe, die die Anwendung haben soll?', colorPicker: true },
     { id: 3, text: 'Wie stark soll die Gewichtung der Farbe sein?', slider: true },
-    { id: 4, text: 'Welches Thema soll die Schriftart haben?', options: ['Verspielt', 'Schlicht', 'Maschinell', 'Gerundet', 'Elegant', 'Elegant', 'Gebrochen', 'Dramatisch', 'Sachlich'] },
+    { id: 4, text: 'Welches Thema soll die Schriftart haben?', options: ['Verspielt', 'Schlicht', 'Maschinell', 'Gerundet', 'Elegant', 'Gebrochen', 'Dramatisch', 'Sachlich'] },
   ];
 
   // Set default response if no value was given by the user
