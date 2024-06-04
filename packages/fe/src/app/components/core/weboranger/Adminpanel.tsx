@@ -133,9 +133,6 @@ const Adminpanel = () => {
       setQuestionnaires(prevState => {
         const newState = { ...prevState };
         delete newState[category][docName];
-        if (Object.keys(newState[category]).length === 0) {
-          delete newState[category];
-        }
         return newState;
       });
       setSuccessSnackbarMessage(`Deleted Theme: ${category.replace('O4S-ai-', '')} - ${docName}`);
