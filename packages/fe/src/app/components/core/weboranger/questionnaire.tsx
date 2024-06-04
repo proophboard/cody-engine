@@ -1,6 +1,7 @@
 import React, { ChangeEvent, useContext, useEffect, useState } from 'react';
 import { ThemeContext } from '../../../providers/ToggleColorMode';
-import ColorPickerQuestion from '@frontend/app/components/core/weboranger/ColorPickerQuestion';
+import ColorPicker from '@frontend/app/components/core/weboranger/ColorPicker';
+import SliderComponent from '@frontend/app/components/core/weboranger/SliderComponent';
 import OptionsQuestion from '@frontend/app/components/core/weboranger/OptionsQuestion';
 import TextQuestion from '@frontend/app/components/core/weboranger/TextQuestion';
 import { Box, Button, CircularProgress, Container, Divider, TextField, Typography, useTheme } from '@mui/material';
@@ -13,6 +14,7 @@ interface Question {
   text: string;
   options?: string[];
   colorPicker?: boolean;
+  slider?: boolean;
 }
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
@@ -28,15 +30,17 @@ const Questionnaire: React.FC = () => {
 
   // Edit/Add Questions and options here
   const questions: Question[] = [
-    { id: 1, text: 'What vibe should the theme have?', options: ['Modern', 'Classic', 'Professional', 'Casual'] },
-    { id: 4, text: 'Pick an accent color for the theme!', colorPicker: true }
+    { id: 1, text: 'Welches Thema soll die Anwendung haben?', options: ['Seriös', 'Energiegeladen', 'Fröhlich', 'Naturverbunden', 'Technisch', 'Minimalistisch', 'Premium',] },
+    { id: 2, text: 'Gibt es eine bestimmte Farbe, die die Anwendung haben soll?', colorPicker: true },
+    { id: 3, text: 'Wie stark soll die Gewichtung der Farbe sein?', slider: true },
+    { id: 4, text: 'Welches Thema soll die Schriftart haben?', options: ['Verspielt', 'Schlicht', 'Maschinell', 'Gerundet', 'Elegant', 'Elegant', 'Gebrochen', 'Dramatisch', 'Sachlich'] },
   ];
 
   // Set default response if no value was given by the user
   const defaultResponses = questions.reduce((acc, question) => {
     acc[question.id] = {
       question: question.text,
-      answer: question.options ? question.options[0] : question.colorPicker ? "#000000" : "",
+      answer: question.options ? question.options[0] : (question.colorPicker ? null : ""),
     };
     return acc;
   }, {} as Record<any, any>);
@@ -85,10 +89,10 @@ const Questionnaire: React.FC = () => {
       console.log(data.theme)
       applyTheme(data.theme)
     } catch (error) {
-        console.error('Error fetching current ID:', error);
+      console.error('Error fetching current ID:', error);
     }
   };
-    
+
   const fetchCurrentId = async () => {
     try {
       const response = await fetch('http://localhost:3000/getID');
@@ -98,7 +102,7 @@ const Questionnaire: React.FC = () => {
       const data = await response.json();
       setCurrentId(data.id);
     } catch (error) {
-        console.error('Error fetching current ID:', error);
+      console.error('Error fetching current ID:', error);
     }
   };
 
@@ -124,7 +128,33 @@ const Questionnaire: React.FC = () => {
     });
   };
 
+  const handleColorChange = (color: string, id: number) => {
+    setResponses(prevResponses => {
+      const updatedResponses = {
+        ...prevResponses,
+        [id]: {
+          question: questions.find(question => question.id === id)?.text!,
+          answer: color
+        }
+      };
+      console.log('Updated Responses:', updatedResponses);
+      return updatedResponses;
+    });
+  };
 
+  const handleSliderChange = (value: number, id: number) => {
+    setResponses(prevResponses => {
+      const updatedResponses = {
+        ...prevResponses,
+        [id]: {
+          question: questions.find(question => question.id === id)?.text!,
+          answer: value
+        }
+      };
+      console.log('Updated Responses:', updatedResponses);
+      return updatedResponses;
+    });
+  };
 
   const handleSave = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
@@ -137,9 +167,9 @@ const Questionnaire: React.FC = () => {
         },
         body: JSON.stringify({ message: responses, saveUnder }),
       });
-      if (!response.ok ) {
+      if (!response.ok) {
         throw new Error('Fehler bei: /api/save-questionnaire');
-      } 
+      }
       const responseData = await response.json();
 
       if (!responseData.success) {
@@ -183,7 +213,7 @@ const Questionnaire: React.FC = () => {
     }
   };
 
-  const testMethod= async (e: { preventDefault: () => void; }) => {
+  const testMethod = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     try {
       const response = await fetch('http://localhost:3000/getDocs')
@@ -195,86 +225,85 @@ const Questionnaire: React.FC = () => {
   };
 
   return (
-<Container maxWidth="sm">
-  <Box display="flex" flexDirection="column" gap={3}>
-    <Typography variant="h6" gutterBottom>
-      Derzeitige ID: {currentId}
-    </Typography>
+    <Container maxWidth="sm">
+      <Box display="flex" flexDirection="column" gap={3}>
+      <Typography variant="h6" gutterBottom>
+        Derzeitige ID: {currentId}
+      </Typography>
 
-    {questions.map((question) => (
-      <Box
-        key={question.id}
-        p={4}
-        mb={2}
-        bgcolor={theme.palette.background.default}
-        borderRadius={2}
-        boxShadow={1}
-      >
-        <Typography variant="h5" fontWeight="light" gutterBottom>
-          {question.text}
-        </Typography>
-        {question.options ? (
-          <OptionsQuestion handleInputChange={handleInputChange} question={question} response={responses[question.id]} />
-        ) : question.colorPicker ? (
-          <ColorPickerQuestion handleInputChange={handleInputChange} question={question} response={responses[question.id]} />
-        ) : (
-          <TextQuestion handleInputChange={handleInputChange} question={question} />
-        )}
-      </Box>
-    ))}
-
-    <Button
-      variant="contained"
-      color="primary"
-      onClick={handleSubmit}
-      onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-      onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
-      onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
-      onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-    >
-      Submit
-    </Button>
-
+        {questions.map((question) => (
+          <Box
+            key={question.id}
+            p={4}
+            mb={2}
+            bgcolor={theme.palette.background.default}
+            borderRadius={2}
+            boxShadow={1}
+          >
+            <Typography variant="h5" fontWeight="light" gutterBottom>
+              {question.text}
+            </Typography>
+            {question.options ? (
+              <OptionsQuestion handleInputChange={handleInputChange} question={question} response={responses[question.id]} />
+            ) : question.colorPicker ? (
+              <ColorPicker initialColor={responses[question.id].answer ?? ''} onChange={(color) => handleColorChange(color, question.id)} />
+            ) : question.slider ? (
+              <SliderComponent value={responses[question.id].answer ?? 50} onChange={(value) => handleSliderChange(value, question.id)} />
+            ) : (
+              <TextQuestion handleInputChange={handleInputChange} question={question} />
+            )}
+          </Box>
+        ))}
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSubmit}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+        >
+          Submit
+        </Button>
+        
     <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
 
-    <TextField
-      label="Save Under"
-      variant="outlined"
-      value={saveUnder}
-      onChange={(e) => setSaveUnder(e.target.value)}
-      fullWidth
-    />
+        <TextField
+          label="Save Under"
+          variant="outlined"
+          value={saveUnder}
+          onChange={(e) => setSaveUnder(e.target.value)}
+          fullWidth
+        />
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSave}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+        >
+          Save
+        </Button>
+      </Box>
 
-    <Button
-      variant="contained"
-      color="primary"
-      onClick={handleSave}
-      onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-      onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
-      onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
-      onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-    >
-      Save
-    </Button>
-  </Box>
+      <Backdrop open={loading}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
+      <Snackbar open={openWarningSnackbar} autoHideDuration={6000} onClose={() => setWarningSnackbar(false)}>
+        <Alert onClose={() => setWarningSnackbar(false)} severity="warning">
+          {warningSnackbarMessage}
+        </Alert>
+      </Snackbar>
+      <Snackbar open={openSuccessSnackbar} autoHideDuration={6000} onClose={() => setSuccessSnackbar(false)}>
+        <Alert onClose={() => setSuccessSnackbar(false)} severity="success">
+          {successSnackbarMessage}
+        </Alert>
+      </Snackbar>
 
-  <Backdrop open={loading}>
-    <CircularProgress color="inherit" />
-  </Backdrop>
 
-  <Snackbar open={openWarningSnackbar} autoHideDuration={6000} onClose={() => setWarningSnackbar(false)}>
-    <Alert onClose={() => setWarningSnackbar(false)} severity="warning">
-      {warningSnackbarMessage}
-    </Alert>
-  </Snackbar>
-
-  <Snackbar open={openSuccessSnackbar} autoHideDuration={6000} onClose={() => setSuccessSnackbar(false)}>
-    <Alert onClose={() => setSuccessSnackbar(false)} severity="success">
-      {successSnackbarMessage}
-    </Alert>
-  </Snackbar>
-</Container>
-
+    </Container>
   );
 };
 

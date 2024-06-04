@@ -19,7 +19,7 @@ export async function askAI(AIprompt: string) {
             model: "llama3",
             response_format: { "type": "json_object" },
             messages: JSON.parse(AIprompt).messages,
-            temperature: 0.7,
+            temperature: 0.9,
             max_tokens: 8000,
         });
         // Rückgabe der KI-Antwort
