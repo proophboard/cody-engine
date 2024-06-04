@@ -16,10 +16,12 @@ const Adminpanel = () => {
   const [id, setId] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [openSuccessSnackbar, setOpenSuccessSnackbar] = useState(false);
-  const [successSnackbarMessage, setSuccessSnackbarMessage] = useState('');
+  const [snackbarMessage, setSnackbarMessage] = useState('');
   const [openIDSnackbar, setOpenIDSnackbar] = useState(false);
+  const [openDeleteAllSnackbar, setOpenDeleteAllSnackbar] = useState(false);
+  const [openDeleteIDSnackbar, setOpenDeleteIDSnackbar] = useState(false);
+  const [IDtodelete, setIDtodelete] = useState<any>();
   const [openWarningSnackbar, setWarningSnackbar] = useState(false);
-  const [warningSnackbarMessage, setWarningSnackbarMessage] = useState<string>('');
   //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
   const [currentId, setCurrentId] = useState<string>(() => {
     return localStorage.getItem('currentId') || '';
@@ -94,7 +96,7 @@ const Adminpanel = () => {
     } catch (error) {
       console.error('Error in /getDoc', error);
     }
-    setSuccessSnackbarMessage(`Applying theme for ${category.replace('O4S-ai-', '')} - ${docName}`);
+    setSnackbarMessage(`Applying theme for ${category.replace('O4S-ai-', '')} - ${docName}`);
     setOpenSuccessSnackbar(true);
   };
 
@@ -108,7 +110,7 @@ const Adminpanel = () => {
       }
       await response.json();
       setQuestionnaires({});
-      setSuccessSnackbarMessage("All entries deleted successfully");
+      setSnackbarMessage("All entries deleted successfully");
       setOpenSuccessSnackbar(true);
     } catch (error) {
       console.error('Error in /deleteDatabaseEntries', error);
@@ -135,7 +137,7 @@ const Adminpanel = () => {
         delete newState[category][docName];
         return newState;
       });
-      setSuccessSnackbarMessage(`Deleted Theme: ${category.replace('O4S-ai-', '')} - ${docName}`);
+      setSnackbarMessage(`Deleted Theme: ${category.replace('O4S-ai-', '')} - ${docName}`);
       setOpenSuccessSnackbar(true);
     } catch (error) {
       console.error('Error in /deleteDoc', error);
@@ -159,7 +161,7 @@ const Adminpanel = () => {
         delete newState[category];
         return newState;
       });
-      setSuccessSnackbarMessage(`Deleted ID: ${category.replace('O4S-ai-', '')}`);
+      setSnackbarMessage(`Deleted ID: ${category.replace('O4S-ai-', '')}`);
       setOpenSuccessSnackbar(true);
     } catch (error) {
       console.error('Error in /deleteID', error);
@@ -246,7 +248,7 @@ const Adminpanel = () => {
 
       if (!responseData.success && !responseData.idInUse) {
         console.log('Die ID darf nicht leer sein!');
-        setWarningSnackbarMessage(responseData.message)
+        setSnackbarMessage(responseData.message)
         setWarningSnackbar(true)
       } else if (!responseData.success && responseData.idInUse) {
         console.log('Die ID ist bereits in verwendung. Trotzdem fortfahren?');
@@ -263,7 +265,7 @@ const Adminpanel = () => {
           throw new Error('Fehler bei: /api/force-set-id');
         }
         setCurrentId(id);
-        setSuccessSnackbarMessage("ID was set successfully")
+        setSnackbarMessage("ID was set successfully")
         setOpenSuccessSnackbar(true)
       }
 
@@ -315,48 +317,58 @@ const Adminpanel = () => {
             <List>
               {Object.entries(questionnaires).map(([category, docs]) => (
                 <Box key={category} mb={2}>
-                  <Typography variant="h6" gutterBottom>
-                    {category.replace('O4S-ai-', '')}
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => handleDeleteID(category)}
-                  >
-                    Delete
-                  </Button>
+                  <Box display="flex" alignItems="center">
+                    <Typography variant="h6" gutterBottom>
+                      {category.replace('O4S-ai-', '')}
+                    </Typography>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {setSnackbarMessage("Wollen Sie die ID wirklich Löschen?"); setIDtodelete(category); setOpenDeleteIDSnackbar(true)}}
+                      style={{ marginLeft: '10px', marginBottom: '6px' }}
+                    >
+                      Delete
+                    </Button>
+                  </Box>
                   <List>
-                    {Object.entries(docs).map(([docName]) => (
-                      <ListItem key={docName} divider>
-                        <ListItemText primary={docName} />
-                        <ListItemSecondaryAction>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleApplyTheme(category, docName)}
-                            style={{ marginRight: '10px' }}
-                          >
-                            Apply
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleDeleteTheme(category, docName)}
-                          >
-                            Delete
-                          </Button>
-                        </ListItemSecondaryAction>
+                    {Object.keys(docs).length === 0 ? (
+                      <ListItem divider>
+                        <ListItemText primary="Keine Themes gespeichert" />
                       </ListItem>
-                    ))}
+                    ) : (
+                      Object.entries(docs).map(([docName]) => (
+                        <ListItem key={docName} divider>
+                          <ListItemText primary={docName} />
+                          <ListItemSecondaryAction>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleApplyTheme(category, docName)}
+                              style={{ marginRight: '10px' }}
+                            >
+                              Apply
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleDeleteTheme(category, docName)}
+                            >
+                              Delete
+                            </Button>
+                          </ListItemSecondaryAction>
+                        </ListItem>
+                      ))
+                    )}
                   </List>
                 </Box>
               ))}
+
             </List>
             <Box display="flex" justifyContent="flex-start">
               <Button
               variant="contained"
               color="primary"
-              onClick={handleDeleteEverything}
+              onClick={() => {setSnackbarMessage("Sind Sie sicher dass Sie alle Datenbankinhalte löschen wollen?"); setOpenDeleteAllSnackbar(true)}}
               style={{ marginRight: '16px' }}
             >
             Delete all Data
@@ -438,12 +450,12 @@ const Adminpanel = () => {
         onClose={() => setOpenSuccessSnackbar(false)}
       >
         <Alert onClose={() => setOpenSuccessSnackbar(false)} severity="success">
-          {successSnackbarMessage}
+          {snackbarMessage}
         </Alert>
       </Snackbar>
       <Snackbar open={openWarningSnackbar} autoHideDuration={6000} onClose={() => setWarningSnackbar(false)}>
         <Alert onClose={() => setWarningSnackbar(false)} severity="warning">
-          {warningSnackbarMessage}
+          {snackbarMessage}
         </Alert>
       </Snackbar>
       <Snackbar open={openIDSnackbar} autoHideDuration={6000} onClose={() => setOpenIDSnackbar(false)}>
@@ -455,6 +467,32 @@ const Adminpanel = () => {
             onClick={handleForceSetId}
           >
             Force Set ID
+          </Button>
+        </Alert>
+      </Snackbar>
+      <Snackbar open={openDeleteAllSnackbar} autoHideDuration={6000} onClose={() => setOpenDeleteAllSnackbar(false)}>
+        <Alert onClose={() => setOpenDeleteAllSnackbar(false)} severity="warning">
+          {snackbarMessage}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleDeleteEverything}
+            style={{ marginLeft: '16px' }}
+          >
+            DELETE
+          </Button>
+        </Alert>
+      </Snackbar>
+      <Snackbar open={openDeleteIDSnackbar} autoHideDuration={6000} onClose={() => setOpenDeleteIDSnackbar(false)}>
+        <Alert onClose={() => setOpenDeleteIDSnackbar(false)} severity="warning">
+          {snackbarMessage}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => handleDeleteID(IDtodelete)}
+            style={{ marginLeft: '16px' }}
+          >
+            DELETE
           </Button>
         </Alert>
       </Snackbar>
