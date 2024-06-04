@@ -170,6 +170,20 @@ const Adminpanel = () => {
   };
 
   const setDefaultTheme = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/setAppliedTheme', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ theme: {} }),
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /setAppliedTheme auf default');
+      }
+    } catch (error) {
+      console.error('Error in /setAppliedTheme auf default', error);
+    }
     applyTheme({});
   };
 
