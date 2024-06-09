@@ -227,9 +227,9 @@ const Questionnaire: React.FC = () => {
   return (
     <Container maxWidth="sm">
       <Box display="flex" flexDirection="column" gap={3}>
-      <Typography variant="h6" gutterBottom>
-        Derzeitige ID: {currentId}
-      </Typography>
+        <Typography variant="h6" gutterBottom>
+          Derzeitige ID: {currentId}
+        </Typography>
 
         {questions.map((question) => (
           <Box
@@ -246,9 +246,15 @@ const Questionnaire: React.FC = () => {
             {question.options ? (
               <OptionsQuestion handleInputChange={handleInputChange} question={question} response={responses[question.id]} />
             ) : question.colorPicker ? (
-              <ColorPicker initialColor={responses[question.id].answer ?? ''} onChange={(color) => handleColorChange(color, question.id)} />
+              <ColorPicker
+                initialColor={responses[question.id]?.answer ?? ''}
+                onChange={(color) => handleColorChange(color, question.id)}
+              />
             ) : question.slider ? (
-              <SliderComponent value={responses[question.id].answer ?? 50} onChange={(value) => handleSliderChange(value, question.id)} />
+              <SliderComponent
+                value={responses[question.id] ? responses[question.id].answer : 50}
+                onChange={(value) => handleSliderChange(value, question.id)}
+              />
             ) : (
               <TextQuestion handleInputChange={handleInputChange} question={question} />
             )}
@@ -265,8 +271,8 @@ const Questionnaire: React.FC = () => {
         >
           Submit
         </Button>
-        
-    <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
+
+        <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
 
         <TextField
           label="Save Under"
