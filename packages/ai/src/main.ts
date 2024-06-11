@@ -4,6 +4,7 @@ import cors from 'cors';
 import { generateAIPrompt, generateFixAIPrompt } from './promptGenerator';
 import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs, deleteEverything, deleteDoc, deleteID } from './storageController';
 
+
 // Erstellen einer neuen Express-Anwendung
 const app = express();
 const PORT = 3000;
