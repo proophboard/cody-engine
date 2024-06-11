@@ -76,3 +76,11 @@ export async function deleteEverything(){
     await documentStore.dropCollection(key)
     }  
   }
+
+export async function getAiSource() : Promise<any> {
+  return await documentStore.getDoc("O4S-aiSource","O4S-aiSource");
+}
+
+export async function setAiSource(aiSource: string) {
+  await documentStore.addDoc("O4S-aiSource","O4S-aiSource", {aiSource});
+}

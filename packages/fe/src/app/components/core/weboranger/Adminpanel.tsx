@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackbar, List, ListItem, ListItemText, ListItemSecondaryAction, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, useTheme, Divider } from '@mui/material';
+import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackbar, List, ListItem, ListItemText, ListItemSecondaryAction, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, useTheme, Divider, Select, MenuItem } from '@mui/material';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { ThemeContext } from '../../../providers/ToggleColorMode';
 import theme from "@frontend/extensions/app/layout/theme";
@@ -22,6 +22,7 @@ const Adminpanel = () => {
   const [openDeleteIDSnackbar, setOpenDeleteIDSnackbar] = useState(false);
   const [IDtodelete, setIDtodelete] = useState<any>();
   const [openWarningSnackbar, setWarningSnackbar] = useState(false);
+  const [aiSourceID, setAiSourceID] = useState('');
   //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
   const [currentId, setCurrentId] = useState<string>(() => {
     return localStorage.getItem('currentId') || '';
@@ -30,8 +31,20 @@ const Adminpanel = () => {
   useEffect(() => {
     fetchQuestionnaires();
     fetchCurrentTheme();
+    fetchAiSource();
   }, []);
 
+  const fetchAiSource = async () => {    try {
+    const response = await fetch('http://localhost:3000/getAiSource');
+    if (!response.ok) {
+      throw new Error('Fehler bei: /getAiSource');
+    }
+    const data = await response.json();
+    setAiSourceID(data.aiSource);
+    } catch (error) {
+      console.error('Error fetching aiSource:', error);
+    }
+  }
   const fetchQuestionnaires = async () => {
     setLoading(true);
     try {
@@ -302,6 +315,27 @@ const Adminpanel = () => {
     }
   };
 
+  const switchAiSource = async (event: { target: { value: any; }; }) => {
+    const selectedValue = event.target.value;
+    setAiSourceID(selectedValue);
+    try {
+      const response = await fetch('http://localhost:3000/setAiSource', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ aiSource : selectedValue }),
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /setAiSource');
+      }
+      
+
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
   const questionCounts = aggregateResponses(questionnaires);
 
   return (
@@ -327,7 +361,7 @@ const Adminpanel = () => {
                       onClick={() => {setSnackbarMessage("Wollen Sie die ID wirklich Löschen?"); setIDtodelete(category); setOpenDeleteIDSnackbar(true)}}
                       style={{ marginLeft: '10px', marginBottom: '6px' }}
                     >
-                      Delete
+                      Delete ID
                     </Button>
                   </Box>
                   <List>
@@ -443,6 +477,18 @@ const Adminpanel = () => {
             </Box>
           </>
         )}
+      </Box>
+      <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 3 }} />
+      <Box>
+        <Typography variant="h4" gutterBottom>Hosting der KI:</Typography>
+        <Select
+          value={aiSourceID}
+          onChange={switchAiSource}
+          variant="outlined"
+        >
+          <MenuItem value="local">Local-Hosting</MenuItem>
+          <MenuItem value="server">Server-Hosting</MenuItem>
+        </Select>
       </Box>
       <Snackbar
         open={openSuccessSnackbar}

@@ -2,8 +2,7 @@ import express from 'express';
 import { askAI } from './aiInterface';
 import cors from 'cors';
 import { generateAIPrompt, generateFixAIPrompt } from './promptGenerator';
-import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs, deleteEverything, deleteDoc, deleteID } from './storageController';
-
+import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs, deleteEverything, deleteDoc, deleteID, getAiSource, setAiSource } from './storageController';
 
 // Erstellen einer neuen Express-Anwendung
 const app = express();
@@ -36,7 +35,8 @@ function isValidJSON(jsonString: string) {
 async function retryAskAI(AIprompt: string, preferences: any, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const response = await askAI(AIprompt);
+      const aiSourceDoc = await getAiSource();
+      const response = await askAI(AIprompt, aiSourceDoc.aiSource);
       console.log(`AI Response Attempt ${attempt}: ${response}`);
 
       //Das muss sein weil typescript ohne den if block sagt, dass response null sein könnte
@@ -188,7 +188,20 @@ app.post('/deleteID', async (req, res) => {
   res.json({ success: true })
 });
 
+app.post('/setAiSource', async (req, res) => {
+  const data = req.body
+  await setAiSource(data.aiSource)
+  res.json({ success: true })
+});
+
+app.get('/getAiSource', async (req, res) => {
+  const aiSource = await getAiSource();
+  res.json(aiSource)
+});
+
 app.listen(PORT, () => {
+  const aiSourceDoc = getAiSource();
+  setAiSource("local");
   console.log(`AI Backend Server running on port ${PORT}`);
 });
 
