@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useContext, useEffect, useState } from 'react';
-import { ThemeContext } from '../../../providers/ToggleColorMode';
+import { ThemeContext } from '@frontend/app/providers/ToggleColorMode';
 import ColorPickerQuestion from '@frontend/app/components/core/weboranger/ColorPickerQuestion';
 import OptionsQuestion from '@frontend/app/components/core/weboranger/OptionsQuestion';
 import TextQuestion from '@frontend/app/components/core/weboranger/TextQuestion';

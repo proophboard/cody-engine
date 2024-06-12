@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackbar, List, ListItem, ListItemText, ListItemSecondaryAction, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, useTheme, Divider, Select, MenuItem } from '@mui/material';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
-import { ThemeContext } from '../../../providers/ToggleColorMode';
+import { ThemeContext } from '@frontend/app/providers/ToggleColorMode';
 import theme from "@frontend/extensions/app/layout/theme";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
