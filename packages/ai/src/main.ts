@@ -17,6 +17,9 @@ let applyedTheme = {};
 // Die ID mit der der User gerade "angemeldet" ist
 let currentID: any;
 
+//Ist nur true während die AI eine Anfrage bearbeitet
+let isAiLoading = false;
+
 // CORS und JSON Middleware verwenden
 app.use(cors({ origin: 'http://localhost:4200' }));
 app.use(express.json());
@@ -81,10 +84,13 @@ app.post('/api/generate-with-ai', async (req, res) => {
   const userPreferences = req.body;
   let AIprompt = generateAIPrompt(userPreferences);
   try {
-    //kann es theoretisch sein das in storedThemeConfig etwas ist was keinen sinn macht?
+    isAiLoading = true;
+    console.log("Is Ai Loading ist jetzt True")
     latestGeneratedTheme = await retryAskAI(AIprompt, userPreferences);
     applyedTheme = JSON.parse(JSON.stringify(latestGeneratedTheme));
     res.json({ success: true, theme: latestGeneratedTheme });
+    isAiLoading = false;
+    console.log("Is Ai Loading ist jetzt false")
   } catch (error) {
     console.error('AI Request failed:', error);
   }
@@ -197,6 +203,11 @@ app.post('/setAiSource', async (req, res) => {
 app.get('/getAiSource', async (req, res) => {
   const aiSource = await getAiSource();
   res.json(aiSource)
+});
+
+app.get('/getIsAiLoading', async (req, res) => {
+  console.log("PIEP")
+  res.json({isAiLoading : isAiLoading})
 });
 
 app.listen(PORT, () => {

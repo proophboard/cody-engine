@@ -64,6 +64,7 @@ const Questionnaire: React.FC = () => {
   const [warningSnackbarMessage, setWarningSnackbarMessage] = useState<string>('');
   const [openSuccessSnackbar, setSuccessSnackbar] = useState(false);
   const [successSnackbarMessage, setSuccessSnackbarMessage] = useState<string>('');
+  const [isAiLoading, setIsAiLoading] = useState<boolean>(); 
   //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
   const [currentId, setCurrentId] = useState<string>(() => {
     return localStorage.getItem('currentId') || '';
@@ -73,7 +74,48 @@ const Questionnaire: React.FC = () => {
   useEffect(() => {
     fetchCurrentTheme();
     fetchCurrentId();
+    fetchIsAiLoading();
   }, []);
+
+  //Himayat ich weiß du magst die Kommentare nicht aber das muss ich erklären
+  //
+  //Auf dem Server wird gespeichert ob die AI gerade einen prompt bearbeitet oder nicht "isAiLoading" in "main.ts".
+  //Wenn man die Komponente jz neu läd weil man zb im Admin Panel war dann wird eine Anfrage an den Server geschickt um zu gucken ob die AI gerade noch eine Anfrage
+  //bearbeitet oder nicht. Falls ...
+  //... nein passiert nichts.
+  //... falls ja wird eine while schleife aktiviert die alle 2sek den Server frägt ob die AI schon fertig ist.
+  //
+  //Ich weiß es ist XXL Sphagetti Code aber ich habe keinen weg gefunden wie der Server dem "questionnaire.tsx" "sagt", dass er mit der Anfrage fertig ist.
+  //
+  //Der ganze lachs nur weil "setLoading(false)" im finally block von andle Submit nicht tut was es soll
+  const fetchIsAiLoading = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/getIsAiLoading');
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getIsAiLoading');
+      }
+      const data = await response.json();
+      if(data.isAiLoading){
+        setLoading(true);
+        let waitingForAiResponse = true;
+        while(waitingForAiResponse){
+          //Die 2000 steht für die Anzahl an ms für die Gewartet wird bis eine neue Anfrage an den Server geschickt wird ob die KI nun fertiggeneriert hat.
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const response = await fetch('http://localhost:3000/getIsAiLoading');
+          if (!response.ok) {
+            throw new Error('Fehler bei: /getIsAiLoading, waitingForAiResponse');
+          }
+          const data = await response.json();
+          if(!data.isAiLoading){
+            waitingForAiResponse = false;
+          }
+        }
+        setLoading(false);
+      }
+    } catch (error) {
+        console.error('Error fetching current ID:', error);
+    }
+  };
 
   const fetchCurrentTheme = async () => {
     try {
@@ -162,6 +204,7 @@ const Questionnaire: React.FC = () => {
   const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     setLoading(true);
+    setIsAiLoading(true);
     try {
       const response = await fetch('http://localhost:3000/api/generate-with-ai', {
         method: 'POST',
@@ -179,6 +222,7 @@ const Questionnaire: React.FC = () => {
     } catch (error) {
       console.error('Error in /api/generate-with-ai', error);
     } finally {
+      setIsAiLoading(false)
       setLoading(false);
     }
   };
