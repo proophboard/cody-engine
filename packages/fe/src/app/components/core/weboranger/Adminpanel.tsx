@@ -32,6 +32,7 @@ const Adminpanel = () => {
     fetchQuestionnaires();
     fetchCurrentTheme();
     fetchAiSource();
+    fetchCurrentId();
   }, []);
 
   const fetchAiSource = async () => {    try {
@@ -45,6 +46,20 @@ const Adminpanel = () => {
       console.error('Error fetching aiSource:', error);
     }
   }
+
+  const fetchCurrentId = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/getID');
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getID');
+      }
+      const data = await response.json();
+      setCurrentId(data.id);
+    } catch (error) {
+        console.error('Error fetching current ID:', error);
+    }
+  };
+
   const fetchQuestionnaires = async () => {
     setLoading(true);
     try {
@@ -475,6 +490,7 @@ const Adminpanel = () => {
             >
               Set ID
             </Button>
+            <Typography gutterBottom style={{ marginTop: '10px' }}>Current ID: {currentId}</Typography>
             </Box>
             <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
             <Box mt={4}>

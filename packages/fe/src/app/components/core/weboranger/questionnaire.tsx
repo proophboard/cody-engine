@@ -246,10 +246,14 @@ const Questionnaire: React.FC = () => {
   return (
 <Container maxWidth="sm">
   <Box display="flex" flexDirection="column" gap={3}>
-    <Typography variant="h6" gutterBottom>
-      Derzeitige ID: {currentId}
-    </Typography>
-
+    <Box display="flex" alignItems="center">
+      <Typography variant="h6" gutterBottom>
+        Themes will be Saved under ID:
+      </Typography>
+      <Typography variant="h6" gutterBottom fontWeight={"bold"} style={{ marginLeft: '10px' }}>
+        {currentId}
+      </Typography>
+    </Box>
     {questions.map((question) => (
       <Box
         key={question.id}
