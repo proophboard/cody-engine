@@ -19,9 +19,8 @@ const Adminpanel = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [openIDSnackbar, setOpenIDSnackbar] = useState(false);
   const [openDeleteAllSnackbar, setOpenDeleteAllSnackbar] = useState(false);
-  const [openDeleteIDSnackbar, setOpenDeleteIDSnackbar] = useState(false);
+  const [openUndoDeleteIDSnackbar, setOpenUndoDeleteIDSnackbar] = useState(false);
   const [openUndoDeleteThemeSnackbar, setOpenUndoDeleteThemeSnackbar] = useState(false);
-  const [IDtodelete, setIDtodelete] = useState<any>();
   const [openWarningSnackbar, setWarningSnackbar] = useState(false);
   const [aiSourceID, setAiSourceID] = useState('');
   //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
@@ -54,7 +53,6 @@ const Adminpanel = () => {
         throw new Error('Fehler bei: /getDocs');
       }
       const data = await response.json();
-      console.log("setQuestionnaires wurde auf", data, " gesetzt")
       setQuestionnaires(data);
     } catch (error) {
       console.error('Error fetching docFormat:', error);
@@ -179,7 +177,7 @@ const Adminpanel = () => {
         return newState;
       });
       setSnackbarMessage(`Deleted ID: ${category.replace('O4S-ai-', '')}`);
-      setOpenSuccessSnackbar(true);
+      setOpenUndoDeleteIDSnackbar(true)
     } catch (error) {
       console.error('Error in /deleteID', error);
     }
@@ -343,13 +341,31 @@ const Adminpanel = () => {
   const handleUndoDeleteTheme = async () => {
     try {
       const response = await fetch('http://localhost:3000/undoDeleteDoc', {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         }
       });
       if (!response.ok) {
         throw new Error('Fehler bei: /api/undoDeleteDoc');
+      }
+
+      fetchQuestionnaires();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleUndoDeleteID = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/undoDeleteID', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /api/undoDeleteID');
       }
 
       fetchQuestionnaires();
@@ -380,7 +396,7 @@ const Adminpanel = () => {
                     <Button
                       variant="contained"
                       color="primary"
-                      onClick={() => {setSnackbarMessage("Wollen Sie die ID wirklich Löschen?"); setIDtodelete(category); setOpenDeleteIDSnackbar(true)}}
+                      onClick={() => {handleDeleteID(category)}}
                       style={{ marginLeft: '10px', marginBottom: '6px' }}
                     >
                       Delete ID
@@ -533,6 +549,7 @@ const Adminpanel = () => {
             variant="contained"
             color="primary"
             onClick={handleForceSetId}
+            style={{ marginLeft: '16px' }}
           >
             Force Set ID
           </Button>
@@ -551,26 +568,26 @@ const Adminpanel = () => {
           </Button>
         </Alert>
       </Snackbar>
-      <Snackbar open={openDeleteIDSnackbar} autoHideDuration={6000} onClose={() => setOpenDeleteIDSnackbar(false)}>
-        <Alert onClose={() => setOpenDeleteIDSnackbar(false)} severity="warning">
-          {snackbarMessage}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => handleDeleteID(IDtodelete)}
-            style={{ marginLeft: '16px' }}
-          >
-            DELETE
-          </Button>
-        </Alert>
-      </Snackbar>
       <Snackbar open={openUndoDeleteThemeSnackbar} autoHideDuration={6000} onClose={() => setOpenUndoDeleteThemeSnackbar(false)}>
         <Alert onClose={() => setOpenUndoDeleteThemeSnackbar(false)} severity="warning">
           {snackbarMessage}
           <Button
             variant="contained"
             color="primary"
-            onClick={handleUndoDeleteTheme}
+            onClick={() => {handleUndoDeleteTheme(); setOpenUndoDeleteThemeSnackbar(false)}}
+            style={{ marginLeft: '16px' }}
+          >
+            UNDO
+          </Button>
+        </Alert>
+      </Snackbar>
+      <Snackbar open={openUndoDeleteIDSnackbar} autoHideDuration={6000} onClose={() => setOpenUndoDeleteIDSnackbar(false)}>
+        <Alert onClose={() => setOpenUndoDeleteIDSnackbar(false)} severity="warning">
+          {snackbarMessage}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {handleUndoDeleteID(); setOpenUndoDeleteIDSnackbar(false)}}
             style={{ marginLeft: '16px' }}
           >
             UNDO

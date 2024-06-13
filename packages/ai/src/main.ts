@@ -33,7 +33,21 @@ interface DeletedThemeData {
 }
 
 //Die ID welche zuletzt gelöscht wurde
-let lastDeletedIdData = {};
+let lastDeletedIdData : DeletedIDData | null = null;
+
+interface Theme {
+  doc: {
+    json: object;
+    questionaire: object;
+  };
+}
+
+interface DeletedIDData {
+  id: string;
+  themes: {
+    [key: string]: Theme;
+  };
+}
 
 // CORS und JSON Middleware verwenden
 app.use(cors({ origin: 'http://localhost:4200' }));
@@ -198,15 +212,10 @@ app.post('/deleteDatabaseEntries', async (req, res) => {
 });
 
 app.post('/deleteDoc', async (req, res) => {
-  console.log("Received deleteDoc request");
   const data = req.body
-  console.log("category / Data: ", data.category, data.docName)
   const themeandquestionnaire = await getDoc(data.category, data.docName);
-  console.log("Themeandquestionnaire ist:", themeandquestionnaire)
-  //Dies bastard scheiss variable ist immer null
   if (themeandquestionnaire){
     lastDeletedThemeData = { id : data.category, docName : data.docName, themeandquestionnaire : { json: themeandquestionnaire.json, questionaire: themeandquestionnaire.questionaire}}
-    console.log("LastDeletedThemeData ist ", lastDeletedThemeData)
     await deleteDoc(data.category, data.docName)
     res.json({ success: true })
   } else {
@@ -214,11 +223,8 @@ app.post('/deleteDoc', async (req, res) => {
   }
 });
 
-app.post('/undoDeleteDoc', async (req, res) => {
-  console.log("Received undoDeleteDoc request");
-  console.log("Current lastDeletedThemeData:", lastDeletedThemeData);
+app.put('/undoDeleteDoc', async (req, res) => {
   if(lastDeletedThemeData) {
-    console.log("Theme wird wiederhergestellt")
     saveDoc(lastDeletedThemeData.id.replace('O4S-ai-', ''), lastDeletedThemeData.docName, lastDeletedThemeData.themeandquestionnaire.json, lastDeletedThemeData.themeandquestionnaire.questionaire)
     res.status(200).json({ success: true, ok: true });
     lastDeletedThemeData = null;
@@ -230,15 +236,26 @@ app.post('/undoDeleteDoc', async (req, res) => {
 app.post('/deleteID', async (req, res) => {
   const data = req.body
   const themes = await getAllDocsForSpecificId(data.category)
-  lastDeletedIdData = { id: data.category, themes : themes }
-  await deleteID(data.category)
-  res.json({ success: true })
+  if (data.category){
+    lastDeletedIdData = { id: data.category, themes : themes }
+    await deleteID(data.category)
+    res.status(200).json({ success: true, ok: true });
+  } else {
+    res.status(400).json({ success: false, ok: false, message: 'No ID to delete' });
+  }
 });
 
-app.post('/undoDeleteID', async (req, res) => {
-
-  res.status(200).json({ success: true, ok: true });
-  res.status(400).json({ success: false, ok: false, message: 'No ID to undo delete' });
+app.put('/undoDeleteID', async (req, res) => {
+  if(lastDeletedIdData) {
+    for (const key in lastDeletedIdData.themes) {
+      const keyAsString = key;
+      saveDoc(lastDeletedIdData.id.replace('O4S-ai-', ''), keyAsString, lastDeletedIdData.themes[key].doc.json, lastDeletedIdData.themes[key].doc.questionaire);
+    }
+    res.status(200).json({ success: true, ok: true });
+    lastDeletedIdData = null
+  } else {
+    res.status(400).json({ success: false, ok: false, message: 'No document to undo delete' });
+  }
 });
 
 app.post('/setAiSource', async (req, res) => {
@@ -258,7 +275,6 @@ app.get('/getIsAiLoading', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  const aiSourceDoc = getAiSource();
   setAiSource("local");
   console.log(`AI Backend Server running on port ${PORT}`);
 });
