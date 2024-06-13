@@ -14,6 +14,10 @@ export const normalizeUiSchema = (uiSchema: UiSchema, ctx: any): UiSchema => {
     }
   }
 
+  if(schema['ui:emptyValue:expr']) {
+    schema['ui:emptyValue'] = jexl.evalSync(schema['ui:emptyValue:expr'], ctx);
+  }
+
   for (const schemaKey in schema) {
     if(schemaKey.search('ui:') === -1) {
       schema[schemaKey] = normalizeUiSchema(schema[schemaKey], ctx);
