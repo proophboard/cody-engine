@@ -297,7 +297,7 @@ const Questionnaire: React.FC = () => {
       onChange={(e) => setSaveUnder(e.target.value)}
       fullWidth
     />
-
+    <Typography fontWeight="light" fontSize="small" marginBottom="-25px">Your last generated Theme will be saved</Typography>
     <Button
       variant="contained"
       color="primary"

@@ -455,7 +455,7 @@ const Adminpanel = () => {
               <Button
               variant="contained"
               color="primary"
-              onClick={() => {setSnackbarMessage("Sind Sie sicher dass Sie alle Datenbankinhalte löschen wollen?"); setOpenDeleteAllSnackbar(true)}}
+              onClick={() => {setSnackbarMessage("Are you sure you want to delete ALL entries in the database?"); setOpenDeleteAllSnackbar(true)}}
               style={{ marginRight: '16px' }}
             >
             Delete all Data
@@ -470,7 +470,7 @@ const Adminpanel = () => {
             </Box>
             <Box>
             <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 3 }} />
-            <Typography variant="h4" gutterBottom style={{ marginBottom: '10px' }}>Set ID for Questionnaire:</Typography>
+            <Typography variant="h4" gutterBottom style={{ marginBottom: '10px' }}>Set Tester-ID:</Typography>
             <TextField
               label="ID"
               variant="outlined"
@@ -490,10 +490,10 @@ const Adminpanel = () => {
             >
               Set ID
             </Button>
-            <Typography gutterBottom style={{ marginTop: '10px' }}>Current ID: {currentId}</Typography>
+            <Typography style={{ marginTop: '10px' }}>Current ID: {currentId}</Typography>
             </Box>
             <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
-            <Box mt={4}>
+            <Box>
               <Typography variant="h4" gutterBottom>Questionnaire Statistics</Typography>
               <TableContainer component={Paper}>
                 <Table>
