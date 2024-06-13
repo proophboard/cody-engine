@@ -205,7 +205,7 @@ const Adminpanel = () => {
     [category: string]: {
       [docName: string]: {
         doc: {
-          questionaire: {
+          questionnaire: {
             [questionId: string]: {
               question: string;
               answer: string;
@@ -227,7 +227,7 @@ const Adminpanel = () => {
 
     Object.keys(questionnaires).forEach(category => {
       Object.keys(questionnaires[category]).forEach(doc => {
-        const questionnaire = questionnaires[category][doc].doc.questionaire;
+        const questionnaire = questionnaires[category][doc].doc.questionnaire;
         Object.keys(questionnaire).forEach(questionId => {
           const question = questionnaire[questionId].question;
           const answer = questionnaire[questionId].answer;

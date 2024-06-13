@@ -28,7 +28,7 @@ interface DeletedThemeData {
   docName: string;
   themeandquestionnaire: {
     json: any;  
-    questionaire: any;  
+    questionnaire: any;  
   };
 }
 
@@ -38,7 +38,7 @@ let lastDeletedIdData : DeletedIDData | null = null;
 interface Theme {
   doc: {
     json: object;
-    questionaire: object;
+    questionnaire: object;
   };
 }
 
@@ -215,7 +215,7 @@ app.post('/deleteDoc', async (req, res) => {
   const data = req.body
   const themeandquestionnaire = await getDoc(data.category, data.docName);
   if (themeandquestionnaire){
-    lastDeletedThemeData = { id : data.category, docName : data.docName, themeandquestionnaire : { json: themeandquestionnaire.json, questionaire: themeandquestionnaire.questionaire}}
+    lastDeletedThemeData = { id : data.category, docName : data.docName, themeandquestionnaire : { json: themeandquestionnaire.json, questionnaire: themeandquestionnaire.questionnaire}}
     await deleteDoc(data.category, data.docName)
     res.json({ success: true })
   } else {
@@ -225,7 +225,7 @@ app.post('/deleteDoc', async (req, res) => {
 
 app.put('/undoDeleteDoc', async (req, res) => {
   if(lastDeletedThemeData) {
-    saveDoc(lastDeletedThemeData.id.replace('O4S-ai-', ''), lastDeletedThemeData.docName, lastDeletedThemeData.themeandquestionnaire.json, lastDeletedThemeData.themeandquestionnaire.questionaire)
+    saveDoc(lastDeletedThemeData.id.replace('O4S-ai-', ''), lastDeletedThemeData.docName, lastDeletedThemeData.themeandquestionnaire.json, lastDeletedThemeData.themeandquestionnaire.questionnaire)
     res.status(200).json({ success: true, ok: true });
     lastDeletedThemeData = null;
   } else {
@@ -249,7 +249,7 @@ app.put('/undoDeleteID', async (req, res) => {
   if(lastDeletedIdData) {
     for (const key in lastDeletedIdData.themes) {
       const keyAsString = key;
-      saveDoc(lastDeletedIdData.id.replace('O4S-ai-', ''), keyAsString, lastDeletedIdData.themes[key].doc.json, lastDeletedIdData.themes[key].doc.questionaire);
+      saveDoc(lastDeletedIdData.id.replace('O4S-ai-', ''), keyAsString, lastDeletedIdData.themes[key].doc.json, lastDeletedIdData.themes[key].doc.questionnaire);
     }
     res.status(200).json({ success: true, ok: true });
     lastDeletedIdData = null
