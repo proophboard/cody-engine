@@ -4,7 +4,16 @@ import ColorPicker from '@frontend/app/components/core/weboranger/ColorPicker';
 import SliderComponent from '@frontend/app/components/core/weboranger/SliderComponent';
 import OptionsQuestion from '@frontend/app/components/core/weboranger/OptionsQuestion';
 import TextQuestion from '@frontend/app/components/core/weboranger/TextQuestion';
-import { Box, Button, CircularProgress, Container, Divider, TextField, Typography, useTheme } from '@mui/material';
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Container,
+  Divider,
+  TextField,
+  Typography,
+  useTheme,
+} from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
 import Snackbar from '@mui/material/Snackbar';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
@@ -17,63 +26,63 @@ interface Question {
   slider?: boolean;
 }
 
-const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(
-  props,
-  ref,
-) {
+const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
 });
 
 const Questionnaire: React.FC = () => {
   const { applyTheme } = useContext(ThemeContext);
   const theme = useTheme();
+  const [temperature, setTemperature] = useState<number>(0.9);
 
-  // Edit/Add Questions and options here
   const questions: Question[] = [
-    { id: 1, text: 'Welches Thema soll die Anwendung haben?', options: ['Seriös', 'Energiegeladen', 'Fröhlich', 'Naturverbunden', 'Technisch', 'Minimalistisch', 'Premium',] },
+    {
+      id: 1,
+      text: 'Welches Thema soll die Anwendung haben?',
+      options: ['Seriös', 'Energiegeladen', 'Fröhlich', 'Naturverbunden', 'Technisch', 'Minimalistisch', 'Premium'],
+    },
     { id: 2, text: 'Gibt es eine bestimmte Farbe, die die Anwendung haben soll?', colorPicker: true },
     { id: 3, text: 'Wie stark soll die Gewichtung der Farbe sein?', slider: true },
-    { id: 4, text: 'Welches Thema soll die Schriftart haben?', options: ['Verspielt', 'Schlicht', 'Maschinell', 'Gerundet', 'Elegant', 'Gebrochen', 'Dramatisch', 'Sachlich'] },
+    {
+      id: 4,
+      text: 'Welches Thema soll die Schriftart haben?',
+      options: ['Verspielt', 'Schlicht', 'Maschinell', 'Gerundet', 'Elegant', 'Dramatisch', 'Sachlich'],
+    },
   ];
 
-  // Set default response if no value was given by the user
   const defaultResponses = questions.reduce((acc, question) => {
     acc[question.id] = {
       question: question.text,
-      answer: question.options ? question.options[0] : (question.colorPicker ? null : ""),
+      answer: question.options
+        ? question.options[0]
+        : question.colorPicker
+        ? null
+        : '',
     };
     return acc;
   }, {} as Record<any, any>);
 
-  // Retrieve saved responses from localStorage or set to default
   const savedResponses = JSON.parse(localStorage.getItem('responses') || JSON.stringify(defaultResponses));
 
-  //Diese Methode ist notwendig da wenn man sonst im "questions" Array einträge entfernt (hier im Code) Sie trotzdem lokal im Browser im lokalstorage
-  //bleiben und dann die responses für die Fragen die man nicht mehr sieht an die KI geschickt werden
-  // Filter out stale responses
   const mergedResponses = Object.keys(savedResponses).reduce((acc, key) => {
     const id = Number(key);
-    if (questions.find(question => question.id === id)) {
+    if (questions.find((question) => question.id === id)) {
       acc[id] = savedResponses[key];
     }
     return acc;
-  }, {} as Record<any, any>)
+  }, {} as Record<any, any>);
 
-  // Handle State (answers)
   const [responses, setResponses] = useState<Record<any, any>>(mergedResponses);
   const [loading, setLoading] = useState(false);
-  //Die ID aus dem Input feld
   const [saveUnder, setSaveUnder] = useState<string>('');
   const [openWarningSnackbar, setWarningSnackbar] = useState(false);
   const [warningSnackbarMessage, setWarningSnackbarMessage] = useState<string>('');
   const [openSuccessSnackbar, setSuccessSnackbar] = useState(false);
   const [successSnackbarMessage, setSuccessSnackbarMessage] = useState<string>('');
-  //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
   const [currentId, setCurrentId] = useState<string>(() => {
     return localStorage.getItem('currentId') || '';
   });
 
-  //Holt sich die aktuelle ID vom server wenn die Komponente geladen wird
   useEffect(() => {
     fetchCurrentTheme();
     fetchCurrentId();
@@ -86,8 +95,7 @@ const Questionnaire: React.FC = () => {
         throw new Error('Fehler bei: /getLastTheme');
       }
       const data = await response.json();
-      console.log(data.theme)
-      applyTheme(data.theme)
+      applyTheme(data.theme);
     } catch (error) {
       console.error('Error fetching current ID:', error);
     }
@@ -106,57 +114,54 @@ const Questionnaire: React.FC = () => {
     }
   };
 
-  // Save responses to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem('responses', JSON.stringify(responses));
-    console.log('Responses saved to localStorage:', responses);
   }, [responses]);
 
-  // Update State when <input> is changed
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>, id: number) => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+    id: number,
+  ) => {
     const value = e.target.value;
-    setResponses(prevResponses => {
+    setResponses((prevResponses) => {
       const updatedResponses = {
         ...prevResponses,
         [id]: {
-          question: questions.find(question => question.id === id)?.text!,
-          answer: value
-        }
+          question: questions.find((question) => question.id === id)?.text!,
+          answer: value,
+        },
       };
-      console.log('Updated Responses:', updatedResponses);
       return updatedResponses;
     });
   };
 
   const handleColorChange = (color: string, id: number) => {
-    setResponses(prevResponses => {
+    setResponses((prevResponses) => {
       const updatedResponses = {
         ...prevResponses,
         [id]: {
-          question: questions.find(question => question.id === id)?.text!,
-          answer: color
-        }
+          question: questions.find((question) => question.id === id)?.text!,
+          answer: color,
+        },
       };
-      console.log('Updated Responses:', updatedResponses);
       return updatedResponses;
     });
   };
 
   const handleSliderChange = (value: number, id: number) => {
-    setResponses(prevResponses => {
+    setResponses((prevResponses) => {
       const updatedResponses = {
         ...prevResponses,
         [id]: {
-          question: questions.find(question => question.id === id)?.text!,
-          answer: value
-        }
+          question: questions.find((question) => question.id === id)?.text!,
+          answer: value,
+        },
       };
-      console.log('Updated Responses:', updatedResponses);
       return updatedResponses;
     });
   };
 
-  const handleSave = async (e: { preventDefault: () => void; }) => {
+  const handleSave = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -173,15 +178,12 @@ const Questionnaire: React.FC = () => {
       const responseData = await response.json();
 
       if (!responseData.success) {
-        console.log(responseData.message);
         setWarningSnackbarMessage(responseData.message);
-        setWarningSnackbar(true)
+        setWarningSnackbar(true);
       } else {
-        console.log(responseData.message);
         setSuccessSnackbarMessage(responseData.message);
         setSuccessSnackbar(true);
       }
-
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -189,7 +191,7 @@ const Questionnaire: React.FC = () => {
     }
   };
 
-  const handleSubmit = async (e: { preventDefault: () => void; }) => {
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setLoading(true);
     try {
@@ -198,27 +200,16 @@ const Questionnaire: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: responses }),
+        body: JSON.stringify({ message: responses, temperature }),
       });
       if (!response.ok) {
         throw new Error('Fehler bei: /api/generate-with-ai');
       } else {
-        const responseJson = await response.json()
-        applyTheme(responseJson.theme)
+        const responseJson = await response.json();
+        applyTheme(responseJson.theme);
       }
     } catch (error) {
       console.error('Error in /api/generate-with-ai', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const testMethod = async (e: { preventDefault: () => void; }) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('http://localhost:3000/getDocs')
-    } catch (error) {
-      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
@@ -252,22 +243,46 @@ const Questionnaire: React.FC = () => {
               />
             ) : question.slider ? (
               <SliderComponent
-                value={responses[question.id] ? responses[question.id].answer : 50}
+                value={responses[question.id]?.answer ?? 50}
                 onChange={(value) => handleSliderChange(value, question.id)}
+                min={0}
+                max={100}
+                step={1}
+                percentage
               />
             ) : (
               <TextQuestion handleInputChange={handleInputChange} question={question} />
             )}
           </Box>
         ))}
+
+        <Box
+          p={4}
+          mb={2}
+          bgcolor={theme.palette.background.default}
+          borderRadius={2}
+          boxShadow={1}
+        >
+          <Typography variant="h5" fontWeight="light" gutterBottom>
+            Bestimmen Sie die Temperatur der KI
+          </Typography>
+          <SliderComponent
+            value={temperature}
+            onChange={(value) => setTemperature(value)}
+            min={0.1}
+            max={0.9}
+            step={0.1}
+          />
+        </Box>
+
         <Button
           variant="contained"
           color="primary"
           onClick={handleSubmit}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
-          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
-          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = theme.palette.primary.dark)}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = theme.palette.primary.main)}
+          onMouseDown={(e) => (e.currentTarget.style.backgroundColor = theme.palette.primary.light)}
+          onMouseUp={(e) => (e.currentTarget.style.backgroundColor = theme.palette.primary.dark)}
         >
           Submit
         </Button>
@@ -285,10 +300,10 @@ const Questionnaire: React.FC = () => {
           variant="contained"
           color="primary"
           onClick={handleSave}
-          onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-          onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
-          onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
-          onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+          onMouseOver={(e) => (e.currentTarget.style.backgroundColor = theme.palette.primary.dark)}
+          onMouseOut={(e) => (e.currentTarget.style.backgroundColor = theme.palette.primary.main)}
+          onMouseDown={(e) => (e.currentTarget.style.backgroundColor = theme.palette.primary.light)}
+          onMouseUp={(e) => (e.currentTarget.style.backgroundColor = theme.palette.primary.dark)}
         >
           Save
         </Button>
@@ -307,8 +322,6 @@ const Questionnaire: React.FC = () => {
           {successSnackbarMessage}
         </Alert>
       </Snackbar>
-
-
     </Container>
   );
 };

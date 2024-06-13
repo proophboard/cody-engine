@@ -1,7 +1,7 @@
 import express from 'express';
 import { askAI } from './aiInterface';
 import cors from 'cors';
-import { generateAIPrompt, generateFixAIPrompt, checkAndRegenerateJSON } from './promptGenerator';
+import { generateAIPrompt } from './promptGenerator';
 import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs, deleteEverything, deleteDoc, deleteID } from './storageController';
 
 // Erstellen einer neuen Express-Anwendung
@@ -46,14 +46,13 @@ function hasEmptyStrings(value: unknown): boolean {
 }
 
 // Funktion um die KI-Anfrage zu wiederholen, falls die Antwort nicht den Anforderungen entspricht
-async function retryAskAI(AIprompt: string, preferences: any, retries = 5) {
+async function retryAskAI(AIprompt: string, preferences: any, temperature: number, retries = 5) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      const response = await askAI(AIprompt);
+      const response = await askAI(AIprompt, temperature);
       console.log(`AI Response Attempt ${attempt}: ${response}`);
 
-      //Das muss sein weil typescript ohne den if block sagt, dass response null sein könnte
-      let jsonMatch = null
+      let jsonMatch = null;
       if (response) {
         jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/i) || response.match(/```(?:\s*([\s\S]*?)\s*)```/i) || response.match(/({[\s\S]*})/i);
       }
@@ -64,28 +63,28 @@ async function retryAskAI(AIprompt: string, preferences: any, retries = 5) {
         if (isValidJSON(extractedJSON)) {
           const jsonResponse = JSON.parse(extractedJSON);
           console.log(`Valid JSON found on attempt ${attempt}`);
-          
+
           if (!hasEmptyStrings(jsonResponse)) {
             return jsonResponse;
           } else {
             console.warn(`Attempt ${attempt} failed: JSON contains empty strings.`);
-            AIprompt = checkAndRegenerateJSON(response, preferences);
+            AIprompt = generateAIPrompt(preferences, response);
           }
         } else {
           console.warn(`Attempt ${attempt} failed: Extracted JSON is invalid.`);
-          AIprompt = generateFixAIPrompt(response, preferences);
+          AIprompt = generateAIPrompt(preferences, response);
         }
       } else {
         console.warn(`Attempt ${attempt} failed: No JSON code block found.`);
-        AIprompt = generateFixAIPrompt(response, preferences);
+        AIprompt = generateAIPrompt(preferences, response);
       }
     } catch (error) {
       if (error instanceof Error) {
         console.warn(`Attempt ${attempt} failed: ${error.message}`);
-        AIprompt = generateFixAIPrompt(error.message, preferences);
+        AIprompt = generateAIPrompt(preferences, error.message);
       } else {
         console.warn(`Attempt ${attempt} failed with an unknown error`);
-        AIprompt = generateFixAIPrompt('Unknown error', preferences);
+        AIprompt = generateAIPrompt(preferences, 'Unknown error');
       }
     }
   }
@@ -94,11 +93,11 @@ async function retryAskAI(AIprompt: string, preferences: any, retries = 5) {
 
 // Endpunkt zum Generieren einer Theme-Konfiguration mit KI
 app.post('/api/generate-with-ai', async (req, res) => {
-  const userPreferences = req.body;
+  const { message, temperature } = req.body;
+  const userPreferences = message;
   let AIprompt = generateAIPrompt(userPreferences);
   try {
-    //kann es theoretisch sein das in storedThemeConfig etwas ist was keinen sinn macht?
-    latestGeneratedTheme = await retryAskAI(AIprompt, userPreferences);
+    latestGeneratedTheme = await retryAskAI(AIprompt, userPreferences, temperature);
     applyedTheme = JSON.parse(JSON.stringify(latestGeneratedTheme));
     res.json({ success: true, theme: latestGeneratedTheme });
   } catch (error) {
@@ -164,14 +163,14 @@ app.get('/getDocs', async (req, res) => {
 });
 
 app.get('/getLastTheme', async (req, res) => {
-  res.json({ theme : applyedTheme })
+  res.json({ theme: applyedTheme })
 });
 
 //Is das ein sicherheitsrisiko wenn man einfach den body einer anfrage nimmt und settet?
-app.post('/setAppliedTheme', async (req,res) => {
+app.post('/setAppliedTheme', async (req, res) => {
   const data = req.body
   applyedTheme = data.theme
-  res.json({ success : true })
+  res.json({ success: true })
 })
 
 app.post('/getDoc', async (req, res) => {

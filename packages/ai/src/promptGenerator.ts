@@ -95,11 +95,11 @@ const jsonCode = `
 `;
 
 
-function generateAIPrompt(preferences: any) {
+function generateAIPrompt(preferences: any, previousResponse?: string | null) {
   console.log('User preferences:\n', preferences)
   return JSON.stringify({
     messages: [
-      { role: 'system', content: 'You are an AI designed to generate MUI theme configurations based on a given template. Change the given template and generate a new MUI theme configuration. Dont leave the default options and never leave any placeholders. Everything should be filled out in a way that makes sense and with good UI/UX' },
+      { role: 'system', content: 'You are an AI designed to generate MUI theme configurations based on a given template. Change the given template and generate a new MUI theme configuration. Never leave the default options or empty strings or null and never leave any placeholders. Everything should be filled out in a way that makes sense and with good UI/UX' },
       { role: 'user', content: `User preferences: ${JSON.stringify(preferences, null, 2)}`},
       { role: 'user', content: `${jsonCode}` },
       { role: 'user', content: 'Ensure all fields are filled in and more importantly: changed according to the user preferences.' }
@@ -107,27 +107,4 @@ function generateAIPrompt(preferences: any) {
   });
 }
 
-function generateFixAIPrompt(previousResponse: string | null, preferences?: any) {
-  return JSON.stringify({
-    messages: [
-      { role: 'system', content: 'You are an AI designed to generate MUI theme configurations based on a given template. Change the given template and generate a new MUI theme configuration. Dont always leave the default options.' },
-      { role: 'user', content: `User preferences: ${JSON.stringify(preferences, null, 2)}`},
-      { role: 'user', content: `${jsonCode}` },
-      { role: 'user', content: 'Ensure all fields are filled in and more importantly: changed according to the user preferences.' }
-    ]
-  });
-}
-
-function checkAndRegenerateJSON(previousResponse: any, preferences: any) {
-  return JSON.stringify({
-    messages: [
-      { role: 'system', content: 'You are an AI designed to generate MUI theme configurations based on a given template. Change the given template and generate a new MUI theme configuration. Dont always leave the default options.' },
-      { role: 'user', content: `Previous response: ${previousResponse}` },
-      { role: 'user', content: `User preferences: ${JSON.stringify(preferences, null, 2)}`},
-      { role: 'user', content: `${jsonCode}` },
-      { role: 'user', content: 'Ensure all fields are filled in and more importantly: changed according to the user preferences.' }
-    ]
-  });
-}
-
-export { generateAIPrompt, generateFixAIPrompt, checkAndRegenerateJSON };
+export { generateAIPrompt };

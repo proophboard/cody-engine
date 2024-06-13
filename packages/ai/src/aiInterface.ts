@@ -11,15 +11,16 @@ const openai = new OpenAI({
 });
 
 // Funktion zum Senden einer Anfrage an die KI
-export async function askAI(AIprompt: string) {
+export async function askAI(AIprompt: string, temperature: number) {
     console.log("Rufe KI auf...");
+    console.log("temperature: ", temperature);
     try {
         // Erstellen und Senden der Anfrage
         const response = await openai.chat.completions.create({
             model: "llama3",
             response_format: { "type": "json_object" },
             messages: JSON.parse(AIprompt).messages,
-            temperature: 0.9,
+            temperature: temperature,
             max_tokens: 8000,
         });
         // Rückgabe der KI-Antwort
