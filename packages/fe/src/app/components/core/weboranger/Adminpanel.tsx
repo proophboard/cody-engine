@@ -3,6 +3,8 @@ import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackba
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { ThemeContext } from '@frontend/app/providers/ToggleColorMode';
 import theme from "@frontend/extensions/app/layout/theme";
+import IconWithCard from './IconWithCard';
+import QuestionnairePopup from "./QuestionnairePopup";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -23,6 +25,8 @@ const Adminpanel = () => {
   const [openUndoDeleteThemeSnackbar, setOpenUndoDeleteThemeSnackbar] = useState(false);
   const [openWarningSnackbar, setWarningSnackbar] = useState(false);
   const [aiSourceID, setAiSourceID] = useState('');
+  const [jsonToShow, setJsonToShow] = useState({});
+  const [showJsonToShowPopup, setShowJsonToShowPopup] = useState(false);
   //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
   const [currentId, setCurrentId] = useState<string>(() => {
     return localStorage.getItem('currentId') || '';
@@ -389,11 +393,66 @@ const Adminpanel = () => {
     }
   };
 
+  const handleShowQuestionnaire = async (category: string, docName: string) => {
+    try {
+      const response = await fetch('http://localhost:3000/getDoc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ category: category, docName: docName }),
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getDoc');
+      } else {
+        const data = await response.json();
+        console.log("Received Data to show: ", data)
+      //!!!!!
+        setJsonToShow(data.theme.questionnaire); // Setze das empfangene JSON in den State
+        setShowJsonToShowPopup(true); // Zeige das Popup an
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleClosePopup = () => {
+    setShowJsonToShowPopup(false);
+    setJsonToShow({}); // Zurücksetzen des JSON im State
+  };
+
   const questionCounts = aggregateResponses(questionnaires);
 
   return (
     <Container maxWidth="md">
       <Box display="flex" flexDirection="column" gap={3} mt={4}>
+          <Box>
+            <Box display="flex" alignItems="center">
+              <Typography variant="h4" gutterBottom style={{ marginBottom: '10px' }}>Set Tester-ID:</Typography>
+              <IconWithCard cardContent="This is the ID under which the Questionnaire in the 'Questionnaire AI' Tab will be saved." />
+            </Box>
+            <TextField
+              label="ID"
+              variant="outlined"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              fullWidth
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleTrySetId}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+              onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+              onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+              style={{ marginTop: '16px' }}
+            >
+              Set ID
+            </Button>
+            <Typography style={{ marginTop: '10px' }}>Current ID: {currentId}</Typography>
+          </Box>
+        <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
         <Typography variant="h4" gutterBottom>Saved Themes</Typography>
         {loading ? (
           <Backdrop open={loading}>
@@ -430,6 +489,14 @@ const Adminpanel = () => {
                             <Button
                               variant="contained"
                               color="primary"
+                              onClick={() => handleShowQuestionnaire(category, docName)}
+                              style={{ marginRight: '10px' }}
+                            >
+                              Show 
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="primary"
                               onClick={() => handleApplyTheme(category, docName)}
                               style={{ marginRight: '10px' }}
                             >
@@ -451,6 +518,9 @@ const Adminpanel = () => {
               ))}
 
             </List>
+            {showJsonToShowPopup &&
+              <QuestionnairePopup onClose={handleClosePopup} questions={jsonToShow} />
+            }
             <Box display="flex" justifyContent="flex-start">
               <Button
               variant="contained"
@@ -468,31 +538,7 @@ const Adminpanel = () => {
             Apply Default Theme
             </Button>
             </Box>
-            <Box>
             <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 3 }} />
-            <Typography variant="h4" gutterBottom style={{ marginBottom: '10px' }}>Set Tester-ID:</Typography>
-            <TextField
-              label="ID"
-              variant="outlined"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              fullWidth
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleTrySetId}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
-              onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
-              onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-              style={{ marginTop: '16px' }}
-            >
-              Set ID
-            </Button>
-            <Typography style={{ marginTop: '10px' }}>Current ID: {currentId}</Typography>
-            </Box>
-            <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
             <Box>
               <Typography variant="h4" gutterBottom>Questionnaire Statistics</Typography>
               <TableContainer component={Paper}>

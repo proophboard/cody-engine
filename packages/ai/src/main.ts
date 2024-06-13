@@ -156,16 +156,16 @@ app.post('/api/save-questionnaire', async (req, res) => {
   const data = req.body;
 
   if (!data.saveUnder) {
-    res.json({ success: false, message: "Der Name darf nicht leer sein!" })
+    res.json({ success: false, message: "Please choose a name under which to save the theme!" })
   } else if (!currentID) {
-    res.json({ success: false, message: "Die ID darf nicht leer sein!" })
+    res.json({ success: false, message: "The ID cant be empty!" })
   } else if (Object.keys(latestGeneratedTheme).length === 0) {
-    res.json({ success: false, message: "Sie müssen zuerst ihren Fragebogen abschicken! Es wird immer die zuletzt abgeschickte Fragebogen gespeichert." })
+    res.json({ success: false, message: "Please submit the questionnaire first!" })
   } else if (await checkIfDocIsExisting(currentID, data.saveUnder)) {
-    res.json({ success: false, message: "Name für diese ID bereits vergeben" })
+    res.json({ success: false, message: "Name for the theme with this ID already in use!" })
   } else {
     await saveDoc(currentID, data.saveUnder, latestGeneratedTheme, data.message)
-    res.json({ success: true, message: "Theme erfolgreich gespeichert!" })
+    res.json({ success: true, message: "Theme saved successfully!" })
   }
   //dummy
   //await saveDoc("ID STRING", "NAME STRING" , {letzteJson : data}, {frage1 : "aw1", frage2 : "aw1"})
