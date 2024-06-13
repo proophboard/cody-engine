@@ -20,6 +20,7 @@ const Adminpanel = () => {
   const [openIDSnackbar, setOpenIDSnackbar] = useState(false);
   const [openDeleteAllSnackbar, setOpenDeleteAllSnackbar] = useState(false);
   const [openDeleteIDSnackbar, setOpenDeleteIDSnackbar] = useState(false);
+  const [openUndoDeleteThemeSnackbar, setOpenUndoDeleteThemeSnackbar] = useState(false);
   const [IDtodelete, setIDtodelete] = useState<any>();
   const [openWarningSnackbar, setWarningSnackbar] = useState(false);
   const [aiSourceID, setAiSourceID] = useState('');
@@ -53,6 +54,7 @@ const Adminpanel = () => {
         throw new Error('Fehler bei: /getDocs');
       }
       const data = await response.json();
+      console.log("setQuestionnaires wurde auf", data, " gesetzt")
       setQuestionnaires(data);
     } catch (error) {
       console.error('Error fetching docFormat:', error);
@@ -135,6 +137,8 @@ const Adminpanel = () => {
 
   const handleDeleteTheme = async (category: string, docName: string) => {
     try {
+      console.log("Übergebene category: ", category)
+      console.log("Übergebene docName: ", docName)
       const response = await fetch('http://localhost:3000/deleteDoc', {
         method: 'POST',
         headers: {
@@ -151,7 +155,7 @@ const Adminpanel = () => {
         return newState;
       });
       setSnackbarMessage(`Deleted Theme: ${category.replace('O4S-ai-', '')} - ${docName}`);
-      setOpenSuccessSnackbar(true);
+      setOpenUndoDeleteThemeSnackbar(true)
     } catch (error) {
       console.error('Error in /deleteDoc', error);
     }
@@ -331,6 +335,24 @@ const Adminpanel = () => {
       }
       
 
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleUndoDeleteTheme = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/undoDeleteDoc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /api/undoDeleteDoc');
+      }
+
+      fetchQuestionnaires();
     } catch (error) {
       console.error('Error:', error);
     }
@@ -539,6 +561,19 @@ const Adminpanel = () => {
             style={{ marginLeft: '16px' }}
           >
             DELETE
+          </Button>
+        </Alert>
+      </Snackbar>
+      <Snackbar open={openUndoDeleteThemeSnackbar} autoHideDuration={6000} onClose={() => setOpenUndoDeleteThemeSnackbar(false)}>
+        <Alert onClose={() => setOpenUndoDeleteThemeSnackbar(false)} severity="warning">
+          {snackbarMessage}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleUndoDeleteTheme}
+            style={{ marginLeft: '16px' }}
+          >
+            UNDO
           </Button>
         </Alert>
       </Snackbar>

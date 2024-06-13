@@ -30,7 +30,13 @@ export async function saveDoc(id: string, name : string, json: any, questionaire
 //format: { questionnaire: {...}, json: {...}}
 //Questionnaire sind die fragen und die json ist die json die man 1:1 so in applyTheme setzen kann
 //Hier muss der präfix nicht gesetzt werden weil man den präfix schon in der id mit übergibt
-export async function getDoc(id: any, name: any){
+export interface doc {
+  json: any;  
+  questionaire: any;  
+  
+}
+
+export async function getDoc(id: any, name: any) : Promise<doc | null> {
     return await documentStore.getDoc(id, name)
 }
 
@@ -55,6 +61,16 @@ export async function checkIfDocIsExisting(id: any, name: any) : Promise<boolean
 export async function getAllDocs() :  Promise<any> {
   const docs = await documentStore.getAllO4SaiDocs();
   return docs
+}
+
+export async function getAllDocsForSpecificId(docId: string) {
+  const docs = await documentStore.getAllO4SaiDocs();
+
+  if (docs.hasOwnProperty(docId)) {
+    return docs[docId];
+  } else {
+    throw new Error(`Document with ID ${docId} not found`);
+  }
 }
 
 //Löscht ein Document in einer ID

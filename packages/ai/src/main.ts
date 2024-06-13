@@ -2,7 +2,7 @@ import express from 'express';
 import { askAI } from './aiInterface';
 import cors from 'cors';
 import { generateAIPrompt, generateFixAIPrompt } from './promptGenerator';
-import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs, deleteEverything, deleteDoc, deleteID, getAiSource, setAiSource } from './storageController';
+import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs, deleteEverything, deleteDoc, deleteID, getAiSource, setAiSource, getAllDocsForSpecificId, doc } from './storageController';
 
 // Erstellen einer neuen Express-Anwendung
 const app = express();
@@ -19,6 +19,21 @@ let currentID: any;
 
 //Ist nur true während die AI eine Anfrage bearbeitet
 let isAiLoading = false;
+
+//Das Theme welche zuletzt gelöscht wurde
+let lastDeletedThemeData : DeletedThemeData | null = null;
+
+interface DeletedThemeData {
+  id: string;
+  docName: string;
+  themeandquestionnaire: {
+    json: any;  
+    questionaire: any;  
+  };
+}
+
+//Die ID welche zuletzt gelöscht wurde
+let lastDeletedIdData = {};
 
 // CORS und JSON Middleware verwenden
 app.use(cors({ origin: 'http://localhost:4200' }));
@@ -183,15 +198,47 @@ app.post('/deleteDatabaseEntries', async (req, res) => {
 });
 
 app.post('/deleteDoc', async (req, res) => {
+  console.log("Received deleteDoc request");
   const data = req.body
-  const doc = await deleteDoc(data.category, data.docName)
-  res.json({ success: true })
+  console.log("category / Data: ", data.category, data.docName)
+  const themeandquestionnaire = await getDoc(data.category, data.docName);
+  console.log("Themeandquestionnaire ist:", themeandquestionnaire)
+  //Dies bastard scheiss variable ist immer null
+  if (themeandquestionnaire){
+    lastDeletedThemeData = { id : data.category, docName : data.docName, themeandquestionnaire : { json: themeandquestionnaire.json, questionaire: themeandquestionnaire.questionaire}}
+    console.log("LastDeletedThemeData ist ", lastDeletedThemeData)
+    await deleteDoc(data.category, data.docName)
+    res.json({ success: true })
+  } else {
+    res.status(400).json({ success: false, ok: false, message: 'No document to delete' });
+  }
+});
+
+app.post('/undoDeleteDoc', async (req, res) => {
+  console.log("Received undoDeleteDoc request");
+  console.log("Current lastDeletedThemeData:", lastDeletedThemeData);
+  if(lastDeletedThemeData) {
+    console.log("Theme wird wiederhergestellt")
+    saveDoc(lastDeletedThemeData.id.replace('O4S-ai-', ''), lastDeletedThemeData.docName, lastDeletedThemeData.themeandquestionnaire.json, lastDeletedThemeData.themeandquestionnaire.questionaire)
+    res.status(200).json({ success: true, ok: true });
+    lastDeletedThemeData = null;
+  } else {
+    res.status(400).json({ success: false, ok: false, message: 'No document to undo delete' });
+  }
 });
 
 app.post('/deleteID', async (req, res) => {
   const data = req.body
-  const doc = await deleteID(data.category)
+  const themes = await getAllDocsForSpecificId(data.category)
+  lastDeletedIdData = { id: data.category, themes : themes }
+  await deleteID(data.category)
   res.json({ success: true })
+});
+
+app.post('/undoDeleteID', async (req, res) => {
+
+  res.status(200).json({ success: true, ok: true });
+  res.status(400).json({ success: false, ok: false, message: 'No ID to undo delete' });
 });
 
 app.post('/setAiSource', async (req, res) => {
