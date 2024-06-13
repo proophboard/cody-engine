@@ -215,10 +215,15 @@ const Questionnaire: React.FC = () => {
       });
       if (!response.ok) {
         throw new Error('Fehler bei: /api/generate-with-ai');
-      } else {
-        const responseJson = await response.json()
+      } 
+      const responseJson = await response.json()
+      if(responseJson.successFullConnectionToAi){
         applyTheme(responseJson.theme)
+      } else {
+        setWarningSnackbarMessage(responseJson.message);
+        setWarningSnackbar(true);
       }
+      
     } catch (error) {
       console.error('Error in /api/generate-with-ai', error);
     } finally {

@@ -114,14 +114,14 @@ app.post('/api/generate-with-ai', async (req, res) => {
   let AIprompt = generateAIPrompt(userPreferences);
   try {
     isAiLoading = true;
-    console.log("Is Ai Loading ist jetzt True")
     latestGeneratedTheme = await retryAskAI(AIprompt, userPreferences);
     applyedTheme = JSON.parse(JSON.stringify(latestGeneratedTheme));
-    res.json({ success: true, theme: latestGeneratedTheme });
-    isAiLoading = false;
-    console.log("Is Ai Loading ist jetzt false")
+    res.json({ successFullConnectionToAi: true, theme: latestGeneratedTheme });
   } catch (error) {
     console.error('AI Request failed:', error);
+    res.json({ successFullConnectionToAi: false, message: 'Connection to AI failed' });
+  } finally {
+    isAiLoading = false;
   }
 });
 
