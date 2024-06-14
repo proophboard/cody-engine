@@ -430,7 +430,7 @@ const Adminpanel = () => {
       <Box display="flex" flexDirection="column" gap={3} mt={4}>
           <Box>
             <Box display="flex" alignItems="center">
-              <Typography variant="h4" gutterBottom style={{ marginBottom: '10px', position:'relative', top:'10px', right:'5px' }}>Set Tester-ID:</Typography>
+              <Typography variant="h4" gutterBottom style={{ marginBottom: '5px'}}>Set Tester-ID</Typography>
               <IconWithCard cardContent="This is the ID under which the Questionnaire in the 'Questionnaire AI' Tab will be saved." />
             </Box>
             <TextField

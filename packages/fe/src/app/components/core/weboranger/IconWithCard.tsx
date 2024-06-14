@@ -39,7 +39,7 @@ const IconWithCard: React.FC<IconWithCardProps> = ({ cardContent }) => {
   }, [isCardVisible]);
 
   return (
-    <Box sx={{ position: 'relative'}}>
+    <Box sx={{ position: 'relative', bottom:'9px', left:'4px'}}>
       <Typography
         ref={iconRef}
         sx={{
@@ -60,17 +60,20 @@ const IconWithCard: React.FC<IconWithCardProps> = ({ cardContent }) => {
             left: '0',
             backgroundColor: '#fff',
             boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
-            padding: '10px',
+            padding: '10px 10px 10px 10px',  // Add padding to ensure content is not overlapped
             zIndex: 1000,
-            width: '200px'  // Ensure the card has a fixed width
+            width: '250px'  // Ensure the card has a fixed width
           }}
         >
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography>{cardContent}</Typography>
-            <Button onClick={closeCard} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '20px' }}>×</Button>
-          </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <Typography variant="h6" style={{fontWeight:'bold'}}>Info</Typography>
+          <Button onClick={closeCard} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '20px' }}>×</Button>
+        </Box>
+        <Typography>{cardContent}</Typography>
         </Box>
       )}
+
+
     </Box>
   );
 };
