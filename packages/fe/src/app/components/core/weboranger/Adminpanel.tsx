@@ -423,12 +423,14 @@ const Adminpanel = () => {
 
   const questionCounts = aggregateResponses(questionnaires);
 
+  const isHexColor = (str: string) => /^#[0-9A-F]{6}$/i.test(str);
+
   return (
     <Container maxWidth="md">
       <Box display="flex" flexDirection="column" gap={3} mt={4}>
           <Box>
             <Box display="flex" alignItems="center">
-              <Typography variant="h4" gutterBottom style={{ marginBottom: '10px' }}>Set Tester-ID:</Typography>
+              <Typography variant="h4" gutterBottom style={{ marginBottom: '10px', position:'relative', top:'10px', right:'5px' }}>Set Tester-ID:</Typography>
               <IconWithCard cardContent="This is the ID under which the Questionnaire in the 'Questionnaire AI' Tab will be saved." />
             </Box>
             <TextField
@@ -555,20 +557,34 @@ const Adminpanel = () => {
                       const answers = Object.entries(questionCounts[question]).sort((a, b) => b[1] - a[1]);
                       return (
                         <React.Fragment key={question}>
-                          <TableRow style={{ borderTop: '3px solid rgba(224, 224, 224, 1)' }}>
-                            <TableCell rowSpan={answers.length} style={{ fontWeight: 'bold' }}>
-                              {question}
+                        <TableRow style={{ borderTop: '3px solid rgba(224, 224, 224, 1)' }}>
+                          <TableCell rowSpan={answers.length} style={{ fontWeight: 'bold' }}>
+                            {question}
+                          </TableCell>
+                          <TableCell>
+                            {answers[0][0]}
+                            {isHexColor(answers[0][0]) && (
+                              <div style={{ width: '20px', height: '20px', backgroundColor: answers[0][0], display: 'inline-block', marginLeft: '10px',
+                              boxShadow: theme.shadows[1], borderRadius: theme.shape.borderRadius,
+                              position: 'relative', top: '4px' }}></div>
+                            )}
+                          </TableCell>
+                          <TableCell>{answers[0][1]}</TableCell>
+                        </TableRow>
+                        {answers.slice(1).map(([answer, count]) => (
+                          <TableRow style={{ borderBottom: '3px solid rgba(224, 224, 224, 1)' }} key={answer}>
+                            <TableCell>
+                              {answer}
+                              {isHexColor(answer) && (
+                                <div style={{ width: '20px', height: '20px', backgroundColor: answer, display: 'inline-block', marginLeft: '10px',
+                                boxShadow: theme.shadows[1], borderRadius: theme.shape.borderRadius,
+                                position: 'relative', top: '4px' }}></div>
+                              )}
                             </TableCell>
-                            <TableCell>{answers[0][0]}</TableCell>
-                            <TableCell>{answers[0][1]}</TableCell>
+                            <TableCell>{count}</TableCell>
                           </TableRow>
-                          {answers.slice(1).map(([answer, count]) => (
-                            <TableRow style={{ borderBottom: '3px solid rgba(224, 224, 224, 1)' }} key={answer}>
-                              <TableCell>{answer}</TableCell>
-                              <TableCell>{count}</TableCell>
-                            </TableRow>
-                          ))}
-                        </React.Fragment>
+                        ))}
+                      </React.Fragment>
                       );
                     })}
                   </TableBody>
