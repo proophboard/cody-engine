@@ -2,7 +2,7 @@ import express from 'express';
 import { askAI } from './aiInterface';
 import cors from 'cors';
 import { generateAIPrompt, generateFixAIPrompt } from './promptGenerator';
-import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs, deleteEverything, deleteDoc, deleteID, getAiSource, setAiSource } from './storageController';
+import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs, deleteEverything, deleteDoc, deleteID, getAiSource, setAiSource, getAllDocsForSpecificId, doc } from './storageController';
 
 // Erstellen einer neuen Express-Anwendung
 const app = express();
@@ -19,6 +19,35 @@ let currentID: any;
 
 //Ist nur true während die AI eine Anfrage bearbeitet
 let isAiLoading = false;
+
+//Das Theme welche zuletzt gelöscht wurde
+let lastDeletedThemeData : DeletedThemeData | null = null;
+
+interface DeletedThemeData {
+  id: string;
+  docName: string;
+  themeandquestionnaire: {
+    json: any;  
+    questionnaire: any;  
+  };
+}
+
+//Die ID welche zuletzt gelöscht wurde
+let lastDeletedIdData : DeletedIDData | null = null;
+
+interface Theme {
+  doc: {
+    json: object;
+    questionnaire: object;
+  };
+}
+
+interface DeletedIDData {
+  id: string;
+  themes: {
+    [key: string]: Theme;
+  };
+}
 
 // CORS und JSON Middleware verwenden
 app.use(cors({ origin: 'http://localhost:4200' }));
@@ -85,14 +114,14 @@ app.post('/api/generate-with-ai', async (req, res) => {
   let AIprompt = generateAIPrompt(userPreferences);
   try {
     isAiLoading = true;
-    console.log("Is Ai Loading ist jetzt True")
     latestGeneratedTheme = await retryAskAI(AIprompt, userPreferences);
     applyedTheme = JSON.parse(JSON.stringify(latestGeneratedTheme));
-    res.json({ success: true, theme: latestGeneratedTheme });
-    isAiLoading = false;
-    console.log("Is Ai Loading ist jetzt false")
+    res.json({ successFullConnectionToAi: true, theme: latestGeneratedTheme });
   } catch (error) {
     console.error('AI Request failed:', error);
+    res.json({ successFullConnectionToAi: false, message: 'Connection to AI failed' });
+  } finally {
+    isAiLoading = false;
   }
 });
 
@@ -127,16 +156,16 @@ app.post('/api/save-questionnaire', async (req, res) => {
   const data = req.body;
 
   if (!data.saveUnder) {
-    res.json({ success: false, message: "Der Name darf nicht leer sein!" })
+    res.json({ success: false, message: "Please choose a name under which to save the theme!" })
   } else if (!currentID) {
-    res.json({ success: false, message: "Die ID darf nicht leer sein!" })
+    res.json({ success: false, message: "The ID cant be empty!" })
   } else if (Object.keys(latestGeneratedTheme).length === 0) {
-    res.json({ success: false, message: "Sie müssen zuerst ihren Fragebogen abschicken! Es wird immer die zuletzt abgeschickte Fragebogen gespeichert." })
+    res.json({ success: false, message: "Please submit the questionnaire first!" })
   } else if (await checkIfDocIsExisting(currentID, data.saveUnder)) {
-    res.json({ success: false, message: "Name für diese ID bereits vergeben" })
+    res.json({ success: false, message: "Name for the theme with this ID already in use!" })
   } else {
     await saveDoc(currentID, data.saveUnder, latestGeneratedTheme, data.message)
-    res.json({ success: true, message: "Theme erfolgreich gespeichert!" })
+    res.json({ success: true, message: "Theme saved successfully!" })
   }
   //dummy
   //await saveDoc("ID STRING", "NAME STRING" , {letzteJson : data}, {frage1 : "aw1", frage2 : "aw1"})
@@ -184,14 +213,49 @@ app.post('/deleteDatabaseEntries', async (req, res) => {
 
 app.post('/deleteDoc', async (req, res) => {
   const data = req.body
-  const doc = await deleteDoc(data.category, data.docName)
-  res.json({ success: true })
+  const themeandquestionnaire = await getDoc(data.category, data.docName);
+  if (themeandquestionnaire){
+    lastDeletedThemeData = { id : data.category, docName : data.docName, themeandquestionnaire : { json: themeandquestionnaire.json, questionnaire: themeandquestionnaire.questionnaire}}
+    await deleteDoc(data.category, data.docName)
+    res.json({ success: true })
+  } else {
+    res.status(400).json({ success: false, ok: false, message: 'No document to delete' });
+  }
+});
+
+app.put('/undoDeleteDoc', async (req, res) => {
+  if(lastDeletedThemeData) {
+    saveDoc(lastDeletedThemeData.id.replace('O4S-ai-', ''), lastDeletedThemeData.docName, lastDeletedThemeData.themeandquestionnaire.json, lastDeletedThemeData.themeandquestionnaire.questionnaire)
+    res.status(200).json({ success: true, ok: true });
+    lastDeletedThemeData = null;
+  } else {
+    res.status(400).json({ success: false, ok: false, message: 'No document to undo delete' });
+  }
 });
 
 app.post('/deleteID', async (req, res) => {
   const data = req.body
-  const doc = await deleteID(data.category)
-  res.json({ success: true })
+  const themes = await getAllDocsForSpecificId(data.category)
+  if (data.category){
+    lastDeletedIdData = { id: data.category, themes : themes }
+    await deleteID(data.category)
+    res.status(200).json({ success: true, ok: true });
+  } else {
+    res.status(400).json({ success: false, ok: false, message: 'No ID to delete' });
+  }
+});
+
+app.put('/undoDeleteID', async (req, res) => {
+  if(lastDeletedIdData) {
+    for (const key in lastDeletedIdData.themes) {
+      const keyAsString = key;
+      saveDoc(lastDeletedIdData.id.replace('O4S-ai-', ''), keyAsString, lastDeletedIdData.themes[key].doc.json, lastDeletedIdData.themes[key].doc.questionnaire);
+    }
+    res.status(200).json({ success: true, ok: true });
+    lastDeletedIdData = null
+  } else {
+    res.status(400).json({ success: false, ok: false, message: 'No document to undo delete' });
+  }
 });
 
 app.post('/setAiSource', async (req, res) => {
@@ -211,7 +275,6 @@ app.get('/getIsAiLoading', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  const aiSourceDoc = getAiSource();
   setAiSource("local");
   console.log(`AI Backend Server running on port ${PORT}`);
 });

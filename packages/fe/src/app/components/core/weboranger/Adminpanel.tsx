@@ -3,6 +3,8 @@ import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackba
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import { ThemeContext } from '@frontend/app/providers/ToggleColorMode';
 import theme from "@frontend/extensions/app/layout/theme";
+import IconWithCard from './IconWithCard';
+import QuestionnairePopup from "./QuestionnairePopup";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -19,10 +21,12 @@ const Adminpanel = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [openIDSnackbar, setOpenIDSnackbar] = useState(false);
   const [openDeleteAllSnackbar, setOpenDeleteAllSnackbar] = useState(false);
-  const [openDeleteIDSnackbar, setOpenDeleteIDSnackbar] = useState(false);
-  const [IDtodelete, setIDtodelete] = useState<any>();
+  const [openUndoDeleteIDSnackbar, setOpenUndoDeleteIDSnackbar] = useState(false);
+  const [openUndoDeleteThemeSnackbar, setOpenUndoDeleteThemeSnackbar] = useState(false);
   const [openWarningSnackbar, setWarningSnackbar] = useState(false);
   const [aiSourceID, setAiSourceID] = useState('');
+  const [jsonToShow, setJsonToShow] = useState({});
+  const [showJsonToShowPopup, setShowJsonToShowPopup] = useState(false);
   //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
   const [currentId, setCurrentId] = useState<string>(() => {
     return localStorage.getItem('currentId') || '';
@@ -32,6 +36,7 @@ const Adminpanel = () => {
     fetchQuestionnaires();
     fetchCurrentTheme();
     fetchAiSource();
+    fetchCurrentId();
   }, []);
 
   const fetchAiSource = async () => {    try {
@@ -45,6 +50,20 @@ const Adminpanel = () => {
       console.error('Error fetching aiSource:', error);
     }
   }
+
+  const fetchCurrentId = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/getID');
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getID');
+      }
+      const data = await response.json();
+      setCurrentId(data.id);
+    } catch (error) {
+        console.error('Error fetching current ID:', error);
+    }
+  };
+
   const fetchQuestionnaires = async () => {
     setLoading(true);
     try {
@@ -135,6 +154,8 @@ const Adminpanel = () => {
 
   const handleDeleteTheme = async (category: string, docName: string) => {
     try {
+      console.log("Übergebene category: ", category)
+      console.log("Übergebene docName: ", docName)
       const response = await fetch('http://localhost:3000/deleteDoc', {
         method: 'POST',
         headers: {
@@ -151,7 +172,7 @@ const Adminpanel = () => {
         return newState;
       });
       setSnackbarMessage(`Deleted Theme: ${category.replace('O4S-ai-', '')} - ${docName}`);
-      setOpenSuccessSnackbar(true);
+      setOpenUndoDeleteThemeSnackbar(true)
     } catch (error) {
       console.error('Error in /deleteDoc', error);
     }
@@ -175,7 +196,7 @@ const Adminpanel = () => {
         return newState;
       });
       setSnackbarMessage(`Deleted ID: ${category.replace('O4S-ai-', '')}`);
-      setOpenSuccessSnackbar(true);
+      setOpenUndoDeleteIDSnackbar(true)
     } catch (error) {
       console.error('Error in /deleteID', error);
     }
@@ -203,7 +224,7 @@ const Adminpanel = () => {
     [category: string]: {
       [docName: string]: {
         doc: {
-          questionaire: {
+          questionnaire: {
             [questionId: string]: {
               question: string;
               answer: string;
@@ -225,7 +246,7 @@ const Adminpanel = () => {
 
     Object.keys(questionnaires).forEach(category => {
       Object.keys(questionnaires[category]).forEach(doc => {
-        const questionnaire = questionnaires[category][doc].doc.questionaire;
+        const questionnaire = questionnaires[category][doc].doc.questionnaire;
         Object.keys(questionnaire).forEach(questionId => {
           const question = questionnaire[questionId].question;
           const answer = questionnaire[questionId].answer;
@@ -336,11 +357,102 @@ const Adminpanel = () => {
     }
   };
 
+  const handleUndoDeleteTheme = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/undoDeleteDoc', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /api/undoDeleteDoc');
+      }
+
+      fetchQuestionnaires();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleUndoDeleteID = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/undoDeleteID', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /api/undoDeleteID');
+      }
+
+      fetchQuestionnaires();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleShowQuestionnaire = async (category: string, docName: string) => {
+    try {
+      const response = await fetch('http://localhost:3000/getDoc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ category: category, docName: docName }),
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getDoc');
+      } else {
+        const data = await response.json();
+        console.log("Received Data to show: ", data)
+      //!!!!!
+        setJsonToShow(data.theme.questionnaire); // Setze das empfangene JSON in den State
+        setShowJsonToShowPopup(true); // Zeige das Popup an
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleClosePopup = () => {
+    setShowJsonToShowPopup(false);
+    setJsonToShow({}); // Zurücksetzen des JSON im State
+  };
+
   const questionCounts = aggregateResponses(questionnaires);
 
   return (
     <Container maxWidth="md">
       <Box display="flex" flexDirection="column" gap={3} mt={4}>
+          <Box>
+            <Box display="flex" alignItems="center">
+              <Typography variant="h4" gutterBottom style={{ marginBottom: '10px' }}>Set Tester-ID:</Typography>
+              <IconWithCard cardContent="This is the ID under which the Questionnaire in the 'Questionnaire AI' Tab will be saved." />
+            </Box>
+            <TextField
+              label="ID"
+              variant="outlined"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              fullWidth
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleTrySetId}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+              onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+              onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+              style={{ marginTop: '16px' }}
+            >
+              Set ID
+            </Button>
+            <Typography style={{ marginTop: '10px' }}>Current ID: {currentId}</Typography>
+          </Box>
+        <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
         <Typography variant="h4" gutterBottom>Saved Themes</Typography>
         {loading ? (
           <Backdrop open={loading}>
@@ -358,7 +470,7 @@ const Adminpanel = () => {
                     <Button
                       variant="contained"
                       color="primary"
-                      onClick={() => {setSnackbarMessage("Wollen Sie die ID wirklich Löschen?"); setIDtodelete(category); setOpenDeleteIDSnackbar(true)}}
+                      onClick={() => {handleDeleteID(category)}}
                       style={{ marginLeft: '10px', marginBottom: '6px' }}
                     >
                       Delete ID
@@ -374,6 +486,14 @@ const Adminpanel = () => {
                         <ListItem key={docName} divider>
                           <ListItemText primary={docName} />
                           <ListItemSecondaryAction>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleShowQuestionnaire(category, docName)}
+                              style={{ marginRight: '10px' }}
+                            >
+                              Show 
+                            </Button>
                             <Button
                               variant="contained"
                               color="primary"
@@ -398,11 +518,14 @@ const Adminpanel = () => {
               ))}
 
             </List>
+            {showJsonToShowPopup &&
+              <QuestionnairePopup onClose={handleClosePopup} questions={jsonToShow} />
+            }
             <Box display="flex" justifyContent="flex-start">
               <Button
               variant="contained"
               color="primary"
-              onClick={() => {setSnackbarMessage("Sind Sie sicher dass Sie alle Datenbankinhalte löschen wollen?"); setOpenDeleteAllSnackbar(true)}}
+              onClick={() => {setSnackbarMessage("Are you sure you want to delete ALL entries in the database?"); setOpenDeleteAllSnackbar(true)}}
               style={{ marginRight: '16px' }}
             >
             Delete all Data
@@ -415,31 +538,8 @@ const Adminpanel = () => {
             Apply Default Theme
             </Button>
             </Box>
-            <Box>
             <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 3 }} />
-            <Typography variant="h4" gutterBottom style={{ marginBottom: '10px' }}>Set ID for Questionnaire:</Typography>
-            <TextField
-              label="ID"
-              variant="outlined"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              fullWidth
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleTrySetId}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
-              onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
-              onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-              style={{ marginTop: '16px' }}
-            >
-              Set ID
-            </Button>
-            </Box>
-            <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
-            <Box mt={4}>
+            <Box>
               <Typography variant="h4" gutterBottom>Questionnaire Statistics</Typography>
               <TableContainer component={Paper}>
                 <Table>
@@ -511,6 +611,7 @@ const Adminpanel = () => {
             variant="contained"
             color="primary"
             onClick={handleForceSetId}
+            style={{ marginLeft: '16px' }}
           >
             Force Set ID
           </Button>
@@ -529,16 +630,29 @@ const Adminpanel = () => {
           </Button>
         </Alert>
       </Snackbar>
-      <Snackbar open={openDeleteIDSnackbar} autoHideDuration={6000} onClose={() => setOpenDeleteIDSnackbar(false)}>
-        <Alert onClose={() => setOpenDeleteIDSnackbar(false)} severity="warning">
+      <Snackbar open={openUndoDeleteThemeSnackbar} autoHideDuration={6000} onClose={() => setOpenUndoDeleteThemeSnackbar(false)}>
+        <Alert onClose={() => setOpenUndoDeleteThemeSnackbar(false)} severity="warning">
           {snackbarMessage}
           <Button
             variant="contained"
             color="primary"
-            onClick={() => handleDeleteID(IDtodelete)}
+            onClick={() => {handleUndoDeleteTheme(); setOpenUndoDeleteThemeSnackbar(false)}}
             style={{ marginLeft: '16px' }}
           >
-            DELETE
+            UNDO
+          </Button>
+        </Alert>
+      </Snackbar>
+      <Snackbar open={openUndoDeleteIDSnackbar} autoHideDuration={6000} onClose={() => setOpenUndoDeleteIDSnackbar(false)}>
+        <Alert onClose={() => setOpenUndoDeleteIDSnackbar(false)} severity="warning">
+          {snackbarMessage}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {handleUndoDeleteID(); setOpenUndoDeleteIDSnackbar(false)}}
+            style={{ marginLeft: '16px' }}
+          >
+            UNDO
           </Button>
         </Alert>
       </Snackbar>

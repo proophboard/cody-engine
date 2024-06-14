@@ -215,10 +215,15 @@ const Questionnaire: React.FC = () => {
       });
       if (!response.ok) {
         throw new Error('Fehler bei: /api/generate-with-ai');
-      } else {
-        const responseJson = await response.json()
+      } 
+      const responseJson = await response.json()
+      if(responseJson.successFullConnectionToAi){
         applyTheme(responseJson.theme)
+      } else {
+        setWarningSnackbarMessage(responseJson.message);
+        setWarningSnackbar(true);
       }
+      
     } catch (error) {
       console.error('Error in /api/generate-with-ai', error);
     } finally {
@@ -241,10 +246,14 @@ const Questionnaire: React.FC = () => {
   return (
 <Container maxWidth="sm">
   <Box display="flex" flexDirection="column" gap={3}>
-    <Typography variant="h6" gutterBottom>
-      Derzeitige ID: {currentId}
-    </Typography>
-
+    <Box display="flex" alignItems="center">
+      <Typography variant="h6" gutterBottom>
+        Themes will be Saved under ID:
+      </Typography>
+      <Typography variant="h6" gutterBottom fontWeight={"bold"} style={{ marginLeft: '10px' }}>
+        {currentId}
+      </Typography>
+    </Box>
     {questions.map((question) => (
       <Box
         key={question.id}
@@ -288,7 +297,7 @@ const Questionnaire: React.FC = () => {
       onChange={(e) => setSaveUnder(e.target.value)}
       fullWidth
     />
-
+    <Typography fontWeight="light" fontSize="small" marginBottom="-25px">Your last generated Theme will be saved</Typography>
     <Button
       variant="contained"
       color="primary"
