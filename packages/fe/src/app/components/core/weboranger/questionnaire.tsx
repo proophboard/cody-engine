@@ -264,7 +264,7 @@ const Questionnaire: React.FC = () => {
           boxShadow={1}
         >
           <Typography variant="h5" fontWeight="light" gutterBottom>
-            Bestimmen Sie die Temperatur der KI
+            Bestimmen Sie die Kreativität der KI
           </Typography>
           <SliderComponent
             value={temperature}

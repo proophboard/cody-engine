@@ -10,7 +10,7 @@ interface SliderComponentProps {
   max: number;
   step?: number;
   scale?: boolean;
-  percentage?: boolean; // Add a prop to differentiate percentage
+  percentage?: boolean;
 }
 
 const SliderComponent: React.FC<SliderComponentProps> = ({
@@ -45,9 +45,6 @@ const SliderComponent: React.FC<SliderComponentProps> = ({
 
   return (
     <Box sx={{ width: 300 }}>
-      <Typography id="input-slider" gutterBottom>
-        {percentage ? 'Gewichtung' : 'Temperature'}
-      </Typography>
       <Slider
         aria-labelledby="input-slider"
         value={scaledValue}
