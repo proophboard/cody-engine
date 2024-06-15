@@ -1,4 +1,5 @@
 import {Jexl} from "@event-engine/infrastructure/jexl/jexl";
+import {orderBy} from "lodash";
 
 export const registerArrayExtensions = (jexl: Jexl): void => {
   jexl.addFunction('push', arrayPush);
@@ -13,6 +14,7 @@ export const registerArrayExtensions = (jexl: Jexl): void => {
   jexl.addTransform('join', (arr: Array<unknown>, separator?: string) => arr.join(separator));
   jexl.addTransform('first', (arr: Array<unknown>, notSetValue?: any) => arr.length? arr[0] : notSetValue);
   jexl.addTransform('last', (arr: Array<unknown>, notSetValue?: any) => arr.length? arr[arr.length-1] : notSetValue);
+  jexl.addTransform('orderBy', (arr: Array<unknown>, iteratees: string|string[], orders: Array<"asc"|"desc">) => orderBy(arr, iteratees, orders));
 }
 
 const arrayPush = (arr: Array<unknown>, val: unknown): Array<unknown> => {
