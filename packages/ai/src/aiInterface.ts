@@ -11,18 +11,18 @@ const openai = new OpenAI({
 });
 
 const openaiserver = new OpenAI({
-  baseURL: 'https://f4359ba8-80fc-455d-a8e6-fad069f30239.app.gra.ai.cloud.ovh.net/v1',
-  apiKey: 'LeRmOXACQTme+gLZPgm33XsQgLUaZBW+0mExSHmuM2lavH0RoVbmErr2HgzBEeAz',
+    baseURL: process.env.OPENAI_BASE_URL,
+    apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Funktion zum Senden einer Anfrage an die KI
-export async function askAI(AIprompt: string, aiSource: string) {
+export async function askAI(AIprompt: string, aiSource: string, temperature: number) {
     console.log("Rufe KI auf...");
     let response;
     let responseserver;
     let errormessage;
     try {
-        switch(aiSource){
+        switch (aiSource) {
             case ("local"):
                 errormessage = "Lokalen KI Anfrage"
                 // Erstellen und Senden der Anfrage
@@ -30,20 +30,20 @@ export async function askAI(AIprompt: string, aiSource: string) {
                     model: "llama3",
                     response_format: { "type": "json_object" },
                     messages: JSON.parse(AIprompt).messages,
-                    temperature: 0.7,
+                    temperature: temperature,
                     max_tokens: 8000,
                 });
                 return response.choices[0].message.content;
             case ("server"):
                 errormessage = "Server KI Anfrage"
                 responseserver = await openaiserver.chat.completions.create({
-                model: "codestral",
-                response_format: { "type": "json_object" },
-                messages: JSON.parse(AIprompt).messages,
-                temperature: 0.7,
-                max_tokens: 8000,
-              });
-              return responseserver.choices[0].message.content;
+                    model: "codestral",
+                    response_format: { "type": "json_object" },
+                    messages: JSON.parse(AIprompt).messages,
+                    temperature: temperature,
+                    max_tokens: 8000,
+                });
+                return responseserver.choices[0].message.content;
 
             default:
                 throw new Error("Fehler im aiInterface. Die es wurde weder local noch server ausgewählt")

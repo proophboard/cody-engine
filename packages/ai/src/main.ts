@@ -1,7 +1,7 @@
 import express from 'express';
 import { askAI } from './aiInterface';
 import cors from 'cors';
-import { generateAIPrompt, generateFixAIPrompt } from './promptGenerator';
+import { generateAIPrompt } from './promptGenerator';
 import { saveDoc, getDoc, checkIfIDInUse, checkIfDocIsExisting, getAllDocs, deleteEverything, deleteDoc, deleteID, getAiSource, setAiSource, getAllDocsForSpecificId, doc } from './storageController';
 
 // Erstellen einer neuen Express-Anwendung
@@ -15,7 +15,7 @@ let latestGeneratedTheme = {};
 let applyedTheme = {};
 
 // Die ID mit der der User gerade "angemeldet" ist
-let currentID: any;
+let currentID: string;
 
 //Ist nur true während die AI eine Anfrage bearbeitet
 let isAiLoading = false;
@@ -63,16 +63,29 @@ function isValidJSON(jsonString: string) {
   }
 }
 
+// Helper Funktion zum Überprüfen, ob ein JSON leere Strings enthält
+function hasEmptyStrings(value: unknown): boolean {
+  if (typeof value === 'string') {
+    return value.trim() === '';
+  }
+  if (Array.isArray(value)) {
+    return value.some(hasEmptyStrings);
+  }
+  if (typeof value === 'object' && value !== null) {
+    return Object.values(value).some(hasEmptyStrings);
+  }
+  return false;
+}
+
 // Funktion um die KI-Anfrage zu wiederholen, falls die Antwort nicht den Anforderungen entspricht
-async function retryAskAI(AIprompt: string, preferences: any, retries = 3) {
+async function retryAskAI(AIprompt: string, preferences: any, temperature: number, retries = 5) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
       const aiSourceDoc = await getAiSource();
-      const response = await askAI(AIprompt, aiSourceDoc.aiSource);
+      const response = await askAI(AIprompt, aiSourceDoc.aiSource, temperature);
       console.log(`AI Response Attempt ${attempt}: ${response}`);
 
-      //Das muss sein weil typescript ohne den if block sagt, dass response null sein könnte
-      let jsonMatch = null
+      let jsonMatch = null;
       if (response) {
         jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/i) || response.match(/```(?:\s*([\s\S]*?)\s*)```/i) || response.match(/({[\s\S]*})/i);
       }
@@ -83,23 +96,28 @@ async function retryAskAI(AIprompt: string, preferences: any, retries = 3) {
         if (isValidJSON(extractedJSON)) {
           const jsonResponse = JSON.parse(extractedJSON);
           console.log(`Valid JSON found on attempt ${attempt}`);
-          return jsonResponse;
+
+          if (!hasEmptyStrings(jsonResponse)) {
+            return jsonResponse;
+          } else {
+            console.warn(`Attempt ${attempt} failed: JSON contains empty strings.`);
+            AIprompt = generateAIPrompt(preferences, response);
+          }
         } else {
           console.warn(`Attempt ${attempt} failed: Extracted JSON is invalid.`);
-          AIprompt = generateFixAIPrompt(response, preferences);
+          AIprompt = generateAIPrompt(preferences, response);
         }
       } else {
         console.warn(`Attempt ${attempt} failed: No JSON code block found.`);
-        AIprompt = generateFixAIPrompt(response, preferences);
+        AIprompt = generateAIPrompt(preferences, response);
       }
     } catch (error) {
-      //Dieses if else muss auch wegen typescript sein weil man sonst nicht error.message aufrufen kann da er sagt das error vom type "unknown" ist
       if (error instanceof Error) {
         console.warn(`Attempt ${attempt} failed: ${error.message}`);
-        AIprompt = generateFixAIPrompt(error.message, preferences);
+        AIprompt = generateAIPrompt(preferences, error.message);
       } else {
         console.warn(`Attempt ${attempt} failed with an unknown error`);
-        AIprompt = generateFixAIPrompt('Unknown error', preferences);
+        AIprompt = generateAIPrompt(preferences, 'Unknown error');
       }
     }
   }
@@ -108,13 +126,12 @@ async function retryAskAI(AIprompt: string, preferences: any, retries = 3) {
 
 // Endpunkt zum Generieren einer Theme-Konfiguration mit KI
 app.post('/api/generate-with-ai', async (req, res) => {
-  //userPreferences muss gespeichert werden
-  //storedThemeConfig
-  const userPreferences = req.body;
+  const { message, temperature } = req.body;
+  const userPreferences = message;
   let AIprompt = generateAIPrompt(userPreferences);
   try {
     isAiLoading = true;
-    latestGeneratedTheme = await retryAskAI(AIprompt, userPreferences);
+    latestGeneratedTheme = await retryAskAI(AIprompt, userPreferences, temperature);
     applyedTheme = JSON.parse(JSON.stringify(latestGeneratedTheme));
     res.json({ successFullConnectionToAi: true, theme: latestGeneratedTheme });
   } catch (error) {
@@ -128,7 +145,7 @@ app.post('/api/generate-with-ai', async (req, res) => {
 // Speichert questionaire und json wenn es die ID noch nicht gibt. Wirft ein Error falls es sie gibt
 app.post('/api/try-set-id', async (req, res) => {
   const data = req.body;
-  await checkIfIDInUse(data.id)
+  await checkIfIDInUse(data.id);
 
   if (!data.id) {
     res.json({ success: false, idInUse: false, message: "Die ID darf nicht leer sein!" })
@@ -149,9 +166,7 @@ app.post('/api/force-set-ID', async (req, res) => {
   //console.log(`Die jetzige ID ist nach force-set-id ist: ${currentID}`)
 });
 
-// Speichert questionaire und json direkt ab#
-//Habe getestet ab hier funktioniert es. Unten sieht man ein beispiel welches format es sein muss
-//Die generierte KI antwort wird nicht gespeichert da man sie ja bei bedarf aus dem questionaire erstellen kann
+// Speichert questionaire und json direkt ab
 app.post('/api/save-questionnaire', async (req, res) => {
   const data = req.body;
 
@@ -167,11 +182,9 @@ app.post('/api/save-questionnaire', async (req, res) => {
     await saveDoc(currentID, data.saveUnder, latestGeneratedTheme, data.message)
     res.json({ success: true, message: "Theme saved successfully!" })
   }
-  //dummy
-  //await saveDoc("ID STRING", "NAME STRING" , {letzteJson : data}, {frage1 : "aw1", frage2 : "aw1"})
 });
 
-//Braucht man um zb die Aktuelle ID zu bekommen nachdem Server neugestartet ist
+// Braucht man um zb die Aktuelle ID zu bekommen nachdem Server neugestartet ist
 app.get('/getID', async (req, res) => {
   if (!currentID) {
     res.json({ id: "" })
@@ -181,19 +194,19 @@ app.get('/getID', async (req, res) => {
 });
 
 app.get('/getDocs', async (req, res) => {
-  const docs = await getAllDocs()
-  res.json(docs)
+  const docs = await getAllDocs();
+  res.json(docs);
 });
 
 app.get('/getLastTheme', async (req, res) => {
-  res.json({ theme : applyedTheme })
+  res.json({ theme: applyedTheme })
 });
 
 //Is das ein sicherheitsrisiko wenn man einfach den body einer anfrage nimmt und settet?
-app.post('/setAppliedTheme', async (req,res) => {
+app.post('/setAppliedTheme', async (req, res) => {
   const data = req.body
   applyedTheme = data.theme
-  res.json({ success : true })
+  res.json({ success: true })
 })
 
 app.post('/getDoc', async (req, res) => {
@@ -270,7 +283,6 @@ app.get('/getAiSource', async (req, res) => {
 });
 
 app.get('/getIsAiLoading', async (req, res) => {
-  console.log("PIEP")
   res.json({isAiLoading : isAiLoading})
 });
 
