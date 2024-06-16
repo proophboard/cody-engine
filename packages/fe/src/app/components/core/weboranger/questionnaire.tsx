@@ -38,17 +38,17 @@ const Questionnaire: React.FC = () => {
   const questions: Question[] = [
     {
       id: 1,
-      text: 'Welches Thema soll die Anwendung haben?',
-      options: ['Seriös', 'Energiegeladen', 'Fröhlich', 'Naturverbunden', 'Technisch', 'Minimalistisch', 'Premium'],
+      text: 'What theme should the application have?',
+      options: ['Serious', 'Energetic', 'Cheerful', 'Nature-oriented', 'Technical', 'Minimalistic', 'Premium'],
     },
-    { id: 2, text: 'Gibt es eine bestimmte Farbe, die die Anwendung haben soll?', colorPicker: true },
-    { id: 3, text: 'Wie stark soll die Gewichtung der Farbe sein?', slider: true },
+    { id: 2, text: 'Is there a specific color the application should have?', colorPicker: true },
+    { id: 3, text: 'How strong should the color weighting be?', slider: true },
     {
       id: 4,
-      text: 'Welches Thema soll die Schriftart haben?',
-      options: ['Verspielt', 'Schlicht', 'Maschinell', 'Gerundet', 'Elegant', 'Dramatisch', 'Sachlich'],
+      text: 'What theme should the font have?',
+      options: ['Playful', 'Simple', 'Mechanical', 'Rounded', 'Elegant', 'Dramatic', 'Factual'],
     },
-  ];
+  ];  
 
   const defaultResponses = questions.reduce((acc, question) => {
     acc[question.id] = {
@@ -317,7 +317,7 @@ const Questionnaire: React.FC = () => {
           boxShadow={1}
         >
           <Typography variant="h5" fontWeight="light" gutterBottom>
-            Bestimmen Sie die Kreativität der KI
+          Determine the creativity of the AI
           </Typography>
           <SliderComponent
             value={temperature}
