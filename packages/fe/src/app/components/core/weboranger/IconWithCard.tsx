@@ -56,7 +56,7 @@ const IconWithCard: React.FC<IconWithCardProps> = ({ cardContent }) => {
           ref={cardRef}
           sx={{
             position: 'absolute',
-            top: '20px',
+            top: '20px', //Hier änder das Card nicht umtem am bildschirm verschwindet
             left: '0',
             backgroundColor: '#fff',
             boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',

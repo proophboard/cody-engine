@@ -596,7 +596,10 @@ const Adminpanel = () => {
       </Box>
       <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 3 }} />
       <Box>
-        <Typography variant="h4" gutterBottom>Hosting der KI:</Typography>
+      <Box display="flex" alignItems="center">
+        <Typography variant="h4" gutterBottom style={{ marginBottom: '5px'}}>Hosting der KI</Typography>
+        <IconWithCard cardContent="Decide if you want to send a request to your local-hosted AI or to the AI on our server." />
+      </Box>
         <Select
           value={aiSourceID}
           onChange={switchAiSource}
