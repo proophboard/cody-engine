@@ -431,7 +431,7 @@ const Adminpanel = () => {
           <Box>
             <Box display="flex" alignItems="center">
               <Typography variant="h4" gutterBottom style={{ marginBottom: '5px'}}>Set Tester-ID</Typography>
-              <IconWithCard cardContent="This is the ID under which the Questionnaire in the 'Questionnaire AI' Tab will be saved." />
+              <IconWithCard cardContent="This is the ID under which the Questionnaire in the 'Questionnaire AI' Tab will be saved." showOnTop={false} />
             </Box>
             <TextField
               label="ID"
@@ -455,7 +455,10 @@ const Adminpanel = () => {
             <Typography style={{ marginTop: '10px' }}>Current ID: {currentId}</Typography>
           </Box>
         <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
-        <Typography variant="h4" gutterBottom>Saved Themes</Typography>
+        <Box display="flex" alignItems="center">
+          <Typography variant="h4" gutterBottom>Saved Themes</Typography>
+          <IconWithCard cardContent="The themes which had been saved under their ID. The themes you see here are saved locally." showOnTop={false} />
+        </Box>
         {loading ? (
           <Backdrop open={loading}>
             <CircularProgress color="inherit" />
@@ -542,7 +545,10 @@ const Adminpanel = () => {
             </Box>
             <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 3 }} />
             <Box>
-              <Typography variant="h4" gutterBottom>Questionnaire Statistics</Typography>
+              <Box display="flex" alignItems="center">
+                <Typography variant="h4" gutterBottom>Questionnaire Statistics</Typography>
+                <IconWithCard cardContent="The questions with the amount of times a answer has been picked." showOnTop={false} />
+              </Box>
               <TableContainer component={Paper}>
                 <Table>
                   <TableHead>
@@ -598,7 +604,7 @@ const Adminpanel = () => {
       <Box>
       <Box display="flex" alignItems="center">
         <Typography variant="h4" gutterBottom style={{ marginBottom: '5px'}}>Hosting der KI</Typography>
-        <IconWithCard cardContent="Decide if you want to send a request to your local-hosted AI or to the AI on our server." />
+        <IconWithCard cardContent="Decide if you want to send a request to your local-hosted AI or to the AI on our server." showOnTop={true} />
       </Box>
         <Select
           value={aiSourceID}

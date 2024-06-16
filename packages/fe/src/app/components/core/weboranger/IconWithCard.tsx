@@ -7,12 +7,15 @@ import { Button } from '@mui/material';
 
 interface IconWithCardProps {
   cardContent: string;
+  showOnTop: boolean;
 }
 
-const IconWithCard: React.FC<IconWithCardProps> = ({ cardContent }) => {
+const IconWithCard: React.FC<IconWithCardProps> = ({ cardContent, showOnTop }) => {
   const [isCardVisible, setCardVisible] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const iconRef = useRef<HTMLSpanElement>(null);
+
+  const verticalPosition = showOnTop ? '-140px' : '20px';
 
   const toggleCardVisibility = () => {
     setCardVisible(!isCardVisible);
@@ -56,7 +59,7 @@ const IconWithCard: React.FC<IconWithCardProps> = ({ cardContent }) => {
           ref={cardRef}
           sx={{
             position: 'absolute',
-            top: '20px', //Hier änder das Card nicht umtem am bildschirm verschwindet
+            top: verticalPosition, //Hier änder das Card nicht umtem am bildschirm verschwindet
             left: '0',
             backgroundColor: '#fff',
             boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
