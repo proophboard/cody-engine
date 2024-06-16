@@ -56,8 +56,8 @@ const Questionnaire: React.FC = () => {
       answer: question.options
         ? question.options[0]
         : question.colorPicker
-        ? null
-        : '',
+          ? null
+          : '',
     };
     return acc;
   }, {} as Record<any, any>);
@@ -79,6 +79,7 @@ const Questionnaire: React.FC = () => {
   const [warningSnackbarMessage, setWarningSnackbarMessage] = useState<string>('');
   const [openSuccessSnackbar, setSuccessSnackbar] = useState(false);
   const [successSnackbarMessage, setSuccessSnackbarMessage] = useState<string>('');
+  const [isAiLoading, setIsAiLoading] = useState<boolean>(false);
   const [currentId, setCurrentId] = useState<string>(() => {
     return localStorage.getItem('currentId') || '';
   });
@@ -86,7 +87,36 @@ const Questionnaire: React.FC = () => {
   useEffect(() => {
     fetchCurrentTheme();
     fetchCurrentId();
+    fetchIsAiLoading();
   }, []);
+
+  const fetchIsAiLoading = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/getIsAiLoading');
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getIsAiLoading');
+      }
+      const data = await response.json();
+      if (data.isAiLoading) {
+        setLoading(true);
+        let waitingForAiResponse = true;
+        while (waitingForAiResponse) {
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          const response = await fetch('http://localhost:3000/getIsAiLoading');
+          if (!response.ok) {
+            throw new Error('Fehler bei: /getIsAiLoading, waitingForAiResponse');
+          }
+          const data = await response.json();
+          if (!data.isAiLoading) {
+            waitingForAiResponse = false;
+          }
+        }
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error('Error fetching AI status:', error);
+    }
+  };
 
   const fetchCurrentTheme = async () => {
     try {
@@ -97,7 +127,7 @@ const Questionnaire: React.FC = () => {
       const data = await response.json();
       applyTheme(data.theme);
     } catch (error) {
-      console.error('Error fetching current ID:', error);
+      console.error('Error fetching current theme:', error);
     }
   };
 
@@ -194,6 +224,7 @@ const Questionnaire: React.FC = () => {
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault();
     setLoading(true);
+    setIsAiLoading(true);
     try {
       const response = await fetch('http://localhost:3000/api/generate-with-ai', {
         method: 'POST',
@@ -204,13 +235,18 @@ const Questionnaire: React.FC = () => {
       });
       if (!response.ok) {
         throw new Error('Fehler bei: /api/generate-with-ai');
-      } else {
-        const responseJson = await response.json();
+      }
+      const responseJson = await response.json();
+      if (responseJson.successFullConnectionToAi) {
         applyTheme(responseJson.theme);
+      } else {
+        setWarningSnackbarMessage(responseJson.message);
+        setWarningSnackbar(true);
       }
     } catch (error) {
       console.error('Error in /api/generate-with-ai', error);
     } finally {
+      setIsAiLoading(false);
       setLoading(false);
     }
   };
@@ -218,10 +254,14 @@ const Questionnaire: React.FC = () => {
   return (
     <Container maxWidth="sm">
       <Box display="flex" flexDirection="column" gap={3}>
-        <Typography variant="h6" gutterBottom>
-          Derzeitige ID: {currentId}
-        </Typography>
-
+        <Box display="flex" alignItems="center">
+          <Typography variant="h6" gutterBottom>
+            Themes will be Saved under ID:
+          </Typography>
+          <Typography variant="h6" gutterBottom fontWeight="bold" style={{ marginLeft: '10px' }}>
+            {currentId}
+          </Typography>
+        </Box>
         {questions.map((question) => (
           <Box
             key={question.id}
@@ -255,7 +295,6 @@ const Questionnaire: React.FC = () => {
             )}
           </Box>
         ))}
-
         <Box
           p={4}
           mb={2}
@@ -312,11 +351,13 @@ const Questionnaire: React.FC = () => {
       <Backdrop open={loading}>
         <CircularProgress color="inherit" />
       </Backdrop>
+
       <Snackbar open={openWarningSnackbar} autoHideDuration={6000} onClose={() => setWarningSnackbar(false)}>
         <Alert onClose={() => setWarningSnackbar(false)} severity="warning">
           {warningSnackbarMessage}
         </Alert>
       </Snackbar>
+
       <Snackbar open={openSuccessSnackbar} autoHideDuration={6000} onClose={() => setSuccessSnackbar(false)}>
         <Alert onClose={() => setSuccessSnackbar(false)} severity="success">
           {successSnackbarMessage}

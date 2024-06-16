@@ -1,17 +1,37 @@
 import {CircularProgress} from "@mui/material";
 import StateView from "@frontend/app/components/core/StateView";
 import {usePageData} from "@frontend/hooks/use-page-data";
-import {useEffect} from "react";
+import {useContext, useEffect} from "react";
 import {useGet<%= className %>} from "@frontend/queries/<%= serviceNames.fileName %>/use-get-<%= fileName %>";
 import {<%= serviceNames.className %><%= nsClassName %><%= className %>VORuntimeInfo} from "@app/shared/types/<%= serviceNames.fileName %><%= nsFilename %><%= fileName %>";
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {<%= serviceNames.className %>Get<%= className %>QueryRuntimeInfo} from "@app/shared/queries/<%= serviceNames.fileName %>/get-<%= fileName %>";
+import { ThemeContext } from '@frontend/app/providers/ToggleColorMode';
 
 type <%= className %>Props = Record<string, string><% if (identifier) { %> & {<%= identifier %>: string}<% } %>;
 
 const <%= className %> = (props: <%= className %>Props) => {
+  const { applyTheme } = useContext(ThemeContext);
   const [,addQueryResult] = usePageData();
   const query = useGet<%= className %>(determineQueryPayload(props, <%= serviceNames.className %>Get<%= className %>QueryRuntimeInfo));
+  
+  useEffect(() => {
+    fetchCurrentTheme();
+  }, []);
+
+  const fetchCurrentTheme = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/getLastTheme');
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getLastTheme');
+      }
+      const data = await response.json();
+      console.log(data.theme)
+      applyTheme(data.theme)
+    } catch (error) {
+        console.error('Error fetching current ID:', error);
+    }
+  };
 
   useEffect(() => {
     addQueryResult('<%= dataReference %>', query);

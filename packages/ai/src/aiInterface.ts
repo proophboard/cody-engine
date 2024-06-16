@@ -6,27 +6,51 @@ dotenv.config();
 
 // Erstellen einer neuen OpenAI-Instanz
 const openai = new OpenAI({
-    baseURL: 'https://f4359ba8-80fc-455d-a8e6-fad069f30239.app.gra.ai.cloud.ovh.net/v1',
-    apiKey: 'Cj/12wYGQPW+V5DMteAybJEQtXAhf6iZxUK6BoBsy4avYaJgQ9E3RzbtUSRdcxjr', 
+    baseURL: 'http://localhost:11434/v1/',
+    apiKey: 'obama',
+});
+
+const openaiserver = new OpenAI({
+    baseURL: process.env.OPENAI_BASE_URL,
+    apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Funktion zum Senden einer Anfrage an die KI
-export async function askAI(AIprompt: string, temperature: number) {
+export async function askAI(AIprompt: string, aiSource: string, temperature: number) {
     console.log("Rufe KI auf...");
-    console.log("temperature: ", temperature);
+    let response;
+    let responseserver;
+    let errormessage;
     try {
-        // Erstellen und Senden der Anfrage
-        const response = await openai.chat.completions.create({
-            model: "codestral",
-            response_format: { "type": "json_object" },
-            messages: JSON.parse(AIprompt).messages,
-            temperature: temperature,
-            max_tokens: 8000,
-        });
+        switch (aiSource) {
+            case ("local"):
+                errormessage = "Lokalen KI Anfrage"
+                // Erstellen und Senden der Anfrage
+                response = await openai.chat.completions.create({
+                    model: "llama3",
+                    response_format: { "type": "json_object" },
+                    messages: JSON.parse(AIprompt).messages,
+                    temperature: temperature,
+                    max_tokens: 8000,
+                });
+                return response.choices[0].message.content;
+            case ("server"):
+                errormessage = "Server KI Anfrage"
+                responseserver = await openaiserver.chat.completions.create({
+                    model: "codestral",
+                    response_format: { "type": "json_object" },
+                    messages: JSON.parse(AIprompt).messages,
+                    temperature: temperature,
+                    max_tokens: 8000,
+                });
+                return responseserver.choices[0].message.content;
+
+            default:
+                throw new Error("Fehler im aiInterface. Die es wurde weder local noch server ausgewählt")
+        }
         // Rückgabe der KI-Antwort
-        return response.choices[0].message.content;
     } catch (error) {
-        console.error('Fehler in der KI-Schnittstelle:', error);
+        console.error(`Fehler in der KI-Schnittstelle (${errormessage}) :`, error);
         throw new Error('KI-Anfrage fehlgeschlagen');
     }
 }

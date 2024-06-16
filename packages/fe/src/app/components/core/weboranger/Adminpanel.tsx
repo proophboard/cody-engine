@@ -1,8 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
-import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackbar, List, ListItem, ListItemText, ListItemSecondaryAction, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, useTheme, Divider } from '@mui/material';
+import { Box, Button, CircularProgress, Container, Typography, Backdrop, Snackbar, List, ListItem, ListItemText, ListItemSecondaryAction, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, useTheme, Divider, Select, MenuItem } from '@mui/material';
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
-import { ThemeContext } from '../../../providers/ToggleColorMode';
+import { ThemeContext } from '@frontend/app/providers/ToggleColorMode';
 import theme from "@frontend/extensions/app/layout/theme";
+import IconWithCard from './IconWithCard';
+import QuestionnairePopup from "./QuestionnairePopup";
 
 const Alert = React.forwardRef<HTMLDivElement, AlertProps>(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
@@ -19,9 +21,12 @@ const Adminpanel = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [openIDSnackbar, setOpenIDSnackbar] = useState(false);
   const [openDeleteAllSnackbar, setOpenDeleteAllSnackbar] = useState(false);
-  const [openDeleteIDSnackbar, setOpenDeleteIDSnackbar] = useState(false);
-  const [IDtodelete, setIDtodelete] = useState<any>();
+  const [openUndoDeleteIDSnackbar, setOpenUndoDeleteIDSnackbar] = useState(false);
+  const [openUndoDeleteThemeSnackbar, setOpenUndoDeleteThemeSnackbar] = useState(false);
   const [openWarningSnackbar, setWarningSnackbar] = useState(false);
+  const [aiSourceID, setAiSourceID] = useState('');
+  const [jsonToShow, setJsonToShow] = useState({});
+  const [showJsonToShowPopup, setShowJsonToShowPopup] = useState(false);
   //Die aktuelle ID die in Server gespeichert ist und unter der die Daten in der Datenbank gespeichert werden
   const [currentId, setCurrentId] = useState<string>(() => {
     return localStorage.getItem('currentId') || '';
@@ -30,7 +35,34 @@ const Adminpanel = () => {
   useEffect(() => {
     fetchQuestionnaires();
     fetchCurrentTheme();
+    fetchAiSource();
+    fetchCurrentId();
   }, []);
+
+  const fetchAiSource = async () => {    try {
+    const response = await fetch('http://localhost:3000/getAiSource');
+    if (!response.ok) {
+      throw new Error('Fehler bei: /getAiSource');
+    }
+    const data = await response.json();
+    setAiSourceID(data.aiSource);
+    } catch (error) {
+      console.error('Error fetching aiSource:', error);
+    }
+  }
+
+  const fetchCurrentId = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/getID');
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getID');
+      }
+      const data = await response.json();
+      setCurrentId(data.id);
+    } catch (error) {
+        console.error('Error fetching current ID:', error);
+    }
+  };
 
   const fetchQuestionnaires = async () => {
     setLoading(true);
@@ -122,6 +154,8 @@ const Adminpanel = () => {
 
   const handleDeleteTheme = async (category: string, docName: string) => {
     try {
+      console.log("Übergebene category: ", category)
+      console.log("Übergebene docName: ", docName)
       const response = await fetch('http://localhost:3000/deleteDoc', {
         method: 'POST',
         headers: {
@@ -138,7 +172,7 @@ const Adminpanel = () => {
         return newState;
       });
       setSnackbarMessage(`Deleted Theme: ${category.replace('O4S-ai-', '')} - ${docName}`);
-      setOpenSuccessSnackbar(true);
+      setOpenUndoDeleteThemeSnackbar(true)
     } catch (error) {
       console.error('Error in /deleteDoc', error);
     }
@@ -162,7 +196,7 @@ const Adminpanel = () => {
         return newState;
       });
       setSnackbarMessage(`Deleted ID: ${category.replace('O4S-ai-', '')}`);
-      setOpenSuccessSnackbar(true);
+      setOpenUndoDeleteIDSnackbar(true)
     } catch (error) {
       console.error('Error in /deleteID', error);
     }
@@ -190,7 +224,7 @@ const Adminpanel = () => {
     [category: string]: {
       [docName: string]: {
         doc: {
-          questionaire: {
+          questionnaire: {
             [questionId: string]: {
               question: string;
               answer: string;
@@ -212,7 +246,7 @@ const Adminpanel = () => {
 
     Object.keys(questionnaires).forEach(category => {
       Object.keys(questionnaires[category]).forEach(doc => {
-        const questionnaire = questionnaires[category][doc].doc.questionaire;
+        const questionnaire = questionnaires[category][doc].doc.questionnaire;
         Object.keys(questionnaire).forEach(questionId => {
           const question = questionnaire[questionId].question;
           const answer = questionnaire[questionId].answer;
@@ -302,11 +336,125 @@ const Adminpanel = () => {
     }
   };
 
+  const switchAiSource = async (event: { target: { value: any; }; }) => {
+    const selectedValue = event.target.value;
+    setAiSourceID(selectedValue);
+    try {
+      const response = await fetch('http://localhost:3000/setAiSource', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ aiSource : selectedValue }),
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /setAiSource');
+      }
+      
+
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleUndoDeleteTheme = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/undoDeleteDoc', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /api/undoDeleteDoc');
+      }
+
+      fetchQuestionnaires();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleUndoDeleteID = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/undoDeleteID', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /api/undoDeleteID');
+      }
+
+      fetchQuestionnaires();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleShowQuestionnaire = async (category: string, docName: string) => {
+    try {
+      const response = await fetch('http://localhost:3000/getDoc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ category: category, docName: docName }),
+      });
+      if (!response.ok) {
+        throw new Error('Fehler bei: /getDoc');
+      } else {
+        const data = await response.json();
+        console.log("Received Data to show: ", data)
+      //!!!!!
+        setJsonToShow(data.theme.questionnaire); // Setze das empfangene JSON in den State
+        setShowJsonToShowPopup(true); // Zeige das Popup an
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+
+  const handleClosePopup = () => {
+    setShowJsonToShowPopup(false);
+    setJsonToShow({}); // Zurücksetzen des JSON im State
+  };
+
   const questionCounts = aggregateResponses(questionnaires);
+
+  const isHexColor = (str: string) => /^#[0-9A-F]{6}$/i.test(str);
 
   return (
     <Container maxWidth="md">
       <Box display="flex" flexDirection="column" gap={3} mt={4}>
+          <Box>
+            <Box display="flex" alignItems="center">
+              <Typography variant="h4" gutterBottom style={{ marginBottom: '5px'}}>Set Tester-ID</Typography>
+              <IconWithCard cardContent="This is the ID under which the Questionnaire in the 'Questionnaire AI' Tab will be saved." />
+            </Box>
+            <TextField
+              label="ID"
+              variant="outlined"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              fullWidth
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleTrySetId}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
+              onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
+              onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
+              style={{ marginTop: '16px' }}
+            >
+              Set ID
+            </Button>
+            <Typography style={{ marginTop: '10px' }}>Current ID: {currentId}</Typography>
+          </Box>
+        <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
         <Typography variant="h4" gutterBottom>Saved Themes</Typography>
         {loading ? (
           <Backdrop open={loading}>
@@ -324,10 +472,10 @@ const Adminpanel = () => {
                     <Button
                       variant="contained"
                       color="primary"
-                      onClick={() => {setSnackbarMessage("Wollen Sie die ID wirklich Löschen?"); setIDtodelete(category); setOpenDeleteIDSnackbar(true)}}
+                      onClick={() => {handleDeleteID(category)}}
                       style={{ marginLeft: '10px', marginBottom: '6px' }}
                     >
-                      Delete
+                      Delete ID
                     </Button>
                   </Box>
                   <List>
@@ -340,6 +488,14 @@ const Adminpanel = () => {
                         <ListItem key={docName} divider>
                           <ListItemText primary={docName} />
                           <ListItemSecondaryAction>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => handleShowQuestionnaire(category, docName)}
+                              style={{ marginRight: '10px' }}
+                            >
+                              Show 
+                            </Button>
                             <Button
                               variant="contained"
                               color="primary"
@@ -364,11 +520,14 @@ const Adminpanel = () => {
               ))}
 
             </List>
+            {showJsonToShowPopup &&
+              <QuestionnairePopup onClose={handleClosePopup} questions={jsonToShow} />
+            }
             <Box display="flex" justifyContent="flex-start">
               <Button
               variant="contained"
               color="primary"
-              onClick={() => {setSnackbarMessage("Sind Sie sicher dass Sie alle Datenbankinhalte löschen wollen?"); setOpenDeleteAllSnackbar(true)}}
+              onClick={() => {setSnackbarMessage("Are you sure you want to delete ALL entries in the database?"); setOpenDeleteAllSnackbar(true)}}
               style={{ marginRight: '16px' }}
             >
             Delete all Data
@@ -381,31 +540,8 @@ const Adminpanel = () => {
             Apply Default Theme
             </Button>
             </Box>
-            <Box>
             <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 3 }} />
-            <Typography variant="h4" gutterBottom style={{ marginBottom: '10px' }}>Set ID for Questionnaire:</Typography>
-            <TextField
-              label="ID"
-              variant="outlined"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              fullWidth
-            />
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={handleTrySetId}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.main}
-              onMouseDown={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.light}
-              onMouseUp={(e) => e.currentTarget.style.backgroundColor = theme.palette.primary.dark}
-              style={{ marginTop: '16px' }}
-            >
-              Set ID
-            </Button>
-            </Box>
-            <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 1 }} />
-            <Box mt={4}>
+            <Box>
               <Typography variant="h4" gutterBottom>Questionnaire Statistics</Typography>
               <TableContainer component={Paper}>
                 <Table>
@@ -421,20 +557,34 @@ const Adminpanel = () => {
                       const answers = Object.entries(questionCounts[question]).sort((a, b) => b[1] - a[1]);
                       return (
                         <React.Fragment key={question}>
-                          <TableRow style={{ borderTop: '3px solid rgba(224, 224, 224, 1)' }}>
-                            <TableCell rowSpan={answers.length} style={{ fontWeight: 'bold' }}>
-                              {question}
+                        <TableRow style={{ borderTop: '3px solid rgba(224, 224, 224, 1)' }}>
+                          <TableCell rowSpan={answers.length} style={{ fontWeight: 'bold' }}>
+                            {question}
+                          </TableCell>
+                          <TableCell>
+                            {answers[0][0]}
+                            {isHexColor(answers[0][0]) && (
+                              <div style={{ width: '20px', height: '20px', backgroundColor: answers[0][0], display: 'inline-block', marginLeft: '10px',
+                              boxShadow: theme.shadows[1], borderRadius: theme.shape.borderRadius,
+                              position: 'relative', top: '4px' }}></div>
+                            )}
+                          </TableCell>
+                          <TableCell>{answers[0][1]}</TableCell>
+                        </TableRow>
+                        {answers.slice(1).map(([answer, count]) => (
+                          <TableRow style={{ borderBottom: '3px solid rgba(224, 224, 224, 1)' }} key={answer}>
+                            <TableCell>
+                              {answer}
+                              {isHexColor(answer) && (
+                                <div style={{ width: '20px', height: '20px', backgroundColor: answer, display: 'inline-block', marginLeft: '10px',
+                                boxShadow: theme.shadows[1], borderRadius: theme.shape.borderRadius,
+                                position: 'relative', top: '4px' }}></div>
+                              )}
                             </TableCell>
-                            <TableCell>{answers[0][0]}</TableCell>
-                            <TableCell>{answers[0][1]}</TableCell>
+                            <TableCell>{count}</TableCell>
                           </TableRow>
-                          {answers.slice(1).map(([answer, count]) => (
-                            <TableRow style={{ borderBottom: '3px solid rgba(224, 224, 224, 1)' }} key={answer}>
-                              <TableCell>{answer}</TableCell>
-                              <TableCell>{count}</TableCell>
-                            </TableRow>
-                          ))}
-                        </React.Fragment>
+                        ))}
+                      </React.Fragment>
                       );
                     })}
                   </TableBody>
@@ -443,6 +593,18 @@ const Adminpanel = () => {
             </Box>
           </>
         )}
+      </Box>
+      <Divider sx={{ borderBottomWidth: 3, borderColor: 'black', my: 3 }} />
+      <Box>
+        <Typography variant="h4" gutterBottom>Hosting der KI:</Typography>
+        <Select
+          value={aiSourceID}
+          onChange={switchAiSource}
+          variant="outlined"
+        >
+          <MenuItem value="local">Local-Hosting</MenuItem>
+          <MenuItem value="server">Server-Hosting</MenuItem>
+        </Select>
       </Box>
       <Snackbar
         open={openSuccessSnackbar}
@@ -465,6 +627,7 @@ const Adminpanel = () => {
             variant="contained"
             color="primary"
             onClick={handleForceSetId}
+            style={{ marginLeft: '16px' }}
           >
             Force Set ID
           </Button>
@@ -483,16 +646,29 @@ const Adminpanel = () => {
           </Button>
         </Alert>
       </Snackbar>
-      <Snackbar open={openDeleteIDSnackbar} autoHideDuration={6000} onClose={() => setOpenDeleteIDSnackbar(false)}>
-        <Alert onClose={() => setOpenDeleteIDSnackbar(false)} severity="warning">
+      <Snackbar open={openUndoDeleteThemeSnackbar} autoHideDuration={6000} onClose={() => setOpenUndoDeleteThemeSnackbar(false)}>
+        <Alert onClose={() => setOpenUndoDeleteThemeSnackbar(false)} severity="warning">
           {snackbarMessage}
           <Button
             variant="contained"
             color="primary"
-            onClick={() => handleDeleteID(IDtodelete)}
+            onClick={() => {handleUndoDeleteTheme(); setOpenUndoDeleteThemeSnackbar(false)}}
             style={{ marginLeft: '16px' }}
           >
-            DELETE
+            UNDO
+          </Button>
+        </Alert>
+      </Snackbar>
+      <Snackbar open={openUndoDeleteIDSnackbar} autoHideDuration={6000} onClose={() => setOpenUndoDeleteIDSnackbar(false)}>
+        <Alert onClose={() => setOpenUndoDeleteIDSnackbar(false)} severity="warning">
+          {snackbarMessage}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {handleUndoDeleteID(); setOpenUndoDeleteIDSnackbar(false)}}
+            style={{ marginLeft: '16px' }}
+          >
+            UNDO
           </Button>
         </Alert>
       </Snackbar>
