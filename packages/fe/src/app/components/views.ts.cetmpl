@@ -2,11 +2,13 @@ import React from "react";
 import CoreWelcome from "@frontend/app/components/core/welcome";
 import Questionnaire from '@frontend/app/components/core/weboranger/questionnaire';
 import Adminpanel from '@frontend/app/components/core/weboranger/Adminpanel';
+import Examplefeature from '@frontend/app/components/core/weboranger/Examplefeature';
 
 export type ViewRegistry = {[valueObjectName: string]: React.FunctionComponent<any>}
 
 export const views: ViewRegistry = {
   "Core.Welcome": CoreWelcome,
   'Core.Questions': Questionnaire,
-  'Core.Adminpanel': Adminpanel
+  'Core.Adminpanel': Adminpanel,
+  'Core.Examplefeature': Examplefeature
 };

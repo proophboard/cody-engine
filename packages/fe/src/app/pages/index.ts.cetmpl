@@ -1,12 +1,15 @@
 import {PageDefinition} from "@frontend/app/pages/page-definitions";
 import {Dashboard} from "@frontend/app/pages/core/dashboard";
 import { Questions } from '@frontend/app/pages/core/questions';
-import { Adminpanel } from '@frontend/app/pages/core/adminpanel'
+import { Adminpanel } from '@frontend/app/pages/core/adminpanel';
+import { Examplefeature } from '@frontend/app/pages/core/examplefeature'
 
 export type PageRegistry = {[pageName: string]: PageDefinition};
 
 export const pages: PageRegistry = {
   Dashboard: Dashboard,
   Adminpanel: Adminpanel,
-  Questions: Questions
+  Questions: Questions,
+  Examplefeature: Examplefeature
 }
+
