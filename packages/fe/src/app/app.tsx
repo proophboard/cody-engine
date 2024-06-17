@@ -23,6 +23,41 @@ import User from "@frontend/app/providers/User";
 import PageDataProvider from "@frontend/app/providers/PageData";
 import ErrorBoundary from "@frontend/app/components/core/ErrorBoundary";
 
+// Verspielt
+import '@fontsource/pacifico/400.css'; 
+import '@fontsource/baloo-2/400.css'; 
+import '@fontsource/caveat/400.css'; 
+
+// Schlicht
+import '@fontsource/open-sans/400.css'; 
+import '@fontsource/lato/400.css'; 
+import '@fontsource/montserrat/400.css'; 
+
+// Maschinell
+import '@fontsource/roboto-mono/400.css'; 
+import '@fontsource/source-code-pro/400.css'; 
+import '@fontsource/fira-code/400.css';
+
+// Gerundet
+import '@fontsource/nunito/400.css'; 
+import '@fontsource/quicksand/400.css'; 
+import '@fontsource/comic-neue/400.css'; 
+
+// Elegant
+import '@fontsource/playfair-display/400.css';
+import '@fontsource/merriweather/400.css';
+import '@fontsource/abril-fatface/400.css';
+
+// Dramatisch
+import '@fontsource/bebas-neue/400.css';
+import '@fontsource/righteous/400.css';
+import '@fontsource/bungee/400.css'; 
+
+// Sachlich
+import '@fontsource/roboto/400.css'; 
+import '@fontsource/inter/400.css';
+import '@fontsource/ubuntu/400.css';
+
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>

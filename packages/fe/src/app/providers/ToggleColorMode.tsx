@@ -1,17 +1,17 @@
-import React, { ReactNode, useEffect, useState, useMemo } from "react";
+import React, { ReactNode, useState, useMemo, useCallback } from "react";
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from "@frontend/app/layout/theme";
 
 interface Props {
-  children: ReactNode
+  children: ReactNode;
 }
 
 // Erstellen des ThemeContexts
-export const ThemeContext = React.createContext({ 
-  mode: 'light', 
-  toggleColorMode: () => { },
-  themeConfig: null, 
-  applyTheme: (config: any) => { } 
+export const ThemeContext = React.createContext({
+  mode: 'light',
+  toggleColorMode: () => {},
+  themeConfig: null,
+  applyTheme: (config: any) => {},
 });
 
 // Hauptkomponente
@@ -21,26 +21,35 @@ const ToggleColorMode = ({ children }: Props) => {
   const [themeConfig, setThemeConfig] = useState<any>(null);
 
   // Kontextwert
-  const themeContextValue = {
-    mode,
-    toggleColorMode: () => {
-      setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
-    },
-    themeConfig,
-    applyTheme: (config: any) => {
-      setThemeConfig(config);
-    },
-  };
+  const toggleColorMode = useCallback(() => {
+    setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  }, []);
+
+  const applyTheme = useCallback((config: any) => {
+    setThemeConfig(config);
+  }, []);
+
+  const themeContextValue = useMemo(
+    () => ({
+      mode,
+      toggleColorMode,
+      themeConfig,
+      applyTheme,
+    }),
+    [mode, toggleColorMode, themeConfig, applyTheme]
+  );
 
   // Erstellen des Themes
   const theme = useMemo(
     () =>
-      createTheme(themeConfig || {
+      createTheme({
+        ...themeConfig,
         palette: {
+          ...themeConfig?.palette,
           mode,
         },
       }),
-    [mode, themeConfig],
+    [mode, themeConfig]
   );
 
   // Rendern der Komponente
@@ -51,6 +60,6 @@ const ToggleColorMode = ({ children }: Props) => {
       </ThemeProvider>
     </ThemeContext.Provider>
   );
-}
+};
 
 export default ToggleColorMode;

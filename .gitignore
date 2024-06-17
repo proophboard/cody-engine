@@ -197,3 +197,4 @@ data/*
 /packages/ai/config
 
 #Hier sind die AI Ignore dateien zuende
+.env
