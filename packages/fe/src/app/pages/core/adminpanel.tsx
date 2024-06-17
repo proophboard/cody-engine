@@ -9,8 +9,11 @@ export const Adminpanel: TopLevelPage = {
   sidebar: {
     label: "Adminpanel",
     Icon: SupervisorAccountIcon , //evt ändern?
-    position: 0
+    position: 0,
+    invisible: "!isRole(user, 'Admin')",
+    // invisible: "user.role != 'Admin'",
   },
+
 
   route: "/adminpanel",
   topLevel: true,
