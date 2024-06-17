@@ -275,7 +275,7 @@ app.get('/getIsAiLoading', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  setAiSource("local");
+  setAiSource("server");
   console.log(`AI Backend Server running on port ${PORT}`);
 });
 
