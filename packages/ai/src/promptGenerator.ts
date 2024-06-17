@@ -91,6 +91,66 @@ const jsonCode = `
           "justifyContent": "center"
         }
       }
+    },
+    "MuiGrid2": {
+      "styleOverrides": {
+        "root": {
+          "flexDirection": "row-reverse",
+          "justifyContent": "space-between",
+          "alignItems": "flex-start"
+        }
+      }
+    },
+    "MuiContainer": {
+      "styleOverrides": {
+        "root": {
+          "display": "flex",
+          "flexDirection": "column",
+          "padding": "16px",
+          "margin": "0 auto",
+          "maxWidth": "1200px"
+        }
+      }
+    },
+    "MuiPaper": {
+      "styleOverrides": {
+        "root": {
+          "display": "flex",
+          "flexDirection": "column",
+          "padding": "16px",
+          "margin": "16px",
+          "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)"
+        }
+      }
+    },
+    "MuiCard": {
+      "styleOverrides": {
+        "root": {
+          "display": "flex",
+          "flexDirection": "column",
+          "padding": "16px",
+          "margin": "16px",
+          "boxShadow": "0 4px 8px rgba(0, 0, 0, 0.1)",
+          "borderRadius": "8px"
+        }
+      }
+    },
+    "MuiCardActions": {
+      "styleOverrides": {
+        "root": {
+          "display": "flex",
+          "justifyContent": "flex-end"
+        }
+      }
+    },
+    "MuiCardContent": {
+      "styleOverrides": {
+        "root": {
+          "display": "flex",
+          "flexDirection": "column",
+          "alignItems": "center"
+        }
+      }
     }
   }
 }`;
@@ -105,22 +165,22 @@ interface Preferences {
 }
 
 const fontMapping: { [key: string]: string[] } = {
-  verspielt: ['Pacifico', 'Baloo 2', 'Caveat'],
-  schlicht: ['Open Sans', 'Lato', 'Montserrat'],
-  maschinell: ['Roboto Mono', 'Source Code Pro', 'Fira Code'],
-  gerundet: ['Nunito', 'Quicksand', 'Comic Neue'],
+  playful: ['Pacifico', 'Baloo 2', 'Caveat'],
+  simple: ['Open Sans', 'Lato', 'Montserrat'],
+  mechanical: ['Roboto Mono', 'Source Code Pro', 'Fira Code'],
+  rounded: ['Nunito', 'Quicksand', 'Comic Neue'],
   elegant: ['Playfair Display', 'Merriweather', 'Abril Fatface'],
-  dramatisch: ['Bebas Neue', 'Righteous', 'Bungee'],
-  sachlich: ['Roboto', 'Inter', 'Ubuntu']
+  dramatic: ['Bebas Neue', 'Righteous', 'Bungee'],
+  factual: ['Roboto', 'Inter', 'Ubuntu']
 };
 
 const themeMapping: { [key: string]: string } = {
-  'Seriös': 'serious and professional',
-  'Energiegeladen': 'energetic and vibrant',
-  'Fröhlich': 'joyful and playful',
-  'Naturverbunden': 'nature-oriented and earthy',
-  'Technisch': 'technical and modern',
-  'Minimalistisch': 'minimalistic and clean',
+  'Serious': 'serious and professional',
+  'Energetic': 'energetic and vibrant',
+  'Cheerful': 'joyful and playful',
+  'Nature-oriented': 'nature-oriented and earthy',
+  'Technical': 'technical and modern',
+  'Minimalistic': 'minimalistic and clean',
   'Premium': 'premium and luxurious'
 };
 
@@ -142,13 +202,19 @@ function generateAIPrompt(preferences: Preferences, previousResponse: string | n
 
   return JSON.stringify({
     messages: [
-      { role: 'system', content: 'You are an AI designed to generate MUI theme configurations based on a given template. Change the given template and generate a new MUI theme configuration. Never leave the default options or empty strings or null and never leave any placeholders. Everything should be filled out in a way that makes sense and with good UI/UX. Pay special attention to color contrast: ensure that if there is a light background, the text is dark, and if there is a dark background, the text is light. The "Farbgewichtung" parameter means: a higher number means to use only the selected color and maybe a second color. A lower number means to use as many colors as you wish to combine. For a high color weight, use primarily the primary color and at most one other color. For a low color weight, use a wider range of colors and combine them as you wish) that fit into the color scheme for the background, primary, and secondary colors. The chosen theme in the user preferences should be interpreted and UI/UX guidelines should be generated. Ensure distinct and visible changes between themes. Also, consider light and dark mode changes. The default is light mode, but the theme configuration JSON colors should reflect the change when switching to dark mode.' },
-      { role: 'user', content: `User preferences: ${JSON.stringify(preferences, null, 2)}` },
-      { role: 'user', content: `${jsonCode}` },
-      { role: 'user', content: `Interpret the user preferences into UI/UX guidelines and generate a MUI theme configuration based on those guidelines. Change the layout of the website as well to your liking. Ensure all fields are filled in and more importantly: changed according to the user preferences. The font theme means not a specific theme but rather a vibe which the theme should have. Choose a specific theme you see fit. But don't use a standard font, choose something that fits the chosen vibe and also is very distinct and not default. The available fonts for this theme are: ${fontList.join(', ')}` },
-      { role: 'user', content: `The current theme chosen is "${preferences[4].answer}", which should be interpreted as "${themeDescription}". Ensure that the generated UI/UX guidelines are distinct and visibly different from other possible themes. Ensure that the theme can switch between light and dark modes, and the colors in the theme configuration JSON should reflect that change.` }
-    ]
-  });
+      { role: 'system', content: 'You are an AI designed to generate MUI theme configurations based on a given template. Change the given template and generate a new MUI theme configuration.' },
+      { role: 'user', content: `Interpret the user preferences into UI/UX guidelines and generate a MUI theme configuration based on those guidelines. User preferences: ${JSON.stringify(preferences, null, 2)}` },
+      { role: 'user', content: `The "Farbgewichtung" parameter means: a higher number means to use only the selected color and maybe a second color.  A lower number means to use as many colors as you wish to combine. For a high color weight, use primarily the primary color and at most one other color. For a low color weight, use a wider range of colors and combine them as you wish) that fit into the color scheme for the background, primary, and secondary colors.` },
+      { role: 'user', content: `Also, consider light and dark mode changes. The default is light mode, but the theme configuration JSON colors should reflect the change when switching to dark mode.` },
+      { role: 'user', content: `Template for the MUI Theme Configuration JSON (Be sure to use this only as a reference, dont keep the default options given here): ${jsonCode}` },
+      { role: 'user', content: `The current theme chosen is "${preferences[4].answer}", which should be interpreted as "${themeDescription}". The chosen theme in the user preferences should be interpreted and UI/UX guidelines should be generated. Ensure distinct and visible changes between themes.` },
+      { role: 'user', content: `The font theme means not a specific theme but rather a vibe which the theme should have. Choose a specific theme you see fit. But don't use a standard font, choose something that fits the chosen vibe and also is very distinct and not default. The available fonts for this theme are: ${fontList.join(', ')}` },
+      { role: 'user', content: `Everything should be filled out in a way that makes sense and with good UI/UX.` },
+      { role: 'user', content: `Pay special attention to color contrast: ensure that if there is a light background, the text is dark, and if there is a dark background, the text is light.` },
+      { role: 'user', content: `Be sure to *always* change the layout of the website (Through Flexdirection, display and all the other options given in the template JSON) as well to your liking. So that it drastically improves the UX.` },
+      { role: 'user', content: `Never leave the default options or empty strings or null and never leave any placeholders.` }
+    ]       
+  });  
 }
 
 export { generateAIPrompt };
