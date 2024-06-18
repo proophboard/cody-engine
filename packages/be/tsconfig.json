@@ -8,9 +8,14 @@
     },
     {
       "path": "./tsconfig.spec.json"
+    },
+    {
+      "path": "./features/tsconfig.json"
     }
   ],
   "compilerOptions": {
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true
   }
 }
