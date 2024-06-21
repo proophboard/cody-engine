@@ -9,14 +9,20 @@ export enum MatchOperator {
     LTE = '<=',
 }
 
-export interface MatchObject {op: MatchOperator, val: string | number | boolean}
+type Value = string | number | boolean;
+
+export interface MatchObject {op: MatchOperator, val: Value | Array<Value>}
+
+export const META_KEY_EVENT_ID = '$eventId';
+export const META_KEY_EVENT_NAME = '$eventName';
+export const META_KEY_CREATED_AT = '$createdAt';
 
 export interface MetadataMatcher {
     [metadataKey: string]: string | MatchObject;
 }
 
 export function checkMatchObject(matcher: string | MatchObject): MatchObject {
-    if(typeof matcher !== "object") {
+    if(Array.isArray(matcher) || typeof matcher !== "object") {
         return {op: MatchOperator.EQ, val: matcher};
     }
 
@@ -36,7 +42,7 @@ export interface EventStore {
     createStream: (streamName: string, type?: StreamType) => Promise<boolean>;
     deleteStream: (streamName: string) => Promise<boolean>;
     appendTo: (streamName: string, events: Event[], metadataMatcher?: MetadataMatcher, expectedVersion?: number) => Promise<boolean>;
-    load: <P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number) => Promise<AsyncIterable<Event<P,M>>>;
+    load: <P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number, reverse?: boolean) => Promise<AsyncIterable<Event<P,M>>>;
     delete: (streamName: string, metadataMatcher: MetadataMatcher) => Promise<number>;
     republish: (streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number) => Promise<void>;
     attachAppendToListener: (listener: AppendToListener) => void;

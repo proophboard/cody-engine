@@ -174,7 +174,7 @@ export class PostgresEventStore implements EventStore {
     this.appendToListeners.forEach(l => l(streamName, events));
   }
 
-  async load<P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P, M>>> {
+  async load<P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number, reverse?: boolean): Promise<AsyncIterable<Event<P, M>>> {
     let fromEventNo;
     const bindings = [];
 
@@ -201,7 +201,9 @@ export class PostgresEventStore implements EventStore {
       where += fromEventNo? `no > ${fromEventNo}` : '1=1';
     }
 
-    const query = `SELECT * FROM ${streamName} WHERE ${where} ORDER BY no asc ` + (limit? `LIMIT ${limit}` : '') + ';';
+    const orderBy = reverse? 'desc' : 'asc';
+
+    const query = `SELECT * FROM ${streamName} WHERE ${where} ORDER BY no ${orderBy} ` + (limit? `LIMIT ${limit}` : '') + ';';
 
     const cursor = await this.db.iterableCursor<Row<P,M>>(query, bindings);
 

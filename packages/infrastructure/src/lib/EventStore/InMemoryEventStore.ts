@@ -3,7 +3,7 @@ import {Event, EventMeta} from "@event-engine/messaging/event";
 import {
   AppendToListener, checkMatchObject,
   EventStore,
-  MatchOperator,
+  MatchOperator, META_KEY_CREATED_AT, META_KEY_EVENT_ID, META_KEY_EVENT_NAME,
   MetadataMatcher, StreamType
 } from "@event-engine/infrastructure/EventStore";
 import {messageFromJSON, Payload} from "@event-engine/messaging/message";
@@ -22,8 +22,16 @@ const matchMetadata = (event: Event, metadataMatcher: MetadataMatcher): boolean 
 
   for(const prop in metadataMatcher) {
     if(metadataMatcher.hasOwnProperty(prop)) {
-      if(prop === '$eventId') {
-        meta['$eventId'] = event.uuid;
+      if(prop === META_KEY_EVENT_ID) {
+        meta[META_KEY_EVENT_ID] = event.uuid;
+      }
+
+      if(prop === META_KEY_EVENT_NAME) {
+        meta[META_KEY_EVENT_NAME] = event.name;
+      }
+
+      if(prop === META_KEY_CREATED_AT) {
+        meta[META_KEY_CREATED_AT] = event.createdAt.toISOString();
       }
 
       if(!meta.hasOwnProperty(prop)) {
@@ -34,6 +42,11 @@ const matchMetadata = (event: Event, metadataMatcher: MetadataMatcher): boolean 
 
       switch (matchObject.op) {
         case MatchOperator.EQ:
+          if(Array.isArray(matchObject.val)) {
+            if(!matchObject.val.includes(meta[prop])) {
+              return false;
+            }
+          }
           if (meta[prop] !== matchObject.val) return false;
           break;
         case MatchOperator.GT:
@@ -59,7 +72,7 @@ const matchMetadata = (event: Event, metadataMatcher: MetadataMatcher): boolean 
 export class InMemoryEventStore implements EventStore {
   private streams: InMemoryStreamStore = {};
   private persistOnDisk: boolean;
-  private publishOnFlush: boolean = false;
+  private publishOnFlush = false;
   private readonly storageFile: string;
   private appendToListeners: AppendToListener[] = [];
   private readonly fs: Filesystem;
@@ -136,7 +149,7 @@ export class InMemoryEventStore implements EventStore {
     return true;
   }
 
-  public async load<P extends Payload = any, M extends EventMeta= any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P,M>>> {
+  public async load<P extends Payload = any, M extends EventMeta= any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number, reverse?: boolean): Promise<AsyncIterable<Event<P,M>>> {
     return new Promise<AsyncIterable<Event>>(resolve => {
 
       if(!this.streams.hasOwnProperty(streamName)) {
@@ -158,6 +171,10 @@ export class InMemoryEventStore implements EventStore {
           }
           return false;
         })
+      }
+
+      if(reverse) {
+        events.reverse();
       }
 
       const filteredEvents = events.slice(0, limit);
