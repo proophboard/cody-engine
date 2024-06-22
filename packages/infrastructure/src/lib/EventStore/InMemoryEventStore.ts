@@ -1,14 +1,12 @@
 /* eslint-disable no-prototype-builtins */
 import {Event, EventMeta} from "@event-engine/messaging/event";
 import {
-  AppendToListener, checkMatchObject,
+  AppendToListener, checkMatchObject, EventMatcher,
   EventStore,
-  MatchOperator, META_KEY_CREATED_AT, META_KEY_EVENT_ID, META_KEY_EVENT_NAME,
-  MetadataMatcher, StreamType
+  MatchOperator, META_KEY_CREATED_AT, META_KEY_EVENT_ID, META_KEY_EVENT_NAME, StreamType
 } from "@event-engine/infrastructure/EventStore";
 import {messageFromJSON, Payload} from "@event-engine/messaging/message";
 import {Filesystem, NodeFilesystem} from "@event-engine/infrastructure/helpers/fs";
-import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
 
 export interface InMemoryStreamStore {
@@ -17,28 +15,32 @@ export interface InMemoryStreamStore {
 
 
 
-const matchMetadata = (event: Event, metadataMatcher: MetadataMatcher): boolean => {
+const matchEvent = (event: Event, eventMatcher: EventMatcher): boolean => {
   const meta = {...event.meta};
+  const payload = {...event.payload};
 
-  for(const prop in metadataMatcher) {
-    if(metadataMatcher.hasOwnProperty(prop)) {
-      if(prop === META_KEY_EVENT_ID) {
-        meta[META_KEY_EVENT_ID] = event.uuid;
-      }
+  for(const prop in eventMatcher) {
+    if(eventMatcher.hasOwnProperty(prop)) {
+      const matchObject = checkMatchObject(prop, eventMatcher[prop]);
 
-      if(prop === META_KEY_EVENT_NAME) {
-        meta[META_KEY_EVENT_NAME] = event.name;
-      }
-
-      if(prop === META_KEY_CREATED_AT) {
-        meta[META_KEY_CREATED_AT] = event.createdAt.toISOString();
+      switch (matchObject.evtProp) {
+        case "uuid":
+          meta[META_KEY_EVENT_ID] = event.uuid;
+          break;
+        case "name":
+          meta[META_KEY_EVENT_NAME] = event.name;
+          break;
+        case "createdAt":
+          meta[META_KEY_CREATED_AT] = event.createdAt.toISOString();
+          break;
+        case "payload":
+          meta[prop] = payload[prop];
+          break;
       }
 
       if(!meta.hasOwnProperty(prop)) {
         return false;
       }
-
-      const matchObject = checkMatchObject(metadataMatcher[prop]);
 
       switch (matchObject.op) {
         case MatchOperator.EQ:
@@ -117,13 +119,13 @@ export class InMemoryEventStore implements EventStore {
     return true;
   }
 
-  public async appendTo(streamName: string, events: Event[], metadataMatcher?: MetadataMatcher, expectedVersion?: number): Promise<boolean> {
+  public async appendTo(streamName: string, events: Event[], eventMatcher?: EventMatcher, expectedVersion?: number): Promise<boolean> {
     if(!this.streams.hasOwnProperty(streamName)) {
       this.streams[streamName] = [];
     }
 
-    if(metadataMatcher && typeof expectedVersion !== 'undefined') {
-      const existingEvtsItr =  await this.load(streamName, metadataMatcher);
+    if(eventMatcher && typeof expectedVersion !== 'undefined') {
+      const existingEvtsItr =  await this.load(streamName, eventMatcher);
       const existingEvts = [];
 
       for await (const existingEvt of existingEvtsItr) {
@@ -132,7 +134,7 @@ export class InMemoryEventStore implements EventStore {
 
 
       if(existingEvts.length !== expectedVersion) {
-        throw new ConcurrencyError(`Concurrency exception. Expected stream version does not match. Expected ${expectedVersion} for stream ${streamName} with metadata matcher ${JSON.stringify(metadataMatcher)}. But current version is ${existingEvts.length}`);
+        throw new ConcurrencyError(`Concurrency exception. Expected stream version does not match. Expected ${expectedVersion} for stream ${streamName} with metadata matcher ${JSON.stringify(eventMatcher)}. But current version is ${existingEvts.length}`);
       }
     }
 
@@ -149,14 +151,14 @@ export class InMemoryEventStore implements EventStore {
     return true;
   }
 
-  public async load<P extends Payload = any, M extends EventMeta= any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number, reverse?: boolean): Promise<AsyncIterable<Event<P,M>>> {
+  public async load<P extends Payload = any, M extends EventMeta= any>(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number, reverse?: boolean): Promise<AsyncIterable<Event<P,M>>> {
     return new Promise<AsyncIterable<Event>>(resolve => {
 
       if(!this.streams.hasOwnProperty(streamName)) {
-        throw Error(`Stream "${ streamName }" not found`);
+        this.streams[streamName] = [];
       }
 
-      let events = this.streams[streamName].filter(evt => matchMetadata(evt, metadataMatcher || {}));
+      let events = this.streams[streamName].filter(evt => matchEvent(evt, eventMatcher || {}));
 
       if(typeof fromEventId !== 'undefined') {
         let eventIdMatched = false;
@@ -193,15 +195,15 @@ export class InMemoryEventStore implements EventStore {
     });
   }
 
-  public delete(streamName: string, metadataMatcher: MetadataMatcher): Promise<number> {
+  public delete(streamName: string, eventMatcher: EventMatcher): Promise<number> {
     return new Promise<number>(resolve => {
       if(!this.streams.hasOwnProperty(streamName)) {
         throw Error(`Stream "${ streamName }" not found`);
       }
 
-      const deletedEvents = this.streams[streamName].filter(evt => matchMetadata(evt, metadataMatcher));
+      const deletedEvents = this.streams[streamName].filter(evt => matchEvent(evt, eventMatcher));
 
-      this.streams[streamName] = this.streams[streamName].filter(evt => !matchMetadata(evt, metadataMatcher));
+      this.streams[streamName] = this.streams[streamName].filter(evt => !matchEvent(evt, eventMatcher));
 
       this.persistOnDiskIfEnabled();
 
@@ -250,8 +252,8 @@ export class InMemoryEventStore implements EventStore {
     return this.streams;
   }
 
-  public async republish(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<void> {
-    const events = await this.load(streamName, metadataMatcher, fromEventId, limit);
+  public async republish(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number): Promise<void> {
+    const events = await this.load(streamName, eventMatcher, fromEventId, limit);
 
     for await (const event of events) {
       this.appendToListeners.forEach(l => l(streamName, [event], true));

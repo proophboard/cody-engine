@@ -562,9 +562,11 @@ const execRecordEventAsync = async (then: ThenRecordEvent, ctx: ExecutionContext
 
   const payload = await execMappingAsync(then.record.mapping, ctx);
 
+  const meta = then.record.meta ? await execMappingAsync(then.record.meta, ctx) : {};
+
   const events = ctx['events'] || [];
 
-  events.push(factory(payload, ctx.meta));
+  events.push(factory(payload, {...ctx.meta, ...meta}));
 
   ctx['events'] = events;
 

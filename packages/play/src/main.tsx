@@ -6,7 +6,7 @@ import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model
 import {
   getConfiguredPlayReadModelProjector
 } from "@cody-play/infrastructure/multi-model-store/configured-play-read-model-projector";
-import {MetadataMatcher} from "@event-engine/infrastructure/EventStore";
+import {EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {Action, CodyPlayConfig} from "@cody-play/state/config-store";
 
 document.title = 'Cody Play';
@@ -22,7 +22,7 @@ document.title = 'Cody Play';
       documentStore: ds,
       eventStore: es,
       projector: {
-        run: (streamName: string, metadataMatcher?: MetadataMatcher, projectionName?: string, fromEventId?: string, limit?: number): Promise<void> => {
+        run: (streamName: string, eventMatcher?: EventMatcher, projectionName?: string, fromEventId?: string, limit?: number): Promise<void> => {
           throw new Error('Cody Play Config is not initialized. Please wait a moment and try again!')
         }
       },

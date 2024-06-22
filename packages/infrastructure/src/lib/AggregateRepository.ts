@@ -3,7 +3,7 @@ import {Event, EventVisibility, providesPublicEvent} from "@event-engine/messagi
 import {Command} from "@event-engine/messaging/command";
 import {MultiModelStore} from "@event-engine/infrastructure/MultiModelStore";
 import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";
-import {MatchOperator, MetadataMatcher} from "@event-engine/infrastructure/EventStore";
+import {MatchOperator, EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
 import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {makeValueObject} from "@event-engine/messaging/value-object";
@@ -199,7 +199,7 @@ export class AggregateRepository<T extends object = any> {
     }
 
     public async loadState(aggregateId: string, untilVersion?: number): Promise<[T, number]> {
-        let maybeVersionMatcher: MetadataMatcher = {};
+        let maybeVersionMatcher: EventMatcher = {};
         let aggregateState: AggregateState = {};
         let aggregateVersion = 0;
 

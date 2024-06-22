@@ -5,13 +5,13 @@ import {
   SubscriptionInitializerMap
 } from "@event-engine/infrastructure/Subscription/CatchUpSubscription";
 import {EventQueue, EventQueueConsumer} from "@event-engine/infrastructure/EventQueue";
-import {EventStore, MetadataMatcher} from "@event-engine/infrastructure/EventStore";
+import {EventStore, EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {DocumentStore} from "@event-engine/infrastructure/DocumentStore";
 import {Event} from "@event-engine/messaging/event";
 
 export const SUBSCRIPTIONS_COLLECTION = 'event_store_subscriptions';
 
-type StreamInfo = {lastProcessedEvent: string | undefined, metadataMatcher: MetadataMatcher | undefined};
+type StreamInfo = {lastProcessedEvent: string | undefined, eventMatcher: EventMatcher | undefined};
 
 export type SubscriptionSnapshot = {[streamName: string]: StreamInfo};
 
@@ -42,7 +42,7 @@ export const makePersistentCatchUpSubscription = (
     initializers = {};
   }
 
-  const snapshotInitializer = async (streamName: string): Promise<[string | undefined, MetadataMatcher | undefined]> => {
+  const snapshotInitializer = async (streamName: string): Promise<[string | undefined, EventMatcher | undefined]> => {
     if(!subscriptionSnapshot) {
       subscriptionSnapshot = await documentStore.getDoc<SubscriptionSnapshot>(SUBSCRIPTIONS_COLLECTION, subscriptionName);
     }
@@ -52,18 +52,18 @@ export const makePersistentCatchUpSubscription = (
 
       for (const name of streamNames) {
         if(initializers?.hasOwnProperty(name)) {
-          const [lastProcessedEvent, metadataMatcher] = await initializers[name]();
+          const [lastProcessedEvent, eventMatcher] = await initializers[name]();
 
-          subscriptionSnapshot[name] = {lastProcessedEvent, metadataMatcher};
+          subscriptionSnapshot[name] = {lastProcessedEvent, eventMatcher};
         } else {
-          subscriptionSnapshot[name] = {lastProcessedEvent: undefined, metadataMatcher: undefined};
+          subscriptionSnapshot[name] = {lastProcessedEvent: undefined, eventMatcher: undefined};
         }
       }
     }
 
     const streamSnapshot = subscriptionSnapshot[streamName];
 
-    return [streamSnapshot.lastProcessedEvent, streamSnapshot.metadataMatcher];
+    return [streamSnapshot.lastProcessedEvent, streamSnapshot.eventMatcher];
   }
 
   streamNames.forEach(streamName => initializers![streamName] = makeSubscriptionInitializerForStream(streamName, snapshotInitializer));
@@ -88,7 +88,7 @@ export const makePersistentCatchUpSubscription = (
 
 const makeSubscriptionInitializerForStream = (
   streamName: string,
-  snapshotInitializer: (streamName: string) => Promise<[string | undefined, MetadataMatcher | undefined]>)
+  snapshotInitializer: (streamName: string) => Promise<[string | undefined, EventMatcher | undefined]>)
   : SubscriptionInitializer => {
   return () => {
     return snapshotInitializer(streamName);

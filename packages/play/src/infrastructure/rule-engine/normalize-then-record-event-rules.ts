@@ -7,7 +7,7 @@ import {visitRulesThen} from "@cody-engine/cody/hooks/utils/rule-engine/visit-ru
 export const normalizeThenRecordEventRules = (aggregate: string, rules: AnyRule[]): AnyRule[] => {
   return visitRulesThen(rules, then => {
     if(isRecordEvent(then)) {
-      return {record: {event: aggregate + '.' + names(then.record.event).className, mapping: then.record.mapping}};
+      return {record: {event: aggregate + '.' + names(then.record.event).className, mapping: then.record.mapping, meta: then.record.meta}};
     }
 
     return then;

@@ -9,7 +9,7 @@ export interface ProophBoardDescription {
   _pbLink: string;
 }
 
-export type DependencyType = "query" | "service";
+export type DependencyType = "query" | "service" | "events";
 
 export interface Dependency {
   type: DependencyType,

@@ -4,7 +4,6 @@ import {Message} from "@event-engine/messaging/message";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
 import {PlayQueryRegistry} from "@cody-play/state/types";
-import {queries} from "@app/shared/queries";
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {QueryRuntimeInfo} from "@event-engine/messaging/query";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
@@ -13,6 +12,11 @@ import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
 import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
+import {EventMatcher} from "@event-engine/infrastructure/EventStore";
+import {Event} from "@event-engine/messaging/event";
+import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
+import {asyncIterableToArray} from "@app/shared/utils/async-iterable-to-array";
+import {normalizeEventMetadataMatcher} from "@app/shared/utils/normalize-event-metadata-matcher";
 
 export type PlayMessageType = 'command' | 'event' | 'query';
 
@@ -20,6 +24,8 @@ export const services: {[serviceName: string]: (options?: any) => any} = {
   AuthService: getConfiguredPlayAuthService,
   CodyInformationService: playInformationServiceFactory,
 }
+
+const eventStore = getConfiguredPlayEventStore();
 
 export const playLoadDependencies = async (message: Message, type: PlayMessageType, dependencies: DependencyRegistry, config: CodyPlayConfig): Promise<any> => {
   const loadedDependencies: Record<string, any> = {};
@@ -38,16 +44,16 @@ export const playLoadDependencies = async (message: Message, type: PlayMessageTy
       }
     }
 
+    const messageDep: Record<string, object> = {};
+    messageDep[type] = message.payload;
+
     switch (dep.type) {
       case "query":
         if(dep.options?.query) {
           const payload: Record<string, any> = {};
 
-          const messageDep: Record<string, object> = {};
-          messageDep[type] = message.payload;
-
           for (const prop in dep.options.query) {
-            payload[prop] = await jexl.eval(dep.options.query[prop], {...loadedDependencies, ...messageDep});
+            payload[prop] = await jexl.eval(dep.options.query[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
           }
 
           message = {...message, payload};
@@ -58,8 +64,27 @@ export const playLoadDependencies = async (message: Message, type: PlayMessageTy
       case "service":
         loadedDependencies[depName] = loadServiceDependency(dependencyKey, message, dep.options);
         break;
+      case "events":
+        if(!dep.options?.match) {
+          throw new Error(`Missing "match" option in events dependency: ${depName}`);
+        }
+
+        const {match} = dep.options;
+
+        if(typeof match !== "object") {
+          throw new Error(`Type mismatch for dependency "${depName}". Events dependency option "match" has to be a Record<string, any>`);
+        }
+
+        const compiledMatch: EventMatcher = {};
+        for (const prop in match) {
+          compiledMatch[prop] = await jexl.eval(match[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
+        }
+
+        loadedDependencies[depName] = await loadEventsDependency(depName, {...dep.options, match: compiledMatch});
+        console.log(`[CodyPlay] Loaded events dependency "${depName}" with options: `, {...dep.options, match: compiledMatch}, "Result: ", loadedDependencies[depName]);
+        break;
       default:
-        throw new Error(`Unknown dependency type detected for "${message.name}". Supported dependency types are: "query", "service". But the configured type is "${dep.type}"`);
+        throw new Error(`Unknown dependency type detected for "${message.name}". Supported dependency types are: "query", "service", and "events". But the configured type is "${dep.type}"`);
     }
   }
 
@@ -93,4 +118,17 @@ const loadServiceDependency = (serviceName: string, message: Message, options?: 
   const serviceFactory = services[serviceName];
 
   return serviceFactory(options);
+}
+
+const loadEventsDependency =  async (alias: string, options: {stream?: string, match: EventMatcher, limit?: number, latestFirst?: boolean}): Promise<Event[]> => {
+  if(!options.match || typeof options.match !== "object") {
+    throw new Error(`Events dependency ${alias} is missing a "match" option which should be an object of event-meta-key -> filter value pairs.`)
+  }
+
+
+  const stream = options.stream || "write_model_stream";
+  const match = normalizeEventMetadataMatcher(options.match);
+  const reverse = !!options.latestFirst;
+
+  return await asyncIterableToArray(await eventStore.load(stream, match, undefined, options.limit, reverse));
 }
