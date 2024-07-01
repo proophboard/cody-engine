@@ -10,6 +10,7 @@ import {makeValueObject} from "@event-engine/messaging/value-object";
 import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 import {InformationService} from "@server/infrastructure/information-service/information-service";
 import {MessageBox} from "@event-engine/messaging/message-box";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 interface AggregateState {
     [prop: string]: any;
@@ -55,6 +56,26 @@ export const AggregateMeta = {
 
 export const AggregateMetaKeys = [AggregateMeta.VERSION, AggregateMeta.TYPE, AggregateMeta.ID];
 
+/**
+ * Aggregate Repository manages event sourced aggregates that maintain an internal state based on applied events
+ *
+ * The repository can be configured in two modes:
+ *
+ * 1. Strict Event Sourced
+ * - Aggregate state is always reconstructed from events
+ *
+ * 2. Stateful
+ * - Aggregate state is saved in the document store along with storing events using the Multi-Model-Store
+ *
+ * When saving events, the repository checks event metadata for user information and replaces it with only the userId.
+ * This is done for privacy reasons, to not have private data in events by accident. If you need private data in events
+ * by design, put it into the event payload.
+ *
+ * If you need user information like name or email in aggregate state, you can construct the repository
+ * with the AuthService and set the flag "loadUserIntoEventMeta" to true. If enabled, the repository will
+ * check event metadata for a userId and load the user via AuthService to set it back into event metadata.
+ *
+ */
 export class AggregateRepository<T extends object = any> {
     public readonly aggregateType: string;
     public readonly aggregateIdentifier: string;
@@ -67,7 +88,68 @@ export class AggregateRepository<T extends object = any> {
     protected readonly infoService: InformationService;
     protected readonly messageBox: MessageBox;
     protected readonly publicStream: string;
+    protected readonly stateStorageDisabled: boolean;
+    protected readonly loadUserIntoEventMeta: boolean;
     protected nextSession: Session | undefined;
+
+    public static asStrictEventSourced<T extends object = any>(
+      store: MultiModelStore,
+      eventStream: string,
+      aggregateType: string,
+      aggregateIdentifier: string,
+      applyFunctions: {[eventName: string]: ApplyFunction<T>},
+      stateFactory: AggregateStateFactory<T>,
+      authService: AuthService,
+      infoService: InformationService,
+      messageBox: MessageBox,
+      publicStream = "public_stream"
+    ) {
+        return new AggregateRepository(
+          store,
+          eventStream,
+          '__none__',
+          aggregateType,
+          aggregateIdentifier,
+          applyFunctions,
+          stateFactory,
+          authService,
+          infoService,
+          messageBox,
+          publicStream,
+          true,
+          false
+        )
+    }
+
+    public static asStateful<T extends object = any>(
+      store: MultiModelStore,
+      eventStream: string,
+      aggregateCollection: string,
+      aggregateType: string,
+      aggregateIdentifier: string,
+      applyFunctions: {[eventName: string]: ApplyFunction<T>},
+      stateFactory: AggregateStateFactory<T>,
+      authService: AuthService,
+      infoService: InformationService,
+      messageBox: MessageBox,
+      publicStream = "public_stream"
+    ) {
+        return new AggregateRepository(
+          store,
+          eventStream,
+          aggregateCollection,
+          aggregateType,
+          aggregateIdentifier,
+          applyFunctions,
+          stateFactory,
+          authService,
+          infoService,
+          messageBox,
+          publicStream,
+          false,
+          false
+        )
+    }
 
     constructor(
         store: MultiModelStore,
@@ -80,7 +162,9 @@ export class AggregateRepository<T extends object = any> {
         authService: AuthService,
         infoService: InformationService,
         messageBox: MessageBox,
-        publicStream = "public_stream"
+        publicStream = "public_stream",
+        disableStateStorage = false,
+        loadUserIntoEventMeta = true
     ) {
         this.store = store;
         this.eventStream = eventStream;
@@ -93,6 +177,8 @@ export class AggregateRepository<T extends object = any> {
         this.infoService = infoService;
         this.messageBox = messageBox;
         this.publicStream = publicStream;
+        this.stateStorageDisabled = disableStateStorage;
+        this.loadUserIntoEventMeta = loadUserIntoEventMeta;
     }
 
     public useSessionForNextSave(session: Session): void {
@@ -173,10 +259,12 @@ export class AggregateRepository<T extends object = any> {
                 }, expectedVersion)
             }
 
-            if(deleteState) {
-                session.deleteDocument(this.aggregateCollection, arId);
-            } else {
-                session.upsertDocument(this.aggregateCollection, arId, aggregateState, undefined, expectedVersion + events.length);
+            if(!this.stateStorageDisabled) {
+                if(deleteState) {
+                    session.deleteDocument(this.aggregateCollection, arId);
+                } else {
+                    session.upsertDocument(this.aggregateCollection, arId, aggregateState, undefined, expectedVersion + events.length);
+                }
             }
         }
 
@@ -204,7 +292,9 @@ export class AggregateRepository<T extends object = any> {
         let aggregateVersion = 0;
 
         if(!untilVersion) {
-            const docAndVersion = await this.store.loadDoc<AggregateStateDoc>(this.aggregateCollection, aggregateId);
+            const docAndVersion = this.stateStorageDisabled
+              ? undefined
+              : await this.store.loadDoc<AggregateStateDoc>(this.aggregateCollection, aggregateId);
 
             if(docAndVersion) {
                 aggregateState = {...aggregateState, ...docAndVersion.doc};
@@ -257,16 +347,6 @@ export class AggregateRepository<T extends object = any> {
     }
 
     protected async mapMetadataFromStore(events: Event[]): Promise<Event[]> {
-        const mappedEvents: Event[] = [];
-
-        for (let event of events) {
-            if(event.meta.user && typeof event.meta.user === 'string') {
-                event = setMessageMetadata(event, META_KEY_USER, await this.authService.get(event.meta.user));
-            }
-
-            mappedEvents.push(event);
-        }
-
-        return mappedEvents;
+        return mapMetadataFromEventStore(events, this.loadUserIntoEventMeta ? this.authService : undefined);
     }
 }

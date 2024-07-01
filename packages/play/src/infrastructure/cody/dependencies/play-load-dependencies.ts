@@ -17,6 +17,7 @@ import {Event} from "@event-engine/messaging/event";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
 import {asyncIterableToArray} from "@app/shared/utils/async-iterable-to-array";
 import {normalizeEventMetadataMatcher} from "@app/shared/utils/normalize-event-metadata-matcher";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 export type PlayMessageType = 'command' | 'event' | 'query';
 
@@ -130,5 +131,5 @@ const loadEventsDependency =  async (alias: string, options: {stream?: string, m
   const match = normalizeEventMetadataMatcher(options.match);
   const reverse = !!options.latestFirst;
 
-  return await asyncIterableToArray(await eventStore.load(stream, match, undefined, options.limit, reverse));
+  return await mapMetadataFromEventStore(await asyncIterableToArray(await eventStore.load(stream, match, undefined, options.limit, reverse)));
 }
