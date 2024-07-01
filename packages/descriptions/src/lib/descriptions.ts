@@ -32,18 +32,32 @@ export interface CommandDescription extends ProophBoardDescription {
   name: string;
   aggregateCommand: boolean;
   dependencies?: DependencyRegistry;
+  streamCommand?: boolean;
 }
 
 export interface AggregateCommandDescription extends CommandDescription{
   newAggregate: boolean;
   aggregateName: string;
   aggregateIdentifier: string;
+  persistState?: boolean;
   deleteState?: boolean;
   deleteHistory?: boolean;
 }
 
 export function isAggregateCommandDescription (desc: CommandDescription | AggregateCommandDescription): desc is AggregateCommandDescription {
   return desc.aggregateCommand;
+}
+
+export function isEntityCommandDescription (desc: CommandDescription | AggregateCommandDescription): desc is AggregateCommandDescription {
+  return isAggregateCommandDescription(desc) && !!desc.persistState;
+}
+
+export interface StreamCommandDescription extends CommandDescription {
+  streamIdExpr: string;
+}
+
+export function isStreamCommandDescription (desc: CommandDescription | StreamCommandDescription): desc is StreamCommandDescription {
+  return !desc.aggregateCommand && !!desc.streamCommand;
 }
 
 export interface EventDescription extends ProophBoardDescription {

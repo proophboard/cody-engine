@@ -1,7 +1,7 @@
 import {Command} from "@event-engine/messaging/command";
 import {commandHandlers} from "@server/command-handlers/index";
 import {commandHandlerExtensions} from "@server/extensions/command-handlers";
-import {handle, ProcessingFunction, ProcessingFunctionWithDeps} from "@event-engine/infrastructure/commandHandling";
+import {handle, AggregateProcessingFunction, AggregateProcessingFunctionWithDeps} from "@event-engine/infrastructure/commandHandling";
 import {repositories} from "@server/repositories/index";
 import {Event} from "@event-engine/messaging/event";
 import {
@@ -17,7 +17,7 @@ import {CommandBus} from "@event-engine/messaging/command-bus";
 
 export const SERVICE_NAME_COMMAND_BUS = '$CommandBus';
 
-type CommandHandler = ProcessingFunction | ProcessingFunctionWithDeps;
+type CommandHandler = AggregateProcessingFunction | AggregateProcessingFunctionWithDeps;
 
 class LiveCommandBus extends MessageBus implements CommandBus {
   public async dispatch (command: Command, desc: CommandDescription): Promise<boolean> {

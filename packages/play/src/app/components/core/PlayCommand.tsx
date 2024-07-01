@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {PlayCommandRuntimeInfo} from "@cody-play/state/types";
+import {PlayCommandRuntimeInfo, PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {useContext, useState} from "react";
 import CommandButton, {CommandButtonProps} from "@frontend/app/components/core/CommandButton";
 import CommandDialog from "@frontend/app/components/core/CommandDialog";
@@ -8,11 +8,13 @@ import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-comman
 import {configStore} from "@cody-play/state/config-store";
 import {UiSchema} from "@rjsf/utils";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
-import {makeCommandMutationFn} from "@cody-play/infrastructure/commands/make-command-mutation-fn";
+import {makeAggregateCommandMutationFn} from "@cody-play/infrastructure/commands/make-aggregate-command-mutation-fn";
 import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
 import {useUser} from "@frontend/hooks/use-user";
 import PlayExistingStateCommandDialog from "@cody-play/app/components/core/PlayExistingStateCommandDialog";
 import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidget";
+import {CommandMutationFunction} from "@cody-play/infrastructure/commands/command-mutation-function";
+import commandDialog from "@frontend/app/components/core/CommandDialog";
 
 interface OwnProps {
   command: PlayCommandRuntimeInfo,
@@ -42,60 +44,51 @@ const PlayCommand = (props: PlayCommandProps) => {
 
   const commandDesc = props.command.desc;
 
-  if(!isAggregateCommandDescription(commandDesc)) {
-    return (
-      <>
-        <CommandButton
-          command={runtimeInfo}
-          onClick={handleOpenDialog}
-          {...{ startIcon: getButtonIcon(runtimeInfo.uiSchema), ...props.buttonProps }}
-        />
-        <CommandDialog
-          open={dialogOpen}
-          onClose={handleCloseDialog}
-          commandDialogCommand={runtimeInfo}
-          definitions={definitions}
-        />
-      </>
-    );
-  }
+  let incompleteCommandConfigError: string | undefined;
+  let commandFn: CommandMutationFunction | undefined = undefined;
+  let stateInfo: PlayInformationRuntimeInfo | undefined = undefined;
 
   const rules = commandHandlers[commandDesc.name];
-  let incompleteCommandConfigError: string | undefined;
 
   if(!rules) {
     incompleteCommandConfigError = `Cannot handle command. No business rules defined. Please connect the command to an aggregate and define business rules in the Cody Wizard`;
   }
 
-  const aggregate = aggregates[commandDesc.aggregateName];
+  /** Aggregate Command **/
+  if(isAggregateCommandDescription(commandDesc)) {
+    const aggregate = aggregates[commandDesc.aggregateName];
 
-  if(!aggregate) {
-    incompleteCommandConfigError = `Cannot handle command. Aggregate "${commandDesc.aggregateName}" is unknown. Please run Cody for the Aggregate again.`;
+    if(!aggregate) {
+      incompleteCommandConfigError = `Cannot handle command. Aggregate "${commandDesc.aggregateName}" is unknown. Please run Cody for the Aggregate again.`;
+    }
+
+    const aggregateEventReducers = eventReducers[commandDesc.aggregateName];
+
+    if(!aggregateEventReducers) {
+      incompleteCommandConfigError = `Cannot handle command. No events found. Please connect the command with at least one event and pass the event to Cody.`
+    }
+
+    stateInfo = types[aggregate.state];
+
+    if(!stateInfo) {
+      incompleteCommandConfigError = `Cannot handle command. The resulting Information "${aggregate.state}" is unknown. Please run Cody with the corresponding information card to register it.`;
+    }
+
+    commandFn = makeAggregateCommandMutationFn(
+      props.command,
+      rules,
+      aggregate,
+      events,
+      aggregateEventReducers,
+      stateInfo,
+      user,
+      definitions,
+      config
+    )
+  } else {
+    /** Non-Aggregate Command */
+
   }
-
-  const aggregateEventReducers = eventReducers[commandDesc.aggregateName];
-
-  if(!aggregateEventReducers) {
-    incompleteCommandConfigError = `Cannot handle command. No events found. Please connect the command with at least one event and pass the event to Cody.`
-  }
-
-  const stateInfo = types[aggregate.state];
-
-  if(!stateInfo) {
-    incompleteCommandConfigError = `Cannot handle command. The resulting Information "${aggregate.state}" is unknown. Please run Cody with the corresponding information card to register it.`;
-  }
-
-  const commandFn = makeCommandMutationFn(
-    props.command,
-    rules,
-    aggregate,
-    events,
-    aggregateEventReducers,
-    stateInfo,
-    user,
-    definitions,
-    config
-  )
 
   return (
     <>
@@ -104,7 +97,7 @@ const PlayCommand = (props: PlayCommandProps) => {
         onClick={handleOpenDialog}
         {...{ startIcon: getButtonIcon(runtimeInfo.uiSchema), ...props.buttonProps }}
       />
-      {commandDesc.newAggregate && <CommandDialog
+      {((isAggregateCommandDescription(commandDesc) && commandDesc.newAggregate) || !isAggregateCommandDescription(commandDesc) ) && <CommandDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
         commandDialogCommand={runtimeInfo}
@@ -115,7 +108,7 @@ const PlayCommand = (props: PlayCommandProps) => {
           DataSelect: PlayDataSelectWidget
         }}
       />}
-      {!commandDesc.newAggregate && <PlayExistingStateCommandDialog
+      {stateInfo && isAggregateCommandDescription(commandDesc) && !commandDesc.newAggregate && <PlayExistingStateCommandDialog
           open={dialogOpen}
           onClose={handleCloseDialog}
           commandDialogCommand={runtimeInfo}

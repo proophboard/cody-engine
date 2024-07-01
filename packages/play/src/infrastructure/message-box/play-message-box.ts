@@ -14,7 +14,7 @@ import {
 import {Meta, Payload, setMessageMetadata} from "@event-engine/messaging/message";
 import {META_KEY_DELETE_HISTORY, META_KEY_DELETE_STATE} from "@event-engine/infrastructure/AggregateRepository";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
-import {makeAggregateRepository} from "@cody-play/infrastructure/commands/make-command-mutation-fn";
+import {makeAggregateRepository} from "@cody-play/infrastructure/commands/make-aggregate-command-mutation-fn";
 import {makeCommandHandler} from "@cody-play/infrastructure/commands/make-command-handler";
 import {handle} from "@event-engine/infrastructure/commandHandling";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";

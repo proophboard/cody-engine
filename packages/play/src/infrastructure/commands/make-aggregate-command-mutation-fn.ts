@@ -34,8 +34,9 @@ import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
 import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";
+import {CommandMutationFunction} from "@cody-play/infrastructure/commands/command-mutation-function";
 
-export const makeCommandMutationFn = (
+export const makeAggregateCommandMutationFn = (
   commandInfo: PlayCommandRuntimeInfo,
   commandHandlerRules: AnyRule[],
   aggregateDesc: AggregateDescription,
@@ -45,14 +46,14 @@ export const makeCommandMutationFn = (
   user: User,
   schemaDefinitions: PlaySchemaDefinitions,
   config: CodyPlayConfig
-): (commandPayload: Payload) =>  Promise<AxiosResponse> => {
+): CommandMutationFunction => {
   return async (commandPayload: Payload): Promise<AxiosResponse> => {
     let command = (makeCommandFactory(commandInfo, schemaDefinitions))(commandPayload, {user});
 
     const commandDesc = commandInfo.desc;
 
     if(!isAggregateCommandDescription(commandDesc)) {
-      throw new Error('Currently only aggregate commands can be handled. ' + CONTACT_PB_TEAM);
+      throw new Error('Wrong command handling for given command. This is a bug. ' + CONTACT_PB_TEAM);
     }
 
     if(commandDesc.deleteState) {

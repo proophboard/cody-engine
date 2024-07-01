@@ -5,7 +5,10 @@ import {Payload} from "@event-engine/messaging/message";
 
 export type ProcessingFunction<C extends Payload = any, E extends Payload = any, S = any> = (currentState: S, command: Command<C>) => AsyncGenerator<Event<E>>;
 export type ProcessingFunctionWithDeps<C extends Payload = any, E extends Payload = any, S = any, D = any> = (currentState: S, command: Command<C>, dependencies: D) => AsyncGenerator<Event<E>>;
-export type CommandHandlerRegistry = {[commandName: string]: ProcessingFunction | ProcessingFunctionWithDeps};
+export type AggregateProcessingFunction<C extends Payload = any, E extends Payload = any, S = any> = (currentState: S, command: Command<C>) => AsyncGenerator<Event<E>>;
+export type AggregateProcessingFunctionWithDeps<C extends Payload = any, E extends Payload = any, S = any, D = any> = (currentState: S, command: Command<C>, dependencies: D) => AsyncGenerator<Event<E>>;
+
+export type CommandHandlerRegistry = {[commandName: string]: AggregateProcessingFunction | AggregateProcessingFunctionWithDeps};
 const getAggregateId = (p: Payload, aggregateIdentifier: string): string => {
     if(!p[aggregateIdentifier]) {
         throw new Error(`Payload is missing aggregate identifier: ${aggregateIdentifier}`)
@@ -16,7 +19,7 @@ const getAggregateId = (p: Payload, aggregateIdentifier: string): string => {
 
 export async function handle<C extends Payload = any, E extends Payload = any, S extends {} = any, D = any>(
     command: Command<C>,
-    process: ProcessingFunction<C, E, S> | ProcessingFunctionWithDeps<C, E, S, D>,
+    process: AggregateProcessingFunction<C, E, S> | AggregateProcessingFunctionWithDeps<C, E, S, D>,
     repository: AggregateRepository<S>,
     newAggregate = false,
     dependencies?: D): Promise<boolean> {
