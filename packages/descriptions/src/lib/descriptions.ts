@@ -54,10 +54,21 @@ export function isEntityCommandDescription (desc: CommandDescription | Aggregate
 
 export interface StreamCommandDescription extends CommandDescription {
   streamIdExpr: string;
+  streamName?: string;
+  publicStream?: string;
 }
 
 export function isStreamCommandDescription (desc: CommandDescription | StreamCommandDescription): desc is StreamCommandDescription {
   return !desc.aggregateCommand && !!desc.streamCommand;
+}
+
+export interface PureCommandDescription extends CommandDescription {
+  streamName?: string;
+  publicStream?: string;
+}
+
+export function isPureCommandDescription (desc: CommandDescription | PureCommandDescription): desc is PureCommandDescription {
+  return !isAggregateCommandDescription(desc) && !isStreamCommandDescription(desc);
 }
 
 export interface EventDescription extends ProophBoardDescription {

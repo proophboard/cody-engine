@@ -71,14 +71,6 @@ export const convertShorthandObjectToJsonSchema = (shorthand: ShorthandObject, n
         "$ref": `#/definitions${namespace}${reference}`
       };
     } else if (property === '$items') {
-      if(typeof shorthand[schemaProperty] !== 'string') {
-        return {
-          cody: `Detected a top level shorthand array using an "$items" prop, but the value of the property is not a string.`,
-          details: "It is of type " + typeof shorthand[schemaProperty],
-          type: CodyResponseType.Error
-        }
-      }
-
       if(Object.keys(shorthand).length > 1) {
         // Allow title as the only alternative property
         if(!Object.keys(shorthand).includes('$title')) {
@@ -90,13 +82,15 @@ export const convertShorthandObjectToJsonSchema = (shorthand: ShorthandObject, n
         }
       }
 
-      let itemsShorthandSchema = shorthand[schemaProperty] as string;
+      let itemsShorthandSchema = shorthand[schemaProperty];
 
-      if(itemsShorthandSchema.slice(-2) !== '[]') {
+      if(typeof itemsShorthandSchema === "string" && itemsShorthandSchema.slice(-2) !== '[]') {
         itemsShorthandSchema = itemsShorthandSchema + '[]';
       }
 
-      const arraySchema = convertShorthandStringToJsonSchema(itemsShorthandSchema, namespace);
+      const arraySchema = typeof itemsShorthandSchema === "string"
+        ? convertShorthandStringToJsonSchema(itemsShorthandSchema, namespace)
+        : {type: "array", items: convertShorthandObjectToJsonSchema(itemsShorthandSchema)} as JSONSchema7;
 
       if(!playIsCodyError(arraySchema) && Object.keys(shorthand).includes('$title')) {
         arraySchema.title = shorthand['$title'] as string;

@@ -2,23 +2,61 @@ import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-
 import {ElementEditedContext, PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {
-  CodyResponseException, playIsCodyError,
+  CodyResponseException,
+  playIsCodyError,
   playwithErrorCheck
 } from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {names} from "@event-engine/messaging/helpers";
-import {
-  playFindAggregateState,
-} from "@cody-play/infrastructure/cody/node-traversing/node-tree";
+import {playFindAggregateState, playGetSingleSource,} from "@cody-play/infrastructure/cody/node-traversing/node-tree";
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {playEventMetadata} from "@cody-play/infrastructure/cody/event/play-event-metadata";
 import {playVoMetadata} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 import {playEnsureAllRefsAreKnown} from "@cody-play/infrastructure/cody/schema/play-ensure-all-refs-are-known";
 import {playUpdateProophBoardInfo} from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
-import {AggregateEventDescription, isStateDescription} from "@event-engine/descriptions/descriptions";
+import {
+  AggregateEventDescription, EventDescription,
+  isStateDescription
+} from "@event-engine/descriptions/descriptions";
 import {playVoFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {playCommandMetadata} from "@cody-play/infrastructure/cody/command/play-command-metadata";
 
 export const onEvent = async (event: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
+    const service = playwithErrorCheck(playService, [event, ctx]);
+    const serviceNames = names(service);
+    const meta = playwithErrorCheck(playEventMetadata, [event, ctx, config.types]);
+    const orgEvent = getOriginalEvent(event, ctx);
+
+    const pbInfo = playwithErrorCheck(playUpdateProophBoardInfo, [orgEvent, ctx, config.events[meta.fqcn]?.desc]);
+    playwithErrorCheck(playEnsureAllRefsAreKnown, [orgEvent, meta.schema, config.types]);
+
+    const aggregate = playGetSingleSource(orgEvent, NodeType.aggregate);
+    const command = playGetSingleSource(playIsCodyError(aggregate) ? orgEvent : aggregate, NodeType.command);
+    const commandMeta = playIsCodyError(command)? command : playCommandMetadata(command, ctx);
+
+    const isAggregateEvent = !playIsCodyError(commandMeta) && commandMeta.aggregateCommand;
+
+    if(!isAggregateEvent) {
+      dispatch({
+        type: "ADD_PURE_EVENT",
+        name: meta.fqcn,
+        event: {
+          desc: ({
+            ...pbInfo,
+            name: meta.fqcn,
+            aggregateEvent: isAggregateEvent,
+          } as EventDescription),
+          schema: meta.schema,
+          factory: []
+        },
+      });
+
+      return {
+        cody: `Done! The app has a new event called "${meta.fqcn}".`,
+      }
+    }
+
+
     let aggregateState = playFindAggregateState(event, ctx,  config.types);
 
     if(playIsCodyError(aggregateState) && event.getTags().contains('pb:connected')) {
@@ -35,12 +73,6 @@ export const onEvent = async (event: Node, dispatch: PlayConfigDispatch, ctx: El
       }
     }
 
-    const service = playwithErrorCheck(playService, [event, ctx]);
-    const serviceNames = names(service);
-    const meta = playwithErrorCheck(playEventMetadata, [event, ctx, config.types]);
-
-    const isAggregateEvent = !playIsCodyError(aggregateState);
-
     if(playIsCodyError(aggregateState)) {
       // @TODO: handle non-aggregate event
       return aggregateState;
@@ -49,9 +81,7 @@ export const onEvent = async (event: Node, dispatch: PlayConfigDispatch, ctx: El
     const aggregateNames = names(aggregateState.getName());
 
     const aggregateStateMeta = playwithErrorCheck(playVoMetadata, [aggregateState, ctx, config.types]);
-    const pbInfo = playwithErrorCheck(playUpdateProophBoardInfo, [event, ctx, config.events[meta.fqcn]?.desc]);
 
-    playwithErrorCheck(playEnsureAllRefsAreKnown, [event, meta.schema, config.types]);
 
     if(!isStateDescription(aggregateStateMeta)) {
       return {
@@ -80,7 +110,7 @@ export const onEvent = async (event: Node, dispatch: PlayConfigDispatch, ctx: El
     });
 
     return {
-      cody: `Done! The app has a new event called "${event.getName()}".`,
+      cody: `Done! The app has a new event called "${meta.fqcn}".`,
     }
 
   } catch (e) {
@@ -90,4 +120,33 @@ export const onEvent = async (event: Node, dispatch: PlayConfigDispatch, ctx: El
 
     throw e;
   }
+}
+
+const getOriginalEvent = (event: Node, ctx: ElementEditedContext): Node => {
+  const sources = event.getSources();
+
+  for (const source of sources) {
+    if(source.getType() === NodeType.command || source.getType() === NodeType.aggregate) {
+      return event;
+    }
+  }
+
+  if(!event.getTags().contains('pb:connected')) {
+    return event;
+  }
+
+  for (const [, syncedNode] of ctx.syncedNodes) {
+    if(syncedNode.getType() === NodeType.event && syncedNode.getName() === event.getName()
+      && syncedNode.getTags().contains('pb:connected')) {
+      const sourcesOfSyncedNode = syncedNode.getSources();
+
+      for (const source of sourcesOfSyncedNode) {
+        if(source.getType() === NodeType.command || source.getType() === NodeType.aggregate) {
+          return syncedNode;
+        }
+      }
+    }
+  }
+
+  return event;
 }

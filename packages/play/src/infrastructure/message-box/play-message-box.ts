@@ -15,8 +15,8 @@ import {Meta, Payload, setMessageMetadata} from "@event-engine/messaging/message
 import {META_KEY_DELETE_HISTORY, META_KEY_DELETE_STATE} from "@event-engine/infrastructure/AggregateRepository";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
 import {makeAggregateRepository} from "@cody-play/infrastructure/commands/make-aggregate-command-mutation-fn";
-import {makeCommandHandler} from "@cody-play/infrastructure/commands/make-command-handler";
-import {handle} from "@event-engine/infrastructure/commandHandling";
+import {makeAggregateCommandHandler} from "@cody-play/infrastructure/commands/make-aggregate-command-handler";
+import {handleAggregateCommand} from "@event-engine/infrastructure/commandHandling";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {PlayEventPolicyDescription, PlayEventPolicyRegistry} from "@cody-play/state/types";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
@@ -211,11 +211,11 @@ const dispatchCommand = async (command: Command, config: CodyPlayConfig): Promis
     config
   );
 
-  const processingFunction = makeCommandHandler(
+  const processingFunction = makeAggregateCommandHandler(
     rules,
     config.events,
     config.definitions
   );
 
-  return handle(command, processingFunction, repository, commandDesc.newAggregate, dependencies);
+  return handleAggregateCommand(command, processingFunction, repository, commandDesc.newAggregate, dependencies);
 }

@@ -5,7 +5,13 @@ import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {Event, providesPublicEvent} from "@event-engine/messaging/event";
 import {Command} from "@event-engine/messaging/command";
 import {setMessageMetadata} from "@event-engine/messaging/message";
-import {AggregateMeta, AggregateMetaKeys, META_KEY_USER} from "@event-engine/infrastructure/AggregateRepository";
+import {
+  AggregateMeta,
+  AggregateMetaKeys,
+  EventMetadata,
+  META_KEY_USER
+} from "@event-engine/infrastructure/AggregateRepository";
+import {asyncIterableToArray} from "@app/shared/utils/async-iterable-to-array";
 
 export const STREAM_AGGREGATE_TYPE = '$stream';
 
@@ -39,6 +45,26 @@ export class StreamEventsRepository {
 
   public useSessionForNextSave(session: Session): void {
     this.nextSession = session;
+  }
+
+  public async getCurrentStreamVersion(streamId: string): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+      this.store.loadEvents<any, EventMetadata>(this.eventStream, {
+        'aggregateId': streamId,
+        'aggregateType': STREAM_AGGREGATE_TYPE,
+      }, undefined, 1, true)
+        .then(async (eventsItr) => {
+          const events = await asyncIterableToArray(eventsItr);
+
+          if(events.length === 0) {
+            resolve(0);
+          } else {
+            const latestEvent = events[0];
+
+            resolve(latestEvent.meta.aggregateVersion);
+          }
+        })
+    })
   }
 
   public async save(streamId: string, events: Event[], expectedVersion: number, command: Command): Promise<boolean> {

@@ -15,8 +15,8 @@ export class InMemoryMultiModelStore implements MultiModelStore {
     this.documentStore = documentStore;
   }
 
-  async loadEvents <P extends Payload = any, M extends EventMeta = any>(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P,M>>> {
-    return this.eventStore.load(streamName, eventMatcher, fromEventId, limit);
+  async loadEvents <P extends Payload = any, M extends EventMeta = any>(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number, reverse?: boolean): Promise<AsyncIterable<Event<P,M>>> {
+    return this.eventStore.load(streamName, eventMatcher, fromEventId, limit, reverse);
   }
 
   async loadDoc <D extends object>(collectionName: string, docId: string): Promise<{doc: D, version: number} | null> {

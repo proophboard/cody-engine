@@ -6,11 +6,11 @@ import {
   AggregateDescription,
   AggregateEventDescription,
   CommandDescription, DependencyRegistry,
-  EventDescription, PolicyDescription, QueryableStateDescription, QueryableStateListDescription,
+  EventDescription, PolicyDescription, PureCommandDescription, QueryableStateDescription, QueryableStateListDescription,
   QueryableValueObjectDescription,
   QueryDescription,
   StateDescription,
-  StateListDescription,
+  StateListDescription, StreamCommandDescription,
   ValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
 import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
@@ -89,6 +89,17 @@ export interface PlayRemoveCommandAction {
   name: string,
 }
 
+export interface PlayAddCommandHandlerAction {
+  type: 'ADD_COMMAND_HANDLER',
+  command: string,
+  businessRules: AnyRule[]
+}
+
+export interface PlayRemoveCommandHandlerAction {
+  type: 'REMOVE_COMMAND_HANDLER',
+  command: string,
+}
+
 export interface PlayAddTypeAction {
   type: 'ADD_TYPE',
   name: string,
@@ -135,17 +146,23 @@ export interface PlayRemoveAggregateAction {
   name: string,
 }
 
-export interface PlayRemoveCommandHandlerAction {
-  type: 'REMOVE_COMMAND_HANDLER',
-  name: string,
-}
-
 export interface PlayAddAggregateEventAction {
   type: 'ADD_AGGREGATE_EVENT',
   name: string,
   aggregate: string,
   event: PlayEventRuntimeInfo,
   reducer: AnyRule[],
+}
+
+export interface PlayAddPureEventAction {
+  type: 'ADD_PURE_EVENT',
+  name: string,
+  event: PlayEventRuntimeInfo,
+}
+
+export interface PlayRemovePureEventAction {
+  type: 'REMOVE_PURE_EVENT',
+  name: string,
 }
 
 export interface PlayRemoveAggregateEventAction {
@@ -173,7 +190,7 @@ export type PlayCommandRegistry = {
 }
 
 export interface PlayCommandRuntimeInfo {
-  desc: CommandDescription | AggregateCommandDescription;
+  desc: CommandDescription | AggregateCommandDescription | PureCommandDescription | StreamCommandDescription;
   factory: AnyRule[],
   schema: DeepReadonly<JSONSchema7>,
   uiSchema?: UiSchema,

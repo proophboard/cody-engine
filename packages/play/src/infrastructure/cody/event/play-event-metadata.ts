@@ -61,13 +61,9 @@ export const playEventMetadata = (event: Node, ctx: ElementEditedContext, types:
   } else {
     const aggregate = playFindAggregateState(event, ctx, types);
 
-    if(playIsCodyError(aggregate)) {
-      return aggregate;
-    }
+    const aggregateFileName = playIsCodyError(aggregate) ? '' : '/' + names(aggregate.getName()).fileName;
 
-    const aggregateNames = names(aggregate.getName());
-
-    schema['$id'] = `/definitions/${serviceNames.fileName}/${aggregateNames.fileName}/${eventNames.fileName}`;
+    schema['$id'] = `/definitions/${serviceNames.fileName}${aggregateFileName}/${eventNames.fileName}`;
   }
 
   schema = playNormalizeRefs(playAddSchemaTitles(event.getName(), schema), service);

@@ -5,7 +5,7 @@ import {AggregateProcessingFunctionWithDeps} from "@event-engine/infrastructure/
 import {execRuleAsync} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {PlayEventRegistry, PlaySchemaDefinitions} from "@cody-play/state/types";
 
-export const makeCommandHandler = (
+export const makeAggregateCommandHandler = (
   commandHandlerRules: AnyRule[],
   eventRegistry: PlayEventRegistry,
   schemaDefinitions: PlaySchemaDefinitions

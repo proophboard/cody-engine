@@ -14,7 +14,10 @@ import {useUser} from "@frontend/hooks/use-user";
 import PlayExistingStateCommandDialog from "@cody-play/app/components/core/PlayExistingStateCommandDialog";
 import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidget";
 import {CommandMutationFunction} from "@cody-play/infrastructure/commands/command-mutation-function";
-import commandDialog from "@frontend/app/components/core/CommandDialog";
+import {makePureCommandMutationFn} from "@cody-play/infrastructure/commands/make-pure-command-mutation-fn";
+import {useParams} from "react-router-dom";
+import {usePageData} from "@frontend/hooks/use-page-data";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 
 interface OwnProps {
   command: PlayCommandRuntimeInfo,
@@ -29,6 +32,8 @@ const PlayCommand = (props: PlayCommandProps) => {
   const {config: {commandHandlers, definitions, events, eventReducers, aggregates, types }} = useContext(configStore);
   const {config} = useContext(configStore);
   const [user,] = useUser();
+  const routeParams = useParams();
+  const [page,] = usePageData();
 
   const handleOpenDialog = () => {
     setDialogOpen(true);
@@ -53,6 +58,8 @@ const PlayCommand = (props: PlayCommandProps) => {
   if(!rules) {
     incompleteCommandConfigError = `Cannot handle command. No business rules defined. Please connect the command to an aggregate and define business rules in the Cody Wizard`;
   }
+
+  const initialValues = getInitialValues(props.command, {user, page, routeParams});
 
   /** Aggregate Command **/
   if(isAggregateCommandDescription(commandDesc)) {
@@ -87,7 +94,14 @@ const PlayCommand = (props: PlayCommandProps) => {
     )
   } else {
     /** Non-Aggregate Command */
-
+    commandFn = makePureCommandMutationFn(
+      props.command,
+      rules,
+      events,
+      user,
+      definitions,
+      config
+    );
   }
 
   return (
@@ -104,6 +118,7 @@ const PlayCommand = (props: PlayCommandProps) => {
         commandFn={incompleteCommandConfigError?  undefined : commandFn}
         incompleteCommandConfigError={incompleteCommandConfigError}
         definitions={definitions}
+        initialValues={initialValues}
         widgets={{
           DataSelect: PlayDataSelectWidget
         }}
@@ -116,6 +131,7 @@ const PlayCommand = (props: PlayCommandProps) => {
           incompleteCommandConfigError={incompleteCommandConfigError}
           definitions={definitions}
           stateInfo={stateInfo}
+          initialValues={initialValues}
       />}
     </>
   );
@@ -127,4 +143,49 @@ const getButtonIcon = (uiSchema: UiSchema | undefined): React.ReactNode | undefi
   if(uiSchema && uiSchema['ui:button'] && uiSchema['ui:button']['icon']) {
     return <MdiIcon icon={uiSchema['ui:button']['icon']} />
   }
+}
+
+const getInitialValues = (commandInfo: PlayCommandRuntimeInfo, ctx: any): {[prop: string]: any} => {
+  let values: {[prop: string]: any} = {};
+
+  const uiSchema = commandInfo.uiSchema;
+
+  if(!uiSchema || !uiSchema['ui:form'] || typeof uiSchema['ui:form'] !== "object") {
+    return values;
+  }
+
+  const uiForm = {...uiSchema['ui:form']};
+
+  if(uiForm.data) {
+    if(typeof uiForm.data === "string") {
+      uiForm['data:expr'] = uiForm.data;
+    } else if (typeof uiForm.data === "object") {
+      for (const prop in uiForm.data) {
+        if(typeof uiForm.data[prop] === "string") {
+          values[prop] = jexl.evalSync(uiForm.data[prop], ctx);
+        }
+      }
+    }
+  }
+
+  if(uiForm['data:expr']) {
+    values = jexl.evalSync(uiForm['data:expr'], ctx);
+  }
+
+  if(typeof values !== "object" || commandInfo.schema.type !== "object") {
+    return {}
+  }
+
+  const schemaProps = commandInfo.schema.properties || {};
+  const schemaPropKeys = Object.keys(schemaProps);
+
+  const filteredValues: {[prop: string]: any} = {};
+
+  for (const valProp in values) {
+    if(schemaPropKeys.includes(valProp)) {
+      filteredValues[valProp] = values[valProp];
+    }
+  }
+
+  return filteredValues;
 }
