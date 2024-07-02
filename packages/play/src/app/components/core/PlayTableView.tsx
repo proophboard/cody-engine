@@ -50,6 +50,7 @@ import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-r
 import {resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {useUser} from "@frontend/hooks/use-user";
 import {User} from "@app/shared/types/core/user/user";
+import {isInlineItemsArraySchema} from "@cody-play/infrastructure/cody/schema/check";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc)) {
@@ -140,7 +141,7 @@ const compileTableColumns = (
 ): GridColDef[] => {
   const schema = information.schema;
 
-  if (!isListSchema(schema)) {
+  if (!isListSchema(schema) && !isInlineItemsArraySchema(schema)) {
     throw new Error(`Cannot render table. Schema of "${information.desc.name}" is not a list.`);
   }
 

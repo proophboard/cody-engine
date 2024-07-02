@@ -23,10 +23,10 @@ import {JSONSchema7} from "json-schema";
 import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {UiSchema} from "@rjsf/utils";
 import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
-import {isListSchema} from "@cody-play/infrastructure/cody/schema/check";
+import {isInlineItemsArraySchema, isListSchema} from "@cody-play/infrastructure/cody/schema/check";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {GridDensity} from "@mui/x-data-grid";
-import {namespaceToClassName, valueObjectNameFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
+import {valueObjectNameFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 
 export interface PlayValueObjectMetadataRaw {
   identifier?: string;
@@ -162,7 +162,7 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
     schema: normalizedSchema,
     ns,
     service,
-    isList: isListSchema(normalizedSchema),
+    isList: isListSchema(normalizedSchema) || isInlineItemsArraySchema(normalizedSchema),
     hasIdentifier,
     isQueryable,
   }
@@ -202,6 +202,13 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
       } else {
         convertedMeta.collection = names(valueObjectNameFromFQCN(refVORuntimeInfo.desc.name)).constantName.toLowerCase() + '_collection';
       }
+    }
+  }
+
+  if(isInlineItemsArraySchema(normalizedSchema)) {
+    if(meta.identifier) {
+      convertedMeta.hasIdentifier = true;
+      convertedMeta.identifier = meta.identifier;
     }
   }
 

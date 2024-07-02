@@ -10,6 +10,15 @@ export const isListSchema = (schema: any): schema is ListSchema => {
   return !!schema['type'] && schema['type'] === "array" && schema['items'] && isRefSchema(schema['items']);
 }
 
+export interface InlineItemsArraySchema {
+  type: "array";
+  items: JSONSchema7
+}
+
+export const isInlineItemsArraySchema = (schema: any): schema is InlineItemsArraySchema => {
+  return !!schema['type'] && schema['type'] === "array" && schema['items'] && !isRefSchema(schema['items']);
+}
+
 export interface ObjectSchema {
   type: "object",
   properties: {[propName: string]: JSONSchema7},
