@@ -21,11 +21,19 @@ import {
   StateListDescription,
   ValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
-import {playUpdateProophBoardInfo} from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
+import {
+  playGetProophBoardInfoFromDescription,
+  playUpdateProophBoardInfo
+} from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
 import {namespaceToJSONPointer} from "@cody-engine/cody/hooks/utils/value-object/namespace";
-import {playDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {
+  playDefinitionId,
+  playDefinitionIdFromFQCN,
+} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {JSONSchema7} from "json-schema";
 import {normalizeProjectionRules} from "@cody-play/infrastructure/rule-engine/normalize-projection-rules";
+import {convertProjectionConfigCaseToRules} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
+import {isInlineItemsArraySchema} from "@cody-play/infrastructure/cody/schema/check";
 
 export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -51,6 +59,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
 
     const desc = getDesc(vo, voFQCN, voMeta, queryName, ctx, config);
 
+
     dispatch({
       type: "ADD_TYPE",
       name: voFQCN,
@@ -66,31 +75,79 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
       }
     });
 
-    const queryPbInfo = playUpdateProophBoardInfo(vo, ctx, config.queries[queryName]?.desc);
+    if(isInlineItemsArraySchema(voMeta.schema)) {
+      const itemDesc = getInlineItemDesc(vo, voFQCN, voMeta, desc);
+      const itemSchema = voMeta.schema.items || {};
+      const itemUiSchema = voMeta.uiSchema?.items || {};
 
-    if(voMeta.resolve && voMeta.resolve.rules) {
-      voMeta.resolve = {...voMeta.resolve, rules: normalizeProjectionRules(voMeta.resolve.rules, service, config)}
+      itemSchema.title = (voMeta.schema.title || '') + ' Item';
+      itemSchema.$id = playDefinitionIdFromFQCN(itemDesc.name);
+
+      dispatch({
+        type: "ADD_TYPE",
+        name: itemDesc.name,
+        information: {
+          desc: itemDesc,
+          schema: itemSchema,
+          uiSchema: itemUiSchema,
+          factory: []
+        },
+        definition: {
+          definitionId: itemSchema.$id,
+          schema: itemSchema
+        }
+      });
     }
 
-    dispatch({
-      type: "ADD_QUERY",
-      name: queryName,
-      query: {
-        desc: {
-          ...queryPbInfo,
-          name: queryName,
-          returnType: voFQCN,
-          dependencies: voMeta.queryDependencies,
+    if(voMeta.isQueryable) {
+      const queryPbInfo = playUpdateProophBoardInfo(vo, ctx, config.queries[queryName]?.desc);
+
+      if(voMeta.resolve && voMeta.resolve.rules) {
+        voMeta.resolve = {...voMeta.resolve, rules: normalizeProjectionRules(voMeta.resolve.rules, service, config)}
+      }
+
+      dispatch({
+        type: "ADD_QUERY",
+        name: queryName,
+        query: {
+          desc: {
+            ...queryPbInfo,
+            name: queryName,
+            returnType: voFQCN,
+            dependencies: voMeta.queryDependencies,
+          },
+          schema: voMeta.querySchema || {} as JSONSchema7,
+          factory: []
         },
-        schema: voMeta.querySchema || {} as JSONSchema7,
-        factory: []
-      },
-      resolver: voMeta.resolve || {},
-    })
+        resolver: voMeta.resolve || {},
+      })
+    }
+
+    if(voMeta.projection) {
+      const prjName = voMeta.projection.name;
+
+      const prjPbInfo = playGetProophBoardInfoFromDescription(desc);
+
+      voMeta.projection.cases.forEach(prjCase => {
+        dispatch({
+          type: "ADD_EVENT_POLICY",
+          name: prjName,
+          event: prjCase.when,
+          desc: {
+            ...prjPbInfo,
+            name: prjName,
+            rules: convertProjectionConfigCaseToRules(prjCase),
+            dependencies: {},
+            live: voMeta.projection?.live,
+            projection: prjName
+          }
+        })
+      })
+    }
 
     return {
       cody: `The data type (value object) "${vo.getName()}" is added to the app.`,
-      details: `You can reference the data type in commands, events, queries and other data type using "${voMeta.ns}${voNames.className}".`
+      details: `You can reference the data type in commands, events, queries and other data type using "${voFQCN}".`
     }
   } catch (e) {
     if(e instanceof CodyResponseException) {
@@ -98,6 +155,18 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
     }
 
     throw e;
+  }
+}
+
+const getInlineItemDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, desc: ValueObjectDescription): ValueObjectDescription | QueryableValueObjectDescription => {
+  return {
+    ...playGetProophBoardInfoFromDescription(desc),
+    isList: false,
+    isQueryable: desc.isQueryable,
+    name: voName + 'Item',
+    hasIdentifier: desc.hasIdentifier,
+    isNotStored: desc.isNotStored,
+    collection: desc.isQueryable && !desc.isNotStored? (desc as QueryableStateListDescription).collection || names(vo.getName()).constantName.toLowerCase() + '_collection' : undefined,
   }
 }
 

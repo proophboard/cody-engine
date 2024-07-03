@@ -12,7 +12,8 @@ export const isListSchema = (schema: any): schema is ListSchema => {
 
 export interface InlineItemsArraySchema {
   type: "array";
-  items: JSONSchema7
+  items: JSONSchema7;
+  title?: string;
 }
 
 export const isInlineItemsArraySchema = (schema: any): schema is InlineItemsArraySchema => {

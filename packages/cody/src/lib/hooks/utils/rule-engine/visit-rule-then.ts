@@ -5,8 +5,6 @@ import {
   Rule,
   ThenType
 } from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
-import {names} from "@event-engine/messaging/helpers";
-import {normalizeThenRecordEventRules} from "@cody-play/infrastructure/rule-engine/normalize-then-record-event-rules";
 
 type Visitor = (then: ThenType) => ThenType;
 export const visitRulesThen = (rules: Rule[], visitor: Visitor): Rule[] => {

@@ -1,6 +1,5 @@
 import {InformationService} from "@server/infrastructure/information-service/information-service";
 import {DocumentStore, SortOrder} from "@event-engine/infrastructure/DocumentStore";
-import {types} from "@app/shared/types";
 import {
   isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
@@ -11,14 +10,17 @@ import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
-import {makeValueObject, ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
+import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
+import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 
 export class DocumentStoreInformationService implements InformationService {
   private ds: DocumentStore;
   private session?: Session;
+  private types: TypeRegistry;
 
-  public constructor(ds: DocumentStore) {
+  public constructor(ds: DocumentStore, types: TypeRegistry) {
     this.ds = ds;
+    this.types = types;
   }
 
   public useSession(session: Session): void {
@@ -27,6 +29,10 @@ export class DocumentStoreInformationService implements InformationService {
 
   public forgetSession(): void {
     this.session = undefined;
+  }
+
+  public useTypes(types: TypeRegistry): void {
+    this.types = types;
   }
 
   public async find<T extends object>(informationName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<Array<T>> {
@@ -106,7 +112,7 @@ export class DocumentStoreInformationService implements InformationService {
   }
 
   private detectSingleVoRuntimeInfo(informationName: string): ValueObjectRuntimeInfo {
-    const runtimeInfo = types[informationName];
+    const runtimeInfo = this.types[informationName];
 
     if(!runtimeInfo) {
       throw new Error(`Can't find the type: '${informationName}' in the type registry. Did you forget to pass the corresponding information card on prooph board to Cody?`);

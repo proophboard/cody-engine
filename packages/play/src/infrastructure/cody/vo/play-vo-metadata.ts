@@ -11,7 +11,11 @@ import {
 import {playParseJsonMetadata} from "@cody-play/infrastructure/cody/metadata/play-parse-json-metadata";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
-import {playDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {
+  playDefinitionId,
+  playFQCNFromDefinitionId,
+  playVoFQCN
+} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {
   playJsonSchemaFromShorthand,
   ShorthandObject
@@ -20,13 +24,16 @@ import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-norm
 import {playResolveRef} from "@cody-play/infrastructure/cody/schema/play-resolve-ref";
 import {PlayInformationRegistry} from "@cody-play/state/types";
 import {JSONSchema7} from "json-schema";
-import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {
+  Rule,ThenType
+} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {UiSchema} from "@rjsf/utils";
 import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
 import {isInlineItemsArraySchema, isListSchema} from "@cody-play/infrastructure/cody/schema/check";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {GridDensity} from "@mui/x-data-grid";
 import {valueObjectNameFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
+import {normalizeProjectionConfig, ProjectionConfig} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
 
 export interface PlayValueObjectMetadataRaw {
   identifier?: string;
@@ -38,6 +45,7 @@ export interface PlayValueObjectMetadataRaw {
   initialize?: Rule[];
   uiSchema?: UiSchema & TableUiSchema;
   queryDependencies?: DependencyRegistry;
+  projection?: ProjectionConfig;
 }
 
 export interface ResolveConfig {
@@ -99,6 +107,7 @@ export interface PlayValueObjectMetadata extends ValueObjectDescriptionFlags {
   resolve?: ResolveConfig;
   uiSchema?: UiSchema & TableUiSchema;
   queryDependencies?: DependencyRegistry;
+  projection?: ProjectionConfig;
 }
 
 export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayInformationRegistry): PlayValueObjectMetadata | CodyResponse => {
@@ -210,6 +219,8 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
       convertedMeta.hasIdentifier = true;
       convertedMeta.identifier = meta.identifier;
     }
+
+    convertedMeta.itemType = playFQCNFromDefinitionId(convertedMeta.schema['$id'] as string) + 'Item';
   }
 
   if(isQueryable) {
@@ -223,6 +234,10 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
 
   if(meta.queryDependencies) {
     convertedMeta.queryDependencies = meta.queryDependencies;
+  }
+
+  if(meta.projection) {
+    convertedMeta.projection = normalizeProjectionConfig(meta.projection, playFQCNFromDefinitionId(convertedMeta.schema['$id'] as string))
   }
 
   return convertedMeta;

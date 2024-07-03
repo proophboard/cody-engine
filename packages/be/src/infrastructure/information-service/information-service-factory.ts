@@ -3,6 +3,7 @@ import {getConfiguredDocumentStore} from "@server/infrastructure/configuredDocum
 import {
   DocumentStoreInformationService
 } from "@server/infrastructure/information-service/document-store-information-service";
+import {types} from "@app/shared/types";
 
 let infoService: InformationService;
 
@@ -13,7 +14,7 @@ export const informationServiceFactory = (): InformationService => {
 
   const ds = getConfiguredDocumentStore();
 
-  infoService = new DocumentStoreInformationService(ds);
+  infoService = new DocumentStoreInformationService(ds, types);
 
   return infoService;
 }
