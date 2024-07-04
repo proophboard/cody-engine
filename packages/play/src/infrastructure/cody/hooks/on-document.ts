@@ -1,4 +1,4 @@
-import {CodyResponse, Node} from "@proophboard/cody-types";
+import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
 import {ElementEditedContext, PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {
@@ -26,14 +26,12 @@ import {
   playUpdateProophBoardInfo
 } from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
 import {namespaceToJSONPointer} from "@cody-engine/cody/hooks/utils/value-object/namespace";
-import {
-  playDefinitionId,
-  playDefinitionIdFromFQCN,
-} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {playDefinitionId, playDefinitionIdFromFQCN,} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {JSONSchema7} from "json-schema";
 import {normalizeProjectionRules} from "@cody-play/infrastructure/rule-engine/normalize-projection-rules";
 import {convertProjectionConfigCaseToRules} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
 import {isInlineItemsArraySchema} from "@cody-play/infrastructure/cody/schema/check";
+import {playFindEventInfoByName} from "@cody-play/infrastructure/events/play-find-event-info-by-name";
 
 export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -128,11 +126,20 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
 
       const prjPbInfo = playGetProophBoardInfoFromDescription(desc);
 
-      voMeta.projection.cases.forEach(prjCase => {
+      for (const prjCase of voMeta.projection.cases) {
+        const evtInfo = playFindEventInfoByName(prjCase.when, config);
+
+        if(!evtInfo) {
+          return {
+            cody: `Cannot install projection case for event ${prjCase.when}. The event is unknown. Did you forget to pass the event to Cody?`,
+            type: CodyResponseType.Error
+          }
+        }
+
         dispatch({
           type: "ADD_EVENT_POLICY",
           name: prjName,
-          event: prjCase.when,
+          event: evtInfo.desc.name,
           desc: {
             ...prjPbInfo,
             name: prjName,
@@ -142,7 +149,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
             projection: prjName
           }
         })
-      })
+      }
     }
 
     return {

@@ -7,6 +7,7 @@ import {
   ThenType
 } from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+import {names} from "@event-engine/messaging/helpers";
 
 export interface ProjectionConfig {
   name: string,
