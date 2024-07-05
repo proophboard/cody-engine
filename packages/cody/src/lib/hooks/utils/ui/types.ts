@@ -13,6 +13,8 @@ export interface UiMetadata {
   sidebar?: { label?: string; icon?: string; show?: boolean | Rule[], invisible?: string, position: number };
   breadcrumb?: string | DynamicBreadcrumbMetadata;
   tab?: Tab;
+  commands?: string[];
+  views?: string[];
 }
 
 export type RawUiMetadata = UiMetadata & {

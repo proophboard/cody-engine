@@ -35,7 +35,7 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
 
     const viewModels = playwithErrorCheck(playGetSourcesOfType, [ui, NodeType.document, true, true, true]);
 
-    const views = viewModels.map(vM => {
+    const views = meta.views || viewModels.map(vM => {
       const syncedVm = playwithErrorCheck(playGetNodeFromSyncedNodes, [vM, ctx.syncedNodes]);
       const vMMeta = playwithErrorCheck(playVoMetadata, [syncedVm, ctx, config.types]);
 
@@ -46,11 +46,12 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       }
 
       return playwithErrorCheck(playVoFQCN, [syncedVm, vMMeta, ctx]);
-    });
+    }).toArray();
 
-    const commands = playwithErrorCheck(playGetTargetsOfType, [ui, NodeType.command, true, true, true])
+    const commands = meta.commands || playwithErrorCheck(playGetTargetsOfType, [ui, NodeType.command, true, true, true])
       .map(cmd => playwithErrorCheck(playGetNodeFromSyncedNodes, [cmd, ctx.syncedNodes]))
-      .map(cmd => names(playwithErrorCheck(playService, [cmd, ctx])).className + '.' + names(cmd.getName()).className);
+      .map(cmd => names(playwithErrorCheck(playService, [cmd, ctx])).className + '.' + names(cmd.getName()).className)
+      .toArray();
 
     const pageName = serviceNames.className + '.' + uiNames.className;
 
@@ -58,8 +59,8 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
     const mergedComponents: string[] = [];
     const mergedCommands: string[] = [];
 
-
-    if(existingPage) {
+    // Keep BC, PB adds views & commands to all new UI config now
+    if(existingPage && typeof meta.views ==="undefined") {
       mergedComponents.push(...existingPage.components);
       mergedCommands.push(...existingPage.commands);
 
@@ -75,8 +76,8 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
         }
       })
     } else {
-      mergedComponents.push(...views.toArray());
-      mergedCommands.push(...commands.toArray());
+      mergedComponents.push(...views);
+      mergedCommands.push(...commands);
     }
 
     const page = topLevelPage ? ({

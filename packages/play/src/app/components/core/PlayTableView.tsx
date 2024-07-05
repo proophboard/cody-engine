@@ -3,7 +3,6 @@ import {DataGrid, GridColDef, GridRenderCellParams, GridToolbar} from '@mui/x-da
 import {useContext, useEffect} from 'react';
 import { triggerSideBarAnchorsRendered } from '@frontend/util/sidebar/trigger-sidebar-anchors-rendered';
 import NoRowsOverlay from '@frontend/app/components/core/table/NoRowsOverlay';
-import jexl from '@app/shared/jexl/get-configured-jexl';
 import { dataValueGetter } from '@frontend/util/table/data-value-getter';
 import { determineQueryPayload } from '@app/shared/utils/determine-query-payload';
 import PageLink from '@frontend/app/components/core/PageLink';
@@ -51,6 +50,7 @@ import {resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {useUser} from "@frontend/hooks/use-user";
 import {User} from "@app/shared/types/core/user/user";
 import {isInlineItemsArraySchema} from "@cody-play/infrastructure/cody/schema/check";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc)) {
@@ -58,10 +58,11 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
   }
 
   const {config: {queries, types, pages, definitions}} = useContext(configStore);
-  const [,addQueryResult] = usePageData();
+  const [page,addQueryResult] = usePageData();
   const [user] = useUser();
 
   const query = useApiQuery(informationInfo.desc.query, params);
+  const jexlCtx = {routeParams: params, user, page};
 
   const uiSchema: UiSchema & TableUiSchema = informationInfo.uiSchema || {};
 
@@ -75,6 +76,16 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
   const hideToolbar = !!uiSchema.table?.hideToolbar;
 
   const itemIdentifier = isQueryableStateListDescription(informationInfo.desc)? informationInfo.desc.itemIdentifier : undefined;
+
+  let isHidden = false;
+
+  if(typeof uiSchema['ui:hidden'] !== "undefined") {
+    if(typeof uiSchema['ui:hidden'] === "string") {
+      isHidden = jexl.evalSync(uiSchema['ui:hidden'], jexlCtx);
+    } else {
+      isHidden = uiSchema['ui:hidden'];
+    }
+  }
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
@@ -94,6 +105,10 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
     types,
     definitions
   );
+
+  if(isHidden) {
+    return <></>;
+  }
 
   return (
     <Box component="div">

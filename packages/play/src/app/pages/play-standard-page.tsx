@@ -12,6 +12,8 @@ import {PageDataContext} from "@frontend/app/providers/PageData";
 import {usePageMatch} from "@frontend/util/hook/use-page-match";
 import {Tab} from "@frontend/app/pages/page-definitions";
 import { Alert } from "@mui/material";
+import {playIsCommandButtonHidden} from "@cody-play/infrastructure/cody/command/play-is-command-button-hidden";
+import {playIsViewHidden} from "@cody-play/infrastructure/cody/vo/play-is-view-hidden";
 
 interface Props {
   page: string
@@ -41,13 +43,22 @@ export const PlayStandardPage = (props: Props) => {
 
   const page = config.pages[props.page];
 
-  const cmdBtns = page.commands.map((commandName,index) => {
+  const cmdBtns = page.commands
+    .filter(commandName => {
+      const cmd = config.commands[commandName as string];
+
+      if(!cmd) {
+        return true; // Fallthrough to map to Alert message
+      }
+
+      return !playIsCommandButtonHidden(cmd);
+    })
+    .map((commandName,index) => {
     const cmd = config.commands[commandName as string];
 
     if(!cmd) {
       return <Alert severity="error">{`Command "${commandName}" not found! You have to pass the command to Cody on prooph board.`}</Alert>
     }
-
 
     return <PlayCommand key={commandName} command={config.commands[commandName as string]} />
   });
