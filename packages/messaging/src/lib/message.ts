@@ -1,5 +1,6 @@
 import {JSONSchema7} from "json-schema";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
+import {cloneDeep} from "lodash";
 
 export type Payload = { readonly [k: string]: any };
 export type Meta = { readonly [k: string]: any };
@@ -15,7 +16,7 @@ export interface Message<P extends Payload = any, M extends Meta = any> {
 export const messageFromJSON = <P extends Payload, M extends Meta>(message: object): Message<P, M> => {
   // @TODO validate message object
   return {
-    ...message as Message,
+    ...cloneDeep(message as Message),
     createdAt: new Date(Date.parse((message as {createdAt: string}).createdAt)),
   }
 }
