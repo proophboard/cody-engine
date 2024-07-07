@@ -28,7 +28,6 @@ export async function handlePureCommand<C extends Payload = any, E extends Paylo
 ): Promise<boolean> {
     const events = [];
     let result: IteratorResult<Event<E>, Event<E>>;
-
     const processing = process(command, dependencies || ({} as D));
 
     // eslint-disable-next-line no-cond-assign

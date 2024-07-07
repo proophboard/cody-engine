@@ -48,8 +48,9 @@ const matchEvent = (event: Event, eventMatcher: EventMatcher): boolean => {
             if(!matchObject.val.includes(meta[prop])) {
               return false;
             }
+          } else {
+            if (meta[prop] !== matchObject.val) return false;
           }
-          if (meta[prop] !== matchObject.val) return false;
           break;
         case MatchOperator.GT:
           if (meta[prop] <= matchObject.val) return false;

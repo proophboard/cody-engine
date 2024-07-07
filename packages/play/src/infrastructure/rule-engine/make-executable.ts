@@ -35,6 +35,8 @@ import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 
 type ExecutionContext = any;
 
+export const CTX_RECORDED_EVENTS_KEY = '$recordedEvents';
+
 export const makeSyncExecutable = (rules: Rule[]): (ctx: ExecutionContext) => ExecutionContext => {
   return (ctx: ExecutionContext): ExecutionContext => {
     for (const rule of rules) {
@@ -546,11 +548,11 @@ const execRecordEventSync = (then: ThenRecordEvent, ctx: ExecutionContext): Exec
 
   const payload = execMappingSync(then.record.mapping, ctx);
 
-  const events = ctx['events'] || [];
+  const events = ctx[CTX_RECORDED_EVENTS_KEY] || [];
 
   events.push(factory(payload, ctx.meta));
 
-  ctx['events'] = events;
+  ctx[CTX_RECORDED_EVENTS_KEY] = events;
 
   return ctx;
 }
@@ -564,11 +566,11 @@ const execRecordEventAsync = async (then: ThenRecordEvent, ctx: ExecutionContext
 
   const meta = then.record.meta ? await execMappingAsync(then.record.meta, ctx) : {};
 
-  const events = ctx['events'] || [];
+  const events = ctx[CTX_RECORDED_EVENTS_KEY] || [];
 
   events.push(factory(payload, {...ctx.meta, ...meta}));
 
-  ctx['events'] = events;
+  ctx[CTX_RECORDED_EVENTS_KEY] = events;
 
   return ctx;
 }
