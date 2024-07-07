@@ -14,6 +14,7 @@ import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
 import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-normalize-refs";
 import {names} from "@event-engine/messaging/helpers";
+import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 
 interface RawCommandMeta {
   schema: JSONSchema7 | ShorthandObject;
@@ -22,10 +23,11 @@ interface RawCommandMeta {
   service?: string;
   uiSchema?: UiSchema;
   dependencies?: DependencyRegistry;
+  rules?: Rule[];
   deleteState?: boolean;
   deleteHistory?: boolean;
   uiDisableFetchState?: boolean;
-  streamIdExpr?: string;
+  streamId?: string;
   streamName?: string;
   publicStream?: string;
 }
@@ -37,10 +39,11 @@ export interface PlayCommandMeta {
   service?: string;
   uiSchema?: UiSchema;
   dependencies?: DependencyRegistry;
+  rules?: Rule[];
   deleteState?: boolean;
   deleteHistory?: boolean;
   uiDisableFetchState?: boolean;
-  streamIdExpr?: string;
+  streamId?: string;
   streamName?: string;
   publicStream?: string;
 }

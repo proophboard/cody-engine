@@ -39,7 +39,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
     const dependencies = meta.dependencies;
     const deleteState = !!meta.deleteState;
     const deleteHistory = !!meta.deleteHistory;
-    const streamIdExpr = meta.streamIdExpr;
+    const streamId = meta.streamId;
     const streamName = meta.streamName;
     const publicStream = meta.publicStream;
 
@@ -53,7 +53,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
             dependencies,
             name: cmdFQCN,
             aggregateCommand: false,
-            streamIdExpr,
+            streamIdExpr: streamId,
             streamName,
             publicStream
           },
@@ -64,12 +64,12 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
       });
 
       const events = playwithErrorCheck(playGetTargetsOfType, [command, NodeType.event]);
-      const rules = events.map(evt => alwaysRecordEvent(evt));
+      const rules = meta.rules || events.map(evt => alwaysRecordEvent(evt)).toArray();
 
       dispatch({
         type: "ADD_COMMAND_HANDLER",
         command: cmdFQCN,
-        businessRules: normalizeThenRecordEventRules(service, rules.toArray()),
+        businessRules: normalizeThenRecordEventRules(service, rules),
       });
 
       return {
