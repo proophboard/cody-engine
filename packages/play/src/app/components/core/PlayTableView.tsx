@@ -18,7 +18,7 @@ import {
 import {
   isQueryableListDescription,
   isQueryableNotStoredStateListDescription,
-  isQueryableStateListDescription
+  isQueryableStateListDescription, isStoredQueryableListDescription
 } from "@event-engine/descriptions/descriptions";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {UiSchema} from "@rjsf/utils";
@@ -237,8 +237,18 @@ const compileTableColumns = (
 
           const refListDesc = refListVo.desc;
 
-          if (!isQueryableStateListDescription(refListDesc) && !isQueryableNotStoredStateListDescription(refListDesc)) {
+          if (!isQueryableStateListDescription(refListDesc) && !isQueryableNotStoredStateListDescription(refListDesc) && !isStoredQueryableListDescription(refListDesc)) {
             throw new Error(`The ref in column "${column.field}" is not a list! Only lists can be used to load reference data.`);
+          }
+
+          let itemIdentifier = (cValue as RefTableColumn).itemIdentifier  || '';
+
+          if(!itemIdentifier) {
+            if (!isQueryableStateListDescription(refListDesc) && !isQueryableNotStoredStateListDescription(refListDesc)) {
+              throw new Error(`The ref in column "${column.field}" is not a list with an itemIdentifier! Either reference a list if an item identifier or configure one in the ref options!`);
+            }
+
+            itemIdentifier = refListDesc.itemIdentifier;
           }
 
           const columnQuery = queries[refListDesc.query];
@@ -267,7 +277,7 @@ const compileTableColumns = (
 
             return dataValueGetter(
               columnQueries[field],
-              refListDesc.itemIdentifier,
+              itemIdentifier,
               rowParamsVal,
               (data: any) => {
                 let ctx = {data, value: '', user};
