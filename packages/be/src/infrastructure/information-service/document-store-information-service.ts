@@ -4,7 +4,7 @@ import {
   isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
   isQueryableStateListDescription,
-  isQueryableValueObjectDescription
+  isQueryableValueObjectDescription, isStoredQueryableListDescription
 } from "@event-engine/descriptions/descriptions";
 import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
@@ -100,26 +100,30 @@ export class DocumentStoreInformationService implements InformationService {
   }
 
   private detectCollection(informationName: string): string {
-    const runtimeInfo = this.detectSingleVoRuntimeInfo(informationName);
+    const runtimeInfo = this.detectVoRuntimeInfoWithCollection(informationName);
 
     const desc = runtimeInfo.desc;
 
-    if(!isQueryableStateDescription(desc) && !isQueryableStateListDescription(desc) && !isQueryableValueObjectDescription(desc) ) {
+    if(!isQueryableStateDescription(desc) && !isQueryableStateListDescription(desc) && !isQueryableValueObjectDescription(desc) && !isStoredQueryableListDescription(desc) ) {
       throw new Error(`The type: '${informationName}' is missing a 'collection' property in its type description. It cannot be stored in the read model database.`);
     }
 
     return desc.collection;
   }
 
-  private detectSingleVoRuntimeInfo(informationName: string): ValueObjectRuntimeInfo {
+  private detectVoRuntimeInfoWithCollection(informationName: string): ValueObjectRuntimeInfo {
     const runtimeInfo = this.types[informationName];
 
     if(!runtimeInfo) {
       throw new Error(`Can't find the type: '${informationName}' in the type registry. Did you forget to pass the corresponding information card on prooph board to Cody?`);
     }
 
+    if(isStoredQueryableListDescription(runtimeInfo.desc)) {
+      return runtimeInfo;
+    }
+
     if(isQueryableStateListDescription(runtimeInfo.desc)) {
-      return this.detectSingleVoRuntimeInfo(runtimeInfo.desc.itemType);
+      return this.detectVoRuntimeInfoWithCollection(runtimeInfo.desc.itemType);
     }
 
     if(isQueryableStateDescription(runtimeInfo.desc) || isQueryableValueObjectDescription(runtimeInfo.desc) || isQueryableNotStoredValueObjectDescription(runtimeInfo.desc)) {

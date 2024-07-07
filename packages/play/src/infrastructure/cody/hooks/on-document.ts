@@ -18,7 +18,7 @@ import {
   QueryableStateListDescription,
   QueryableValueObjectDescription,
   StateDescription,
-  StateListDescription,
+  StateListDescription, StoredQueryableListDescription,
   ValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
 import {
@@ -260,6 +260,16 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         query: queryName,
         isNotStored: true,
       } as QueryableStateListDescription);
+    case "StoredQueryableListDescription":
+      return ({
+        ...pbInfo,
+        name: voName,
+        hasIdentifier: false,
+        isList: true,
+        isQueryable: true,
+        query: queryName,
+        collection: voMeta.collection,
+      } as StoredQueryableListDescription);
     case "QueryableListDescription":
       return ({
         ...pbInfo,

@@ -228,6 +228,10 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
     if(!convertedMeta.collection && convertedMeta.hasIdentifier && (typeof meta.collection === "undefined" || typeof meta.collection === "string")) {
       convertedMeta.collection = meta.collection || voNames.constantName.toLowerCase() + '_collection';
     }
+
+    if(!convertedMeta.collection && typeof meta.collection === "string") {
+      convertedMeta.collection = meta.collection;
+    }
   }
 
   convertedMeta.isNotStored = isNotStored;

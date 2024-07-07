@@ -11,12 +11,12 @@ import {
   isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
   isQueryableStateListDescription,
-  isQueryableValueObjectDescription,
+  isQueryableValueObjectDescription, isStoredQueryableListDescription,
   QueryableListDescription,
   QueryableNotStoredStateDescription, QueryableNotStoredValueObjectDescription,
   QueryableStateDescription,
   QueryableStateListDescription,
-  QueryableValueObjectDescription
+  QueryableValueObjectDescription, StoredQueryableListDescription
 } from "@event-engine/descriptions/descriptions";
 import {PlayQueryRuntimeInfo} from "@cody-play/state/types";
 import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
@@ -128,6 +128,10 @@ export const makeLocalApiQuery = (store: CodyPlayConfig, user: User): ApiQuery =
         itemInfo = informationInfo;
       }
 
+      if(isStoredQueryableListDescription(informationDesc)) {
+        return await resolveStateListQuery(informationDesc, itemInfo.factory, queryInfo, resolve, resolvedCtx.query, user);
+      }
+
       return await resolveNotStoredListQuery(informationDesc, itemInfo.factory, queryInfo, resolve, resolvedCtx);
     }
 
@@ -181,7 +185,7 @@ const resolveStateQuery = async (desc: QueryableStateDescription, factory: AnyRu
   return exe(doc);
 }
 
-const resolveStateListQuery = async (desc: QueryableStateListDescription, factory: AnyRule[], queryInfo: PlayQueryRuntimeInfo, resolve: ResolveConfig, params: any, user: User): Promise<Array<any>> => {
+const resolveStateListQuery = async (desc: QueryableStateListDescription | StoredQueryableListDescription, factory: AnyRule[], queryInfo: PlayQueryRuntimeInfo, resolve: ResolveConfig, params: any, user: User): Promise<Array<any>> => {
   const queryPayload = determineQueryPayload(params, queryInfo as unknown as QueryRuntimeInfo);
 
   const filters = resolve.where ? makeFiltersFromResolveConfig(desc, resolve, queryPayload, user) : makeFiltersFromQuerySchema(queryInfo.schema as JSONSchema7, queryPayload, user);

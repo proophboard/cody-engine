@@ -181,19 +181,31 @@ export interface QueryableListDescription extends ValueObjectDescription {
   itemType: string;
 }
 
+export interface StoredQueryableListDescription extends ValueObjectDescription {
+  query: string;
+  itemType: string;
+  collection: string;
+}
+
 export const isQueryableListDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableListDescription => {
   return desc.isList && !desc.hasIdentifier && desc.isQueryable;
+}
+
+export const isStoredQueryableListDescription = (desc: ValueObjectDescriptionFlags): desc is StoredQueryableListDescription => {
+  return desc.isList && !desc.hasIdentifier && desc.isQueryable && !desc.isNotStored;
 }
 
 export type ValueObjectDescriptionType = "ValueObjectDescription" | "StateDescription" | "StateListDescription"
   | "QueryableValueObjectDescription" | "QueryableNotStoredValueObjectDescription"
   | "QueryableStateDescription" | "QueryableNotStoredStateDescription" | "QueryableStateListDescription"
-  | "QueryableNotStoredStateListDescription" | "QueryableListDescription";
+  | "QueryableNotStoredStateListDescription" | "QueryableListDescription" | "StoredQueryableListDescription";
 
 export const detectDescriptionType = (desc: ValueObjectDescriptionFlags): ValueObjectDescriptionType => {
   switch (true) {
     case isQueryableStateListDescription(desc):
       return "QueryableStateListDescription";
+    case isStoredQueryableListDescription(desc):
+      return "StoredQueryableListDescription";
     case isQueryableListDescription(desc):
       return "QueryableListDescription";
     case isQueryableNotStoredStateListDescription(desc):
