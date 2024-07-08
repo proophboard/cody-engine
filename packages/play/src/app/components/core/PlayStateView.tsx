@@ -21,7 +21,7 @@ const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo)
   const {config: {definitions}} = useContext(configStore);
   const [page, addQueryResult] = usePageData();
   const desc = informationInfo.desc;
-  const user = useUser();
+  const [user] = useUser();
 
   const jexlCtx = {routeParams: params, user, page};
 

@@ -60,7 +60,7 @@ const Database = (props: DatabaseProps) => {
   const {setPendingChanges} = useContext(PendingChangesContext);
   const queryClient = useQueryClient();
   const [projections, setProjections] = useState<ProjectionRegistry>({});
-  const [selectedProjection, setSelectedProjection] = useState<string|undefined>();
+  const [selectedProjection, setSelectedProjection] = useState<string>('');
   const [isRunningProjection, setIsRunningProjection] = useState(false);
 
   useEffect(() => {
@@ -142,7 +142,7 @@ const Database = (props: DatabaseProps) => {
         await projector.run(prjConfig.stream, undefined, selectedProjection);
 
         window.setTimeout(() => {
-          setSelectedProjection(undefined);
+          setSelectedProjection('');
           setIsRunningProjection(false);
         }, 3000);
       })().catch((e: any) => {throw e})
@@ -183,7 +183,7 @@ const Database = (props: DatabaseProps) => {
     <Box sx={{display: 'flex', marginBottom: "20px"}}>
       <TextField
         id="republish"
-        placeholder={"EVENT UUID"}
+        label={"EVENT UUID"}
         variant="standard"
         value={republishEventId}
         helperText={<span>Republish an event to trigger policies. Leave empty to republish last recorded event.</span>}
@@ -201,7 +201,7 @@ const Database = (props: DatabaseProps) => {
     <Box sx={{display: 'flex', marginBottom: "20px"}}>
       <TextField
         id="rerun_projection"
-        label="Projection"
+        label="PROJECTION"
         variant="standard"
         value={selectedProjection}
         helperText={<span>Rerun first clears the collection and then feeds all events into the projection again.</span>}
@@ -226,7 +226,7 @@ const Database = (props: DatabaseProps) => {
     {invalidDatabase &&
         <Alert variant="standard" severity="error">Invalid Database Update. Please check your input!</Alert>}
     <div style={{border: '1px solid #eee'}}>
-      <Editor height="350px"
+      <Editor height="300px"
               language="json"
               value={updatedDatabaseStr}
               onMount={handleEditorDidMount}
