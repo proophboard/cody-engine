@@ -99,7 +99,7 @@ export class DocumentStoreInformationService implements InformationService {
     return this.ds.deleteMany(collectionName, filter);
   }
 
-  private detectCollection(informationName: string): string {
+  public detectCollection(informationName: string): string {
     const runtimeInfo = this.detectVoRuntimeInfoWithCollection(informationName);
 
     const desc = runtimeInfo.desc;
