@@ -122,8 +122,10 @@ const Messagebox = (props: MessageboxProps) => {
         onChange={(e: any) => setSelectedMessage(e.target.value)}
       >
         {messageOptions.map(msg => <MenuItem key={msg.name} value={msg.name}>
-          <ListItemIcon><StickyNote2 sx={{color: getMessageColor(msg)}}/></ListItemIcon>
-          <ListItemText>{msg.name}</ListItemText>
+          <div style={{display: 'flex', alignItems: 'center'}}>
+            <StickyNote2 sx={{color: getMessageColor(msg)}}/>
+            <ListItemText style={{marginLeft: '10px'}}>{msg.name}</ListItemText>
+          </div>
         </MenuItem>)}
       </TextField>
     </Box>
@@ -133,7 +135,7 @@ const Messagebox = (props: MessageboxProps) => {
         {invalidMessageContext &&
           <Alert variant="standard" severity="error">Invalid Message Context. Please check your input!</Alert>}
         <div style={{border: '1px solid #eee'}}>
-          <Editor height="300px"
+          <Editor height="400px"
                   language="json"
                   value={messageContextStr}
                   onChange={handleMessageContextChanged}
@@ -167,7 +169,7 @@ const Messagebox = (props: MessageboxProps) => {
       <Grid2 xs={12} md={6}>
         <FormLabel>Result</FormLabel>
         <div style={{border: '1px solid #eee'}}>
-          <Editor height="300px"
+          <Editor height="400px"
                   language="json"
                   value={JSON.stringify(result, null, 2)}
                   options={{
