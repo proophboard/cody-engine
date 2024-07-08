@@ -3,9 +3,6 @@ import * as ReactDOM from 'react-dom/client';
 import App from './app/app';
 import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-model-store/configured-document-store";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
-import {
-  getConfiguredPlayReadModelProjector
-} from "@cody-play/infrastructure/multi-model-store/configured-play-read-model-projector";
 import {EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {Action, CodyPlayConfig} from "@cody-play/state/config-store";
 

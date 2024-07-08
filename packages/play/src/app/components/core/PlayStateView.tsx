@@ -29,11 +29,12 @@ const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo)
 
   let isHidden = false;
 
-  const uiSchema = informationInfo.uiSchema || {};
+  const uiSchema = {...informationInfo.uiSchema} || {};
 
   if(typeof uiSchema['ui:hidden'] !== "undefined") {
     if(typeof uiSchema['ui:hidden'] === "string") {
       isHidden = jexl.evalSync(uiSchema['ui:hidden'], jexlCtx);
+      delete uiSchema['ui:hidden'];
     } else {
       isHidden = uiSchema['ui:hidden'];
     }
@@ -55,7 +56,7 @@ const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo)
     {query.isLoading && <CircularProgress />}
     {query.isSuccess && <StateView
         state={query.data}
-        description={{...informationInfo, factory: makeInformationFactory(informationInfo.factory)}}
+        description={{...informationInfo, uiSchema, factory: makeInformationFactory(informationInfo.factory)}}
         definitions={definitions}
         widgets={{
           DataSelect: PlayDataSelectWidget
