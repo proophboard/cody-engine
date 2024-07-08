@@ -255,7 +255,6 @@ const Database = (props: DatabaseProps) => {
         color={"inherit"}
         title={'Empty the Cody Play Database'}
         onClick={() => handleDatabaseChanged(undefined)}
-        sx={{marginLeft: "auto"}}
       />
     </Box>
   </div>
