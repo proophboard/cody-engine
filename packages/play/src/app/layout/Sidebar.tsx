@@ -59,18 +59,18 @@ const Sidebar = (props: SidebarProps) => {
     return true;
   });
 
-  const topLevelPageItems = topLevelPagesWithoutGroups.map(({route, sidebar: {label, icon, invisible, group, dynamic}}) => {
+  const topLevelPageItems = topLevelPagesWithoutGroups.map(({route, service, sidebar: {label, icon, invisible, group, dynamic}}) => {
     const pGroup = belongsToGroup({sidebar: {group}})
     if(pGroup) {
       const cachedPGroup = groups[pGroup.label];
       return <SidebarNavGroup name={'group-' + names(cachedPGroup.config.label).fileName}
                               label={cachedPGroup.config.label}
                               Icon={<MdiIcon icon={cachedPGroup.config.icon} />}
-                              pages={cachedPGroup.pages.map(p => makeSidebarItem(p.route, p.sidebar.label, <MdiIcon icon={p.sidebar.icon} />, theme, user, pageMatch, p.sidebar.invisible, dynamic))}
+                              pages={cachedPGroup.pages.map(p => makeSidebarItem(p.route, p.sidebar.label, <MdiIcon icon={p.sidebar.icon} />, theme, user, pageMatch, p.sidebar.invisible, service, dynamic))}
       />
     }
 
-    return makeSidebarItem(route, label, <MdiIcon  icon={icon} />, theme, user, pageMatch, invisible, dynamic)
+    return makeSidebarItem(route, label, <MdiIcon  icon={icon} />, theme, user, pageMatch, invisible, service, dynamic)
   });
 
   return <Drawer

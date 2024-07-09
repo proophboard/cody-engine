@@ -18,10 +18,12 @@ import {
 } from "@event-engine/descriptions/descriptions";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
+import {playGetVoRuntimeInfoFromDataReference} from "@cody-play/state/play-get-vo-runtime-info-from-data-reference";
 
 interface OwnProps {
   route: string,
   label: string,
+  service: string,
   Icon: JSX.Element,
   theme: Theme,
   user: User,
@@ -32,7 +34,7 @@ interface OwnProps {
 
 type SidebarItemProps = OwnProps;
 
-const SidebarItem = ({invisible, route, label, Icon, theme, user, pageMatch, dynamic}: SidebarItemProps) => {
+const SidebarItem = ({invisible, route, label, Icon, theme, user, pageMatch, service, dynamic}: SidebarItemProps) => {
   const [hidden, setHidden] = useState(false);
   const [dynamicLabel, setDynamicLabel] = useState<string | undefined>('');
   const [DynamicIcon, setDynamicIcon] = useState<JSX.Element | undefined>();
@@ -41,37 +43,38 @@ const SidebarItem = ({invisible, route, label, Icon, theme, user, pageMatch, dyn
 
   useEffect(() => {
     if(dynamic) {
-      const voInfo = config.types[dynamic.data];
+      try {
+        const voInfo = playGetVoRuntimeInfoFromDataReference(dynamic.data, service, config.types);
 
-      if(!voInfo) {
-        setDynamicLabel('Failed! Data type unknown');
+        const desc = voInfo.desc;
+
+        if(!isQueryableDescription(desc)) {
+          setDynamicLabel('Failed! Data is not queryable');
+          return;
+        }
+
+        makeLocalApiQuery(config, user)((desc as QueryableDescription).query, {}).then(data => {
+          if(dynamic.label) {
+            const dLabel = jexl.evalSync(dynamic.label, {data, page, user});
+            setDynamicLabel(dLabel);
+          }
+
+          if(dynamic.icon) {
+            const dIcon = jexl.evalSync(dynamic.icon, {data, page, user});
+            setDynamicIcon(<MdiIcon  icon={dIcon} />)
+          }
+
+          if(dynamic.hidden) {
+            setHidden(jexl.evalSync(dynamic.hidden, {data, page, user}));
+          }
+        }).catch(e => {
+          throw e
+        });
+      } catch (e) {
+        console.error(e);
+        setDynamicLabel('Failed! Data type is unknown');
         return;
       }
-
-      const desc = voInfo.desc;
-
-      if(!isQueryableDescription(desc)) {
-        setDynamicLabel('Failed! Data is not queryable');
-        return;
-      }
-
-      makeLocalApiQuery(config, user)((desc as QueryableDescription).query, {}).then(data => {
-        if(dynamic.label) {
-          const dLabel = jexl.evalSync(dynamic.label, {data, page, user});
-          setDynamicLabel(dLabel);
-        }
-
-        if(dynamic.icon) {
-          const dIcon = jexl.evalSync(dynamic.icon, {data, page, user});
-          setDynamicIcon(<MdiIcon  icon={dIcon} />)
-        }
-
-        if(dynamic.hidden) {
-          setHidden(jexl.evalSync(dynamic.hidden, {data, page, user}));
-        }
-      }).catch(e => {
-        throw e
-      });
     }
   }, [dynamic, page, user]);
 

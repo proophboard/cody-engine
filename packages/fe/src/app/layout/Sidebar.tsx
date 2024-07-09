@@ -82,7 +82,7 @@ export const sortTopLevelPages = (a: {sidebar: {position?: number}}, b: {sidebar
   return aPos - bPos;
 }
 
-export const makeSidebarItem = (route: string, label: string, Icon: JSX.Element, theme: Theme, user: User, pageMatch: {pathname: string}, invisible?: string | boolean, dynamic?: DynamicSidebar) => {
+export const makeSidebarItem = (route: string, label: string, Icon: JSX.Element, theme: Theme, user: User, pageMatch: {pathname: string}, invisible?: string | boolean, service = '', dynamic?: DynamicSidebar) => {
  return <SidebarItem key={route}
                      route={route}
                      label={label}
@@ -91,6 +91,7 @@ export const makeSidebarItem = (route: string, label: string, Icon: JSX.Element,
                      user={user}
                      pageMatch={pageMatch}
                      invisible={invisible}
+                     service={service}
                      dynamic={dynamic}
   />
 }
