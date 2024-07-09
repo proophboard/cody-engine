@@ -3,7 +3,7 @@ import {ElementEditedContext} from "@cody-play/infrastructure/cody/cody-message-
 import {names} from "@event-engine/messaging/helpers";
 import {isShorthand} from "@cody-engine/cody/hooks/utils/json-schema/shorthand";
 import {
-  DependencyRegistry,
+  DependencyRegistry, isListDescription, isQueryableListDescription,
   isQueryableStateDescription,
   isStateDescription,
   ValueObjectDescriptionFlags
@@ -12,7 +12,7 @@ import {playParseJsonMetadata} from "@cody-play/infrastructure/cody/metadata/pla
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {
-  playDefinitionId,
+  playDefinitionId, playDefinitionIdFromFQCN,
   playFQCNFromDefinitionId,
   playVoFQCN
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
@@ -34,6 +34,7 @@ import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentSto
 import {GridDensity} from "@mui/x-data-grid";
 import {valueObjectNameFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 import {normalizeProjectionConfig, ProjectionConfig} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
+import {isRefSchema} from "@cody-play/infrastructure/json-schema/is-ref-schema";
 
 export interface PlayValueObjectMetadataRaw {
   identifier?: string;
@@ -156,7 +157,27 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
     meta.querySchema = playNormalizeRefs(playAddSchemaTitles('Get ' + vo.getName(), meta.querySchema), service);
   }
 
-  const normalizedSchema = playNormalizeRefs(playAddSchemaTitles(vo.getName(), meta.schema), service) as JSONSchema7;
+  let normalizedSchema = playNormalizeRefs(playAddSchemaTitles(vo.getName(), meta.schema), service) as JSONSchema7;
+
+  if(isRefSchema(normalizedSchema)) {
+    const resolvedInfo = playResolveRef(normalizedSchema, normalizedSchema, vo, types);
+
+    if(playIsCodyError(resolvedInfo)) {
+      return resolvedInfo;
+    }
+
+    if(isListDescription(resolvedInfo.desc)) {
+      normalizedSchema = {
+        $id: (normalizedSchema as any).$id,
+        title: (normalizedSchema as any).title,
+        type: "array",
+        items: {
+          $ref: playDefinitionIdFromFQCN(resolvedInfo.desc.itemType)
+        }
+      }
+    }
+  }
+
 
   const hasIdentifier = !!meta.identifier;
   const isQueryable = !!meta.querySchema;
@@ -208,7 +229,7 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
 
       if(isQueryableStateDescription(refVORuntimeInfo.desc)) {
         convertedMeta.collection = refVORuntimeInfo.desc.collection;
-      } else {
+      } else if (typeof meta.collection !== "string") {
         convertedMeta.collection = names(valueObjectNameFromFQCN(refVORuntimeInfo.desc.name)).constantName.toLowerCase() + '_collection';
       }
     }

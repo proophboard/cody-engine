@@ -132,6 +132,14 @@ export const isStateDescription = (desc: ValueObjectDescriptionFlags): desc is S
   return desc.hasIdentifier && !desc.isList;
 }
 
+export interface ListDescription extends ValueObjectDescription {
+  itemType: string;
+}
+
+export const isListDescription = (desc: ValueObjectDescriptionFlags): desc is ListDescription => {
+  return desc.isList;
+}
+
 export interface StateListDescription extends ValueObjectDescription{
   itemIdentifier: string;
 }
@@ -148,6 +156,7 @@ export interface QueryableStateDescription extends StateDescription {
 export const isQueryableStateDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableStateDescription => {
   return isStateDescription(desc) && desc.isQueryable;
 }
+
 
 export interface QueryableNotStoredStateDescription extends StateDescription {
   query: string;
