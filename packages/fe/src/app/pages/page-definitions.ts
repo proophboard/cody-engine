@@ -15,8 +15,22 @@ export interface PageDefinition {
   tab?: Omit<Tab, "route">;
 }
 
+export interface DynamicSidebar {
+  data: string;
+  label?: string;
+  icon?: string;
+  hidden?: string;
+}
+
 export interface TopLevelPage extends PageDefinition {
-  sidebar: {label: string, Icon: typeof SvgIcon, invisible?: string | boolean, group?: string | TopLevelGroup, position?: number}
+  sidebar: {
+    label: string,
+    Icon: typeof SvgIcon,
+    invisible?: string | boolean,
+    group?: string | TopLevelGroup,
+    position?: number,
+    dynamic?: DynamicSidebar,
+  }
 }
 
 export interface TopLevelGroup {

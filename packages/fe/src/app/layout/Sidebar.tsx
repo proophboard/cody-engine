@@ -2,7 +2,13 @@ import * as React from 'react';
 import {Box, Button, Drawer, List, ListItem, SxProps, Theme, useMediaQuery, useTheme} from "@mui/material";
 import {pages} from "@frontend/app/pages";
 import {NavLink} from "react-router-dom";
-import {belongsToGroup, isTopLevelPage, TopLevelGroup, TopLevelPage} from "@frontend/app/pages/page-definitions";
+import {
+  belongsToGroup,
+  DynamicSidebar,
+  isTopLevelPage,
+  TopLevelGroup,
+  TopLevelPage
+} from "@frontend/app/pages/page-definitions";
 import SidebarSubMenu from "@frontend/app/layout/SidebarSubMenu";
 import {usePageMatch} from "@frontend/util/hook/use-page-match";
 import jexl from "@app/shared/jexl/get-configured-jexl";
@@ -11,6 +17,8 @@ import {User} from "@app/shared/types/core/user/user";
 import SidebarNavGroup from "@frontend/app/layout/SidebarNavGroup";
 import {names} from "@event-engine/messaging/helpers";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
+import {useEffect} from "react";
+import SidebarItem from "@frontend/app/layout/SidebarItem";
 
 interface OwnProps {
   open: boolean;
@@ -74,33 +82,17 @@ export const sortTopLevelPages = (a: {sidebar: {position?: number}}, b: {sidebar
   return aPos - bPos;
 }
 
-export const makeSidebarItem = (route: string, label: string, Icon: JSX.Element, theme: Theme, user: User, pageMatch: {pathname: string}, invisible?: string | boolean) => {
-  if(typeof invisible === "boolean" && invisible) {
-    return <></>
-  }
-
-  if(typeof invisible === "string" && jexl.evalSync(invisible, {user})) {
-    return <></>
-  }
-
-  return <div key={route}><ListItem
-    key={route}
-    disableGutters={true}
-    sx={makeListItemSx(theme)}
-  >
-    <Button
-      sx={makeButtonSx(theme)}
-      component={NavLink}
-      to={route}
-    >
-      <Box component={"div"} sx={makeIconBoxSx(theme)}>
-        {Icon}
-      </Box>
-      {label}
-    </Button>
-  </ListItem>
-    {pageMatch.pathname.includes(route) && <SidebarSubMenu/>}
-  </div>
+export const makeSidebarItem = (route: string, label: string, Icon: JSX.Element, theme: Theme, user: User, pageMatch: {pathname: string}, invisible?: string | boolean, dynamic?: DynamicSidebar) => {
+ return <SidebarItem key={route}
+                     route={route}
+                     label={label}
+                     Icon={Icon}
+                     theme={theme}
+                     user={user}
+                     pageMatch={pageMatch}
+                     invisible={invisible}
+                     dynamic={dynamic}
+  />
 }
 
 type Group = {config: TopLevelGroup, pages: TopLevelPage[]};

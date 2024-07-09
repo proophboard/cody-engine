@@ -1,3 +1,5 @@
+import {retrieveSchema} from "@rjsf/utils";
+
 export interface ProophBoardDescription {
   _pbBoardId: string;
   _pbCardId: string;
@@ -107,9 +109,16 @@ export interface ValueObjectDescription extends ProophBoardDescription, ValueObj
   name: string;
 }
 
-export interface QueryableValueObjectDescription extends ValueObjectDescription {
+export interface QueryableDescription extends ValueObjectDescription {
   query: string;
+}
+
+export interface QueryableValueObjectDescription extends QueryableDescription {
   collection: string;
+}
+
+export const isQueryableDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableDescription => {
+  return desc.isQueryable;
 }
 
 export const isQueryableValueObjectDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableValueObjectDescription => {
