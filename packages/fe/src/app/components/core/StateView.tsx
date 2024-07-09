@@ -22,6 +22,8 @@ import {types} from "@app/shared/types";
 import {getRjsfValidator} from "@frontend/util/rjsf-validator";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
+import {names} from "@event-engine/messaging/helpers";
+import {playFQCNFromDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
 interface OwnProps {
   state?: Record<string, any>;
@@ -91,8 +93,16 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
     index = ' ' + (Number(match.groups!['index']) + 1);
   }
 
+  let idPrefix = 'component_' + names(props.title).fileName + '_';
+
+  if(props.schema.$id) {
+    const fqcn = playFQCNFromDefinitionId(props.schema.$id);
+
+    idPrefix = 'component_' + names(fqcn).fileName + '_';
+  }
+
   return <div>
-    <Typography id={props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>
+    <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>
     {props.description}
     {props.properties.map(element => <Box component="div" key={'ele_wrapper_' + element.name} sx={{marginBottom: '10px'}}>{element.content}</Box>)}
   </div>
@@ -105,8 +115,16 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
     return <></>
   }
 
+  let idPrefix = 'component_' + names(props.title).fileName + '_';
+
+  if(props.schema.$id) {
+    const fqcn = playFQCNFromDefinitionId(props.schema.$id);
+
+    idPrefix = 'component_' + names(fqcn).fileName + '_';
+  }
+
   return <div>
-    <Typography id={props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}</Typography>
+    <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}</Typography>
     {!props.items.length && <Box className={'array-element-wrapper'} key={'array_ele_wrapper_empty'}><Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Box> }
     {props.items.map((element, index) => <Box className={'array-element-wrapper'} key={'array_ele_wrapper_' + index}>{element.children}</Box>)}
   </div>
