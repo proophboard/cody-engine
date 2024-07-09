@@ -20,6 +20,7 @@ import {
 } from "@cody-play/infrastructure/cody/node-traversing/node-tree";
 import {playVoMetadata} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 import {playVoFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 
 export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -56,7 +57,7 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
     const pageName = serviceNames.className + '.' + uiNames.className;
 
     const existingPage = config.pages[pageName];
-    const mergedComponents: string[] = [];
+    const mergedComponents: ViewComponent[] = [];
     const mergedCommands: string[] = [];
 
     // Keep BC, PB adds views & commands to all new UI config now

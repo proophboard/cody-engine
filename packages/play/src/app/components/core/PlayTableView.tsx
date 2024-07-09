@@ -52,7 +52,7 @@ import {User} from "@app/shared/types/core/user/user";
 import {isInlineItemsArraySchema} from "@cody-play/infrastructure/cody/schema/check";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 
-const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
+const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc)) {
     throw new Error(`Play table view can only be used to show queriable state list information, but "${informationInfo.desc.name}" is not of this information type. ${CONTACT_PB_TEAM}`)
   }
@@ -77,9 +77,9 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
 
   const itemIdentifier = isQueryableStateListDescription(informationInfo.desc)? informationInfo.desc.itemIdentifier : undefined;
 
-  let isHidden = false;
+  let isHidden = hiddenView;
 
-  if(typeof uiSchema['ui:hidden'] !== "undefined") {
+  if(!hiddenView && typeof uiSchema['ui:hidden'] !== "undefined") {
     if(typeof uiSchema['ui:hidden'] === "string") {
       isHidden = jexl.evalSync(uiSchema['ui:hidden'], jexlCtx);
     } else {

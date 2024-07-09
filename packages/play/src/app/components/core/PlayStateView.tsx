@@ -17,7 +17,7 @@ import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidg
 import {useUser} from "@frontend/hooks/use-user";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 
-const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
+const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false) => {
   const {config: {definitions}} = useContext(configStore);
   const [page, addQueryResult] = usePageData();
   const desc = informationInfo.desc;
@@ -27,11 +27,11 @@ const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo)
 
   const query = useApiQuery((desc as QueryableStateDescription).query, params);
 
-  let isHidden = false;
+  let isHidden = hiddenView;
 
   const uiSchema = {...informationInfo.uiSchema} || {};
 
-  if(typeof uiSchema['ui:hidden'] !== "undefined") {
+  if(!hiddenView && typeof uiSchema['ui:hidden'] !== "undefined") {
     if(typeof uiSchema['ui:hidden'] === "string") {
       isHidden = jexl.evalSync(uiSchema['ui:hidden'], jexlCtx);
       delete uiSchema['ui:hidden'];

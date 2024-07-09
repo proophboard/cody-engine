@@ -13,7 +13,6 @@ import {usePageMatch} from "@frontend/util/hook/use-page-match";
 import {Tab} from "@frontend/app/pages/page-definitions";
 import { Alert } from "@mui/material";
 import {playIsCommandButtonHidden} from "@cody-play/infrastructure/cody/command/play-is-command-button-hidden";
-import {playIsViewHidden} from "@cody-play/infrastructure/cody/vo/play-is-view-hidden";
 
 interface Props {
   page: string
@@ -72,11 +71,18 @@ export const PlayStandardPage = (props: Props) => {
   const commandBar = cmdBtns.length || tabs ? <Grid2 xs={12}><CommandBar tabs={tabs}>{cmdBtns}</CommandBar></Grid2> : <></>;
 
   const components = page.components.map((valueObjectName, index) => {
+    let isHiddenView = false;
+
+    if(typeof valueObjectName !== "string") {
+      isHiddenView = valueObjectName.hidden;
+      valueObjectName = valueObjectName.view;
+    }
+
     if(!config.views[valueObjectName]) {
       throw new Error(`View Component for Information: "${valueObjectName}" is not registered. Did you forget to pass the corresponding Information card to Cody?`);
     }
 
-    const ViewComponent = getViewComponent(config.views[valueObjectName], config.types);
+    const ViewComponent = getViewComponent(config.views[valueObjectName], config.types, isHiddenView);
 
     return <Grid2 key={'comp' + index} xs={12}>{ViewComponent(routeParams)}</Grid2>
   });
@@ -87,7 +93,7 @@ export const PlayStandardPage = (props: Props) => {
   </Grid2>
 }
 
-const getViewComponent = (component: React.FunctionComponent | { information: string }, types: PlayInformationRegistry): React.FunctionComponent => {
+const getViewComponent = (component: React.FunctionComponent | { information: string }, types: PlayInformationRegistry, isHiddenView = false): React.FunctionComponent => {
   if(typeof component === "object" && component.information) {
     const information = types[component.information];
 
@@ -97,11 +103,11 @@ const getViewComponent = (component: React.FunctionComponent | { information: st
 
     if(isQueryableStateListDescription(information.desc) || isQueryableListDescription(information.desc)) {
       return (params: any) => {
-        return PlayTableView(params, information);
+        return PlayTableView(params, information, isHiddenView);
       };
     } else {
       return (params: any) => {
-        return PlayStateView(params, information);
+        return PlayStateView(params, information, isHiddenView);
       }
     }
   }
