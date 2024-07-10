@@ -8,7 +8,7 @@ let informationService: InformationService;
 
 export const playInformationServiceFactory = (): InformationService => {
   if(!informationService) {
-    informationService = new DocumentStoreInformationService(getConfiguredPlayDocumentStore());
+    informationService = new DocumentStoreInformationService(getConfiguredPlayDocumentStore(), {});
   }
 
   return informationService;

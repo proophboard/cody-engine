@@ -56,7 +56,8 @@ export const isForEach = (then: any): then is ThenForEach => typeof then.forEach
 export interface ThenRecordEvent {
   record: {
     event: string;
-    mapping: string | PropMapping
+    mapping: string | PropMapping;
+    meta?: string | PropMapping;
   }
 }
 

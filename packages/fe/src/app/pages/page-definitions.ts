@@ -1,6 +1,7 @@
 import {QueryClient} from "@tanstack/react-query";
 import {SvgIcon, SxProps} from "@mui/material";
 import {ProophBoardDescription} from "@event-engine/descriptions/descriptions";
+import {ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 
 export type UnsubscribeBreadcrumbListener = () => void;
 export type BreadcrumbFn = (params: Record<string, string>, queryClient: QueryClient, onLabelChanged: (label: string) => void) => UnsubscribeBreadcrumbListener;
@@ -9,13 +10,27 @@ export interface PageDefinition {
   topLevel: boolean;
   route: string;
   breadcrumb: BreadcrumbFn;
-  components: string[];
+  components: ViewComponent[];
   commands: string[];
   tab?: Omit<Tab, "route">;
 }
 
+export interface DynamicSidebar {
+  data: string;
+  label?: string;
+  icon?: string;
+  hidden?: string;
+}
+
 export interface TopLevelPage extends PageDefinition {
-  sidebar: {label: string, Icon: typeof SvgIcon, invisible?: string | boolean, group?: string | TopLevelGroup, position?: number}
+  sidebar: {
+    label: string,
+    Icon: typeof SvgIcon,
+    invisible?: string | boolean,
+    group?: string | TopLevelGroup,
+    position?: number,
+    dynamic?: DynamicSidebar,
+  }
 }
 
 export interface TopLevelGroup {

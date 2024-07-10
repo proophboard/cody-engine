@@ -22,9 +22,9 @@ import {
 import {makeInformationFactory} from "@cody-play/infrastructure/information/make-information-factory";
 import {makeEventReducer} from "@cody-play/infrastructure/events/make-event-reducer";
 import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
-import {makeCommandHandler} from "@cody-play/infrastructure/commands/make-command-handler";
+import {makeAggregateCommandHandler} from "@cody-play/infrastructure/commands/make-aggregate-command-handler";
 import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
-import {handle} from "@event-engine/infrastructure/commandHandling";
+import {handleAggregateCommand} from "@event-engine/infrastructure/commandHandling";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {ValidationError} from "ajv";
 import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-command-factory";
@@ -34,8 +34,10 @@ import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
 import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";
+import {CommandMutationFunction} from "@cody-play/infrastructure/commands/command-mutation-function";
+import {PLAY_WRITE_MODEL_STREAM} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
 
-export const makeCommandMutationFn = (
+export const makeAggregateCommandMutationFn = (
   commandInfo: PlayCommandRuntimeInfo,
   commandHandlerRules: AnyRule[],
   aggregateDesc: AggregateDescription,
@@ -45,14 +47,14 @@ export const makeCommandMutationFn = (
   user: User,
   schemaDefinitions: PlaySchemaDefinitions,
   config: CodyPlayConfig
-): (commandPayload: Payload) =>  Promise<AxiosResponse> => {
+): CommandMutationFunction => {
   return async (commandPayload: Payload): Promise<AxiosResponse> => {
     let command = (makeCommandFactory(commandInfo, schemaDefinitions))(commandPayload, {user});
 
     const commandDesc = commandInfo.desc;
 
     if(!isAggregateCommandDescription(commandDesc)) {
-      throw new Error('Currently only aggregate commands can be handled. ' + CONTACT_PB_TEAM);
+      throw new Error('Wrong command handling for given command. This is a bug. ' + CONTACT_PB_TEAM);
     }
 
     if(commandDesc.deleteState) {
@@ -72,7 +74,7 @@ export const makeCommandMutationFn = (
       config
     );
 
-    const processingFunction = makeCommandHandler(
+    const processingFunction = makeAggregateCommandHandler(
       commandHandlerRules,
       eventRegistry,
       schemaDefinitions
@@ -81,7 +83,7 @@ export const makeCommandMutationFn = (
     try {
       const startTime = new Date();
 
-      const result = await handle(command, processingFunction, repository, commandDesc.newAggregate, dependencies);
+      const result = await handleAggregateCommand(command, processingFunction, repository, commandDesc.newAggregate, dependencies);
 
       const endTime = new Date();
       const requestTime: number = (endTime as any) - (startTime as any);
@@ -117,7 +119,7 @@ export const makeAggregateRepository = (
 ): AggregateRepository => {
   return new AggregateRepository<any>(
     getConfiguredPlayMultiModelStore(),
-    aggregateDesc.stream || 'write_model_stream',
+    aggregateDesc.stream || PLAY_WRITE_MODEL_STREAM,
     aggregateDesc.collection,
     aggregateDesc.name,
     aggregateDesc.identifier,

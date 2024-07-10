@@ -80,7 +80,7 @@ export class MessageBus {
     return await getConfiguredMessageBox().queryBus.dispatch(query, queryRuntimeInfo.desc);
   }
 
-  private loadServiceDependency(serviceName: string, message: Message, options?: any): any {
+  protected loadServiceDependency(serviceName: string, message: Message, options?: any): any {
     if(!services[serviceName]) {
       throw new Error(`Service factory for service with name "${serviceName}" not found in @extensions/be/services registry. The service is configured as dependency for "${message.name}".`);
     }

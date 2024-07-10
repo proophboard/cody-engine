@@ -14,27 +14,38 @@ import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
 import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-normalize-refs";
 import {names} from "@event-engine/messaging/helpers";
+import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 
 interface RawCommandMeta {
-  newAggregate: boolean;
   schema: JSONSchema7 | ShorthandObject;
+  newAggregate?: boolean;
+  aggregateCommand?: boolean;
   service?: string;
   uiSchema?: UiSchema;
   dependencies?: DependencyRegistry;
+  rules?: Rule[];
   deleteState?: boolean;
   deleteHistory?: boolean;
   uiDisableFetchState?: boolean;
+  streamId?: string;
+  streamName?: string;
+  publicStream?: string;
 }
 
 export interface PlayCommandMeta {
   newAggregate: boolean;
   schema: JSONSchema7;
+  aggregateCommand: boolean;
   service?: string;
   uiSchema?: UiSchema;
   dependencies?: DependencyRegistry;
+  rules?: Rule[];
   deleteState?: boolean;
   deleteHistory?: boolean;
   uiDisableFetchState?: boolean;
+  streamId?: string;
+  streamName?: string;
+  publicStream?: string;
 }
 
 export const playCommandMetadata = (command: Node, ctx: ElementEditedContext): PlayCommandMeta | CodyResponse => {
@@ -42,7 +53,8 @@ export const playCommandMetadata = (command: Node, ctx: ElementEditedContext): P
 
   if(playIsCodyError(meta)) {
     meta = {
-      newAggregate: true,
+      newAggregate: false,
+      aggregateCommand: false,
       schema: {"type": "object"},
     };
   }
@@ -66,8 +78,13 @@ export const playCommandMetadata = (command: Node, ctx: ElementEditedContext): P
 
   schema['$id'] = `/definitions/${names(service).fileName}/commands/${names(command.getName()).fileName}`;
 
+  const aggregateCommand = meta.aggregateCommand || meta.newAggregate || false;
+  const newAggregate = !!meta.newAggregate;
+
   return {
     ...meta,
-    schema
+    schema,
+    newAggregate,
+    aggregateCommand
   }
 }

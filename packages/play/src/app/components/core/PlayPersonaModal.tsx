@@ -107,12 +107,12 @@ const PlayPersonaModal = (props: PlayPersonaModalProps) => {
 
     dispatch({
       type: "SET_PERSONAS",
-      personas: changedPersonas
+      personas: [...changedPersonas]
     })
 
     const boardId = currentBoardId();
     if(boardId) {
-      saveConfigToLocalStorage({...config, personas: changedPersonas}, boardId);
+      saveConfigToLocalStorage({...config, personas: [...changedPersonas]}, boardId);
     }
 
     props.onClose();

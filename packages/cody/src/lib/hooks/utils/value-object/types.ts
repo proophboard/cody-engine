@@ -26,6 +26,7 @@ export interface ResolveConfig {
 export interface RefTableColumn {
   data: string;
   value: Rule[] | string;
+  itemIdentifier?: string;
 }
 
 export interface PageLinkTableColumn {

@@ -1,3 +1,5 @@
+import {retrieveSchema} from "@rjsf/utils";
+
 export interface ProophBoardDescription {
   _pbBoardId: string;
   _pbCardId: string;
@@ -9,7 +11,7 @@ export interface ProophBoardDescription {
   _pbLink: string;
 }
 
-export type DependencyType = "query" | "service";
+export type DependencyType = "query" | "service" | "events";
 
 export interface Dependency {
   type: DependencyType,
@@ -32,18 +34,43 @@ export interface CommandDescription extends ProophBoardDescription {
   name: string;
   aggregateCommand: boolean;
   dependencies?: DependencyRegistry;
+  streamCommand?: boolean;
 }
 
 export interface AggregateCommandDescription extends CommandDescription{
   newAggregate: boolean;
   aggregateName: string;
   aggregateIdentifier: string;
+  persistState?: boolean;
   deleteState?: boolean;
   deleteHistory?: boolean;
 }
 
 export function isAggregateCommandDescription (desc: CommandDescription | AggregateCommandDescription): desc is AggregateCommandDescription {
   return desc.aggregateCommand;
+}
+
+export function isEntityCommandDescription (desc: CommandDescription | AggregateCommandDescription): desc is AggregateCommandDescription {
+  return isAggregateCommandDescription(desc) && !!desc.persistState;
+}
+
+export interface StreamCommandDescription extends CommandDescription {
+  streamIdExpr: string;
+  streamName?: string;
+  publicStream?: string;
+}
+
+export function isStreamCommandDescription (desc: CommandDescription | StreamCommandDescription): desc is StreamCommandDescription {
+  return !desc.aggregateCommand && !!desc.streamCommand;
+}
+
+export interface PureCommandDescription extends CommandDescription {
+  streamName?: string;
+  publicStream?: string;
+}
+
+export function isPureCommandDescription (desc: CommandDescription | PureCommandDescription): desc is PureCommandDescription {
+  return !isAggregateCommandDescription(desc) && !isStreamCommandDescription(desc);
 }
 
 export interface EventDescription extends ProophBoardDescription {
@@ -82,9 +109,16 @@ export interface ValueObjectDescription extends ProophBoardDescription, ValueObj
   name: string;
 }
 
-export interface QueryableValueObjectDescription extends ValueObjectDescription {
+export interface QueryableDescription extends ValueObjectDescription {
   query: string;
+}
+
+export interface QueryableValueObjectDescription extends QueryableDescription {
   collection: string;
+}
+
+export const isQueryableDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableDescription => {
+  return desc.isQueryable;
 }
 
 export const isQueryableValueObjectDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableValueObjectDescription => {
@@ -107,6 +141,14 @@ export const isStateDescription = (desc: ValueObjectDescriptionFlags): desc is S
   return desc.hasIdentifier && !desc.isList;
 }
 
+export interface ListDescription extends ValueObjectDescription {
+  itemType: string;
+}
+
+export const isListDescription = (desc: ValueObjectDescriptionFlags): desc is ListDescription => {
+  return desc.isList;
+}
+
 export interface StateListDescription extends ValueObjectDescription{
   itemIdentifier: string;
 }
@@ -123,6 +165,7 @@ export interface QueryableStateDescription extends StateDescription {
 export const isQueryableStateDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableStateDescription => {
   return isStateDescription(desc) && desc.isQueryable;
 }
+
 
 export interface QueryableNotStoredStateDescription extends StateDescription {
   query: string;
@@ -156,19 +199,31 @@ export interface QueryableListDescription extends ValueObjectDescription {
   itemType: string;
 }
 
+export interface StoredQueryableListDescription extends ValueObjectDescription {
+  query: string;
+  itemType: string;
+  collection: string;
+}
+
 export const isQueryableListDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableListDescription => {
   return desc.isList && !desc.hasIdentifier && desc.isQueryable;
+}
+
+export const isStoredQueryableListDescription = (desc: ValueObjectDescriptionFlags): desc is StoredQueryableListDescription => {
+  return desc.isList && !desc.hasIdentifier && desc.isQueryable && !desc.isNotStored;
 }
 
 export type ValueObjectDescriptionType = "ValueObjectDescription" | "StateDescription" | "StateListDescription"
   | "QueryableValueObjectDescription" | "QueryableNotStoredValueObjectDescription"
   | "QueryableStateDescription" | "QueryableNotStoredStateDescription" | "QueryableStateListDescription"
-  | "QueryableNotStoredStateListDescription" | "QueryableListDescription";
+  | "QueryableNotStoredStateListDescription" | "QueryableListDescription" | "StoredQueryableListDescription";
 
 export const detectDescriptionType = (desc: ValueObjectDescriptionFlags): ValueObjectDescriptionType => {
   switch (true) {
     case isQueryableStateListDescription(desc):
       return "QueryableStateListDescription";
+    case isStoredQueryableListDescription(desc):
+      return "StoredQueryableListDescription";
     case isQueryableListDescription(desc):
       return "QueryableListDescription";
     case isQueryableNotStoredStateListDescription(desc):

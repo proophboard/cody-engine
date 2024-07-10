@@ -1,5 +1,4 @@
-import {EventStore, MetadataMatcher} from "@event-engine/infrastructure/EventStore";
-import {InformationService} from "@server/infrastructure/information-service/information-service";
+import {EventStore, EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {DEFAULT_READ_MODEL_PROJECTION} from "@event-engine/infrastructure/Projection/types";
 import {Event} from "@event-engine/messaging/event";
@@ -18,12 +17,12 @@ class PlayReadModelProjector {
     this.config = config;
   }
 
-  public async run(streamName: string, metadataMatcher?: MetadataMatcher, projectionName?: string, fromEventId?: string, limit?: number): Promise<void> {
+  public async run(streamName: string, eventMatcher?: EventMatcher, projectionName?: string, fromEventId?: string, limit?: number): Promise<void> {
     if(!projectionName) {
       projectionName = DEFAULT_READ_MODEL_PROJECTION;
     }
 
-    const events = await this.eventStore.load(streamName, metadataMatcher, fromEventId, limit);
+    const events = await this.eventStore.load(streamName, eventMatcher, fromEventId, limit);
 
     for await (const event of events) {
       const policies = this.getEventProjections(event, projectionName);

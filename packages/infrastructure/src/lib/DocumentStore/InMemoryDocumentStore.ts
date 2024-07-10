@@ -8,6 +8,7 @@ import {areValuesEqualForAllSorts, getValueFromPath} from "@event-engine/infrast
 import {Filesystem, NodeFilesystem} from "@event-engine/infrastructure/helpers/fs";
 import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
+import {cloneDeep} from "lodash";
 
 export type Documents = {[collectionName: string]: {[docId: string]: {doc: object, version: number}}};
 
@@ -89,7 +90,6 @@ export class InMemoryDocumentStore implements DocumentStore {
     if(!version) {
       version = doc.version + 1;
     }
-
     this.documents[collectionName][docId] = {doc: {...doc.doc, ...docOrSubset}, version};
 
     this.persistOnDiskIfEnabled();
@@ -133,7 +133,7 @@ export class InMemoryDocumentStore implements DocumentStore {
       return null;
     }
 
-    return this.documents[collectionName][docId].doc as D;
+    return cloneDeep(this.documents[collectionName][docId].doc as D);
   }
 
   public async getPartialDoc<D extends object>(collectionName: string, docId: string, partialSelect: PartialSelect): Promise<D | null> {
@@ -149,7 +149,7 @@ export class InMemoryDocumentStore implements DocumentStore {
       return null;
     }
 
-    return this.documents[collectionName][docId] as {doc: D, version: number};
+    return cloneDeep(this.documents[collectionName][docId] as {doc: D, version: number});
   }
 
   public async getDocVersion<D extends object>(collectionName: string, docId: string): Promise<number | null> {
@@ -273,7 +273,7 @@ export class InMemoryDocumentStore implements DocumentStore {
       if(skip && count <= skip) continue;
       if(limit && (count - skip) > limit) break;
 
-      resultSet.push([docId, doc.doc, doc.version]);
+      resultSet.push([docId, cloneDeep(doc.doc), doc.version]);
     }
 
     const iter = async function *() {

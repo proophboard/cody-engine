@@ -38,11 +38,16 @@ import {
 } from "@cody-play/infrastructure/multi-model-store/configured-play-read-model-projector";
 import PageDataProvider from "@frontend/app/providers/PageData";
 import ErrorBoundary from "@frontend/app/components/core/ErrorBoundary";
+import {
+  playInformationServiceFactory
+} from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
+import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
 
 const updateConfigAndGlobalProjector = (config: CodyPlayConfig) => {
+  playInformationServiceFactory().useTypes(config.types as unknown as TypeRegistry);
   (window as any).$CP.projector = getConfiguredPlayReadModelProjector(config);
   (window as any).$CP.config = config;
 }

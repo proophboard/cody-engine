@@ -2,7 +2,7 @@ import {MultiModelStore} from "@event-engine/infrastructure/MultiModelStore";
 import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {InMemoryEventStore} from "@event-engine/infrastructure/EventStore/InMemoryEventStore";
 import {InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
-import {MetadataMatcher} from "@event-engine/infrastructure/EventStore";
+import {EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {Event, EventMeta} from "@event-engine/messaging/event";
 import {Payload} from "@event-engine/messaging/message";
 
@@ -15,8 +15,8 @@ export class InMemoryMultiModelStore implements MultiModelStore {
     this.documentStore = documentStore;
   }
 
-  async loadEvents <P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P,M>>> {
-    return this.eventStore.load(streamName, metadataMatcher, fromEventId, limit);
+  async loadEvents <P extends Payload = any, M extends EventMeta = any>(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number, reverse?: boolean): Promise<AsyncIterable<Event<P,M>>> {
+    return this.eventStore.load(streamName, eventMatcher, fromEventId, limit, reverse);
   }
 
   async loadDoc <D extends object>(collectionName: string, docId: string): Promise<{doc: D, version: number} | null> {
@@ -41,13 +41,13 @@ export class InMemoryMultiModelStore implements MultiModelStore {
         await this.eventStore.appendTo(
           appendEventsTask.streamName,
           appendEventsTask.events,
-          appendEventsTask.metadataMatcher,
+          appendEventsTask.eventMatcher,
           appendEventsTask.expectedVersion
         )
       }
 
       for (const deleteEventsTask of session.getDeleteEventsTasks()) {
-        await this.eventStore.delete(deleteEventsTask.streamName, deleteEventsTask.metadataMatcher);
+        await this.eventStore.delete(deleteEventsTask.streamName, deleteEventsTask.eventMatcher);
       }
 
       for (const insertDocumentTask of session.getInsertDocumentTasks()) {

@@ -1,11 +1,11 @@
 /* eslint-disable no-prototype-builtins */
-import {EventStore, MetadataMatcher} from "../EventStore";
+import {EventStore, EventMatcher} from "../EventStore";
 import {EventQueue, EventQueueConsumer} from "../EventQueue";
 import {Event} from "@event-engine/messaging/event";
 
 type CurrentEventId = string;
 
-export type SubscriptionInitializer = () => Promise<[CurrentEventId | undefined, MetadataMatcher | undefined]>;
+export type SubscriptionInitializer = () => Promise<[CurrentEventId | undefined, EventMatcher | undefined]>;
 
 export type SubscriptionInitializerMap = {[streamName: string]: SubscriptionInitializer};
 
@@ -137,9 +137,9 @@ export class CatchUpSubscription {
                 this.firstEventsInWaitingQueues[streamName] = firstWaitingEvent;
             }
 
-            const [fromEventId, metadataMatcher] = await this.initializers[streamName]();
+            const [fromEventId, eventMatcher] = await this.initializers[streamName]();
 
-            const streamEvents = await this.eventStore.load(streamName, metadataMatcher, fromEventId);
+            const streamEvents = await this.eventStore.load(streamName, eventMatcher, fromEventId);
 
             for await (const evt of streamEvents) {
                 if(this.paused || (this.firstEventsInWaitingQueues[streamName] && this.firstEventsInWaitingQueues[streamName]?.uuid === evt.uuid)) {

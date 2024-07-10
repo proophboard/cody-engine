@@ -10,7 +10,7 @@ import {
   TextField,
   useTheme
 } from "@mui/material";
-import {Close, Database as DatabaseIcon, ZipDisk} from "mdi-material-ui";
+import {Close, Database as DatabaseIcon, SendCircleOutline, ZipDisk} from "mdi-material-ui";
 import {useContext, useEffect, useRef, useState} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import {saveConfigToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-config-to-local-storage";
@@ -26,6 +26,7 @@ import AppSettings from "@cody-play/app/components/core/play-backend/AppSettings
 import {BuildCircleOutlined, PaletteOutlined} from "@mui/icons-material";
 import PlayConfig from "@cody-play/app/components/core/play-backend/PlayConfig";
 import Database from "@cody-play/app/components/core/play-backend/Database";
+import Messagebox from "@cody-play/app/components/core/play-backend/Messagebox";
 
 interface OwnProps {
   open: boolean;
@@ -66,10 +67,12 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
         <Tab icon={<DatabaseIcon />} label="Database" iconPosition="start" />
         <Tab icon={<BuildCircleOutlined />} label="Play Config" iconPosition="start" />
         <Tab icon={<PaletteOutlined />} label="Appearance" iconPosition="start" />
+        <Tab icon={<SendCircleOutline />} label="Messagebox" iconPosition="start" />
       </Tabs>
       {activeTab === 0 && <Database saveCallback={(saveCb) => currentSaveHandler = saveCb } onSaveDisabled={disabled => setSavedDisabled(disabled)} />}
       {activeTab === 1 && <PlayConfig saveCallback={(saveCb) => currentSaveHandler = saveCb } onSaveDisabled={disabled => setSavedDisabled(disabled)} />}
       {activeTab === 2 && <AppSettings saveCallback={(saveCb) => currentSaveHandler = saveCb } onSaveDisabled={disabled => setSavedDisabled(disabled)} />}
+      {activeTab === 3 && <Messagebox saveCallback={(saveCb) => currentSaveHandler = saveCb } onSaveDisabled={disabled => setSavedDisabled(disabled)} />}
     </DialogContent>
     <DialogActions>
       <Button
