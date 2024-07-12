@@ -63,7 +63,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
         }
       });
 
-      const events = playwithErrorCheck(playGetTargetsOfType, [command, NodeType.event]);
+      const events = playwithErrorCheck(playGetTargetsOfType, [command, NodeType.event, true, false, true]);
       const rules = meta.rules || events.map(evt => alwaysRecordEvent(evt)).toArray();
 
       dispatch({
