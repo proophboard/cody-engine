@@ -117,6 +117,9 @@ export function App() {
 
   useEffect(() => {
     addAfterDispatchListener((updatedState) => {
+      messageBoxRef.updateConfig(updatedState);
+      updateConfigAndGlobalProjector(updatedState);
+
       const newRoutes = Object.values(updatedState.pages).map(p => p.route);
 
       console.log(currentRoutes, newRoutes);
@@ -124,9 +127,6 @@ export function App() {
         return;
       }
       setRouter(makeRouter(updatedState.pages));
-
-      messageBoxRef.updateConfig(updatedState);
-      updateConfigAndGlobalProjector(updatedState);
     })
 
     return () => {
