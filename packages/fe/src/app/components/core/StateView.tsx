@@ -8,7 +8,7 @@ import {
   RJSFSchema, UiSchema,
   Widget
 } from "@rjsf/utils";
-import {Box, Card, CardContent, CircularProgress, SxProps, Typography, useTheme} from "@mui/material";
+import {Box, Button, Card, CardContent, CircularProgress, SxProps, Typography, useTheme} from "@mui/material";
 import {PropsWithChildren, useEffect} from "react";
 import {Form} from "@rjsf/mui";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
@@ -110,10 +110,25 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
   const gridConfig = getContainerGridConfig(uiOptions);
 
   return <div>
-    <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>
+    <Grid2 container>
+      <Grid2 xs>
+        <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>
+      </Grid2>
+      {/*<Grid2 xs display="flex" direction="column"*/}
+      {/*       alignItems="center"*/}
+      {/*       justifyContent="flex-end">*/}
+      {/*  <Button>Test</Button><Button>Test</Button>*/}
+      {/*</Grid2>*/}
+    </Grid2>
     {props.description}
     <Grid2 container={true} {...gridConfig as Grid2Props}>
-      {props.properties.map(element => <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema) as Grid2Props}>{element.content}</Grid2>)}
+      {props.properties.map(
+        element =>
+          element.hidden ? (
+              element.content
+            ) :
+          <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema) as Grid2Props}>{element.content}</Grid2>)
+      }
     </Grid2>
   </div>
 }

@@ -14,8 +14,15 @@ export const normalizeUiSchema = (uiSchema: UiSchema, ctx: any): UiSchema => {
     }
   }
 
-  if(schema['ui:emptyValue:expr']) {
-    schema['ui:emptyValue'] = jexl.evalSync(schema['ui:emptyValue:expr'], ctx);
+  for (const schemaKey in schema) {
+    const parts = schemaKey.split(":");
+
+    if(parts[parts.length - 1] === "expr") {
+      parts.pop();
+      const orgUISchemaKey = parts.join(":");
+
+      schema[orgUISchemaKey] = jexl.evalSync(schema[schemaKey], ctx);
+    }
   }
 
   for (const schemaKey in schema) {
