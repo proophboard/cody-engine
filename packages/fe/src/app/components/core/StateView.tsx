@@ -3,9 +3,9 @@ import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {
   ArrayFieldTemplateProps,
   Field,
-  FieldTemplateProps,
+  FieldTemplateProps, getUiOptions,
   ObjectFieldTemplateProps,
-  RJSFSchema,
+  RJSFSchema, UiSchema,
   Widget
 } from "@rjsf/utils";
 import {Box, Card, CardContent, CircularProgress, SxProps, Typography, useTheme} from "@mui/material";
@@ -24,6 +24,11 @@ import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
 import {names} from "@event-engine/messaging/helpers";
 import {playFQCNFromDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import Grid2, {Grid2Props} from "@mui/material/Unstable_Grid2";
+import {
+  getContainerGridConfig,
+  getElementGridConfig
+} from "@frontend/app/components/core/form/templates/ObjectFieldTemplate";
 
 interface OwnProps {
   state?: Record<string, any>;
@@ -101,10 +106,15 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
     idPrefix = 'component_' + names(fqcn).fileName + '_';
   }
 
+  const uiOptions = getUiOptions(props.uiSchema);
+  const gridConfig = getContainerGridConfig(uiOptions);
+
   return <div>
     <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>
     {props.description}
-    {props.properties.map(element => <Box component="div" key={'ele_wrapper_' + element.name} sx={{marginBottom: '10px'}}>{element.content}</Box>)}
+    <Grid2 container={true} {...gridConfig as Grid2Props}>
+      {props.properties.map(element => <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema) as Grid2Props}>{element.content}</Grid2>)}
+    </Grid2>
   </div>
 }
 
