@@ -42,6 +42,7 @@ import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
 import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
+import GlobalStore from "@frontend/app/providers/GlobalStore";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -55,14 +56,16 @@ const updateConfigAndGlobalProjector = (config: CodyPlayConfig) => {
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
-      <PlayToggleColorMode>
-        <SnackbarProvider maxSnack={3}>
-          <MainLayout>
-            <ScrollToTop />
-              <Outlet />
-          </MainLayout>
-        </SnackbarProvider>
-      </PlayToggleColorMode>
+      <GlobalStore>
+        <PlayToggleColorMode>
+          <SnackbarProvider maxSnack={3}>
+            <MainLayout>
+              <ScrollToTop />
+                <Outlet />
+            </MainLayout>
+          </SnackbarProvider>
+        </PlayToggleColorMode>
+      </GlobalStore>
     </>
   };
 

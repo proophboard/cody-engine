@@ -16,14 +16,16 @@ import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-r
 import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidget";
 import {useUser} from "@frontend/hooks/use-user";
 import jexl from "@app/shared/jexl/get-configured-jexl";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
 
 const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false) => {
   const {config: {definitions}} = useContext(configStore);
   const [page, addQueryResult] = usePageData();
   const desc = informationInfo.desc;
   const [user] = useUser();
+  const [store] = useGlobalStore();
 
-  const jexlCtx = {routeParams: params, user, page};
+  const jexlCtx = {routeParams: params, user, page, store};
 
   const query = useApiQuery((desc as QueryableStateDescription).query, params);
 

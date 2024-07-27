@@ -128,6 +128,11 @@ export interface PlayRemoveQueryAction {
   name: string,
 }
 
+export interface PlayAddViewAction {
+  type: 'ADD_VIEW',
+  name: string,
+}
+
 export interface PlayRemoveViewAction {
   type: 'REMOVE_VIEW',
   name: string,

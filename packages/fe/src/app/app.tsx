@@ -22,21 +22,24 @@ import ToggleColorMode from "@frontend/app/providers/ToggleColorMode";
 import User from "@frontend/app/providers/User";
 import PageDataProvider from "@frontend/app/providers/PageData";
 import ErrorBoundary from "@frontend/app/components/core/ErrorBoundary";
+import GlobalStore from "@frontend/app/providers/GlobalStore";
 
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
       <User>
-        <PageDataProvider>
-          <ToggleColorMode>
-            <SnackbarProvider maxSnack={3} >
-              <MainLayout>
-                <ScrollToTop />
-                <Outlet />
-              </MainLayout>
-            </SnackbarProvider>
-          </ToggleColorMode>
-        </PageDataProvider>
+        <GlobalStore>
+          <PageDataProvider>
+            <ToggleColorMode>
+              <SnackbarProvider maxSnack={3} >
+                <MainLayout>
+                  <ScrollToTop />
+                  <Outlet />
+                </MainLayout>
+              </SnackbarProvider>
+            </ToggleColorMode>
+          </PageDataProvider>
+        </GlobalStore>
       </User>
     </>
   };

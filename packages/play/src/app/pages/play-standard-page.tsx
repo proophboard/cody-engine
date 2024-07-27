@@ -5,7 +5,11 @@ import React, {useContext, useEffect} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
 import {PlayInformationRegistry, PlayPageRegistry} from "@cody-play/state/types";
-import {isQueryableListDescription, isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {
+  isQueryableDescription,
+  isQueryableListDescription,
+  isQueryableStateListDescription
+} from "@event-engine/descriptions/descriptions";
 import PlayTableView from "@cody-play/app/components/core/PlayTableView";
 import PlayStateView from "@cody-play/app/components/core/PlayStateView";
 import {PageDataContext} from "@frontend/app/providers/PageData";
@@ -13,6 +17,7 @@ import {usePageMatch} from "@frontend/util/hook/use-page-match";
 import {Tab} from "@frontend/app/pages/page-definitions";
 import { Alert } from "@mui/material";
 import {playIsCommandButtonHidden} from "@cody-play/infrastructure/cody/command/play-is-command-button-hidden";
+import PlayStaticView from "@cody-play/app/components/core/PlayStaticView";
 
 interface Props {
   page: string
@@ -105,9 +110,13 @@ const getViewComponent = (component: React.FunctionComponent | { information: st
       return (params: any) => {
         return PlayTableView(params, information, isHiddenView);
       };
-    } else {
+    } else if (isQueryableDescription(information.desc)) {
       return (params: any) => {
         return PlayStateView(params, information, isHiddenView);
+      }
+    } else {
+      return (params: any) => {
+        return PlayStaticView(params, information, isHiddenView);
       }
     }
   }

@@ -119,6 +119,11 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
         },
         resolver: voMeta.resolve || {},
       })
+    } else {
+      dispatch({
+        type: "ADD_VIEW",
+        name: voFQCN
+      })
     }
 
     if(voMeta.projection) {

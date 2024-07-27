@@ -7,7 +7,7 @@ import {
   PlayAddPageAction,
   PlayAddPersona, PlayAddPureEventAction,
   PlayAddQueryAction,
-  PlayAddTypeAction,
+  PlayAddTypeAction, PlayAddViewAction,
   PlayAggregateRegistry,
   PlayApplyRulesRegistry,
   PlayChangeTheme,
@@ -152,7 +152,7 @@ const { Provider } = configStore;
 
 type Action = PlayInitAction | PlayRenameApp | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayAddPageAction | PlayRemovePageAction
   | PlayAddCommandAction | PlayRemoveCommandAction | PlayAddCommandHandlerAction | PlayRemoveCommandHandlerAction | PlayAddTypeAction | PlayRemoveTypeAction
-  | PlayAddQueryAction | PlayRemoveQueryAction | PlayRemoveViewAction | PlayAddAggregateAction | PlayRemoveAggregateAction
+  | PlayAddQueryAction | PlayRemoveQueryAction | PlayAddViewAction | PlayRemoveViewAction | PlayAddAggregateAction | PlayRemoveAggregateAction
   | PlayAddAggregateEventAction | PlayRemoveAggregateEventAction | PlayAddPureEventAction | PlayRemovePureEventAction | PlayAddEventPolicyAction | PlayRemoveEventPolicyAction;
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
@@ -250,6 +250,10 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
 
         delete config.queries[action.name];
         delete config.resolvers[action.name];
+        return {...config};
+      case "ADD_VIEW":
+        config.views = {...config.views};
+        config.views[action.name] = {information: action.name};
         return {...config};
       case "REMOVE_VIEW":
         config.views = {...config.views};
