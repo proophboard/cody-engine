@@ -4,6 +4,7 @@ import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {AnyFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AnyFilter";
 import {EqFilter} from "@event-engine/infrastructure/DocumentStore/Filter/EqFilter";
 import {AndFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AndFilter";
+import {InArrayFilter} from "@event-engine/infrastructure/DocumentStore/Filter/InArrayFilter";
 
 export type UnregisteredUser = Omit<User, 'userId'>;
 
@@ -32,14 +33,26 @@ export const convertFindByFilter = (filter: Record<FindByProperty, any>): Filter
   }
 
   if(filterCount === 1) {
-    return new EqFilter(Object.keys(filter)[0], Object.values(filter)[0]);
+    return toFilter(Object.keys(filter)[0], Object.values(filter)[0])
   }
 
   const and: Filter[] = [];
 
   for (const filterKey in filter) {
-    and.push(new EqFilter(filterKey, filter[filterKey]));
+    and.push(toFilter(filterKey, filter[filterKey]));
   }
 
   return new AndFilter(and[0], and[1], ...and.slice(2));
+}
+
+const toFilter = (prop: FindByProperty, val: any): Filter => {
+  if(prop === "userId") {
+    return new EqFilter('userId', val);
+  }
+
+  if(prop === "role") {
+    return new InArrayFilter('roles', val);
+  }
+
+  return new EqFilter(`attributes.${prop}`, val);
 }

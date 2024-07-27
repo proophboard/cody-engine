@@ -76,6 +76,7 @@ export class PlayAuthService implements AuthService {
   }
 
   public async findBy(by: FindByArguments): Promise<User[]> {
+    debugger;
     return this.find(convertFindByFilter(by.filter), by.skip, by.limit, by.orderBy);
   }
 
