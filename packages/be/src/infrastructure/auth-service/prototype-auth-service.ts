@@ -1,4 +1,9 @@
-import {AuthService, FindByArguments, UnregisteredUser} from "@server/infrastructure/auth-service/auth-service";
+import {
+  AuthService,
+  convertFindByFilter,
+  FindByArguments,
+  UnregisteredUser
+} from "@server/infrastructure/auth-service/auth-service";
 import {Persona} from "@app/shared/extensions/personas";
 import {v4} from "uuid";
 import {flushChanges, FsTree} from "nx/src/generators/tree";
@@ -71,13 +76,7 @@ export class PrototypeAuthService implements AuthService {
   }
 
   public async findBy(by: FindByArguments): Promise<User[]> {
-    const filter = by.property === "userId"
-      ? new EqFilter('userId', by.value)
-      : by.property === "role"
-        ? new InArrayFilter('roles', by.value)
-        : new EqFilter(`attributes.${by.property}`, by.value);
-
-    return this.find(filter, by.skip, by.limit, by.orderBy);
+    return this.find(convertFindByFilter(by.filter), by.skip, by.limit, by.orderBy);
   }
 
   public async find(filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<User[]> {
