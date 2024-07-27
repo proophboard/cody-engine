@@ -1,4 +1,4 @@
-import {AuthService, UnregisteredUser} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService, FindByArguments, UnregisteredUser} from "@server/infrastructure/auth-service/auth-service";
 import {Persona} from "@app/shared/extensions/personas";
 import {v4} from "uuid";
 import {User} from "@app/shared/types/core/user/user";
@@ -8,6 +8,8 @@ import {FilterProcessor} from "@event-engine/infrastructure/DocumentStore/Filter
 import {InMemoryFilterProcessor} from "@event-engine/infrastructure/DocumentStore/InMemory/InMemoryFilterProcessor";
 import {makeFilter} from "@cody-play/queries/make-filters";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
+import {EqFilter} from "@event-engine/infrastructure/DocumentStore/Filter/EqFilter";
+import {InArrayFilter} from "@event-engine/infrastructure/DocumentStore/Filter/InArrayFilter";
 
 export type OnPersonaAdded = (newPersona: Persona) => void;
 
@@ -54,6 +56,28 @@ export class PlayAuthService implements AuthService {
       email: 'unknown@anonymous.local',
       roles: []
     }
+  }
+
+  public async findOneBy(by: FindByArguments): Promise<User|undefined> {
+    by.limit = 1;
+
+    const result = await this.findBy(by);
+
+    if(!result.length) {
+      return undefined;
+    }
+
+    return result[0];
+  }
+
+  public async findBy(by: FindByArguments): Promise<User[]> {
+    const filter = by.property === "userId"
+      ? new EqFilter('userId', by.value)
+      : by.property === "role"
+        ? new InArrayFilter('roles', by.value)
+        : new EqFilter(`attributes.${by.property}`, by.value);
+
+    return this.find(filter, by.skip, by.limit, by.orderBy);
   }
 
   public async find(filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<User[]> {
