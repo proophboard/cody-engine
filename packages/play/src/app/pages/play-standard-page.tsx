@@ -7,7 +7,7 @@ import PlayCommand from "@cody-play/app/components/core/PlayCommand";
 import {PlayInformationRegistry, PlayPageRegistry} from "@cody-play/state/types";
 import {
   isQueryableDescription,
-  isQueryableListDescription,
+  isQueryableListDescription, isQueryableNotStoredStateListDescription,
   isQueryableStateListDescription
 } from "@event-engine/descriptions/descriptions";
 import PlayTableView from "@cody-play/app/components/core/PlayTableView";
@@ -106,7 +106,7 @@ const getViewComponent = (component: React.FunctionComponent | { information: st
       throw new Error(`Cannot find view information "${component.information}". Did you forget to run Cody for information card?`)
     }
 
-    if(isQueryableStateListDescription(information.desc) || isQueryableListDescription(information.desc)) {
+    if(isQueryableStateListDescription(information.desc) || isQueryableListDescription(information.desc) || isQueryableNotStoredStateListDescription(information.desc)) {
       return (params: any) => {
         return PlayTableView(params, information, isHiddenView);
       };
