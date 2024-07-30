@@ -120,7 +120,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
     if(!isAggregateConnected) {
       const events = playwithErrorCheck(playGetTargetsOfType, [command, NodeType.event]);
 
-      const rules = events.map(evt => alwaysRecordEvent(evt));
+      const rules = meta.rules || events.map(evt => alwaysRecordEvent(evt)).toArray();
 
       dispatch({
         type: "ADD_AGGREGATE",
@@ -134,7 +134,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
           stream: 'write_model_stream',
           state: stateFQCN
         },
-        businessRules: normalizeThenRecordEventRules(aggregateFQCN, rules.toArray()),
+        businessRules: normalizeThenRecordEventRules(aggregateFQCN, rules),
       })
     }
 

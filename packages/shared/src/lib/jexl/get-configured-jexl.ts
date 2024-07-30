@@ -23,6 +23,7 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addFunction('pageData', getPageData);
     configuredJexl.addTransform('data', getPageData);
     configuredJexl.addTransform('role', isRole);
+    configuredJexl.addTransform('attr', getAttribute);
 
     configuredJexl.addTransform('default', getValOrDefault)
 
