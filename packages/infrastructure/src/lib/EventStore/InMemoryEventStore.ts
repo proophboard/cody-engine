@@ -8,6 +8,8 @@ import {
 import {messageFromJSON, Payload} from "@event-engine/messaging/message";
 import {Filesystem, NodeFilesystem} from "@event-engine/infrastructure/helpers/fs";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 
 export interface InMemoryStreamStore {
   [streamName: string]: Event[];
@@ -253,11 +255,12 @@ export class InMemoryEventStore implements EventStore {
     return this.streams;
   }
 
-  public async republish(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number): Promise<void> {
+  public async republish(streamName: string, authService: AuthService, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number): Promise<void> {
     const events = await this.load(streamName, eventMatcher, fromEventId, limit);
 
     for await (const event of events) {
-      this.appendToListeners.forEach(l => l(streamName, [event], true));
+      const mappedEvents = await mapMetadataFromEventStore([event], authService);
+      this.appendToListeners.forEach(l => l(streamName, mappedEvents, true));
     }
   }
 

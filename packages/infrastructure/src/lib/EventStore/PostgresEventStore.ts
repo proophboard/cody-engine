@@ -10,6 +10,8 @@ import {AggregateMeta} from "@event-engine/infrastructure/AggregateRepository";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {Payload} from "@event-engine/messaging/message";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 interface Row<P,M> {
   no: number;
@@ -223,10 +225,11 @@ export class PostgresEventStore implements EventStore {
     return result.rowCount;
   }
 
-  public async republish(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number): Promise<void> {
+  public async republish(streamName: string, authService: AuthService, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number): Promise<void> {
     const events = await this.load(streamName, eventMatcher, fromEventId, limit);
 
     for await (const event of events) {
+      const mappedEvents = await mapMetadataFromEventStore([event], authService);
       this.appendToListeners.forEach(l => l(streamName, [event]));
     }
   }

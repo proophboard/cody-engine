@@ -1,5 +1,6 @@
 import {Event, EventMeta} from "@event-engine/messaging/event";
 import {Payload} from "@event-engine/messaging/message";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 
 export enum MatchOperator {
     EQ = '===',
@@ -66,7 +67,7 @@ export interface EventStore {
     appendTo: (streamName: string, events: Event[], eventMatcher?: EventMatcher, expectedVersion?: number) => Promise<boolean>;
     load: <P extends Payload = any, M extends EventMeta = any>(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number, reverse?: boolean) => Promise<AsyncIterable<Event<P,M>>>;
     delete: (streamName: string, eventMatcher: EventMatcher) => Promise<number>;
-    republish: (streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number) => Promise<void>;
+    republish: (streamName: string, authService: AuthService, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number) => Promise<void>;
     attachAppendToListener: (listener: AppendToListener) => void;
     detachAppendToListener: (listener: AppendToListener) => void;
 }

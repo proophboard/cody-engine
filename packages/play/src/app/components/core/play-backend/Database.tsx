@@ -30,6 +30,7 @@ import {Videocam} from "@mui/icons-material";
 import {
   getConfiguredPlayReadModelProjector
 } from "@cody-play/infrastructure/multi-model-store/configured-play-read-model-projector";
+import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
 
 type ProjectionRegistry = Record<string, {collection: string, stream: string}>;
 
@@ -119,7 +120,7 @@ const Database = (props: DatabaseProps) => {
     setIsPublishing(true);
 
     (async () => {
-      await es.republish(stream, {$eventId: eventToRepublish});
+      await es.republish(stream, getConfiguredPlayAuthService(), {$eventId: eventToRepublish});
 
       window.setTimeout(() => {
         setRepublishEventId('');
