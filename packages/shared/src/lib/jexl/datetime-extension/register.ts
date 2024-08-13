@@ -5,7 +5,9 @@ export const registerDateTimeExtensions = (jexl: Jexl) => {
 
   jexl.addTransform('date', d => new Date(d));
   jexl.addTransform('utc', d => (new Date(d)).toUTCString());
-  jexl.addTransform('isoDate', d => (new Date(d)).toISOString());
+  jexl.addTransform('isoDate', d => (new Date(d)).toISOString().split("T")[0]);
+  jexl.addTransform('isoTime', d => (new Date(d)).toISOString().split("T")[1]);
+  jexl.addTransform('isoDateTime', d => (new Date(d)).toISOString());
   jexl.addTransform('localDate', d => (new Date(d)).toLocaleDateString());
   jexl.addTransform('localTime', t => (new Date(t)).toLocaleTimeString());
   jexl.addTransform('localDateTime', dt => (new Date(dt)).toLocaleString());
