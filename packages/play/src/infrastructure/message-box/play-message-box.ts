@@ -44,6 +44,8 @@ import {
 import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";
 import {PureFactsRepository} from "@event-engine/infrastructure/PureFactsRepository";
 import {makePureCommandHandler} from "@cody-play/infrastructure/commands/make-pure-command-handler";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 export class PlayMessageBox implements MessageBox {
   private config: CodyPlayConfig;
@@ -51,9 +53,11 @@ export class PlayMessageBox implements MessageBox {
   public commandBus: CommandBus;
   public eventBus: EventBus;
   public queryBus: QueryBus;
+  public authService: AuthService;
 
-  public constructor(config: CodyPlayConfig) {
+  public constructor(config: CodyPlayConfig, authService: AuthService) {
     this.config = config;
+    this.authService = authService;
 
     this.commandBus = { dispatch: async (command: Command, desc: CommandDescription): Promise<boolean> => {
       return await dispatchCommand(command, this.config);
@@ -61,6 +65,7 @@ export class PlayMessageBox implements MessageBox {
 
     this.eventBus = {
       on: async (event: Event, triggerLiveProjections?: boolean): Promise<boolean> => {
+        event = (await mapMetadataFromEventStore([event], this.authService))[0];
         return await dispatchEvent(event, this.config, triggerLiveProjections);
       }
     }
@@ -72,8 +77,9 @@ export class PlayMessageBox implements MessageBox {
     }
   }
 
-  public updateConfig(config: CodyPlayConfig) {
+  public updateConfig(config: CodyPlayConfig, authService: AuthService) {
     this.config = config;
+    this.authService = authService;
   }
 
   public async dispatch(messageName: string, payload: Payload, meta?: Meta): Promise<any> {

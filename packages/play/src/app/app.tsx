@@ -43,6 +43,7 @@ import {
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
 import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 import GlobalStore from "@frontend/app/providers/GlobalStore";
+import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -120,7 +121,7 @@ export function App() {
 
   useEffect(() => {
     addAfterDispatchListener((updatedState) => {
-      messageBoxRef.updateConfig(updatedState);
+      messageBoxRef.updateConfig(updatedState, getConfiguredPlayAuthService());
       updateConfigAndGlobalProjector(updatedState);
 
       const newRoutes = Object.values(updatedState.pages).map(p => p.route);
