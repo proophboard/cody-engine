@@ -46,6 +46,7 @@ import {PureFactsRepository} from "@event-engine/infrastructure/PureFactsReposit
 import {makePureCommandHandler} from "@cody-play/infrastructure/commands/make-pure-command-handler";
 import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
+import {ValidationError} from "ajv";
 
 export class PlayMessageBox implements MessageBox {
   private config: CodyPlayConfig;
@@ -176,6 +177,9 @@ const dispatchEvent = async (event: Event, config: CodyPlayConfig, triggerLivePr
       }
     } catch (e) {
       console.error(e);
+      if(e instanceof ValidationError) {
+        console.error(JSON.stringify(e.errors, null, 2));
+      }
       allSuccess = false;
     }
   }
