@@ -6,6 +6,7 @@ import {PlayEventPolicyDescription} from "@cody-play/state/types";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 class PlayReadModelProjector {
   private eventStore: EventStore;
@@ -24,7 +25,9 @@ class PlayReadModelProjector {
 
     const events = await this.eventStore.load(streamName, eventMatcher, fromEventId, limit);
 
-    for await (const event of events) {
+    for await (let event of events) {
+      // Only map userId, a projection should not implicitly get access to GDPR relevant user data
+      event = (await mapMetadataFromEventStore([event]))[0];
       const policies = this.getEventProjections(event, projectionName);
 
       if(!policies) {
