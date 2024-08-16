@@ -39,7 +39,7 @@ class PlayReadModelProjector {
         try {
           const dependencies = await playLoadDependencies(event, 'event', policy.dependencies || {}, this.config);
 
-          const ctx = {event: event.payload, meta: event.meta, ...dependencies, commandRegistry: this.config.commands, schemaDefinitions: this.config.definitions};
+          const ctx = {event: event.payload, meta: event.meta, ...dependencies, eventCreatedAt: event.createdAt, commandRegistry: this.config.commands, schemaDefinitions: this.config.definitions};
           const exe = makeAsyncExecutable(policy.rules);
           const result = await exe(ctx);
 
