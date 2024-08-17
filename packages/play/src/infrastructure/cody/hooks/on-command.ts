@@ -53,6 +53,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
             dependencies,
             name: cmdFQCN,
             aggregateCommand: false,
+            streamCommand: meta.streamCommand,
             streamIdExpr: streamId,
             streamName,
             publicStream
@@ -105,6 +106,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
           dependencies,
           name: cmdFQCN,
           aggregateCommand: true,
+          streamCommand: false,
           newAggregate: meta.newAggregate,
           aggregateName: aggregateFQCN,
           aggregateIdentifier: aggregateStateMeta.identifier,

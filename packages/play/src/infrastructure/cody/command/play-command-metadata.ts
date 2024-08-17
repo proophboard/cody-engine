@@ -36,6 +36,7 @@ export interface PlayCommandMeta {
   newAggregate: boolean;
   schema: JSONSchema7;
   aggregateCommand: boolean;
+  streamCommand: boolean;
   service?: string;
   uiSchema?: UiSchema;
   dependencies?: DependencyRegistry;
@@ -79,12 +80,14 @@ export const playCommandMetadata = (command: Node, ctx: ElementEditedContext): P
   schema['$id'] = `/definitions/${names(service).fileName}/commands/${names(command.getName()).fileName}`;
 
   const aggregateCommand = meta.aggregateCommand || meta.newAggregate || false;
+  const streamCommand = !aggregateCommand && !!meta.streamId;
   const newAggregate = !!meta.newAggregate;
 
   return {
     ...meta,
     schema,
     newAggregate,
-    aggregateCommand
+    aggregateCommand,
+    streamCommand
   }
 }
