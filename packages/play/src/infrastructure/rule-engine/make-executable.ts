@@ -575,7 +575,7 @@ const execRecordEventAsync = async (then: ThenRecordEvent, ctx: ExecutionContext
   return ctx;
 }
 
-const execMappingSync = (mapping: string | PropMapping, ctx: ExecutionContext): any => {
+export const execMappingSync = (mapping: string | PropMapping, ctx: ExecutionContext): any => {
   if(typeof mapping === "string") {
     return execExprSync(mapping, ctx);
   }
@@ -588,9 +588,32 @@ const execMappingSync = (mapping: string | PropMapping, ctx: ExecutionContext): 
       if(typeof mergeVal === 'string') {
         mergeVal = [mergeVal];
       }
-      mergeVal.forEach(exp => {
-        propMap = {...propMap, ...execExprSync(exp, ctx)};
-      })
+
+      if(Array.isArray(mergeVal)) {
+        mergeVal.forEach(exp => {
+          if(typeof exp === "string") {
+            propMap = {...propMap, ...execExprSync(exp, ctx)};
+          } else {
+            propMap = {...propMap, ...execMappingSync(exp, ctx)};
+          }
+        })
+      } else {
+        propMap = {...propMap, ...execMappingSync(mergeVal, ctx)};
+      }
+    } else if (typeof mapping[propName] === "object") {
+      const setVal = mapping[propName] as PropMapping | string[] | PropMapping[];
+
+      if(Array.isArray(setVal)) {
+        setVal.forEach(exp => {
+          if(typeof exp === "string") {
+            propMap[propName] = execExprSync(exp, ctx);
+          } else {
+            propMap[propName] = execMappingSync(exp, ctx);
+          }
+        })
+      } else {
+        propMap[propName] = execMappingSync(setVal, ctx);
+      }
     } else {
       propMap[propName] = execExprSync(mapping[propName] as string, ctx);
     }
@@ -599,7 +622,7 @@ const execMappingSync = (mapping: string | PropMapping, ctx: ExecutionContext): 
   return propMap;
 }
 
-const execMappingAsync = async (mapping: string | PropMapping, ctx: ExecutionContext): Promise<any> => {
+export const execMappingAsync = async (mapping: string | PropMapping, ctx: ExecutionContext): Promise<any> => {
   if(typeof mapping === "string") {
     return await execExprAsync(mapping, ctx);
   }
@@ -613,11 +636,39 @@ const execMappingAsync = async (mapping: string | PropMapping, ctx: ExecutionCon
         mergeVal = [mergeVal];
       }
 
-      for (const exp of mergeVal) {
+      if(Array.isArray(mergeVal)) {
+        for (const exp of mergeVal) {
+          if(typeof exp === "string") {
+            propMap = {
+              ...propMap,
+              ...(await execExprAsync(exp, ctx))
+            }
+          } else {
+            propMap = {
+              ...propMap,
+              ...(await execMappingAsync(exp, ctx))
+            }
+          }
+        }
+      } else {
         propMap = {
           ...propMap,
-          ...(await execExprAsync(exp, ctx))
+          ...(await execMappingAsync(mergeVal, ctx))
         }
+      }
+    } else if (typeof mapping[propName] === "object") {
+      const setVal = mapping[propName] as PropMapping | string[] | PropMapping[];
+
+      if(Array.isArray(setVal)) {
+        for (const exp of setVal) {
+          if(typeof exp === "string") {
+            propMap[propName] =  await execExprAsync(exp, ctx);
+          } else {
+            propMap[propName] = await execMappingAsync(exp, ctx);
+          }
+        }
+      } else {
+        propMap[propName] = await execMappingAsync(setVal, ctx);
       }
     } else {
       propMap[propName] = await execExprAsync(mapping[propName] as string, ctx);

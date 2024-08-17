@@ -38,7 +38,7 @@ export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | T
   | ThenFilter | ThenFindInformation | ThenCountInformation | ThenInsertInformation | ThenUpsertInformation | ThenUpdateInformation | ThenReplaceInformation | ThenDeleteInformation
   | ThenLookupUsers | ThenLookupUser;
 
-export type PropMapping = {[name: string]: string | string[]};
+export type PropMapping = {[name: string]: string | string[] | PropMapping | PropMapping[]};
 
 export interface ThenFilter {
   filter: Filter;
