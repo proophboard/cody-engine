@@ -575,14 +575,24 @@ const execRecordEventAsync = async (then: ThenRecordEvent, ctx: ExecutionContext
   return ctx;
 }
 
-export const execMappingSync = (mapping: string | PropMapping, ctx: ExecutionContext): any => {
+export const execMappingSync = (mapping: string | string[] | PropMapping | PropMapping[], ctx: ExecutionContext): any => {
   if(typeof mapping === "string") {
     return execExprSync(mapping, ctx);
   }
 
+  if(Array.isArray(mapping)) {
+    const arrMapping: any[] = [];
+
+    mapping.forEach(mappingItem => {
+      arrMapping.push(execMappingSync(mappingItem, ctx));
+    })
+
+    return arrMapping;
+  }
+
   let propMap: Record<string, any> = {};
 
-  for (const propName in mapping) {
+  for (const propName in (mapping as PropMapping)) {
     if(propName === '$merge') {
       let mergeVal = mapping['$merge'];
       if(typeof mergeVal === 'string') {
@@ -622,10 +632,21 @@ export const execMappingSync = (mapping: string | PropMapping, ctx: ExecutionCon
   return propMap;
 }
 
-export const execMappingAsync = async (mapping: string | PropMapping, ctx: ExecutionContext): Promise<any> => {
+export const execMappingAsync = async (mapping: string | string[] | PropMapping | PropMapping[], ctx: ExecutionContext): Promise<any> => {
   if(typeof mapping === "string") {
     return await execExprAsync(mapping, ctx);
   }
+
+  if(Array.isArray(mapping)) {
+    const arrMapping: any[] = [];
+
+    for (const mappingItem of mapping) {
+      arrMapping.push(await execMappingAsync(mappingItem, ctx));
+    }
+
+    return arrMapping;
+  }
+
 
   let propMap: Record<string, any> = {};
 

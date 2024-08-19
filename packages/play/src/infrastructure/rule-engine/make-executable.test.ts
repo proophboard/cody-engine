@@ -29,6 +29,17 @@ describe("execMappingSync", () => {
     expect(target).toEqual({target: source});
   })
 
+  test("map nested objs in array expr", () => {
+    const target = execMappingSync([{
+      target: {
+        propA: "source.propA",
+        propB: "source.propB"
+      }
+    }], {source});
+
+    expect(target).toEqual([{target: source}]);
+  })
+
   test("map nested obj with merge expr", () => {
     const target = execMappingSync({
       target: {
@@ -85,6 +96,17 @@ describe("execMappingAsync", () => {
     }, {source});
 
     expect(target).toEqual({target: source});
+  }, 100)
+
+  test("map nested objs in array expr", async () => {
+    const target = await execMappingAsync([{
+      target: {
+        propA: "source.propA",
+        propB: "source.propB"
+      }
+    }], {source});
+
+    expect(target).toEqual([{target: source}]);
   }, 100)
 
   test("map nested obj with merge expr", async () => {
