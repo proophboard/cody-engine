@@ -26,7 +26,7 @@ const MainLayout = (props: MainLayoutProps) => {
                 lg: "300px"
             },
             paddingBottom: {
-              xs: "100px"
+              xs: "50px"
             },
             height: '100%',
             boxSizing: 'border-box',
