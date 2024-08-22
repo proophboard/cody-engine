@@ -36,5 +36,9 @@ export const detectService = (node: Node, ctx: Context): string | CodyResponse =
     }
   }
 
+  if(ctx.service) {
+    return ctx.service;
+  }
+
   return names(ctx.boardName).className;
 }
