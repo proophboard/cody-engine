@@ -1,29 +1,26 @@
 import * as React from 'react';
 import {CommandRuntimeInfo} from "@event-engine/messaging/command";
 import {camelCaseToTitle} from "@frontend/util/string";
-import {Button, SxProps} from "@mui/material";
+import {Button, IconButton} from "@mui/material";
 import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
 import {Plus} from "mdi-material-ui";
-import jexl from "@app/shared/jexl/get-configured-jexl";
-import {User} from "@app/shared/types/core/user/user";
 import {useUser} from "@frontend/hooks/use-user";
-import {PageData} from "@app/shared/types/core/page-data/page-data";
 import {usePageData} from "@frontend/hooks/use-page-data";
+import {
+  ButtonConfig,
+  ButtonProps,
+  determineButtonConfig
+} from "@frontend/app/components/core/button/determine-button-config";
+import {useParams} from "react-router-dom";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
   onClick: () => void;
-  label?: string;
-  startIcon?: React.ReactNode | undefined;
-  buttonColor?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | undefined;
-  style?: SxProps;
-  disabled?: boolean;
-  hidden?: boolean;
-  variant?: "text" | "outlined" | "contained";
   formData?: {[prop: string]: any};
 }
 
-export type CommandButtonProps = OwnProps;
+export type CommandButtonProps = OwnProps & ButtonProps & Partial<ButtonConfig>;
 
 export interface WithCommandButtonProps {
   buttonProps?: Partial<CommandButtonProps>
@@ -52,85 +49,35 @@ export const commandTitle = (cmd: CommandRuntimeInfo): string => {
   return title as string;
 }
 
-const determineButtonConfig = (props: CommandButtonProps, user: User, page: PageData):
-  {
-    variant: "text" | "outlined" | "contained",
-    color: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
-    disabled: boolean,
-    style: SxProps,
-    hidden: boolean
-  } => {
-  const uiSchema = props.command.uiSchema || {};
-  const jexlCtx = {data: {...props.formData}, user, page};
-
-  const uiButtonConfig = uiSchema['ui:button'] || {};
-
-  if(uiButtonConfig['variantExpr']) {
-    uiButtonConfig['variant'] = jexl.evalSync(uiButtonConfig['variantExpr'], jexlCtx);
-  }
-
-  if(uiButtonConfig['colorExpr']) {
-    uiButtonConfig['color'] = jexl.evalSync(uiButtonConfig['colorExpr'], jexlCtx);
-  }
-
-  if(uiButtonConfig['styleExpr']) {
-    uiButtonConfig['style'] = jexl.evalSync(uiButtonConfig['styleExpr'], jexlCtx);
-  }
-
-  const variant = props.variant || uiButtonConfig['variant'] || 'contained';
-  const color = props.buttonColor || uiButtonConfig['color'] || 'primary';
-  const style = props.style || uiButtonConfig['style'] || undefined;
-
-  let disabled = false;
-
-  if(props.disabled) {
-    disabled = true;
-  } else if (uiButtonConfig['disabled']) {
-    const btnCDisabled = uiButtonConfig['disabled'];
-
-    if(typeof btnCDisabled === "boolean") {
-      disabled = btnCDisabled;
-    }
-
-    if(typeof btnCDisabled === "string") {
-      disabled = jexl.evalSync(btnCDisabled, jexlCtx);
-    }
-  }
-
-  let hidden = false;
-
-  if(props.hidden) {
-    hidden = true;
-  } else if (uiButtonConfig['hidden']) {
-    const btnCHidden = uiButtonConfig['hidden'];
-
-    if(typeof btnCHidden === "boolean") {
-      hidden = btnCHidden;
-    }
-
-    if(typeof btnCHidden === "string") {
-      hidden = jexl.evalSync(btnCHidden, jexlCtx);
-    }
-  }
-
-  return {
-    variant,
-    color,
-    style,
-    disabled,
-    hidden,
-  }
-}
 
 const CommandButton = (props: CommandButtonProps) => {
   const {desc} = props.command;
   const [user,] = useUser();
   const [page,] = usePageData();
-  const {variant, color, disabled, style, hidden} = determineButtonConfig(props, user, page);
+  const routeParams = useParams();
+  const [store] = useGlobalStore();
+
+  const {variant, color, disabled, style, hidden, icon, label} = determineButtonConfig(props, props.command.uiSchema || {}, {
+    user,
+    page,
+    routeParams,
+    data: props.formData || {},
+    store
+  });
   const newAggregate = isAggregateCommandDescription(desc) && desc.newAggregate;
 
   if(hidden) {
     return <></>
+  }
+
+  if(icon && !label) {
+    return <IconButton key={desc.name}
+                       sx={style}
+                       color={color}
+                       onClick={props.onClick}
+                       disabled={disabled}
+
+    >{icon}</IconButton>
   }
 
   return (

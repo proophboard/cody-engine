@@ -1,9 +1,8 @@
 import {
   AppendToListener,
-  checkMatchObject,
+  checkMatchObject, EventMatcher,
   EventStore,
-  MatchObject, MatchOperator,
-  MetadataMatcher, StreamType
+  MatchObject, MatchOperator, StreamType
 } from "@event-engine/infrastructure/EventStore";
 import {DB} from "@event-engine/infrastructure/Postgres/DB";
 import {Event, EventMeta} from "@event-engine/messaging/event";
@@ -11,6 +10,8 @@ import {AggregateMeta} from "@event-engine/infrastructure/AggregateRepository";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {Payload} from "@event-engine/messaging/message";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 interface Row<P,M> {
   no: number;
@@ -99,8 +100,8 @@ export class PostgresEventStore implements EventStore {
     return result.rows[0].exists;
   }
 
-  async appendTo(streamName: string, events: Event[], metadataMatcher?: MetadataMatcher, expectedVersion?: number): Promise<boolean> {
-    // Since we have a unique index on aggregate meta, we can ignore metadataMatcher and expectedVersion. It's checked by Postgres on insert
+  async appendTo(streamName: string, events: Event[], eventMatcher?: EventMatcher, expectedVersion?: number): Promise<boolean> {
+    // Since we have a unique index on aggregate meta, we can ignore eventMatcher and expectedVersion. It's checked by Postgres on insert
 
     const [query, bindings] = this.makeAppendToQuery(streamName, events);
 
@@ -112,7 +113,7 @@ export class PostgresEventStore implements EventStore {
       await this.db.query(query, bindings);
     } catch (err: any) {
       if(err.code && (err.code == "23505" || err.code == "23000")) {
-        throw new ConcurrencyError(`Concurrency exception. Expected stream version does not match. Expected ${expectedVersion} for stream ${streamName} with metadata matcher ${JSON.stringify(metadataMatcher)}.`);
+        throw new ConcurrencyError(`Concurrency exception. Expected stream version does not match. Expected ${expectedVersion} for stream ${streamName} with metadata matcher ${JSON.stringify(eventMatcher)}.`);
       }
 
       throw err;
@@ -154,12 +155,12 @@ export class PostgresEventStore implements EventStore {
     return [query, bindings];
   }
 
-  makeDeleteFromQuery(streamName: string, metadataMatcher: MetadataMatcher): [string, any[]] {
+  makeDeleteFromQuery(streamName: string, eventMatcher: EventMatcher): [string, any[]] {
     let valuePos = 1;
     let where = '';
     const bindings = [];
-    for(const prop in metadataMatcher) {
-      const [matchWhere, value] = this.matchObjectToWhereClause(prop, valuePos, metadataMatcher[prop]);
+    for(const prop in eventMatcher) {
+      const [matchWhere, value] = this.matchObjectToWhereClause(prop, valuePos, eventMatcher[prop]);
       where += matchWhere + ' AND ';
       bindings.push(value);
       valuePos++;
@@ -174,7 +175,7 @@ export class PostgresEventStore implements EventStore {
     this.appendToListeners.forEach(l => l(streamName, events));
   }
 
-  async load<P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P, M>>> {
+  async load<P extends Payload = any, M extends EventMeta = any>(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number, reverse?: boolean): Promise<AsyncIterable<Event<P, M>>> {
     let fromEventNo;
     const bindings = [];
 
@@ -190,10 +191,10 @@ export class PostgresEventStore implements EventStore {
 
     let where = '';
 
-    if(metadataMatcher) {
+    if(eventMatcher) {
       let valuePos = 1;
-      for(const prop in metadataMatcher) {
-        const [matchWhere, value] = this.matchObjectToWhereClause(prop, valuePos, metadataMatcher[prop]);
+      for(const prop in eventMatcher) {
+        const [matchWhere, value] = this.matchObjectToWhereClause(prop, valuePos, eventMatcher[prop]);
         where += matchWhere + ' AND ';
         bindings.push(value);
         valuePos++;
@@ -201,7 +202,9 @@ export class PostgresEventStore implements EventStore {
       where += fromEventNo? `no > ${fromEventNo}` : '1=1';
     }
 
-    const query = `SELECT * FROM ${streamName} WHERE ${where} ORDER BY no asc ` + (limit? `LIMIT ${limit}` : '') + ';';
+    const orderBy = reverse? 'desc' : 'asc';
+
+    const query = `SELECT * FROM ${streamName} WHERE ${where} ORDER BY no ${orderBy} ` + (limit? `LIMIT ${limit}` : '') + ';';
 
     const cursor = await this.db.iterableCursor<Row<P,M>>(query, bindings);
 
@@ -214,18 +217,19 @@ export class PostgresEventStore implements EventStore {
     })));
   }
 
-  async delete(streamName: string, metadataMatcher: MetadataMatcher): Promise<number> {
-    const [query, bindings] = this.makeDeleteFromQuery(streamName, metadataMatcher);
+  async delete(streamName: string, eventMatcher: EventMatcher): Promise<number> {
+    const [query, bindings] = this.makeDeleteFromQuery(streamName, eventMatcher);
 
     const result = await this.db.query(query, bindings);
 
     return result.rowCount;
   }
 
-  public async republish(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<void> {
-    const events = await this.load(streamName, metadataMatcher, fromEventId, limit);
+  public async republish(streamName: string, authService: AuthService, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number): Promise<void> {
+    const events = await this.load(streamName, eventMatcher, fromEventId, limit);
 
     for await (const event of events) {
+      const mappedEvents = await mapMetadataFromEventStore([event], authService);
       this.appendToListeners.forEach(l => l(streamName, [event]));
     }
   }
@@ -245,7 +249,7 @@ export class PostgresEventStore implements EventStore {
   }
 
   private matchObjectToWhereClause(prop: string, valuePos: number, matcher: MatchObject | string): [string, any] {
-    matcher = checkMatchObject(matcher);
+    matcher = checkMatchObject(prop, matcher);
 
     if(prop === '$eventId') {
       return [`uuid = $${valuePos}`, matcher.val];

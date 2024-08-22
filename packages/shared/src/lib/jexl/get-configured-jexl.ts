@@ -9,6 +9,8 @@ import {registerDateTimeExtensions} from "@app/shared/jexl/datetime-extension/re
 import {PageData} from "@app/shared/types/core/page-data/page-data";
 import {registerStringExtensions} from "@app/shared/jexl/string-extension/register";
 import {registerObjectExtension} from "@app/shared/jexl/object-extension/register";
+import {registerTypeCastExtensions} from "@app/shared/jexl/type-cast/register";
+import {registerMathExtension} from "@app/shared/jexl/math-extension/register";
 
 let configuredJexl: Jexl;
 
@@ -22,10 +24,15 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addFunction('userAttr', getAttribute);
     configuredJexl.addFunction('pageData', getPageData);
     configuredJexl.addTransform('data', getPageData);
+    configuredJexl.addTransform('role', isRole);
+    configuredJexl.addTransform('attr', getAttribute);
+    configuredJexl.addTransform('count', count);
 
     configuredJexl.addTransform('default', getValOrDefault)
 
     registerStringExtensions(configuredJexl);
+    registerTypeCastExtensions(configuredJexl);
+    registerMathExtension(configuredJexl);
     registerArrayExtensions(configuredJexl);
     registerObjectExtension(configuredJexl);
     registerDateTimeExtensions(configuredJexl);

@@ -3,7 +3,6 @@ import {DataGrid, GridColDef, GridRenderCellParams, GridToolbar} from '@mui/x-da
 import {useContext, useEffect} from 'react';
 import { triggerSideBarAnchorsRendered } from '@frontend/util/sidebar/trigger-sidebar-anchors-rendered';
 import NoRowsOverlay from '@frontend/app/components/core/table/NoRowsOverlay';
-import jexl from '@app/shared/jexl/get-configured-jexl';
 import { dataValueGetter } from '@frontend/util/table/data-value-getter';
 import { determineQueryPayload } from '@app/shared/utils/determine-query-payload';
 import PageLink from '@frontend/app/components/core/PageLink';
@@ -19,7 +18,7 @@ import {
 import {
   isQueryableListDescription,
   isQueryableNotStoredStateListDescription,
-  isQueryableStateListDescription
+  isQueryableStateListDescription, isStoredQueryableListDescription
 } from "@event-engine/descriptions/descriptions";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {UiSchema} from "@rjsf/utils";
@@ -50,17 +49,20 @@ import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-r
 import {resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {useUser} from "@frontend/hooks/use-user";
 import {User} from "@app/shared/types/core/user/user";
+import {isInlineItemsArraySchema} from "@cody-play/infrastructure/cody/schema/check";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 
-const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo) => {
-  if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc)) {
+const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false) => {
+  if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc) && !isQueryableNotStoredStateListDescription(informationInfo.desc)) {
     throw new Error(`Play table view can only be used to show queriable state list information, but "${informationInfo.desc.name}" is not of this information type. ${CONTACT_PB_TEAM}`)
   }
 
   const {config: {queries, types, pages, definitions}} = useContext(configStore);
-  const [,addQueryResult] = usePageData();
+  const [page,addQueryResult] = usePageData();
   const [user] = useUser();
 
   const query = useApiQuery(informationInfo.desc.query, params);
+  const jexlCtx = {routeParams: params, user, page};
 
   const uiSchema: UiSchema & TableUiSchema = informationInfo.uiSchema || {};
 
@@ -73,7 +75,17 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
   const density = getTableDensity(uiSchema);
   const hideToolbar = !!uiSchema.table?.hideToolbar;
 
-  const itemIdentifier = isQueryableStateListDescription(informationInfo.desc)? informationInfo.desc.itemIdentifier : undefined;
+  const itemIdentifier = (isQueryableStateListDescription(informationInfo.desc) || isQueryableNotStoredStateListDescription(informationInfo.desc))? informationInfo.desc.itemIdentifier : undefined;
+
+  let isHidden = hiddenView;
+
+  if(!hiddenView && typeof uiSchema['ui:hidden'] !== "undefined") {
+    if(typeof uiSchema['ui:hidden'] === "string") {
+      isHidden = jexl.evalSync(uiSchema['ui:hidden'], jexlCtx);
+    } else {
+      isHidden = uiSchema['ui:hidden'];
+    }
+  }
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
@@ -93,6 +105,10 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo)
     types,
     definitions
   );
+
+  if(isHidden) {
+    return <></>;
+  }
 
   return (
     <Box component="div">
@@ -140,7 +156,7 @@ const compileTableColumns = (
 ): GridColDef[] => {
   const schema = information.schema;
 
-  if (!isListSchema(schema)) {
+  if (!isListSchema(schema) && !isInlineItemsArraySchema(schema)) {
     throw new Error(`Cannot render table. Schema of "${information.desc.name}" is not a list.`);
   }
 
@@ -221,8 +237,18 @@ const compileTableColumns = (
 
           const refListDesc = refListVo.desc;
 
-          if (!isQueryableStateListDescription(refListDesc) && !isQueryableNotStoredStateListDescription(refListDesc)) {
+          if (!isQueryableStateListDescription(refListDesc) && !isQueryableNotStoredStateListDescription(refListDesc) && !isStoredQueryableListDescription(refListDesc)) {
             throw new Error(`The ref in column "${column.field}" is not a list! Only lists can be used to load reference data.`);
+          }
+
+          let itemIdentifier = (cValue as RefTableColumn).itemIdentifier  || '';
+
+          if(!itemIdentifier) {
+            if (!isQueryableStateListDescription(refListDesc) && !isQueryableNotStoredStateListDescription(refListDesc)) {
+              throw new Error(`The ref in column "${column.field}" is not a list with an itemIdentifier! Either reference a list if an item identifier or configure one in the ref options!`);
+            }
+
+            itemIdentifier = refListDesc.itemIdentifier;
           }
 
           const columnQuery = queries[refListDesc.query];
@@ -251,7 +277,7 @@ const compileTableColumns = (
 
             return dataValueGetter(
               columnQueries[field],
-              refListDesc.itemIdentifier,
+              itemIdentifier,
               rowParamsVal,
               (data: any) => {
                 let ctx = {data, value: '', user};

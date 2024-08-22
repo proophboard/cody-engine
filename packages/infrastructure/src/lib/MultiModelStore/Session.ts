@@ -1,17 +1,17 @@
 import {Event} from "@event-engine/messaging/event";
-import {MetadataMatcher} from "@event-engine/infrastructure/EventStore";
+import {EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 
 interface AppendEventsTask {
   streamName: string;
   events: Event[],
-  metadataMatcher?: MetadataMatcher;
+  eventMatcher?: EventMatcher;
   expectedVersion?: number;
 }
 
 interface DeleteEventsTask {
   streamName: string;
-  metadataMatcher: MetadataMatcher;
+  eventMatcher: EventMatcher;
 }
 
 interface UpsertDocumentTask {
@@ -65,18 +65,18 @@ export class Session {
   private deleteManyDocumentsTasks: DeleteManyDocumentsTask[] = [];
   private committed = false;
 
-  public appendEventsTo(streamName: string, events: Event[], metadataMatcher?: MetadataMatcher, expectedVersion?: number): void {
+  public appendEventsTo(streamName: string, events: Event[], eventMatcher?: EventMatcher, expectedVersion?: number): void {
     if(this.committed) {
       throw new Error(`[DB] Cannot append events to stream: ${streamName}. Multi-Model-Store Session is already committed.`)
     }
-    this.appendEventsTasks.push({streamName, events, metadataMatcher, expectedVersion});
+    this.appendEventsTasks.push({streamName, events, eventMatcher: eventMatcher, expectedVersion});
   }
 
-  public deleteEventsFrom(streamName: string, metadataMatcher: MetadataMatcher): void {
+  public deleteEventsFrom(streamName: string, eventMatcher: EventMatcher): void {
     if(this.committed) {
       throw new Error(`[DB] Cannot delete events from stream: ${streamName}. Multi-Model-Store Session is already committed.`)
     }
-    this.deleteEventsTasks.push({streamName, metadataMatcher});
+    this.deleteEventsTasks.push({streamName, eventMatcher});
   }
 
   public insertDocument(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): void {

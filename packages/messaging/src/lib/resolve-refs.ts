@@ -4,6 +4,7 @@ import {Writable} from "json-schema-to-ts/lib/types/type-utils";
 import {UiSchema} from "@rjsf/utils";
 import {names} from "@event-engine/messaging/helpers";
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
 const FQCNFromDefinitionId = (definitionId: string): string => {
   const withoutPrefix = definitionId.replace('/definitions/', '');
@@ -31,6 +32,7 @@ export const splitPropertyRef = (ref: string): [string, string] => {
 }
 
 export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: string]: ValueObjectRuntimeInfo }): UiSchema | undefined => {
+  let uiSchema: UiSchema = {};
   if(schema['$ref']) {
 
     const isPropRef = isPropertyRef(schema['$ref']);
@@ -38,27 +40,29 @@ export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: 
 
     const fqcn = FQCNFromDefinitionId(ref);
 
+    const refSchema = types[fqcn]?.schema;
+
+    if(refSchema) {
+      schema = cloneDeepJSON(refSchema as JSONSchema7);
+    }
+
     const refUiSchema = types[fqcn]?.uiSchema;
 
     if(refUiSchema && Object.keys(refUiSchema).length > 0) {
       if(!isPropRef) {
-        return refUiSchema;
+        uiSchema = cloneDeepJSON(refUiSchema);
+      } else {
+        uiSchema = cloneDeepJSON(refUiSchema[prop]);
       }
-
-      return refUiSchema[prop];
     }
-
-    return undefined;
   }
-
-  const uiSchema: UiSchema = {};
 
   if(schema && schema.properties) {
     for (const prop in schema.properties) {
       const propUiSchema = resolveUiSchema(schema.properties[prop] as JSONSchema7, types);
 
       if(propUiSchema) {
-        uiSchema[prop] = propUiSchema;
+        uiSchema[prop] = uiSchema[prop]? {...uiSchema[prop], ...propUiSchema} : propUiSchema;
       }
     }
   }
@@ -67,7 +71,7 @@ export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: 
     const itemsUiSchema = resolveUiSchema(schema.items as JSONSchema7, types);
 
     if(itemsUiSchema) {
-      uiSchema['items'] = itemsUiSchema;
+      uiSchema['items'] = uiSchema['items']? {...uiSchema['items'], ...itemsUiSchema} : itemsUiSchema;
     }
   }
 

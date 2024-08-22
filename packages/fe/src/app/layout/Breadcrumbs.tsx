@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {Box, Breadcrumbs as MaterialBreadcrumbs} from "@mui/material";
-import {pages} from "@frontend/app/pages";
 import Breadcrumb from "@frontend/app/layout/Breadcrumb";
 import {usePageMatch} from "@frontend/util/hook/use-page-match";
 import {useMatchingPages} from "@frontend/util/hook/use-matching-pages";

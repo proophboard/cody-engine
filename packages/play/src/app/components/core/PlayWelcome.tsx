@@ -1,6 +1,6 @@
 import * as React from 'react';
-import {Flash, Lightbulb} from "mdi-material-ui";
-import {Alert, Box, Button, Link, Typography} from "@mui/material";
+import {AccountSchool, Flash, Lightbulb, OpenInNew} from "mdi-material-ui";
+import {Alert, Box, Button, IconButton, Link, Typography} from "@mui/material";
 import PersonaCard from "@frontend/app/components/core/prototype/PersonaCard";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import {useContext, useState} from "react";
@@ -25,11 +25,20 @@ const PlayWelcome = (props: PlayWelcomeProps) => {
     <Box sx={{marginTop: '30px', maxWidth: '1000px'}}>
       <p>
         Cody Play is a <strong>browser-only prototyping app</strong>. Design an event model on <Link href="https://free.prooph-board.com">prooph board</Link> and test it on-the-fly.
-        Data and configuration can be saved in the browser's local storage by using the save button at the bottom right corner.
+      </p>
+      <Alert severity="info"
+             icon={<AccountSchool />}
+             title="Go to tutorial"
+             action={<IconButton size="small" component={Link} href="https://wiki.prooph-board.com/cody_play/tutorial.html"><OpenInNew /></IconButton>}
+      >
+        New to Cody Play? We've prepared a tutorial to teach you the basics.
+      </Alert>
+      <p>
+        Data and configuration can be saved in <Link href="https://wiki.prooph-board.com/cody_play/playshots.html">Playshots</Link>.
       </p>
       <p>
-        Cody Play is meant to be used for rapid prototyping to try out ideas and different designs. Validate data and user flow through the system.
-        Cody Play should help you answer questions like:
+        Cody Play is rapid prototyping on steroids 🚀.
+        It helps you to answer these questions:
       </p>
       <ul>
         <li>Are all needed information available?</li>

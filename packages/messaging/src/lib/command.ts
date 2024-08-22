@@ -8,6 +8,7 @@ import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-
 import {AggregateCommandDescription, CommandDescription} from "@event-engine/descriptions/descriptions";
 import {UiSchema} from "@rjsf/utils";
 import {v4 as uuidv4} from 'uuid';
+import {cloneDeep} from "lodash";
 
 export interface CommandRuntimeInfo<P extends Payload = any, M extends Meta = any> {
   desc: CommandDescription | AggregateCommandDescription;
@@ -44,6 +45,8 @@ export const makeCommand = <P extends Payload, M extends Meta = any>(
   };
 
   const func = (payload: Partial<P>, meta?: M, uuid?: string, createdAt?: Date): Command<P,M> => {
+    payload = cloneDeep(payload);
+
     return {
       uuid: uuid || uuidv4(),
       name,

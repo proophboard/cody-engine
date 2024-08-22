@@ -2,12 +2,12 @@
 import {
   PlayAddAggregateAction,
   PlayAddAggregateEventAction,
-  PlayAddCommandAction,
+  PlayAddCommandAction, PlayAddCommandHandlerAction,
   PlayAddEventPolicyAction,
   PlayAddPageAction,
-  PlayAddPersona,
+  PlayAddPersona, PlayAddPureEventAction,
   PlayAddQueryAction,
-  PlayAddTypeAction,
+  PlayAddTypeAction, PlayAddViewAction,
   PlayAggregateRegistry,
   PlayApplyRulesRegistry,
   PlayChangeTheme,
@@ -20,7 +20,7 @@ import {
   PlayPageRegistry,
   PlayQueryRegistry, PlayRemoveAggregateAction, PlayRemoveAggregateEventAction,
   PlayRemoveCommandAction, PlayRemoveCommandHandlerAction, PlayRemoveEventPolicyAction,
-  PlayRemovePageAction, PlayRemoveQueryAction, PlayRemoveTypeAction, PlayRemoveViewAction,
+  PlayRemovePageAction, PlayRemovePureEventAction, PlayRemoveQueryAction, PlayRemoveTypeAction, PlayRemoveViewAction,
   PlayRenameApp,
   PlayResolverRegistry,
   PlaySchemaDefinitions,
@@ -41,7 +41,6 @@ import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/confi
 import _ from "lodash";
 import {
   playDefinitionIdFromFQCN,
-  playFQCNFromDefinitionId
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
 export interface CodyPlayConfig {
@@ -152,9 +151,9 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 const { Provider } = configStore;
 
 type Action = PlayInitAction | PlayRenameApp | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayAddPageAction | PlayRemovePageAction
-  | PlayAddCommandAction | PlayRemoveCommandAction | PlayAddTypeAction | PlayRemoveTypeAction
-  | PlayAddQueryAction | PlayRemoveQueryAction | PlayRemoveViewAction | PlayAddAggregateAction | PlayRemoveAggregateAction | PlayRemoveCommandHandlerAction
-  | PlayAddAggregateEventAction | PlayRemoveAggregateEventAction | PlayAddEventPolicyAction | PlayRemoveEventPolicyAction;
+  | PlayAddCommandAction | PlayRemoveCommandAction | PlayAddCommandHandlerAction | PlayRemoveCommandHandlerAction | PlayAddTypeAction | PlayRemoveTypeAction
+  | PlayAddQueryAction | PlayRemoveQueryAction | PlayAddViewAction | PlayRemoveViewAction | PlayAddAggregateAction | PlayRemoveAggregateAction
+  | PlayAddAggregateEventAction | PlayRemoveAggregateEventAction | PlayAddPureEventAction | PlayRemovePureEventAction | PlayAddEventPolicyAction | PlayRemoveEventPolicyAction;
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
 
@@ -214,6 +213,14 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.commands = {...config.commands};
         delete config.commands[action.name];
         return {...config};
+      case "ADD_COMMAND_HANDLER":
+        config.commandHandlers = {...config.commandHandlers};
+        config.commandHandlers[action.command] = action.businessRules;
+        return {...config};
+      case "REMOVE_COMMAND_HANDLER":
+        config.commandHandlers = {...config.commandHandlers};
+        delete config.commandHandlers[action.command];
+        return {...config};
       case "ADD_TYPE":
         config.types = {...config.types};
         config.definitions = {...config.definitions};
@@ -244,6 +251,10 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         delete config.queries[action.name];
         delete config.resolvers[action.name];
         return {...config};
+      case "ADD_VIEW":
+        config.views = {...config.views};
+        config.views[action.name] = {information: action.name};
+        return {...config};
       case "REMOVE_VIEW":
         config.views = {...config.views};
         delete config.views[action.name];
@@ -261,9 +272,13 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         delete config.aggregates[action.name];
         delete config.eventReducers[action.name];
         return {...config};
-      case "REMOVE_COMMAND_HANDLER":
-        config.commandHandlers = {...config.commandHandlers};
-        delete config.commandHandlers[action.name];
+      case "ADD_PURE_EVENT":
+        config.events = {...config.events};
+        config.events[action.name] = action.event;
+        return {...config};
+      case "REMOVE_PURE_EVENT":
+        config.events = {...config.events};
+        delete config.events[action.name];
         return {...config};
       case "ADD_AGGREGATE_EVENT":
         config.events = {...config.events};

@@ -5,7 +5,9 @@ export const registerDateTimeExtensions = (jexl: Jexl) => {
 
   jexl.addTransform('date', d => new Date(d));
   jexl.addTransform('utc', d => (new Date(d)).toUTCString());
-  jexl.addTransform('isoDate', d => (new Date(d)).toISOString());
+  jexl.addTransform('isoDate', d => (new Date(d)).toISOString().split("T")[0]);
+  jexl.addTransform('isoTime', d => (new Date(d)).toISOString().split("T")[1]);
+  jexl.addTransform('isoDateTime', d => (new Date(d)).toISOString());
   jexl.addTransform('localDate', d => (new Date(d)).toLocaleDateString());
   jexl.addTransform('localTime', t => (new Date(t)).toLocaleTimeString());
   jexl.addTransform('localDateTime', dt => (new Date(dt)).toLocaleString());
@@ -25,6 +27,20 @@ export const registerDateTimeExtensions = (jexl: Jexl) => {
   jexl.addTransform('utcSeconds', d => (new Date(d)).getUTCSeconds());
   jexl.addTransform('milliseconds', d => (new Date(d)).getMilliseconds());
   jexl.addTransform('utcMilliseconds', d => (new Date(d)).getUTCMilliseconds());
+  jexl.addTransform('timezoneOffset', d => (new Date(d)).getTimezoneOffset());
+  jexl.addTransform('timestamp', d => (new Date(d)).getTime());
+  jexl.addTransform('addMilliseconds', (d, ms: number) => (new Date(d)).getTime() + (ms))
+  jexl.addTransform('subMilliseconds', (d, ms: number) => (new Date(d)).getTime() + (ms))
+  jexl.addTransform('addSeconds', (d, seconds: number) => (new Date(d)).getTime() + (seconds * 1000))
+  jexl.addTransform('subSeconds', (d, seconds: number) => (new Date(d)).getTime() - (seconds * 1000))
+  jexl.addTransform('addMinutes', (d, minutes: number) => (new Date(d)).getTime() + (minutes * 60 * 1000))
+  jexl.addTransform('subMinutes', (d, minutes: number) => (new Date(d)).getTime() - (minutes * 60 * 1000))
+  jexl.addTransform('addHours', (d, hours: number) => (new Date(d)).getTime() + (hours * 60 * 60 * 1000))
+  jexl.addTransform('subHours', (d, hours: number) => (new Date(d)).getTime() - (hours * 60 * 60 * 1000))
+  jexl.addTransform('addDays', (d, days: number) => (new Date(d)).getTime() + (days * 24 * 60 * 60 * 1000))
+  jexl.addTransform('subDays', (d, days: number) => (new Date(d)).getTime() - (days * 24 * 60 * 60 * 1000))
+  jexl.addTransform('addWeeks', (d, weeks: number) => (new Date(d)).getTime() + (weeks * 7 * 24 * 60 * 60 * 1000))
+  jexl.addTransform('subWeeks', (d, weeks: number) => (new Date(d)).getTime() - (weeks * 7 * 24 * 60 * 60 * 1000))
 
   jexl.addTransform('twoDigit', numberOrStr => {
     if(typeof numberOrStr === 'string') {

@@ -31,6 +31,7 @@ import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {usePageData} from "@frontend/hooks/use-page-data";
+import ObjectFieldTemplate from "@frontend/app/components/core/form/templates/ObjectFieldTemplate";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -192,7 +193,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
               // default browser validation needs to be turned off, otherwise optional objects with required props don't work
               noHtml5Validate={true}
               templates={{
-                ...(props.objectFieldTemplate? {ObjectFieldTemplate: props.objectFieldTemplate} : {}),
+                ...(props.objectFieldTemplate? {ObjectFieldTemplate: props.objectFieldTemplate} : {ObjectFieldTemplate}),
                 ...(props.arrayFieldTemplate? {ArrayFieldTemplate: props.arrayFieldTemplate} : {}),
               }}
               widgets={

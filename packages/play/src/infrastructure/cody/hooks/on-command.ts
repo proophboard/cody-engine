@@ -34,15 +34,16 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
     const serviceNames = names(service);
     const uiSchema = meta.uiSchema || {};
 
-    const aggregateState = playFindAggregateState(command, ctx, config.types);
-
     const cmdFQCN = `${serviceNames.className}.${cmdNames.className}`;
     const pbInfo = playUpdateProophBoardInfo(command, ctx, config.commands[cmdFQCN]?.desc);
     const dependencies = meta.dependencies;
     const deleteState = !!meta.deleteState;
     const deleteHistory = !!meta.deleteHistory;
+    const streamId = meta.streamId;
+    const streamName = meta.streamName;
+    const publicStream = meta.publicStream;
 
-    if(playIsCodyError(aggregateState)) {
+    if(!meta.aggregateCommand) {
       dispatch({
         type: "ADD_COMMAND",
         name: cmdFQCN,
@@ -52,8 +53,10 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
             dependencies,
             name: cmdFQCN,
             aggregateCommand: false,
-            deleteState,
-            deleteHistory
+            streamCommand: meta.streamCommand,
+            streamIdExpr: streamId,
+            streamName,
+            publicStream
           },
           schema: meta.schema,
           uiSchema,
@@ -61,11 +64,21 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
         }
       });
 
+      const events = playwithErrorCheck(playGetTargetsOfType, [command, NodeType.event, true, false, true]);
+      const rules = meta.rules || events.map(evt => alwaysRecordEvent(evt)).toArray();
+
+      dispatch({
+        type: "ADD_COMMAND_HANDLER",
+        command: cmdFQCN,
+        businessRules: normalizeThenRecordEventRules(service, rules),
+      });
 
       return {
         cody: `Alright, command "${command.getName()}" is available now.`,
       }
     }
+
+    const aggregateState = playwithErrorCheck(playFindAggregateState, [command, ctx, config.types]);
 
     const aggregateStateNames = names(aggregateState.getName());
     const aggregateStateMeta = playwithErrorCheck(playVoMetadata, [aggregateState, ctx, config.types]);
@@ -93,6 +106,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
           dependencies,
           name: cmdFQCN,
           aggregateCommand: true,
+          streamCommand: false,
           newAggregate: meta.newAggregate,
           aggregateName: aggregateFQCN,
           aggregateIdentifier: aggregateStateMeta.identifier,
@@ -108,7 +122,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
     if(!isAggregateConnected) {
       const events = playwithErrorCheck(playGetTargetsOfType, [command, NodeType.event]);
 
-      const rules = events.map(evt => alwaysRecordEvent(evt));
+      const rules = meta.rules || events.map(evt => alwaysRecordEvent(evt)).toArray();
 
       dispatch({
         type: "ADD_AGGREGATE",
@@ -122,7 +136,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
           stream: 'write_model_stream',
           state: stateFQCN
         },
-        businessRules: normalizeThenRecordEventRules(aggregateFQCN, rules.toArray()),
+        businessRules: normalizeThenRecordEventRules(aggregateFQCN, rules),
       })
     }
 

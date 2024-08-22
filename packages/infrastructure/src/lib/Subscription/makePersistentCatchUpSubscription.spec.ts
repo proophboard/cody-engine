@@ -33,7 +33,7 @@ describe("makePersistentCatchUpSubscription", () => {
   beforeAll(async () => {
     await es.appendTo(TEST_STREAM, oldEvents);
     await ds.addDoc(SUBSCRIPTIONS_COLLECTION, TEST_SUBSCRIPTION, {
-      test_stream: {lastProcessedEvent: eventIds[2], metadataMatcher: undefined}
+      test_stream: {lastProcessedEvent: eventIds[2], eventMatcher: undefined}
     });
   })
 

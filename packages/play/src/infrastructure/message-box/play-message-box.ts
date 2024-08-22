@@ -8,15 +8,20 @@ import {Event, EventRuntimeInfo} from "@event-engine/messaging/event";
 import {Query, QueryRuntimeInfo} from "@event-engine/messaging/query";
 import {
   CommandDescription,
-  isAggregateCommandDescription,
+  isAggregateCommandDescription, isStreamCommandDescription, PureCommandDescription,
   QueryDescription
 } from "@event-engine/descriptions/descriptions";
 import {Meta, Payload, setMessageMetadata} from "@event-engine/messaging/message";
 import {META_KEY_DELETE_HISTORY, META_KEY_DELETE_STATE} from "@event-engine/infrastructure/AggregateRepository";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
-import {makeAggregateRepository} from "@cody-play/infrastructure/commands/make-command-mutation-fn";
-import {makeCommandHandler} from "@cody-play/infrastructure/commands/make-command-handler";
-import {handle} from "@event-engine/infrastructure/commandHandling";
+import {makeAggregateRepository} from "@cody-play/infrastructure/commands/make-aggregate-command-mutation-fn";
+import {makeAggregateCommandHandler} from "@cody-play/infrastructure/commands/make-aggregate-command-handler";
+import {
+  getStreamId,
+  handleAggregateCommand,
+  handlePureCommand,
+  handleStreamCommand
+} from "@event-engine/infrastructure/commandHandling";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {PlayEventPolicyDescription, PlayEventPolicyRegistry} from "@cody-play/state/types";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
@@ -24,6 +29,24 @@ import {User} from "@app/shared/types/core/user/user";
 import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-command-factory";
 import {makeEventFactory} from "@cody-play/infrastructure/events/make-event-factory";
 import {makeQueryFactory} from "@cody-play/queries/make-query-factory";
+import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {StreamEventsRepository} from "@event-engine/infrastructure/StreamEventsRepository";
+import {
+  getConfiguredPlayMultiModelStore
+} from "@cody-play/infrastructure/multi-model-store/configured-multi-model-store";
+import {
+  PLAY_PUBLIC_STREAM,
+  PLAY_WRITE_MODEL_STREAM
+} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
+import {
+  playInformationServiceFactory
+} from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
+import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";
+import {PureFactsRepository} from "@event-engine/infrastructure/PureFactsRepository";
+import {makePureCommandHandler} from "@cody-play/infrastructure/commands/make-pure-command-handler";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
+import {ValidationError} from "ajv";
 
 export class PlayMessageBox implements MessageBox {
   private config: CodyPlayConfig;
@@ -31,9 +54,11 @@ export class PlayMessageBox implements MessageBox {
   public commandBus: CommandBus;
   public eventBus: EventBus;
   public queryBus: QueryBus;
+  public authService: AuthService;
 
-  public constructor(config: CodyPlayConfig) {
+  public constructor(config: CodyPlayConfig, authService: AuthService) {
     this.config = config;
+    this.authService = authService;
 
     this.commandBus = { dispatch: async (command: Command, desc: CommandDescription): Promise<boolean> => {
       return await dispatchCommand(command, this.config);
@@ -41,6 +66,7 @@ export class PlayMessageBox implements MessageBox {
 
     this.eventBus = {
       on: async (event: Event, triggerLiveProjections?: boolean): Promise<boolean> => {
+        event = (await mapMetadataFromEventStore([event], this.authService))[0];
         return await dispatchEvent(event, this.config, triggerLiveProjections);
       }
     }
@@ -52,8 +78,9 @@ export class PlayMessageBox implements MessageBox {
     }
   }
 
-  public updateConfig(config: CodyPlayConfig) {
+  public updateConfig(config: CodyPlayConfig, authService: AuthService) {
     this.config = config;
+    this.authService = authService;
   }
 
   public async dispatch(messageName: string, payload: Payload, meta?: Meta): Promise<any> {
@@ -138,7 +165,7 @@ const dispatchEvent = async (event: Event, config: CodyPlayConfig, triggerLivePr
     try {
       const dependencies = await playLoadDependencies(event, 'event', policy.dependencies || {}, config);
 
-      const ctx = {event: event.payload, meta: event.meta, ...dependencies, commandRegistry: config.commands, schemaDefinitions: config.definitions};
+      const ctx = {event: event.payload, meta: event.meta, eventCreatedAt: event.createdAt, ...dependencies, commandRegistry: config.commands, schemaDefinitions: config.definitions};
       const exe = makeAsyncExecutable(policy.rules);
       const result = await exe(ctx);
 
@@ -150,6 +177,9 @@ const dispatchEvent = async (event: Event, config: CodyPlayConfig, triggerLivePr
       }
     } catch (e) {
       console.error(e);
+      if(e instanceof ValidationError) {
+        console.error(JSON.stringify(e.errors, null, 2));
+      }
       allSuccess = false;
     }
   }
@@ -173,7 +203,7 @@ const dispatchCommand = async (command: Command, config: CodyPlayConfig): Promis
   const commandDesc = commandInfo.desc;
 
   if(!isAggregateCommandDescription(commandDesc)) {
-    throw new Error(`Cannot handle command "${command.name}". Please connect the command to an aggregate and define business rules in the Cody Wizard`);
+    return dispatchPureCommand(command, commandDesc, rules, config);
   }
 
   const aggregate = config.aggregates[commandDesc.aggregateName];
@@ -211,11 +241,52 @@ const dispatchCommand = async (command: Command, config: CodyPlayConfig): Promis
     config
   );
 
-  const processingFunction = makeCommandHandler(
+  const processingFunction = makeAggregateCommandHandler(
     rules,
     config.events,
     config.definitions
   );
 
-  return handle(command, processingFunction, repository, commandDesc.newAggregate, dependencies);
+  return handleAggregateCommand(command, processingFunction, repository, commandDesc.newAggregate, dependencies);
+}
+
+const dispatchPureCommand = async (command: Command, commandDesc: PureCommandDescription, rules: AnyRule[], config: CodyPlayConfig): Promise<boolean> => {
+  const dependencies = await playLoadDependencies(command, 'command', commandDesc.dependencies || {}, config);
+
+  const processingFunction =  makePureCommandHandler(
+    rules,
+    config.events,
+    config.definitions
+  );
+
+  const repository = isStreamCommandDescription(commandDesc)
+    ? new StreamEventsRepository(
+      getConfiguredPlayMultiModelStore(),
+      commandDesc.streamName || PLAY_WRITE_MODEL_STREAM,
+      playInformationServiceFactory(),
+      getConfiguredPlayMessageBox(config),
+      commandDesc.publicStream || PLAY_PUBLIC_STREAM
+    )
+    : new PureFactsRepository(
+      getConfiguredPlayMultiModelStore(),
+      (commandDesc as PureCommandDescription).streamName || PLAY_WRITE_MODEL_STREAM,
+      playInformationServiceFactory(),
+      getConfiguredPlayMessageBox(config),
+      (commandDesc as PureCommandDescription).publicStream || PLAY_PUBLIC_STREAM
+    );
+
+  return isStreamCommandDescription(commandDesc)
+    ? handleStreamCommand(
+      command,
+      await getStreamId(commandDesc.streamIdExpr, command, dependencies),
+      processingFunction,
+      repository as StreamEventsRepository,
+      dependencies
+    )
+    : handlePureCommand(
+      command,
+      processingFunction,
+      repository as PureFactsRepository,
+      dependencies
+    );
 }

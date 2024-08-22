@@ -19,6 +19,7 @@ interface OwnProps {
   incompleteCommandConfigError?: string;
   stateInfo: PlayInformationRuntimeInfo;
   definitions?: {[id: string]: DeepReadonly<JSONSchema7>};
+  initialValues?: {[prop: string]: any};
 }
 
 type PlayExistingStateCommandDialogProps = OwnProps;
@@ -35,6 +36,7 @@ const PlayExistingStateCommandDialog = (props: PlayExistingStateCommandDialogPro
     incompleteCommandConfigError={props.incompleteCommandConfigError}
     definitions={props.definitions}
     aggregateState={query.isSuccess ? query.data : {}}
+    initialValues={props.initialValues}
     widgets={{
       DataSelect: PlayDataSelectWidget
     }}

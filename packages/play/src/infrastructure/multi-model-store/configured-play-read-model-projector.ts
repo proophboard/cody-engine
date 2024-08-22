@@ -1,5 +1,4 @@
-import {EventStore, MetadataMatcher} from "@event-engine/infrastructure/EventStore";
-import {InformationService} from "@server/infrastructure/information-service/information-service";
+import {EventStore, EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {DEFAULT_READ_MODEL_PROJECTION} from "@event-engine/infrastructure/Projection/types";
 import {Event} from "@event-engine/messaging/event";
@@ -7,6 +6,7 @@ import {PlayEventPolicyDescription} from "@cody-play/state/types";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 class PlayReadModelProjector {
   private eventStore: EventStore;
@@ -18,14 +18,16 @@ class PlayReadModelProjector {
     this.config = config;
   }
 
-  public async run(streamName: string, metadataMatcher?: MetadataMatcher, projectionName?: string, fromEventId?: string, limit?: number): Promise<void> {
+  public async run(streamName: string, eventMatcher?: EventMatcher, projectionName?: string, fromEventId?: string, limit?: number): Promise<void> {
     if(!projectionName) {
       projectionName = DEFAULT_READ_MODEL_PROJECTION;
     }
 
-    const events = await this.eventStore.load(streamName, metadataMatcher, fromEventId, limit);
+    const events = await this.eventStore.load(streamName, eventMatcher, fromEventId, limit);
 
-    for await (const event of events) {
+    for await (let event of events) {
+      // Only map userId, a projection should not implicitly get access to GDPR relevant user data
+      event = (await mapMetadataFromEventStore([event]))[0];
       const policies = this.getEventProjections(event, projectionName);
 
       if(!policies) {
@@ -37,7 +39,7 @@ class PlayReadModelProjector {
         try {
           const dependencies = await playLoadDependencies(event, 'event', policy.dependencies || {}, this.config);
 
-          const ctx = {event: event.payload, meta: event.meta, ...dependencies, commandRegistry: this.config.commands, schemaDefinitions: this.config.definitions};
+          const ctx = {event: event.payload, meta: event.meta, ...dependencies, eventCreatedAt: event.createdAt, commandRegistry: this.config.commands, schemaDefinitions: this.config.definitions};
           const exe = makeAsyncExecutable(policy.rules);
           const result = await exe(ctx);
 

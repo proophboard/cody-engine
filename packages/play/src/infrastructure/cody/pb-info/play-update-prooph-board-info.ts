@@ -26,3 +26,9 @@ export const playUpdateProophBoardInfo = (node: Node, ctx: ElementEditedContext,
     _pbLastUpdatedBy: ctx.userId,
   }
 }
+
+export const playGetProophBoardInfoFromDescription = (desc: ProophBoardDescription): ProophBoardDescription => {
+  const {_pbBoardId, _pbCardId, _pbLink, _pbVersion, _pbCreatedAt, _pbCreatedBy, _pbLastUpdatedBy, _pbLastUpdatedAt} = desc;
+
+  return {_pbBoardId, _pbCardId, _pbLink, _pbVersion, _pbCreatedAt, _pbCreatedBy, _pbLastUpdatedAt, _pbLastUpdatedBy};
+}

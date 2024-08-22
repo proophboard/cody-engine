@@ -7,6 +7,7 @@ import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
 import {AggregateEventDescription, EventDescription} from "@event-engine/descriptions/descriptions";
 import {v4 as uuidv4} from 'uuid';
+import {cloneDeep} from "lodash";
 
 export interface EventRuntimeInfo<P extends Payload = any, M extends EventMeta = any> {
   desc: EventDescription | AggregateEventDescription;
@@ -60,6 +61,8 @@ export const makeEvent = <P extends Payload, M extends EventMeta = any>(
       version,
       ...meta as Omit<M, "visibility">
     } as M;
+
+    payload = cloneDeep(payload);
 
     return {
       uuid: uuid || uuidv4(),

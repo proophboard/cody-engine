@@ -3,7 +3,7 @@ import {ElementEditedContext} from "@cody-play/infrastructure/cody/cody-message-
 import {names} from "@event-engine/messaging/helpers";
 import {isShorthand} from "@cody-engine/cody/hooks/utils/json-schema/shorthand";
 import {
-  DependencyRegistry,
+  DependencyRegistry, isListDescription, isQueryableListDescription,
   isQueryableStateDescription,
   isStateDescription,
   ValueObjectDescriptionFlags
@@ -11,7 +11,11 @@ import {
 import {playParseJsonMetadata} from "@cody-play/infrastructure/cody/metadata/play-parse-json-metadata";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
-import {playDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {
+  playDefinitionId, playDefinitionIdFromFQCN,
+  playFQCNFromDefinitionId,
+  playVoFQCN
+} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {
   playJsonSchemaFromShorthand,
   ShorthandObject
@@ -20,13 +24,17 @@ import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-norm
 import {playResolveRef} from "@cody-play/infrastructure/cody/schema/play-resolve-ref";
 import {PlayInformationRegistry} from "@cody-play/state/types";
 import {JSONSchema7} from "json-schema";
-import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {
+  Rule,ThenType
+} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {UiSchema} from "@rjsf/utils";
 import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
-import {isListSchema} from "@cody-play/infrastructure/cody/schema/check";
+import {isInlineItemsArraySchema, isListSchema} from "@cody-play/infrastructure/cody/schema/check";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {GridDensity} from "@mui/x-data-grid";
-import {namespaceToClassName, valueObjectNameFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
+import {valueObjectNameFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
+import {normalizeProjectionConfig, ProjectionConfig} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
+import {isRefSchema} from "@cody-play/infrastructure/json-schema/is-ref-schema";
 
 export interface PlayValueObjectMetadataRaw {
   identifier?: string;
@@ -38,6 +46,7 @@ export interface PlayValueObjectMetadataRaw {
   initialize?: Rule[];
   uiSchema?: UiSchema & TableUiSchema;
   queryDependencies?: DependencyRegistry;
+  projection?: ProjectionConfig;
 }
 
 export interface ResolveConfig {
@@ -99,6 +108,7 @@ export interface PlayValueObjectMetadata extends ValueObjectDescriptionFlags {
   resolve?: ResolveConfig;
   uiSchema?: UiSchema & TableUiSchema;
   queryDependencies?: DependencyRegistry;
+  projection?: ProjectionConfig;
 }
 
 export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayInformationRegistry): PlayValueObjectMetadata | CodyResponse => {
@@ -147,7 +157,27 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
     meta.querySchema = playNormalizeRefs(playAddSchemaTitles('Get ' + vo.getName(), meta.querySchema), service);
   }
 
-  const normalizedSchema = playNormalizeRefs(playAddSchemaTitles(vo.getName(), meta.schema), service) as JSONSchema7;
+  let normalizedSchema = playNormalizeRefs(playAddSchemaTitles(vo.getName(), meta.schema), service) as JSONSchema7;
+
+  if(isRefSchema(normalizedSchema)) {
+    const resolvedInfo = playResolveRef(normalizedSchema, normalizedSchema, vo, types);
+
+    if(playIsCodyError(resolvedInfo)) {
+      return resolvedInfo;
+    }
+
+    if(isListDescription(resolvedInfo.desc)) {
+      normalizedSchema = {
+        $id: (normalizedSchema as any).$id,
+        title: (normalizedSchema as any).title,
+        type: "array",
+        items: {
+          $ref: playDefinitionIdFromFQCN(resolvedInfo.desc.itemType)
+        }
+      }
+    }
+  }
+
 
   const hasIdentifier = !!meta.identifier;
   const isQueryable = !!meta.querySchema;
@@ -162,7 +192,7 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
     schema: normalizedSchema,
     ns,
     service,
-    isList: isListSchema(normalizedSchema),
+    isList: isListSchema(normalizedSchema) || isInlineItemsArraySchema(normalizedSchema),
     hasIdentifier,
     isQueryable,
   }
@@ -199,10 +229,19 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
 
       if(isQueryableStateDescription(refVORuntimeInfo.desc)) {
         convertedMeta.collection = refVORuntimeInfo.desc.collection;
-      } else {
+      } else if (typeof meta.collection !== "string") {
         convertedMeta.collection = names(valueObjectNameFromFQCN(refVORuntimeInfo.desc.name)).constantName.toLowerCase() + '_collection';
       }
     }
+  }
+
+  if(isInlineItemsArraySchema(normalizedSchema)) {
+    if(meta.identifier) {
+      convertedMeta.hasIdentifier = true;
+      convertedMeta.identifier = meta.identifier;
+    }
+
+    convertedMeta.itemType = playFQCNFromDefinitionId(convertedMeta.schema['$id'] as string) + 'Item';
   }
 
   if(isQueryable) {
@@ -210,12 +249,20 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
     if(!convertedMeta.collection && convertedMeta.hasIdentifier && (typeof meta.collection === "undefined" || typeof meta.collection === "string")) {
       convertedMeta.collection = meta.collection || voNames.constantName.toLowerCase() + '_collection';
     }
+
+    if(!convertedMeta.collection && typeof meta.collection === "string") {
+      convertedMeta.collection = meta.collection;
+    }
   }
 
   convertedMeta.isNotStored = isNotStored;
 
   if(meta.queryDependencies) {
     convertedMeta.queryDependencies = meta.queryDependencies;
+  }
+
+  if(meta.projection) {
+    convertedMeta.projection = normalizeProjectionConfig(meta.projection, playFQCNFromDefinitionId(convertedMeta.schema['$id'] as string))
   }
 
   return convertedMeta;

@@ -3,13 +3,13 @@ import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {
   ArrayFieldTemplateProps,
   Field,
-  FieldTemplateProps,
+  FieldTemplateProps, getUiOptions,
   ObjectFieldTemplateProps,
-  RJSFSchema,
+  RJSFSchema, UiSchema,
   Widget
 } from "@rjsf/utils";
-import {Box, Card, CardContent, CircularProgress, SxProps, Typography, useTheme} from "@mui/material";
-import {PropsWithChildren, useEffect} from "react";
+import {Alert, Box, Button, Card, CardContent, CircularProgress, SxProps, Typography, useTheme} from "@mui/material";
+import {PropsWithChildren, useContext, useEffect} from "react";
 import {Form} from "@rjsf/mui";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 import {widgets} from "@frontend/app/components/core/form/widgets";
@@ -22,6 +22,21 @@ import {types} from "@app/shared/types";
 import {getRjsfValidator} from "@frontend/util/rjsf-validator";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
+import {names} from "@event-engine/messaging/helpers";
+import {playFQCNFromDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import Grid2, {Grid2Props} from "@mui/material/Unstable_Grid2";
+import {
+  getContainerGridConfig,
+  getElementGridConfig
+} from "@frontend/app/components/core/form/templates/ObjectFieldTemplate";
+import {usePageData} from "@frontend/hooks/use-page-data";
+import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
+import {configStore} from "@cody-play/state/config-store";
+import {useParams} from "react-router-dom";
+import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
+import {merge} from "lodash";
+import BottomActions from "@frontend/app/components/core/actions/BottomActions";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
 
 interface OwnProps {
   state?: Record<string, any>;
@@ -78,6 +93,13 @@ export const getObjPropTitleStyle = (heading: HeadingVariant): SxProps => {
 }
 
 export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplateProps>) => {
+  const [user,] = useUser();
+  const [pageData,] = usePageData();
+  const routeParams = useParams();
+  const [store] = useGlobalStore();
+
+  const jexlCtx: FormJexlContext = {user, page: pageData, routeParams, data: props.formContext.data, store};
+
   const headingVariant = headingNestingLevel(props.idSchema.$id);
 
   if(props.uiSchema && props.uiSchema['ui:widget'] && props.uiSchema['ui:widget'] === 'hidden') {
@@ -91,10 +113,36 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
     index = ' ' + (Number(match.groups!['index']) + 1);
   }
 
+  let idPrefix = 'component_' + names(props.title).fileName + '_';
+
+  if(props.schema.$id) {
+    const fqcn = playFQCNFromDefinitionId(props.schema.$id);
+
+    idPrefix = 'component_' + names(fqcn).fileName + '_';
+  }
+
+  const uiOptions = getUiOptions(props.uiSchema);
+  const gridConfig = getContainerGridConfig(uiOptions);
+
   return <div>
-    <Typography id={props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>
+    <Grid2 container>
+      <Grid2 xs>
+        {props.title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+                     className={(headingVariant === 'h2' || headingVariant === 'h3') ? 'sidebar-anchor' : ''}
+                     sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>}
+      </Grid2>
+      <TopRightActions  uiOptions={uiOptions} information={props.formContext.information} jexlCtx={jexlCtx} />
+    </Grid2>
     {props.description}
-    {props.properties.map(element => <Box component="div" key={'ele_wrapper_' + element.name} sx={{marginBottom: '10px'}}>{element.content}</Box>)}
+    <Grid2 container={true} {...gridConfig as Grid2Props}>
+      {props.properties.map(
+        element =>
+          element.hidden ? (
+              element.content
+            ) :
+          <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema) as Grid2Props}>{element.content}</Grid2>)
+      }
+    </Grid2>
   </div>
 }
 
@@ -105,8 +153,18 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
     return <></>
   }
 
+  let idPrefix = 'component_' + names(props.title).fileName + '_';
+
+  if(props.schema.$id) {
+    const fqcn = playFQCNFromDefinitionId(props.schema.$id);
+
+    idPrefix = 'component_' + names(fqcn).fileName + '_';
+  }
+
   return <div>
-    <Typography id={props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant} className={(headingVariant === 'h2' || headingVariant === 'h3')? 'sidebar-anchor' : ''} sx={getObjPropTitleStyle(headingVariant)}>{props.title}</Typography>
+    {props.title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+                 className={(headingVariant === 'h2' || headingVariant === 'h3') ? 'sidebar-anchor' : ''}
+                 sx={getObjPropTitleStyle(headingVariant)}>{props.title}</Typography>}
     {!props.items.length && <Box className={'array-element-wrapper'} key={'array_ele_wrapper_empty'}><Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Box> }
     {props.items.map((element, index) => <Box className={'array-element-wrapper'} key={'array_ele_wrapper_' + index}>{element.children}</Box>)}
   </div>
@@ -116,19 +174,30 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
 const StateView = (props: StateViewProps) => {
   const theme = useTheme();
   const [user,] = useUser();
-  const [pageData,] = useUser();
+  const [pageData,] = usePageData();
+  const {config} = useContext(configStore);
+  const routeParams = useParams();
+  const [globalStore] = useGlobalStore();
+  const jexlCtx: FormJexlContext = {
+    user,
+    page: pageData,
+    data: props.state || {},
+    routeParams,
+    store: globalStore,
+  }
 
   const resolvedUiSchema = resolveUiSchema(props.description.schema as any, types);
   const mainUiSchema = props.description.uiSchema;
-  const mergedUiSchema = {...resolvedUiSchema, ...mainUiSchema};
+  const mergedUiSchema: UiSchema = merge(resolvedUiSchema, mainUiSchema) as UiSchema;
   const uiSchema = Object.keys(mergedUiSchema).length > 0
     ? {
       "ui:readonly": true,
-      ...normalizeUiSchema(mergedUiSchema, {form: props.state, user, page: pageData})
+      ...normalizeUiSchema(mergedUiSchema, jexlCtx)
     }
     : {"ui:readonly": true};
 
   const userWidgets = props.widgets || {};
+  const uiOptions = getUiOptions(uiSchema);
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
@@ -136,39 +205,50 @@ const StateView = (props: StateViewProps) => {
 
   const schema = resolveRefs(cloneSchema(props.description.schema as any), props.definitions || definitions) as RJSFSchema;
 
-  return <Card>
-    <CardContent sx={theme.stateView.styleOverrides}>
-      <Form
-        schema={schema}
-        validator={getRjsfValidator()}
-        children={<></>}
-        formData={props.state}
-        formContext={{data: props.state}}
-        uiSchema={uiSchema}
-        className="stateview"
-        templates={
-          {
-            ObjectFieldTemplate: props.objectFieldTemplate || ObjectFieldTemplate,
-            ArrayFieldTemplate: props.arrayFieldTemplate || ArrayFieldTemplate,
-            ...(props.fieldTemplate ? {FieldTemplate: props.fieldTemplate} : {})
+  const infoFQCN = playFQCNFromDefinitionId(schema['$id'] || '');
+
+  const informationRuntimeInfo = config.types[infoFQCN];
+
+  if(!informationRuntimeInfo) {
+    return <Alert severity="error">Information {infoFQCN} cannot be found in the Cody Play types config!</Alert>
+  }
+
+  return <>
+    <Card>
+      <CardContent sx={theme.stateView.styleOverrides}>
+        <Form
+          schema={schema}
+          validator={getRjsfValidator()}
+          children={<></>}
+          formData={props.state}
+          formContext={{data: props.state, information: informationRuntimeInfo}}
+          uiSchema={uiSchema}
+          className="stateview"
+          templates={
+            {
+              ObjectFieldTemplate: props.objectFieldTemplate || ObjectFieldTemplate,
+              ArrayFieldTemplate: props.arrayFieldTemplate || ArrayFieldTemplate,
+              ...(props.fieldTemplate ? {FieldTemplate: props.fieldTemplate} : {})
+            }
           }
-        }
-        widgets={
-          {
-            // LinkedRef: LinkedReferenceWidget,
-            // TextareaWidget: TextareaWidget,
-            // TextWidget: TextWidget,
-            ...widgets,
-            ...userWidgets
+          widgets={
+            {
+              // LinkedRef: LinkedReferenceWidget,
+              // TextareaWidget: TextareaWidget,
+              // TextWidget: TextWidget,
+              ...widgets,
+              ...userWidgets
+            }
           }
-        }
-        fields={{
-          ...fields,
-          ...props.fields
-        }}
-      />
-    </CardContent>
-  </Card>;
+          fields={{
+            ...fields,
+            ...props.fields
+          }}
+        />
+      </CardContent>
+    </Card>
+    <BottomActions uiOptions={uiOptions} information={informationRuntimeInfo} jexlCtx={jexlCtx} />
+  </>;
 };
 
 export default StateView;

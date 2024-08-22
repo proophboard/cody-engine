@@ -3,7 +3,7 @@ import {DB} from "@event-engine/infrastructure/Postgres/DB";
 import {PostgresEventStore} from "@event-engine/infrastructure/EventStore/PostgresEventStore";
 import {PostgresDocumentStore} from "@event-engine/infrastructure/DocumentStore/PostgresDocumentStore";
 import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
-import {MetadataMatcher} from "@event-engine/infrastructure/EventStore";
+import {EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {Event, EventMeta} from "@event-engine/messaging/event";
 import {QueryResult} from "pg";
 import {PostgresQueryBuilder} from "@event-engine/infrastructure/DocumentStore/Postgres/PostgresQueryBuilder";
@@ -52,7 +52,7 @@ export class PostgresMultiModelStore implements MultiModelStore {
     });
 
     session.getDeleteEventsTasks().forEach(task => {
-      queries.push(this.eventStore.makeDeleteFromQuery(task.streamName, task.metadataMatcher));
+      queries.push(this.eventStore.makeDeleteFromQuery(task.streamName, task.eventMatcher));
     })
 
     session.getUpsertDocumentTasks().forEach(task => queries.push(this.queryBuilder.makeUpsertDocQuery(
@@ -82,7 +82,7 @@ export class PostgresMultiModelStore implements MultiModelStore {
     return this.documentStore.getDocAndVersion(collectionName, docId);
   }
 
-  loadEvents<P extends Payload = any, M extends EventMeta = any>(streamName: string, metadataMatcher?: MetadataMatcher, fromEventId?: string, limit?: number): Promise<AsyncIterable<Event<P, M>>> {
-    return this.eventStore.load(streamName, metadataMatcher, fromEventId, limit);
+  loadEvents<P extends Payload = any, M extends EventMeta = any>(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number, reverse?: boolean): Promise<AsyncIterable<Event<P, M>>> {
+    return this.eventStore.load(streamName, eventMatcher, fromEventId, limit, reverse);
   }
 }

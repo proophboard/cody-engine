@@ -1,11 +1,13 @@
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {SortOrder} from "@event-engine/infrastructure/DocumentStore";
+import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 
 export const INFORMATION_SERVICE_NAME = 'CodyInformationService';
 
 export interface InformationService {
   useSession: (session: Session) => void;
+  useTypes: (types: TypeRegistry) => void;
   forgetSession: () => void;
   find: <T extends object>(informationName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder) => Promise<Array<T>>;
   count: (informationName: string, filter: Filter) => Promise<number>;

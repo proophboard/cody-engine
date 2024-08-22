@@ -38,11 +38,18 @@ import {
 } from "@cody-play/infrastructure/multi-model-store/configured-play-read-model-projector";
 import PageDataProvider from "@frontend/app/providers/PageData";
 import ErrorBoundary from "@frontend/app/components/core/ErrorBoundary";
+import {
+  playInformationServiceFactory
+} from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
+import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
+import GlobalStore from "@frontend/app/providers/GlobalStore";
+import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
 
 const updateConfigAndGlobalProjector = (config: CodyPlayConfig) => {
+  playInformationServiceFactory().useTypes(config.types as unknown as TypeRegistry);
   (window as any).$CP.projector = getConfiguredPlayReadModelProjector(config);
   (window as any).$CP.config = config;
 }
@@ -50,14 +57,16 @@ const updateConfigAndGlobalProjector = (config: CodyPlayConfig) => {
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
-      <PlayToggleColorMode>
-        <SnackbarProvider maxSnack={3}>
-          <MainLayout>
-            <ScrollToTop />
-              <Outlet />
-          </MainLayout>
-        </SnackbarProvider>
-      </PlayToggleColorMode>
+      <GlobalStore>
+        <PlayToggleColorMode>
+          <SnackbarProvider maxSnack={3}>
+            <MainLayout>
+              <ScrollToTop />
+                <Outlet />
+            </MainLayout>
+          </SnackbarProvider>
+        </PlayToggleColorMode>
+      </GlobalStore>
     </>
   };
 
@@ -112,6 +121,9 @@ export function App() {
 
   useEffect(() => {
     addAfterDispatchListener((updatedState) => {
+      messageBoxRef.updateConfig(updatedState, getConfiguredPlayAuthService());
+      updateConfigAndGlobalProjector(updatedState);
+
       const newRoutes = Object.values(updatedState.pages).map(p => p.route);
 
       console.log(currentRoutes, newRoutes);
@@ -119,9 +131,6 @@ export function App() {
         return;
       }
       setRouter(makeRouter(updatedState.pages));
-
-      messageBoxRef.updateConfig(updatedState);
-      updateConfigAndGlobalProjector(updatedState);
     })
 
     return () => {

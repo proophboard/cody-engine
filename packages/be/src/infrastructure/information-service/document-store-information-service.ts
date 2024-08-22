@@ -1,24 +1,26 @@
 import {InformationService} from "@server/infrastructure/information-service/information-service";
 import {DocumentStore, SortOrder} from "@event-engine/infrastructure/DocumentStore";
-import {types} from "@app/shared/types";
 import {
   isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
   isQueryableStateListDescription,
-  isQueryableValueObjectDescription
+  isQueryableValueObjectDescription, isStoredQueryableListDescription
 } from "@event-engine/descriptions/descriptions";
 import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
-import {makeValueObject, ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
+import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
+import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 
 export class DocumentStoreInformationService implements InformationService {
   private ds: DocumentStore;
   private session?: Session;
+  private types: TypeRegistry;
 
-  public constructor(ds: DocumentStore) {
+  public constructor(ds: DocumentStore, types: TypeRegistry) {
     this.ds = ds;
+    this.types = types;
   }
 
   public useSession(session: Session): void {
@@ -27,6 +29,10 @@ export class DocumentStoreInformationService implements InformationService {
 
   public forgetSession(): void {
     this.session = undefined;
+  }
+
+  public useTypes(types: TypeRegistry): void {
+    this.types = types;
   }
 
   public async find<T extends object>(informationName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<Array<T>> {
@@ -93,27 +99,31 @@ export class DocumentStoreInformationService implements InformationService {
     return this.ds.deleteMany(collectionName, filter);
   }
 
-  private detectCollection(informationName: string): string {
-    const runtimeInfo = this.detectSingleVoRuntimeInfo(informationName);
+  public detectCollection(informationName: string): string {
+    const runtimeInfo = this.detectVoRuntimeInfoWithCollection(informationName);
 
     const desc = runtimeInfo.desc;
 
-    if(!isQueryableStateDescription(desc) && !isQueryableStateListDescription(desc) && !isQueryableValueObjectDescription(desc) ) {
+    if(!isQueryableStateDescription(desc) && !isQueryableStateListDescription(desc) && !isQueryableValueObjectDescription(desc) && !isStoredQueryableListDescription(desc) ) {
       throw new Error(`The type: '${informationName}' is missing a 'collection' property in its type description. It cannot be stored in the read model database.`);
     }
 
     return desc.collection;
   }
 
-  private detectSingleVoRuntimeInfo(informationName: string): ValueObjectRuntimeInfo {
-    const runtimeInfo = types[informationName];
+  private detectVoRuntimeInfoWithCollection(informationName: string): ValueObjectRuntimeInfo {
+    const runtimeInfo = this.types[informationName];
 
     if(!runtimeInfo) {
       throw new Error(`Can't find the type: '${informationName}' in the type registry. Did you forget to pass the corresponding information card on prooph board to Cody?`);
     }
 
+    if(isStoredQueryableListDescription(runtimeInfo.desc)) {
+      return runtimeInfo;
+    }
+
     if(isQueryableStateListDescription(runtimeInfo.desc)) {
-      return this.detectSingleVoRuntimeInfo(runtimeInfo.desc.itemType);
+      return this.detectVoRuntimeInfoWithCollection(runtimeInfo.desc.itemType);
     }
 
     if(isQueryableStateDescription(runtimeInfo.desc) || isQueryableValueObjectDescription(runtimeInfo.desc) || isQueryableNotStoredValueObjectDescription(runtimeInfo.desc)) {

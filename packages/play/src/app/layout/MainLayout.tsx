@@ -25,6 +25,9 @@ const MainLayout = (props: MainLayoutProps) => {
             paddingLeft: {
                 lg: "300px"
             },
+            paddingBottom: {
+              xs: "50px"
+            },
             height: '100%',
             boxSizing: 'border-box',
             backgroundColor: (theme) => theme.palette.background.default,

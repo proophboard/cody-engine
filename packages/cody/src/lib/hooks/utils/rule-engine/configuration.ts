@@ -38,7 +38,7 @@ export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | T
   | ThenFilter | ThenFindInformation | ThenCountInformation | ThenInsertInformation | ThenUpsertInformation | ThenUpdateInformation | ThenReplaceInformation | ThenDeleteInformation
   | ThenLookupUsers | ThenLookupUser;
 
-export type PropMapping = {[name: string]: string | string[]};
+export type PropMapping = {[name: string]: string | string[] | PropMapping | PropMapping[]};
 
 export interface ThenFilter {
   filter: Filter;
@@ -56,7 +56,8 @@ export const isForEach = (then: any): then is ThenForEach => typeof then.forEach
 export interface ThenRecordEvent {
   record: {
     event: string;
-    mapping: string | PropMapping
+    mapping: string | PropMapping;
+    meta?: string | PropMapping;
   }
 }
 
