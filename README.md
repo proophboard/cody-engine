@@ -2,28 +2,6 @@
 
 Looking for a way to bridge the gap between Event Modeling and prototyping or even production-ready solutions?
 
-## V2 IS ON THE WAY
-Cody Engine is still under heavy development. While we were close to a first stable version, we decided to shift focus and start working on V2 before V1 reaches a stable state.
-
-### Why?
-Cody Engine relies heavily on code generation. But we've also developed [Cody Play](https://wiki.prooph-board.com/cody_play/a-playground-for-your-design.html) as a browser-only prototyping version of Cody Engine. 
-Cody Play is dynamically set up from a Playshot, which is a configuration for Cody Play that defines the structure. 
-
-It turns out, that this much lighter lowcode approach has so much advantages over code generation, that we don't think it is worth
-to maintain both. Hence, Cody Engine V2 will basically be a deployable Cody Play server offering the same extension points as Cody Engine does today. 
-So you'll still be able to override allmost all functionality with your custom logic, if you need to.
-
-### V2 Development
-
-V2 is developed in the [v2-play-server branch](https://github.com/proophboard/cody-engine/tree/v2-play-server)
-
-### What can I do until V2 is avialable?
-
-**Cody on prooph board and the online version of Cody Play will have the latest development features available, while the main branch of Cody Engine won't see new updates except critical bug fixes.**
-
-However, you can start with Cody Engine as it is and later switch to V2. Since your design is on prooph board, it will run in V2 the same as it runs in Cody Engine now. You might run into design issues that Cody Play can handle perfectly fine, but Cody Engine cannot.
-While it's of course annoying, you don't have to wait for V2. Use the ability of Cody Engine to inject custom logic to get around issues. If you need help or guidance, just open an issue and we're happy to help!
-
 ## Installation 
 
 ```
