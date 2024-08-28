@@ -40,7 +40,7 @@ import {useTypes} from "@frontend/hooks/use-types";
 import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 
 interface OwnProps {
-  state?: Record<string, any>;
+  state?: any;
   description: ValueObjectRuntimeInfo;
   widgets?: {[name: string]: Widget};
   fields?: {[name: string]: Field};
