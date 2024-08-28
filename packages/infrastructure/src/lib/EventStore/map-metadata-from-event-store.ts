@@ -9,7 +9,7 @@ export const mapMetadataFromEventStore = async (events: Event[], authService?: A
   for (let event of events) {
     if(event.meta.user && typeof event.meta.user === 'string') {
       event = setMessageMetadata(event, META_KEY_USER, authService
-        ? authService.get(event.meta.user)
+        ? await authService.get(event.meta.user)
         : {userId: event.meta.user}
       );
     }
