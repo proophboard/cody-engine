@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {Box, Button, Drawer, List, ListItem, SxProps, Theme, useMediaQuery, useTheme} from "@mui/material";
 import {pages} from "@frontend/app/pages";
-import {NavLink} from "react-router-dom";
 import {
   belongsToGroup,
   DynamicSidebar,
@@ -17,7 +16,6 @@ import {User} from "@app/shared/types/core/user/user";
 import SidebarNavGroup from "@frontend/app/layout/SidebarNavGroup";
 import {names} from "@event-engine/messaging/helpers";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
-import {useEffect} from "react";
 import SidebarItem from "@frontend/app/layout/SidebarItem";
 
 interface OwnProps {
@@ -83,16 +81,16 @@ export const sortTopLevelPages = (a: {sidebar: {position?: number}}, b: {sidebar
 }
 
 export const makeSidebarItem = (route: string, label: string, Icon: JSX.Element, theme: Theme, user: User, pageMatch: {pathname: string}, invisible?: string | boolean, service = '', dynamic?: DynamicSidebar) => {
- return <SidebarItem key={route}
-                     route={route}
-                     label={label}
-                     Icon={Icon}
-                     theme={theme}
-                     user={user}
-                     pageMatch={pageMatch}
-                     invisible={invisible}
-                     service={service}
-                     dynamic={dynamic}
+  return <SidebarItem key={route}
+                      route={route}
+                      label={label}
+                      Icon={Icon}
+                      theme={theme}
+                      user={user}
+                      pageMatch={pageMatch}
+                      invisible={invisible}
+                      service={service}
+                      dynamic={dynamic}
   />
 }
 
@@ -132,18 +130,18 @@ const Sidebar = (props: SidebarProps) => {
     return true;
   })
 
-  const topLevelPageItems = topLevelPagesWithoutGroups.map(({route, sidebar: {label, Icon, invisible, group}}) => {
+  const topLevelPageItems = topLevelPagesWithoutGroups.map(({route, service, sidebar: {label, Icon, invisible, group, dynamic}}) => {
     const pGroup = belongsToGroup({sidebar: {group}})
     if(pGroup) {
       const cachedPGroup = groups[pGroup.label];
       return <SidebarNavGroup name={'group-' + names(cachedPGroup.config.label).fileName}
                               label={cachedPGroup.config.label}
                               Icon={<MdiIcon icon={cachedPGroup.config.icon} />}
-                              pages={cachedPGroup.pages.map(p => makeSidebarItem(p.route, p.sidebar.label, <p.sidebar.Icon />, theme, user, pageMatch, p.sidebar.invisible))}
+                              pages={cachedPGroup.pages.map(p => makeSidebarItem(p.route, p.sidebar.label, <p.sidebar.Icon />, theme, user, pageMatch, p.sidebar.invisible, service, dynamic))}
       />
     }
 
-    return makeSidebarItem(route, label, <Icon />, theme, user, pageMatch, invisible)
+    return makeSidebarItem(route, label, <Icon />, theme, user, pageMatch, invisible, service, dynamic)
   });
 
   return <Drawer
@@ -174,7 +172,7 @@ const Sidebar = (props: SidebarProps) => {
         {topLevelPageItems}
       </List>
     </Box>}
-    />
+  />
 };
 
 export default Sidebar;

@@ -13,6 +13,7 @@ export interface PageDefinition {
   components: ViewComponent[];
   commands: string[];
   tab?: Omit<Tab, "route">;
+  service?: string;
 }
 
 export interface DynamicSidebar {

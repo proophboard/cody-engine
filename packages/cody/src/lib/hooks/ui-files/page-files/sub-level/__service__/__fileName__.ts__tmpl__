@@ -8,6 +8,7 @@ export const <%= className %>: SubLevelPageWithProophBoardDescription = {
   route: "<%= route %>",
   routeParams: <%- toJSON(routeParams) %>,
   breadcrumb: <%- breadcrumb %>,
+  service: "<%= serviceNames.className %>",
   <% if (isTab) { %>tab: <%- toJSON(tab) %>,<% } %>
   _pbBoardId: "<%= _pbBoardId %>",
   _pbCardId: "<%= _pbCardId %>",

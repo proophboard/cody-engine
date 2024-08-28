@@ -16,6 +16,9 @@ import {
 import {usePageData} from "@frontend/hooks/use-page-data";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {playGetVoRuntimeInfoFromDataReference} from "@cody-play/state/play-get-vo-runtime-info-from-data-reference";
+import {useTypes} from "@frontend/hooks/use-types";
+import {PlayInformationRegistry} from "@cody-play/state/types";
+import {getApiQuery, useApiQuery} from "@frontend/queries/use-api-query";
 
 interface OwnProps {
   route: string,
@@ -35,13 +38,13 @@ const SidebarItem = ({invisible, route, label, Icon, theme, user, pageMatch, ser
   const [hidden, setHidden] = useState(false);
   const [dynamicLabel, setDynamicLabel] = useState<string | undefined>('');
   const [DynamicIcon, setDynamicIcon] = useState<JSX.Element | undefined>();
-  const {config} = useContext(configStore);
   const [page] = usePageData();
+  const [types] = useTypes();
 
   useEffect(() => {
     if(dynamic) {
       try {
-        const voInfo = playGetVoRuntimeInfoFromDataReference(dynamic.data, service, config.types);
+        const voInfo = playGetVoRuntimeInfoFromDataReference(dynamic.data, service, types as unknown as PlayInformationRegistry);
 
         const desc = voInfo.desc;
 
@@ -50,7 +53,8 @@ const SidebarItem = ({invisible, route, label, Icon, theme, user, pageMatch, ser
           return;
         }
 
-        makeLocalApiQuery(config, user)((desc as QueryableDescription).query, {}).then(data => {
+
+        getApiQuery()((desc as QueryableDescription).query, {}).then(data => {
           if(dynamic.label) {
             const dLabel = jexl.evalSync(dynamic.label, {data, page, user});
             setDynamicLabel(dLabel);

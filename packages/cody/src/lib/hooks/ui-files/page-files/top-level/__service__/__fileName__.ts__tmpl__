@@ -15,6 +15,7 @@ export const <%= className %>: TopLevelPageWithProophBoardDescription = {
     <% if (typeof sidebar.invisible !== "undefined") { %>invisible: <%- toJSON(sidebar.invisible) %>,<% } %>
   },
   breadcrumb: <%- breadcrumb %>,
+  service: "<%= serviceNames.className %>",
   <% if (isTab) { %>tab: <%- toJSON(tab) %>,<% } %>
   _pbBoardId: "<%= _pbBoardId %>",
   _pbCardId: "<%= _pbCardId %>",

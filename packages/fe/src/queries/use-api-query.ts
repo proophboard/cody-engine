@@ -5,7 +5,7 @@ import {useQuery, UseQueryResult} from "@tanstack/react-query";
 
 export type ApiQuery = (queryName: string, params: any) => Promise<any>;
 
-export const apiQuery: ApiQuery = async (queryName: string, params: any): Promise<any> => {
+const apiQuery: ApiQuery = async (queryName: string, params: any): Promise<any> => {
   const response: AxiosResponse = await Api.executeQuery(queryName, params);
 
   if(response.status === 200) {
@@ -19,6 +19,10 @@ let internalApiQuery: ApiQuery = apiQuery;
 
 export const injectCustomApiQuery = (customApiQuery: ApiQuery): void => {
   internalApiQuery = customApiQuery;
+}
+
+export const getApiQuery = (): ApiQuery => {
+  return internalApiQuery;
 }
 
 export const useApiQuery = (queryName: string, params: any) => {
