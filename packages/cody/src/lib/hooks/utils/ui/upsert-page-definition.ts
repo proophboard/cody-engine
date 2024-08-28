@@ -100,8 +100,8 @@ export const upsertTopLevelPage = async (
     toJSON,
     breadcrumb,
     imports: imports.join(";\n"),
-    commandNames,
-    componentNames,
+    commandNames: uiMeta.commands || commandNames,
+    componentNames: uiMeta.views || componentNames,
   })
 
   return true;
@@ -164,8 +164,8 @@ export const upsertSubLevelPage = async (
     toJSON,
     breadcrumb,
     breadcrumbImports: breadcrumbImports.join(";\n"),
-    commandNames,
-    componentNames,
+    commandNames: uiMeta.commands || commandNames,
+    componentNames: uiMeta.views || componentNames,
   })
 
   return true;

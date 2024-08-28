@@ -7,6 +7,9 @@ import {
 } from "@proophboard/cody-types";
 import {List} from "immutable";
 import {getAbsoluteGraphPoint} from "@proophboard/cody-utils";
+import {Context} from "@cody-engine/cody/hooks/context";
+import {definitionIdFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/definitions";
+import {nodeFQCN} from "@cody-engine/cody/hooks/utils/node-fqcn";
 
 type Success = Node;
 type Error = CodyResponse;
@@ -46,6 +49,20 @@ export const getNodeFromSyncedNodes = (node: Node, syncedNodes: NodeMap): Succes
 
   return {
     cody: `Tried to find node ${node.getName()} of type ${node.getType()} in list of synced nodes. But it is not there.`,
+    details: `Try to refresh prooph board and reconnect to Cody again!`,
+    type: CodyResponseType.Error
+  }
+}
+
+export const getNodeFromSyncedNodesByFQCN = (fqcn: string, type: NodeType, syncedNodes: NodeMap, ctx: Context): Success | Error => {
+  const filteredNodes = syncedNodes.filter(otherNode => otherNode.getType() === type && nodeFQCN(otherNode, ctx) === fqcn);
+
+  if(filteredNodes.count() > 0) {
+    return filteredNodes.first();
+  }
+
+  return {
+    cody: `Tried to find node by FQCN ${fqcn} of type ${type} in list of synced nodes. But it is not there.`,
     details: `Try to refresh prooph board and reconnect to Cody again!`,
     type: CodyResponseType.Error
   }
