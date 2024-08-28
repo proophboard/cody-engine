@@ -19,7 +19,7 @@ const <%= className %> = (props: <%= className %>Props & {hidden?: boolean}) => 
 
   return <>
     {query.isLoading && <CircularProgress />}
-    {query.isSuccess && <StateView description={<%= serviceNames.className %><%= nsClassName %><%= className %>VORuntimeInfo} state={query.data} hidden={hidden} />}
+    {query.isSuccess && <StateView description={<%= serviceNames.className %><%= nsClassName %><%= className %>VORuntimeInfo} state={query.data} hidden={props.hidden} />}
   </>
 }
 
