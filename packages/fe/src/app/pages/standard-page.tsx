@@ -36,9 +36,11 @@ export const StandardPage = (props: Props) => {
   const commandBar = cmdBtns.length || tabs ? <Grid2 xs={12}><CommandBar tabs={tabs}>{cmdBtns}</CommandBar></Grid2> : <></>;
 
   const components = props.page.components.map((valueObjectName, index) => {
+    const hidden = typeof valueObjectName === "object"? valueObjectName.hidden : false;
+    valueObjectName = typeof valueObjectName === "object"? valueObjectName.view : valueObjectName;
     const ViewComponent = loadViewComponent(valueObjectName);
 
-    return <Grid2 key={'comp' + index} xs={12}>{ViewComponent(routeParams)}</Grid2>
+    return <Grid2 key={'comp' + index} xs={12}>{ViewComponent({...routeParams, hidden})}</Grid2>
   });
 
   return <Grid2 container={true} spacing={3}>

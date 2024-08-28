@@ -9,10 +9,11 @@ import {
   SUBSCRIPTIONS_COLLECTION, SubscriptionSnapshot
 } from "@event-engine/infrastructure/Subscription/makePersistentCatchUpSubscription";
 import {CatchUpSubscription} from "@event-engine/infrastructure/Subscription/CatchUpSubscription";
+import {NodeFilesystem} from "@event-engine/infrastructure/helpers/node-file-system";
 
 describe("makePersistentCatchUpSubscription", () => {
-  const es = new InMemoryEventStore();
-  const ds = new InMemoryDocumentStore();
+  const es = new InMemoryEventStore(new NodeFilesystem());
+  const ds = new InMemoryDocumentStore(new NodeFilesystem());
   const TEST_STREAM = 'test_stream';
   const TEST_SUBSCRIPTION = 'test_subscription';
 

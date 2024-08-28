@@ -9,6 +9,10 @@ import {useGet<%= stateNames.className %>} from "@frontend/queries/<%= serviceNa
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {<%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeInfo} from "@app/shared/queries/<%= serviceNames.fileName %>/get-<%= stateNames.fileName %>";
 <% } %>
+import {useUser} from "@frontend/hooks/use-user";
+import {useParams} from "react-router-dom";
+import {usePageData} from "@frontend/hooks/use-page-data";
+import {getInitialValues} from "@app/shared/utils/command-form/get-initial-values";
 <% if (buttonIcon) { %>import {<%= buttonIcon %>} from "mdi-material-ui";<% } %>
 
 interface OwnProps {
@@ -21,11 +25,17 @@ type <%= className %>Props = OwnProps & WithCommandButtonProps;
 
 const <%= className %> = (props: <%= className %>Props) => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [user,] = useUser();
+  const routeParams = useParams();
+  const [page,] = usePageData();
+
 <% if (!newAggregate && !uiDisableFetchState) { %>
   const query = useGet<%= stateNames.className %>(determineQueryPayload(props, <%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeInfo));
 <% } %>
   const handleOpenDialog = () => {setDialogOpen(true)};
   const handleCloseDialog = () => {setDialogOpen(false)};
+
+  const initialValues = getInitialValues(<%= serviceNames.className %><%= className %>RuntimeInfo, {user, routeParams, page});
 
   return <>
     <CommandButton command={<%= serviceNames.className %><%= className %>RuntimeInfo} onClick={handleOpenDialog} {...{<% if (buttonIcon) { %>startIcon: <<%= buttonIcon %> />, <% } %>...props.buttonProps}} />
@@ -34,6 +44,7 @@ const <%= className %> = (props: <%= className %>Props) => {
       onClose={handleCloseDialog}
       commandDialogCommand={<%= serviceNames.className %><%= className %>RuntimeInfo}
       commandFn={<%= propertyName %>}
+      initialValues={initialValues}
       <% if (!newAggregate  && !uiDisableFetchState) { %>aggregateState={query.isSuccess? query.data : {}}<% } %>
     />
   </>

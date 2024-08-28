@@ -1,12 +1,15 @@
-import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
+import {CodyResponse, Node} from "@proophboard/cody-types";
 import {Context} from "../../context";
 import {isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
-import {JSONSchema7} from "json-schema-to-ts";
 import {ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
 import {detectService} from "../detect-service";
-import {definitionId, normalizeRefs} from "./definitions";
+import {definitionId, definitionIdFromFQCN, FQCNFromDefinitionId, normalizeRefs} from "./definitions";
 import {names} from "@event-engine/messaging/helpers";
-import {isQueryableStateDescription, isStateDescription} from "@event-engine/descriptions/descriptions";
+import {
+  isListDescription,
+  isQueryableStateDescription,
+  isStateDescription
+} from "@event-engine/descriptions/descriptions";
 import {isListSchema} from "../json-schema/list-schema";
 import {resolveRef} from "../json-schema/resolve-ref";
 import {addSchemaTitles} from "../json-schema/add-schema-titles";
@@ -14,6 +17,10 @@ import {jsonSchemaFromShorthand} from "../json-schema/json-schema-from-shorthand
 import {isShorthand} from "../json-schema/shorthand";
 import {ValueObjectMetadata, ValueObjectMetadataRaw} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {addPropertySchemaIds} from "@cody-engine/cody/hooks/utils/json-schema/add-property-schema-ids";
+import {isRefSchema, RefSchema} from "@app/shared/utils/json-schema/is-ref-schema";
+import {JSONSchema7} from "json-schema-to-ts";
+import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
+import {normalizeProjectionConfig} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
 
 export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | CodyResponse => {
   const meta = parseJsonMetadata<ValueObjectMetadataRaw>(vo);
@@ -63,22 +70,43 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     meta.querySchema = normalizeRefs(addSchemaTitles('Get ' + vo.getName(), meta.querySchema), service);
   }
 
+
+
+  let normalizedSchema = normalizeRefs(addSchemaTitles(vo.getName(), meta.schema), service) as JSONSchema7;
+
+  if(isRefSchema(normalizedSchema as any)) {
+    const resolvedInfo = resolveRef(normalizedSchema as RefSchema, normalizedSchema, vo);
+
+    if(isCodyError(resolvedInfo)) {
+      return resolvedInfo;
+    }
+
+    if(isListDescription(resolvedInfo.desc)) {
+      normalizedSchema = {
+        $id: (normalizedSchema as any).$id,
+        title: (normalizedSchema as any).title,
+        type: "array",
+        items: {
+          $ref: definitionIdFromFQCN(resolvedInfo.desc.itemType)
+        }
+      }
+    }
+  }
+
+  const hasIdentifier = !!meta.identifier;
+  const isQueryable = !!meta.querySchema;
+
   let isNotStored = false;
 
   if(typeof meta.collection === "boolean" && !meta.collection) {
     isNotStored = true;
   }
 
-  const normalizedSchema = normalizeRefs(addSchemaTitles(vo.getName(), meta.schema), service) as JSONSchema7;
-
-  const hasIdentifier = !!meta.identifier;
-  const isQueryable = !!meta.querySchema;
-
   const convertedMeta: ValueObjectMetadata = {
     schema: normalizedSchema,
     ns,
     service,
-    isList: isListSchema(normalizedSchema),
+    isList: isListSchema(normalizedSchema) || isInlineItemsArraySchema(normalizedSchema),
     hasIdentifier,
     isQueryable,
   }
@@ -119,10 +147,23 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     }
   }
 
+  if(isInlineItemsArraySchema(normalizedSchema)) {
+    if(meta.identifier) {
+      convertedMeta.hasIdentifier = true;
+      convertedMeta.identifier = meta.identifier;
+    }
+
+    convertedMeta.itemType = FQCNFromDefinitionId((convertedMeta.schema as any)['$id'] as string) + 'Item';
+  }
+
   if(isQueryable) {
     convertedMeta.querySchema = normalizeRefs(meta.querySchema, service) as JSONSchema7;
     if(!convertedMeta.collection && convertedMeta.hasIdentifier && (typeof meta.collection === "undefined" || typeof meta.collection === "string")) {
       convertedMeta.collection = meta.collection || voNames.constantName.toLowerCase() + '_collection';
+    }
+
+    if(!convertedMeta.collection && typeof meta.collection === "string") {
+      convertedMeta.collection = meta.collection;
     }
   }
 
@@ -130,6 +171,10 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
 
   if(meta.queryDependencies) {
     convertedMeta.queryDependencies = meta.queryDependencies;
+  }
+
+  if(meta.projection) {
+    convertedMeta.projection = normalizeProjectionConfig(meta.projection, FQCNFromDefinitionId((convertedMeta.schema as any)['$id'] as string))
   }
 
   return convertedMeta;

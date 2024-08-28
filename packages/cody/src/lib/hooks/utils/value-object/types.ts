@@ -4,6 +4,7 @@ import {GridDensity} from "@mui/x-data-grid";
 import {DependencyRegistry, ValueObjectDescriptionFlags} from "@event-engine/descriptions/descriptions";
 import {JSONSchema7} from "json-schema-to-ts";
 import {UiSchema} from "@rjsf/utils";
+import {ProjectionConfig} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
 
 export interface ValueObjectMetadataRaw {
   identifier?: string;
@@ -15,6 +16,7 @@ export interface ValueObjectMetadataRaw {
   collection?: string | boolean;
   initialize?: Rule[];
   uiSchema?: UiSchema & TableUiSchema;
+  projection?: ProjectionConfig;
 }
 
 export interface ResolveConfig {
@@ -41,7 +43,7 @@ export interface TableColumnUiSchema {
   width?: string | number;
   value?: Rule[] | string;
   pageLink?: string | PageLinkTableColumn;
-  ref?: { data: string; value: string };
+  ref?: { data: string; value: string; itemIdentifier?: string };
   link?: string | Rule[];
 }
 
@@ -77,4 +79,5 @@ export interface ValueObjectMetadata extends ValueObjectDescriptionFlags {
   resolve?: ResolveConfig;
   queryDependencies?: DependencyRegistry;
   uiSchema?: UiSchema & TableUiSchema;
+  projection?: ProjectionConfig;
 }

@@ -41,6 +41,13 @@ export const FQCNFromDefinitionId = (definitionId: string): string => {
   return fqcnParts.map(p => names(p).className).join(".");
 }
 
+export const definitionIdFromFQCN = (fqcn: string): string => {
+  return '/definitions/' + fqcn
+    .split(".")
+    .map(r => names(r).fileName)
+    .join("/");
+}
+
 export const splitVOFQCN = (fqcn: string): [string, string, string] => {
   const service = voServiceFromFQCN(fqcn);
   const nsJSONPointer = voNamespaceJSONPointerFromFQCN(fqcn);

@@ -29,12 +29,12 @@ import {
 } from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {UiSchema} from "@rjsf/utils";
 import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
-import {isInlineItemsArraySchema, isListSchema} from "@cody-play/infrastructure/cody/schema/check";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {GridDensity} from "@mui/x-data-grid";
 import {valueObjectNameFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 import {normalizeProjectionConfig, ProjectionConfig} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
-import {isRefSchema} from "@cody-play/infrastructure/json-schema/is-ref-schema";
+import {isRefSchema} from "@app/shared/utils/json-schema/is-ref-schema";
+import {isInlineItemsArraySchema, isListSchema} from "@app/shared/utils/schema-checks";
 
 export interface PlayValueObjectMetadataRaw {
   identifier?: string;

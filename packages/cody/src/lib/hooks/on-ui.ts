@@ -6,9 +6,8 @@ import {getUiMetadata} from "./utils/ui/get-ui-metadata";
 import {getNodeFromSyncedNodes} from "./utils/node-tree";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {
-  isQueryableListDescription, isQueryableNotStoredStateDescription, isQueryableNotStoredValueObjectDescription,
-  isQueryableStateDescription,
-  isQueryableStateListDescription, isQueryableValueObjectDescription
+  isQueryableNotStoredStateDescription,
+  isQueryableStateDescription
 } from "@event-engine/descriptions/descriptions";
 import {isTopLevelPage} from "./utils/ui/is-top-level-page";
 import {detectRoute} from "./utils/ui/detect-route";
@@ -19,9 +18,6 @@ import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {isSubLevelPage} from "@frontend/app/pages/page-definitions";
 import {formatFiles} from "@nx/devkit";
 import {register} from "./utils/registry";
-import {upsertCommandComponent} from "./utils/ui/upsert-command-component";
-import {upsertListViewComponent} from "./utils/ui/upsert-list-view-component";
-import {upsertStateViewComponent} from "./utils/ui/upsert-state-view-component";
 
 export const onUi: CodyHook<Context> = async (ui, ctx) => {
   try {
@@ -73,22 +69,6 @@ export const onUi: CodyHook<Context> = async (ui, ctx) => {
     }
 
     withErrorCheck(register, [ui, ctx, tree]);
-
-    for (const command of commands) {
-      await asyncWithErrorCheck(upsertCommandComponent, [command, ctx, tree]);
-    }
-
-    for (const viewModel of viewModels) {
-      const viewModelMeta = withErrorCheck(getVoMetadata, [viewModel, ctx]);
-
-      if(isQueryableStateListDescription(viewModelMeta) || isQueryableListDescription(viewModelMeta)) {
-        await asyncWithErrorCheck(upsertListViewComponent, [viewModel, viewModelMeta, ctx, tree]);
-      }
-
-      if(isQueryableStateDescription(viewModelMeta) || isQueryableNotStoredStateDescription(viewModelMeta) || isQueryableValueObjectDescription(viewModelMeta) || isQueryableNotStoredValueObjectDescription(viewModelMeta)) {
-        await asyncWithErrorCheck(upsertStateViewComponent, [viewModel, viewModelMeta, ctx, tree]);
-      }
-    }
 
     await formatFiles(tree);
 

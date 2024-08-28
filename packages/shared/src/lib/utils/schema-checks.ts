@@ -1,5 +1,5 @@
 import {JSONSchema7} from "json-schema";
-import {isRefSchema, RefSchema} from "@cody-play/infrastructure/json-schema/is-ref-schema";
+import {isRefSchema, RefSchema} from "@app/shared/utils/json-schema/is-ref-schema";
 
 export interface ListSchema {
   type: "array";

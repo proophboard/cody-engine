@@ -3,7 +3,6 @@ import {User} from "@app/shared/types/core/user/user";
 import {filters} from "@event-engine/infrastructure/DocumentStore/Filter/index";
 import {QueryableStateListDescription, QueryableValueObjectDescription} from "@event-engine/descriptions/descriptions";
 import {ResolveConfig} from "@cody-engine/cody/hooks/utils/value-object/types";
-import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {Filter as DSFilter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {
   isExecuteRules,
@@ -26,7 +25,7 @@ import {
   isOrFilter
 } from "@cody-engine/cody/hooks/utils/value-object/query/filter-types";
 import jexl from "@app/shared/jexl/get-configured-jexl";
-import {isObjectSchema} from "@cody-play/infrastructure/cody/schema/check";
+import {isObjectSchema} from "@app/shared/utils/schema-checks";
 
 export const makeFiltersFromResolveConfig = (desc: QueryableStateListDescription | QueryableValueObjectDescription, resolve: ResolveConfig, queryPayload: any, user: User): DSFilter => {
   const rule = resolve.where;

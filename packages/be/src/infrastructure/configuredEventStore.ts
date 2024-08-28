@@ -7,6 +7,7 @@ import {env} from "@server/environments/environment.current";
 import {EventQueue} from "@event-engine/infrastructure/EventQueue";
 import {getExternalService} from "@server/extensions/get-external-service";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
+import {NodeFilesystem} from "@event-engine/infrastructure/helpers/node-file-system";
 
 export const WRITE_MODEL_STREAM = 'write_model_stream';
 export const PUBLIC_STREAM = 'public_stream';
@@ -27,10 +28,10 @@ export const getConfiguredEventStore = (): EventStore => {
         es = new PostgresEventStore(getConfiguredDB());
         break;
       case "filesystem":
-        es = new InMemoryEventStore(PERSISTENT_STREAMS_FILE);
+        es = new InMemoryEventStore(new NodeFilesystem(), PERSISTENT_STREAMS_FILE);
         break;
       default:
-        es = new InMemoryEventStore();
+        es = new InMemoryEventStore(new NodeFilesystem());
     }
 
     // Avoid circular deps in listeners

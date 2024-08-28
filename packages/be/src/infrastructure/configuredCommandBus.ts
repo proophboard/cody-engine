@@ -15,7 +15,11 @@ import {
 } from "@event-engine/descriptions/descriptions";
 import {MessageBus} from "@server/infrastructure/MessageBus";
 import {setMessageMetadata} from "@event-engine/messaging/message";
-import {META_KEY_DELETE_HISTORY, META_KEY_DELETE_STATE} from "@event-engine/infrastructure/AggregateRepository";
+import {
+  AggregateRepository,
+  META_KEY_DELETE_HISTORY,
+  META_KEY_DELETE_STATE
+} from "@event-engine/infrastructure/AggregateRepository";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
 import {CommandBus} from "@event-engine/messaging/command-bus";
 import {StreamEventsRepository} from "@event-engine/infrastructure/StreamEventsRepository";

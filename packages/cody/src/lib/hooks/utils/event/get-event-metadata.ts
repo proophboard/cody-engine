@@ -11,6 +11,7 @@ import {addSchemaTitles} from "../json-schema/add-schema-titles";
 import {jsonSchemaFromShorthand} from "../json-schema/json-schema-from-shorthand";
 import {isShorthand} from "../json-schema/shorthand";
 import {findAggregateState} from "@cody-engine/cody/hooks/utils/aggregate/find-aggregate-state";
+import {isAggregateEvent} from "@cody-engine/cody/hooks/utils/event/is-aggregate-event";
 
 interface EventMetaRaw {
   schema: any;
@@ -25,6 +26,7 @@ export interface EventMeta {
   schema: JSONSchema;
   service?: string;
   applyRules?: Rule[];
+  aggregateEvent: boolean;
 }
 
 export const getEventMetadata = (event: Node, ctx: Context): EventMeta | CodyResponse => {
@@ -51,7 +53,13 @@ export const getEventMetadata = (event: Node, ctx: Context): EventMeta | CodyRes
     }
   }
 
-  if(meta.public) {
+  const aggregateEvent = isAggregateEvent(event, ctx);
+
+  if(isCodyError(aggregateEvent)) {
+    return aggregateEvent;
+  }
+
+  if(meta.public || !aggregateEvent) {
     schema['$id'] = `/definitions/${serviceNames.fileName}/${eventNames.fileName}`;
   } else {
     const aggregateState = findAggregateState(event, ctx);
@@ -71,6 +79,7 @@ export const getEventMetadata = (event: Node, ctx: Context): EventMeta | CodyRes
     "public": !!meta.public,
     fqcn: FQCNFromDefinitionId(schema['$id']),
     schema,
+    aggregateEvent,
   }
 
   if(meta.service) {

@@ -3,9 +3,10 @@ import {EqFilter} from "@event-engine/infrastructure/DocumentStore/Filter/EqFilt
 import {AndFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AndFilter";
 import {OrFilter} from "@event-engine/infrastructure/DocumentStore/Filter/OrFilter";
 import {InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
+import {NodeFilesystem} from "@event-engine/infrastructure/helpers/node-file-system";
 
 describe('InMemoryDocumentStore', () => {
-  const ds = new InMemoryDocumentStore();
+  const ds = new InMemoryDocumentStore(new NodeFilesystem());
 
   const TEST_COLLECTION = 'test';
 

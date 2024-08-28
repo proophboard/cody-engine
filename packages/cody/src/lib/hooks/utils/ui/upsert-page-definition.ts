@@ -18,7 +18,7 @@ import {
 import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
 import {getNodesOfTypeNearby} from "../node-tree";
 import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference";
-import {isDynamicBreadcrumb, UiMetadata} from "@cody-engine/cody/hooks/utils/ui/types";
+import {isDynamicBreadcrumb, UiMetadata, ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 
 export const upsertTopLevelPage = async (
   ui: Node,
@@ -81,6 +81,8 @@ export const upsertTopLevelPage = async (
   };
 
   const isTab = !!uiMeta.tab;
+  const isGroup = !!uiMeta.sidebar?.group;
+  const isDynamic = !!uiMeta.sidebar?.dynamic;
 
   generateFiles(tree, __dirname + '/../../ui-files/page-files/top-level', ctx.feSrc + '/app/pages', {
     ...pbInfo,
@@ -90,7 +92,11 @@ export const upsertTopLevelPage = async (
     route,
     sidebar,
     isTab,
+    isGroup,
+    isDynamic,
     tab: uiMeta.tab,
+    group: uiMeta.sidebar?.group,
+    dynamic: uiMeta.sidebar?.dynamic,
     toJSON,
     breadcrumb,
     imports: imports.join(";\n"),
@@ -214,7 +220,7 @@ const getCommandNames = (commands: List<Node>, ctx: Context, existingPageDefinit
 }
 
 const getComponentNames = (viewModels: List<Node>, ctx: Context, existingPageDefinition?: PageDefinition): string[] | CodyResponse => {
-  const componentNames: string[] = existingPageDefinition?.components || [];
+  const componentNames: string[] = existingPageDefinition?.components.map(c => typeof c === "object"? c.view : c) || [];
 
   for (const vo of viewModels) {
     const voMeta = getVoMetadata(vo, ctx);

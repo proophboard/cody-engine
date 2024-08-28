@@ -3,6 +3,7 @@ import {PostgresDocumentStore} from "@event-engine/infrastructure/DocumentStore/
 import {getConfiguredDB} from "@server/infrastructure/configuredDB";
 import {InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
 import {env} from "@server/environments/environment.current";
+import {NodeFilesystem} from "@event-engine/infrastructure/helpers/node-file-system";
 
 let store: DocumentStore;
 
@@ -17,10 +18,10 @@ export const getConfiguredDocumentStore = (): DocumentStore => {
         store = new PostgresDocumentStore(getConfiguredDB());
         break;
       case "filesystem":
-        store = new InMemoryDocumentStore(PERSISTENT_COLLECTION_FILE);
+        store = new InMemoryDocumentStore(new NodeFilesystem(), PERSISTENT_COLLECTION_FILE);
         break;
       default:
-        store = new InMemoryDocumentStore();
+        store = new InMemoryDocumentStore(new NodeFilesystem());
     }
   }
 

@@ -5,7 +5,7 @@ import {asyncEmptyIterator} from "@event-engine/infrastructure/helpers/async-emp
 import {InMemoryFilterProcessor} from "@event-engine/infrastructure/DocumentStore/InMemory/InMemoryFilterProcessor";
 import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
 import {areValuesEqualForAllSorts, getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
-import {Filesystem, NodeFilesystem} from "@event-engine/infrastructure/helpers/fs";
+import {Filesystem} from "@event-engine/infrastructure/helpers/fs";
 import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {cloneDeep} from "lodash";
@@ -19,11 +19,11 @@ export class InMemoryDocumentStore implements DocumentStore {
   private readonly filterProcessor: InMemoryFilterProcessor;
   private readonly fs: Filesystem;
 
-  constructor(storageFile?: string, fs?: Filesystem) {
+  constructor(fs: Filesystem, storageFile?: string) {
     this.persistOnDisk = !!storageFile;
     this.storageFile = storageFile || '//memory';
     this.filterProcessor = new InMemoryFilterProcessor();
-    this.fs = fs || new NodeFilesystem();
+    this.fs = fs;
 
     if(this.persistOnDisk) {
       if(! this.fs.existsSync(this.storageFile)) {

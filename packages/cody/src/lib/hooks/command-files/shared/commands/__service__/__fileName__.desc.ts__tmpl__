@@ -1,12 +1,16 @@
-import {AggregateCommandDescription} from "@event-engine/descriptions/descriptions";
+import {<% if (isAggregateCommand) { %>Aggregate<% } else if (isStreamCommand) { %>Stream<% } else { %>Pure<% } %>CommandDescription} from "@event-engine/descriptions/descriptions";
 
-export const <%= className %>Desc: AggregateCommandDescription = {
+export const <%= className %>Desc: <% if (isAggregateCommand) { %>Aggregate<% } else if (isStreamCommand) { %>Stream<% } else { %>Pure<% } %>CommandDescription = {
   name: '<%= serviceNames.className %>.<%= className %>',
   aggregateCommand: <%= isAggregateCommand %>,
-  newAggregate: <% if (newAggregate) { %>true<% } else { %>false<% } %>,
-  aggregateName: "<%= serviceNames.className %>.<%= aggregateName %>",
-  aggregateIdentifier: "<%= aggregateIdentifier %>",
+  streamCommand: <%= isStreamCommand %>,
   <% if (dependencies) { %>dependencies: <%- toJSON(dependencies) %>,<% } %>
+  <% if (isStreamCommand) { %>streamIdExpr: "<%= streamId %>",<% } %>
+  <% if (!isAggregateCommand && streamName) { %>streamName: "<%= streamName %>",<% } %>
+  <% if (!isAggregateCommand && publicStream) { %>publicStream: "<%= publicStream %>",<% } %>
+  <% if (isAggregateCommand) { %>newAggregate: <% if (newAggregate) { %>true<% } else { %>false<% } %>,<% } %>
+  <% if (isAggregateCommand) { %>aggregateName: "<%= serviceNames.className %>.<%= aggregateName %>",<% } %>
+  <% if (isAggregateCommand) { %>aggregateIdentifier: "<%= aggregateIdentifier %>",<% } %>
   <% if (deleteState) { %>deleteState: true,<% } %>
   <% if (deleteHistory) { %>deleteHistory: true,<% } %>
   _pbBoardId: "<%= _pbBoardId %>",

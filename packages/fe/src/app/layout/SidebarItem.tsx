@@ -10,11 +10,8 @@ import {useContext, useEffect, useState} from "react";
 import {useQueryClient} from "@tanstack/react-query";
 import {configStore} from "@cody-play/state/config-store";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
-import {useUser} from "@frontend/hooks/use-user";
 import {
-  isQueryableDescription,
-  isQueryableListDescription,
-  isQueryableValueObjectDescription, QueryableDescription
+  isQueryableDescription, QueryableDescription
 } from "@event-engine/descriptions/descriptions";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
@@ -106,7 +103,7 @@ const SidebarItem = ({invisible, route, label, Icon, theme, user, pageMatch, ser
       {dynamicLabel || label}
     </Button>
   </ListItem>
-    {pageMatch.pathname.includes(route) && <SidebarSubMenu/>}
+    {/* Deactivated for now, the idea is to bring it back as an optional feature on a per page basis {pageMatch.pathname.includes(route) && <SidebarSubMenu/>}*/}
   </div>
 };
 

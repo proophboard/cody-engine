@@ -49,8 +49,8 @@ import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-r
 import {resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {useUser} from "@frontend/hooks/use-user";
 import {User} from "@app/shared/types/core/user/user";
-import {isInlineItemsArraySchema} from "@cody-play/infrastructure/cody/schema/check";
 import jexl from "@app/shared/jexl/get-configured-jexl";
+import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc) && !isQueryableNotStoredStateListDescription(informationInfo.desc)) {

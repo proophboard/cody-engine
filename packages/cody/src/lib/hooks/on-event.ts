@@ -28,60 +28,75 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
     const serviceNames = names(service);
     const meta = withErrorCheck(getEventMetadata, [event, ctx]) as EventMeta;
 
-    const aggregateState = withErrorCheck(findAggregateState, [event, ctx]);
-    const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
-    const aggregateStateNames = names(aggregateState.getName());
-    const aggregateNames = names(aggregateState.getName());
-
     withErrorCheck(ensureAllRefsAreKnown, [event, meta.schema]);
 
     const {tree} = ctx;
 
-    generateFiles(tree, __dirname + '/event-files/shared', ctx.sharedSrc, {
-      'tmpl': '',
-      'service': serviceNames.fileName,
-      'aggregate': aggregateNames.fileName,
-      serviceNames,
-      aggregateNames,
-      aggregateStateNames: {
-        ...aggregateStateNames,
-        classNameWithNamespace: `${namespaceToJSONPointer(aggregateStateMeta.ns)}${aggregateStateNames.className}`,
-      },
-      isAggregateEvent: true,
-      aggregateIdentifier: aggregateStateMeta.identifier,
-      toJSON,
-      ...eventNames,
-      schema: meta.schema,
-      ...withErrorCheck(updateProophBoardInfo, [event, ctx, tree])
-    });
+    if(meta.aggregateEvent) {
+      const aggregateState = withErrorCheck(findAggregateState, [event, ctx]);
+      const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
+      const aggregateStateNames = names(aggregateState.getName());
+      const aggregateNames = names(aggregateState.getName());
 
-    withErrorCheck(register, [event, ctx, tree]);
-    withErrorCheck(createApplyFunctionRegistryIfNotExists, [aggregateState, ctx, tree]);
+      generateFiles(tree, __dirname + '/aggregate-event-files/shared', ctx.sharedSrc, {
+        'tmpl': '',
+        'service': serviceNames.fileName,
+        'aggregate': aggregateNames.fileName,
+        serviceNames,
+        aggregateNames,
+        aggregateStateNames: {
+          ...aggregateStateNames,
+          classNameWithNamespace: `${namespaceToJSONPointer(aggregateStateMeta.ns)}${aggregateStateNames.className}`,
+        },
+        isAggregateEvent: true,
+        aggregateIdentifier: aggregateStateMeta.identifier,
+        toJSON,
+        ...eventNames,
+        schema: meta.schema,
+        ...withErrorCheck(updateProophBoardInfo, [event, ctx, tree])
+      });
 
-    const rules = meta.applyRules || [];
+      withErrorCheck(register, [event, ctx, tree]);
+      withErrorCheck(createApplyFunctionRegistryIfNotExists, [aggregateState, ctx, tree]);
 
-    if(rules.length === 0) {
-      rules.push(withErrorCheck(alwaysMapPayload, [event, aggregateState, ctx]));
+      const rules = meta.applyRules || [];
+
+      if(rules.length === 0) {
+        rules.push(withErrorCheck(alwaysMapPayload, [event, aggregateState, ctx]));
+      }
+
+      const runtimeInfoId =  `${serviceNames.className}${aggregateNames.className}${eventNames.className}RuntimeInfo`;
+
+      generateFiles(tree, __dirname + '/aggregate-event-files/be', ctx.beSrc, {
+        'tmpl': '',
+        'service': serviceNames.fileName,
+        'aggregate': aggregateNames.fileName,
+        serviceNames,
+        aggregateNames,
+        runtimeInfoId,
+        aggregateStateNames: {
+          ...aggregateStateNames,
+          fileNameWithNamespace: `${namespaceToFilePath(aggregateStateMeta.ns)}${aggregateStateNames.fileName}`,
+        },
+        ...eventNames,
+        rules: withErrorCheck(convertRuleConfigToEventReducerRules, [event, ctx, rules]),
+      });
+
+      withErrorCheck(registerEventReducer, [service, event, aggregateState, ctx, tree]);
+    } else {
+      generateFiles(tree, __dirname + '/event-files/shared', ctx.sharedSrc, {
+        'tmpl': '',
+        'service': serviceNames.fileName,
+        serviceNames,
+        isPublic: meta.public,
+        toJSON,
+        ...eventNames,
+        schema: meta.schema,
+        ...withErrorCheck(updateProophBoardInfo, [event, ctx, tree])
+      });
+
+      withErrorCheck(register, [event, ctx, tree]);
     }
-
-    const runtimeInfoId =  `${serviceNames.className}${aggregateNames.className}${eventNames.className}RuntimeInfo`;
-
-    generateFiles(tree, __dirname + '/event-files/be', ctx.beSrc, {
-      'tmpl': '',
-      'service': serviceNames.fileName,
-      'aggregate': aggregateNames.fileName,
-      serviceNames,
-      aggregateNames,
-      runtimeInfoId,
-      aggregateStateNames: {
-        ...aggregateStateNames,
-        fileNameWithNamespace: `${namespaceToFilePath(aggregateStateMeta.ns)}${aggregateStateNames.fileName}`,
-      },
-      ...eventNames,
-      rules: withErrorCheck(convertRuleConfigToEventReducerRules, [event, ctx, rules]),
-    });
-
-    withErrorCheck(registerEventReducer, [service, event, aggregateState, ctx, tree]);
 
     await formatFiles(tree);
 

@@ -6,7 +6,7 @@ import {
   MatchOperator, META_KEY_CREATED_AT, META_KEY_EVENT_ID, META_KEY_EVENT_NAME, StreamType
 } from "@event-engine/infrastructure/EventStore";
 import {messageFromJSON, Payload} from "@event-engine/messaging/message";
-import {Filesystem, NodeFilesystem} from "@event-engine/infrastructure/helpers/fs";
+import {Filesystem} from "@event-engine/infrastructure/helpers/fs";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 import {AuthService} from "@server/infrastructure/auth-service/auth-service";
@@ -83,10 +83,10 @@ export class InMemoryEventStore implements EventStore {
   private readonly fs: Filesystem;
   private session: {streamName: string, events: Event[]} | undefined;
 
-  constructor(storageFile?: string, fs?: Filesystem) {
+  constructor(fs: Filesystem, storageFile?: string) {
     this.persistOnDisk = !!storageFile;
     this.storageFile = storageFile || '//memory';
-    this.fs = fs || new NodeFilesystem();
+    this.fs = fs;
 
     if(this.persistOnDisk) {
       if(!this.fs.existsSync(this.storageFile)) {

@@ -4,30 +4,27 @@ import {FsTree} from "nx/src/generators/tree";
 import {detectService} from "../detect-service";
 import {isCodyError} from "@proophboard/cody-utils";
 import {names} from "@event-engine/messaging/helpers";
-import {
-  getVoMetadata
-} from "../value-object/get-vo-metadata";
+import {getVoMetadata} from "../value-object/get-vo-metadata";
 import {
   isQueryableListDescription,
   isQueryableNotStoredStateListDescription,
   isQueryableStateListDescription
 } from "@event-engine/descriptions/descriptions";
-import {FQCNFromDefinitionId} from "../value-object/definitions";
-import {getVoFromSyncedNodes} from "../value-object/get-vo-from-synced-nodes";
+import {FQCNFromDefinitionId, voClassNameFromFQCN} from "../value-object/definitions";
 import {isObjectSchema} from "../json-schema/is-object-schema";
 import {JSONSchema7} from "json-schema-to-ts";
 import {camelCaseToTitle} from "@frontend/util/string";
 import {addImport} from "../imports";
 import {generateFiles} from "@nx/devkit";
 import {registerViewComponent} from "../registry";
-import {isListSchema} from "../json-schema/list-schema";
 import {Rule} from "../rule-engine/configuration";
 import {convertRuleConfigToTableColumnValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
 import {toJSON} from "../to-json";
 import {GridDensity} from "@mui/x-data-grid";
 import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference";
 import {
-  PageLinkTableColumn, RefTableColumn,
+  PageLinkTableColumn,
+  RefTableColumn,
   StringOrTableColumnUiSchema,
   TableColumnUiSchema,
   ValueObjectMetadata
@@ -35,8 +32,9 @@ import {
 import {isScalarSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-scalar-schema";
 import {namespaceNames} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
+import {UiSchema} from "@rjsf/utils";
 
-export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetadata, ctx: Context, tree: FsTree): Promise<boolean|CodyResponse> => {
+export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetadata, ctx: Context, tree: FsTree, itemFQCN: string, itemSchema: JSONSchema7, itemUiSchema: UiSchema): Promise<boolean|CodyResponse> => {
   const service = detectService(vo, ctx);
   const ns = namespaceNames(voMeta.ns);
   voMeta = {...voMeta};
@@ -65,21 +63,9 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
     }
   }
 
-  const itemVO = getItemVO(vo, voMeta, ctx);
+  const identifier = voMeta.identifier;
 
-  if(isCodyError(itemVO)) {
-    return itemVO;
-  }
-
-  const itemVOMeta = getVoMetadata(itemVO, ctx);
-
-  if(isCodyError(itemVOMeta)) {
-    return itemVOMeta;
-  }
-
-  const identifier = itemVOMeta.identifier;
-
-  const columnsResponse = compileTableColumns(vo, voMeta, itemVO, itemVOMeta, ctx);
+  const columnsResponse = compileTableColumns(vo, voMeta, itemFQCN, itemSchema, itemUiSchema, ctx);
 
   if(isCodyError(columnsResponse)) {
     return columnsResponse;
@@ -143,8 +129,8 @@ const getTableDensity = (voMeta: ValueObjectMetadata): GridDensity => {
   return voMeta?.uiSchema?.table?.density || 'comfortable';
 }
 
-const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node, itemVOMeta: ValueObjectMetadata, ctx: Context): [string[], string[], string[]] | CodyResponse => {
-  const columns = getColumns(vo, voMeta, itemVO, itemVOMeta, ctx);
+const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVOFQCN: string, itemVOSchema: JSONSchema7, itemVOUiSchema: UiSchema, ctx: Context): [string[], string[], string[]] | CodyResponse => {
+  const columns = getColumns(vo, voMeta, itemVOFQCN, itemVOSchema, itemVOUiSchema, ctx);
   let imports: string[] = [];
   const hooks: string[] = [];
 
@@ -254,33 +240,15 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node
   return [strColumns, imports, hooks];
 }
 
-const getColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node, itemVOMeta: ValueObjectMetadata, ctx: Context): StringOrTableColumnUiSchema[] | CodyResponse => {
-  return voMeta.uiSchema?.table?.columns || deriveColumnsFromSchema(vo, voMeta, itemVO, itemVOMeta, ctx);
+const getColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVOFQCN: string, itemVOSchema: JSONSchema7, itemVOUISchema: UiSchema, ctx: Context): StringOrTableColumnUiSchema[] | CodyResponse => {
+  return voMeta.uiSchema?.table?.columns || deriveColumnsFromSchema(vo, voMeta, itemVOFQCN, itemVOSchema, itemVOUISchema, ctx);
 }
 
-const getItemVO = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): Node | CodyResponse => {
-  const {schema} = voMeta;
-
-  if(!isListSchema(schema)) {
-    return {
-      cody: `I'm trying to derive table columns from the list value object schema of "${vo.getName()}", but the items schema does not reference an item value object.`,
-      type: CodyResponseType.Error,
-      details: `To solve the issue use a reference to another object like:\nJSON Schema: { items: { "$ref": "/Namespace/Name" } }\nor shorhand schema: {"$items": "/Namespace/Name" }`
-    }
-  }
-
-  const itemFQCN = FQCNFromDefinitionId(schema.items.$ref);
-  return getVoFromSyncedNodes(itemFQCN, ctx);
-}
-
-const deriveColumnsFromSchema = (vo: Node, voMeta: ValueObjectMetadata, itemVO: Node, itemVOMeta: ValueObjectMetadata, ctx: Context): TableColumnUiSchema[] | CodyResponse => {
+const deriveColumnsFromSchema = (vo: Node, voMeta: ValueObjectMetadata, itemVOFQCN: string, itemSchema: JSONSchema7, itemVOUISchema: UiSchema, ctx: Context): TableColumnUiSchema[] | CodyResponse => {
   const columns: TableColumnUiSchema[] = [];
 
-  const itemSchema = itemVOMeta.schema;
-
-
   if(isScalarSchema(itemSchema)) {
-    const name = itemSchema.title || names(itemVO.getName()).className;
+    const name = itemSchema.title || voClassNameFromFQCN(itemVOFQCN);
     columns.push({
       field: name,
       headerName: camelCaseToTitle(name),
@@ -293,9 +261,9 @@ const deriveColumnsFromSchema = (vo: Node, voMeta: ValueObjectMetadata, itemVO: 
 
   if(!isObjectSchema(itemSchema)) {
     return {
-      cody: `I'm trying to derive table columns for the list value object "${vo.getName()}", but the item schema of value object "${itemVO.getName()}" is not of type object.`,
+      cody: `I'm trying to derive table columns for the list value object "${vo.getName()}", but the item schema of value object "${itemVOFQCN}" is not of type object.`,
       type: CodyResponseType.Error,
-      details: `To solve the issue either reference another object in "${vo.getName()}" or change the schema of "${itemVO.getName()}" to be an object.`
+      details: `To solve the issue either reference another object in "${vo.getName()}" or change the schema of "${itemVOFQCN}" to be an object.`
     }
   }
 
@@ -362,7 +330,7 @@ const prepareDataValueGetter = (column: TableColumnUiSchema, vo: Node, listVo: N
     return listVoService;
   }
 
-  if(!isQueryableStateListDescription(listVoMeta) && !isQueryableNotStoredStateListDescription(listVoMeta)) {
+  if(!isQueryableStateListDescription(listVoMeta) && !isQueryableNotStoredStateListDescription(listVoMeta) && !isQueryableListDescription(listVoMeta)) {
     return {
       cody: `Data of a column reference needs to be a queryable state list, but column "${columnName}" references data type "${listVo.getName()}", which is not a list or not queryable.`,
       type: CodyResponseType.Error
@@ -390,11 +358,13 @@ const prepareDataValueGetter = (column: TableColumnUiSchema, vo: Node, listVo: N
     innerValueGetter = '('+preparedValueGetter+')(rowParams)';
   }
 
+  const itemIdentifier = column.ref?.itemIdentifier || listVoMeta.identifier;
+
   const valueGetterFn = `(rowParams) => {
 ${indent}  const columnValue = ${innerValueGetter};
 ${indent}  return dataValueGetter(
 ${indent}    ${columnNames.propertyName}ColumnQuery,
-${indent}    "${listVoMeta.identifier}",
+${indent}    "${itemIdentifier}",
 ${indent}    columnValue,
 ${indent}    (data) => {
 ${indent}      const ctx: any = {data, value: '', user};

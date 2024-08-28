@@ -8,7 +8,7 @@ import {useGet<%= className %>} from "@frontend/queries/<%= serviceNames.fileNam
 import NoRowsOverlay from "@frontend/app/components/core/table/NoRowsOverlay";
 <%- imports %>
 
-const <%= className %> = (params: Get<%= className %>) => {
+const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}) => {
   const [,addQueryResult] = usePageData();
   const query = useGet<%= className %>(params);
   <%- hooks %>
@@ -24,6 +24,10 @@ const <%= className %> = (params: Get<%= className %>) => {
   const columns: GridColDef[] = [
     <%- columns %>
   ];
+
+  if(params.hidden) {
+    return <></>
+  }
 
   return (
     <Box component="div">

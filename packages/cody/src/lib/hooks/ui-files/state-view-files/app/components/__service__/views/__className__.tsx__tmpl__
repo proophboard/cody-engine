@@ -9,7 +9,7 @@ import {<%= serviceNames.className %>Get<%= className %>QueryRuntimeInfo} from "
 
 type <%= className %>Props = Record<string, string><% if (identifier) { %> & {<%= identifier %>: string}<% } %>;
 
-const <%= className %> = (props: <%= className %>Props) => {
+const <%= className %> = (props: <%= className %>Props & {hidden?: boolean}) => {
   const [,addQueryResult] = usePageData();
   const query = useGet<%= className %>(determineQueryPayload(props, <%= serviceNames.className %>Get<%= className %>QueryRuntimeInfo));
 
@@ -19,7 +19,7 @@ const <%= className %> = (props: <%= className %>Props) => {
 
   return <>
     {query.isLoading && <CircularProgress />}
-    {query.isSuccess && <StateView description={<%= serviceNames.className %><%= nsClassName %><%= className %>VORuntimeInfo} state={query.data} />}
+    {query.isSuccess && <StateView description={<%= serviceNames.className %><%= nsClassName %><%= className %>VORuntimeInfo} state={query.data} hidden={hidden} />}
   </>
 }
 

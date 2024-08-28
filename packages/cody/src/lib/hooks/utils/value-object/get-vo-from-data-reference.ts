@@ -6,7 +6,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {getVoFromSyncedNodes} from "./get-vo-from-synced-nodes";
 
 export const getVOFromDataReference = (data: string, refNode: Node, ctx: Context): Node | CodyResponse => {
-  data = data.replace(".", "/");
+  data = data.replaceAll(".", "/");
 
   if(data[0] === "/") {
     data = data.slice(1);

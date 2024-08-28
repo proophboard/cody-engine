@@ -30,8 +30,8 @@ import {playDefinitionId, playDefinitionIdFromFQCN,} from "@cody-play/infrastruc
 import {JSONSchema7} from "json-schema";
 import {normalizeProjectionRules} from "@cody-play/infrastructure/rule-engine/normalize-projection-rules";
 import {convertProjectionConfigCaseToRules} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
-import {isInlineItemsArraySchema} from "@cody-play/infrastructure/cody/schema/check";
 import {playFindEventInfoByName} from "@cody-play/infrastructure/events/play-find-event-info-by-name";
+import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 
 export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {

@@ -1,7 +1,6 @@
 import {CodyHook, Node, NodeRecord, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
-import {JSONSchema} from "json-schema-to-ts";
-import {ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
+import { JSONSchema7} from "json-schema-to-ts";
 import {names} from "@event-engine/messaging/helpers";
 import {flushChanges} from "nx/src/generators/tree";
 import {formatFiles, generateFiles} from "@nx/devkit";
@@ -10,7 +9,6 @@ import {
   getTargetsOfType,
   isCodyError,
   nodeNameToPascalCase,
-  parseJsonMetadata
 } from "@proophboard/cody-utils";
 import {detectService} from "./utils/detect-service";
 import {findAggregateState} from "./utils/aggregate/find-aggregate-state";
@@ -18,29 +16,36 @@ import {asyncWithErrorCheck, CodyResponseException, withErrorCheck} from "./util
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {toJSON} from "./utils/to-json";
-import {register} from "./utils/registry";
+import {register, registerAggregateCommandHandler, registerCommandHandler} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {UiSchema} from "@rjsf/utils";
 import {DependencyRegistry} from "@event-engine/descriptions/descriptions";
-import {addSchemaTitles} from "./utils/json-schema/add-schema-titles";
-import {normalizeRefs} from "./utils/value-object/definitions";
-import {jsonSchemaFromShorthand} from "./utils/json-schema/json-schema-from-shorthand";
 import {ensureAllRefsAreKnown} from "./utils/json-schema/ensure-all-refs-are-known";
 import {upsertCommandComponent} from "./utils/ui/upsert-command-component";
-import {isShorthand} from "./utils/json-schema/shorthand";
 import {onAggregate} from "@cody-engine/cody/hooks/on-aggregate";
 import {List} from "immutable";
+import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {getCommandMetadata} from "@cody-engine/cody/hooks/utils/command/command-metadata";
+import {alwaysRecordEvent} from "@cody-engine/cody/hooks/utils/aggregate/always-record-event";
+import {
+  convertRuleConfigToCommandHandlingBehavior
+} from "@cody-engine/cody/hooks/utils/rule-engine/convert-rule-config-to-behavior";
 
 export interface CommandMeta {
   newAggregate: boolean;
-  shorthand: boolean;
-  schema: JSONSchema | ShorthandObject;
+  schema: JSONSchema7;
+  aggregateCommand: boolean;
+  streamCommand: boolean;
   service?: string;
   uiSchema?: UiSchema;
   dependencies?: DependencyRegistry;
+  rules?: Rule[];
   deleteState?: boolean;
   deleteHistory?: boolean;
   uiDisableFetchState?: boolean;
+  streamId?: string;
+  streamName?: string;
+  publicStream?: string;
 }
 
 export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) => {
@@ -48,38 +53,38 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
   try {
     const cmdNames = names(command.getName());
     const aggregate = getSingleTarget(command, NodeType.aggregate);
+
     const service = withErrorCheck(detectService, [command, ctx]);
     const serviceNames = names(service);
-    const meta = withErrorCheck(parseJsonMetadata, [command]) as CommandMeta;
-
-    let schema: any = meta.schema || {};
-    if(isShorthand(schema)) {
-      schema = withErrorCheck(jsonSchemaFromShorthand, [schema as ShorthandObject, '/commands']);
-    }
-
-    schema['$id'] = `/definitions/${serviceNames.fileName}/commands/${cmdNames.fileName}`;
-    schema = normalizeRefs(addSchemaTitles(command.getName(), schema), service);
-
+    const meta = withErrorCheck(getCommandMetadata, [command, ctx]);
     const uiSchema = meta.uiSchema || {};
+    const dependencies = meta.dependencies;
 
     let isAggregateCommand = !isCodyError(aggregate);
+    let aggregateName = '';
+    let aggregateIdentifier = '';
+    let deleteState = false;
+    let deleteHistory = false;
 
-    const aggregateState = withErrorCheck(findAggregateState, [command, ctx]);
-    const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
-    const dependencies = meta.dependencies;
-    const deleteState = meta.deleteState;
-    const deleteHistory = meta.deleteHistory;
+    if(meta.aggregateCommand) {
+      const aggregateState = withErrorCheck(findAggregateState, [command, ctx]);
+      aggregateName = nodeNameToPascalCase(aggregateState);
+      const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
+      aggregateIdentifier = aggregateStateMeta.identifier || 'id';
+      deleteState = !!meta.deleteState;
+      deleteHistory = !!meta.deleteHistory;
 
-    withErrorCheck(ensureAllRefsAreKnown, [command, schema]);
+      if(!isAggregateCommand) {
+        const events = getTargetsOfType(command, NodeType.event);
 
-    if(!isAggregateCommand) {
-      const events = getTargetsOfType(command, NodeType.event);
-
-      if(!isCodyError(events)) {
-        await asyncWithErrorCheck(onAggregate, [makeTempAggregateFromCommand(command, aggregateState, events), ctx]);
-        isAggregateCommand = true;
+        if(!isCodyError(events)) {
+          await asyncWithErrorCheck(onAggregate, [makeTempAggregateFromCommand(command, aggregateState, events), ctx]);
+          isAggregateCommand = true;
+        }
       }
     }
+
+    withErrorCheck(ensureAllRefsAreKnown, [command, meta.schema]);
 
     const {tree} = ctx;
 
@@ -91,13 +96,17 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
       // which is defined below and therefor has precedence over the variable from ProophBoardInfo
       ...withErrorCheck(updateProophBoardInfo, [command, ctx, tree]),
       serviceNames,
-      isAggregateCommand,
+      isAggregateCommand: meta.aggregateCommand,
+      isStreamCommand: meta.streamCommand,
+      streamName: meta.streamName,
+      publicStream: meta.publicStream,
+      streamId: meta.streamId,
       newAggregate: meta.newAggregate,
-      aggregateName: nodeNameToPascalCase(aggregateState),
-      aggregateIdentifier: aggregateStateMeta.identifier,
+      aggregateName,
+      aggregateIdentifier,
       toJSON,
       ...cmdNames,
-      schema,
+      schema: meta.schema,
       uiSchema,
       dependencies,
       deleteState,
@@ -106,6 +115,44 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
 
     withErrorCheck(register, [command, ctx, tree]);
     await asyncWithErrorCheck(upsertCommandComponent, [command, ctx, tree]);
+
+    if(!meta.aggregateCommand) {
+      const events = withErrorCheck(getTargetsOfType, [command, NodeType.event, true]);
+
+      const rules = meta.rules || [];
+
+      if(rules.length === 0) {
+        events.forEach(evt => rules.push(alwaysRecordEvent(evt)))
+      }
+
+      const behavior = withErrorCheck(convertRuleConfigToCommandHandlingBehavior, [
+        command,
+        ctx,
+        rules,
+        [
+          {
+            name: 'command',
+            initializer: 'command.payload',
+          },
+          {
+            name: 'meta',
+            initializer: 'command.meta',
+          }
+        ]
+      ]);
+
+      generateFiles(tree, __dirname + '/command-handler-files/be', ctx.beSrc, {
+        'tmpl': '',
+        'service': serviceNames.fileName,
+        'command': cmdNames.fileName,
+        serviceNames,
+        commandNames: cmdNames,
+        behavior,
+        events: events.map(evt => names(evt.getName()))
+      });
+
+      withErrorCheck(registerCommandHandler, [service, command, ctx, tree]);
+    }
 
     await formatFiles(tree);
 

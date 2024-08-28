@@ -52,7 +52,7 @@ export interface Variable {
   initializer: string;
 }
 
-export const convertRuleConfigToAggregateBehavior = (aggregate: Node, ctx: Context, rules: Rule[], initialVariables: Variable[], indent = '  '): string | CodyResponse => {
+export const convertRuleConfigToCommandHandlingBehavior = (aggregateOrCommand: Node, ctx: Context, rules: Rule[], initialVariables: Variable[], indent = '  '): string | CodyResponse => {
   if(!rules.length) {
     return '';
   }
@@ -65,7 +65,7 @@ export const convertRuleConfigToAggregateBehavior = (aggregate: Node, ctx: Conte
 
   for (const rule of rules) {
     lines.push("");
-    const res = convertRule(aggregate, ctx, rule, lines, indent);
+    const res = convertRule(aggregateOrCommand, ctx, rule, lines, indent);
     if(isCodyError(res)) {
       return res;
     }
@@ -680,9 +680,27 @@ const convertThenDeleteInformation = (node: Node, ctx: Context, then: ThenDelete
   return true;
 }
 
-const convertMapping = (node: Node, ctx: Context, mapping: string | PropMapping, rule: Rule, indent = '', evalSync = false): string | CodyResponse => {
+export const convertMapping = (node: Node, ctx: Context, mapping: string | string[] | PropMapping | PropMapping[], rule: Rule, indent = '', evalSync = false): string | CodyResponse => {
   if(typeof mapping === "string") {
     return wrapExpression(mapping, evalSync);
+  }
+
+  if(Array.isArray(mapping)) {
+    const items: string[] = [];
+
+    for (const mappingItem of mapping) {
+      const mappedItem = convertMapping(node, ctx, mappingItem, rule, indent + '  ', evalSync);
+
+      if(isCodyError(mappedItem)) {
+        return mappedItem;
+      }
+
+      items.push(mappedItem);
+    }
+
+    const itemsStr = items.join(`,\n${indent}  `);
+
+    return `[\n${indent}  ${itemsStr},\n${indent}]`;
   }
 
   let propMap = `{\n`;
@@ -693,9 +711,40 @@ const convertMapping = (node: Node, ctx: Context, mapping: string | PropMapping,
       if(typeof mergeVal === 'string') {
         mergeVal = [mergeVal];
       }
-      mergeVal.forEach(exp => {
-        propMap += `${indent}  ...${wrapExpression(exp, evalSync)},\n`
-      })
+
+      if(Array.isArray(mergeVal)) {
+        for (const exp of mergeVal) {
+          if(typeof exp === "string") {
+            propMap += `${indent}  ...${wrapExpression(exp, evalSync)},\n`
+          } else {
+            const mappedProp = convertMapping(node, ctx, exp, rule, indent + '  ', evalSync);
+
+            if(isCodyError(mappedProp)) {
+              return mappedProp;
+            }
+
+            propMap += `${indent}  ...${mappedProp},\n`
+          }
+        }
+      } else {
+        const mappedProp = convertMapping(node, ctx, mergeVal, rule, indent + '  ', evalSync);
+
+        if(isCodyError(mappedProp)) {
+          return mappedProp;
+        }
+
+        propMap += `${indent}  ...${mappedProp},\n`
+      }
+    } else if (typeof mapping[propName] === "object") {
+      const setVal = mapping[propName] as PropMapping | string[] | PropMapping[];
+
+      const mappedSetVal = convertMapping(node, ctx, setVal, rule, indent + '  ', evalSync);
+
+      if(isCodyError(mappedSetVal)) {
+        return mappedSetVal;
+      }
+
+      propMap += `${indent}  "${propName}": ${mappedSetVal},\n`;
     } else {
       propMap += `${indent}  "${propName}": ${wrapExpression(mapping[propName] as string, evalSync)},\n`
     }

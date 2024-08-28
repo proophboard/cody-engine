@@ -8,6 +8,7 @@ import {isListSchema} from "./list-schema";
 import {isObjectSchema} from "./is-object-schema";
 import {isCodyError} from "@proophboard/cody-utils";
 import {splitPropertyRef} from "@event-engine/messaging/resolve-refs";
+import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 
 export const ensureAllRefsAreKnown = (node: Node, schema: JSONSchema7, types?: TypeRegistry): boolean | CodyResponse => {
   if(!types) {
@@ -49,8 +50,8 @@ export const ensureAllRefsAreKnown = (node: Node, schema: JSONSchema7, types?: T
     return true;
   }
 
-  if(isListSchema(schema)) {
-    return ensureAllRefsAreKnown(node, schema.items, types);
+  if(isListSchema(schema) || isInlineItemsArraySchema(schema)) {
+    return ensureAllRefsAreKnown(node, schema.items as JSONSchema7, types);
   }
 
   if(isObjectSchema(schema)) {

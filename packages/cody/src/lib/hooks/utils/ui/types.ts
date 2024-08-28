@@ -1,6 +1,6 @@
 import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {SxProps} from "@mui/material";
-import {Tab} from "@frontend/app/pages/page-definitions";
+import {DynamicSidebar, Tab, TopLevelGroup} from "@frontend/app/pages/page-definitions";
 
 export interface DynamicBreadcrumbMetadata {
   data: string;
@@ -12,7 +12,7 @@ export type ViewComponent = string | { view: string, hidden: boolean}
 export interface UiMetadata {
   route?: string;
   routeParams?: string[];
-  sidebar?: { label?: string; icon?: string; show?: boolean | Rule[], invisible?: string, position: number };
+  sidebar?: { label?: string; icon?: string; show?: boolean | Rule[], invisible?: string, position: number, dynamic?: DynamicSidebar, group?: TopLevelGroup };
   breadcrumb?: string | DynamicBreadcrumbMetadata;
   tab?: Tab;
   commands?: string[];

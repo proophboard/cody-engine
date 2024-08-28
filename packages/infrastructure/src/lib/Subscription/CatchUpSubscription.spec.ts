@@ -5,9 +5,10 @@ import {CatchUpSubscription, SubscriptionInitializerMap} from "@event-engine/inf
 import {LambdaBatchHandlerQueue, LambdaMessage} from "@event-engine/infrastructure/Queue/LambdaBatchHandlerQueue";
 import {randomUUID} from "crypto";
 import {MatchOperator} from "@event-engine/infrastructure/EventStore";
+import {NodeFilesystem} from "@event-engine/infrastructure/helpers/node-file-system";
 
 describe('CatchUpSubscription', () => {
-  const es = new InMemoryEventStore();
+  const es = new InMemoryEventStore(new NodeFilesystem());
   const TEST_STREAM = 'test_stream';
 
   es.createStream(TEST_STREAM);

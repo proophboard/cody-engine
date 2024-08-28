@@ -2,10 +2,10 @@ import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
 import {JSONSchema7} from "json-schema";
 import {PlayInformationRegistry} from "@cody-play/state/types";
 import {playFQCNFromDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
-import {isListSchema, isObjectSchema} from "@cody-play/infrastructure/cody/schema/check";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
-import {isRefSchema} from "@cody-play/infrastructure/json-schema/is-ref-schema";
 import {splitPropertyRef} from "@event-engine/messaging/resolve-refs";
+import {isRefSchema} from "@app/shared/utils/json-schema/is-ref-schema";
+import {isListSchema, isObjectSchema} from "@app/shared/utils/schema-checks";
 
 export const playEnsureAllRefsAreKnown = (node: Node, schema: JSONSchema7, types: PlayInformationRegistry): boolean | CodyResponse => {
   if(isRefSchema(schema)) {

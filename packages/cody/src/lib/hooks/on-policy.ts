@@ -2,7 +2,7 @@ import {CodyHook, CodyResponse, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "./context";
 import {CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {names} from "@event-engine/messaging/helpers";
-import {getTargetsOfType, parseJsonMetadata} from "@proophboard/cody-utils";
+import {getSingleSource, getTargetsOfType, isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {detectService} from "./utils/detect-service";
 import {flushChanges} from "nx/src/generators/tree";
 import {formatFiles, generateFiles} from "@nx/devkit";
@@ -16,7 +16,8 @@ import {PolicyMeta} from "@cody-engine/cody/hooks/utils/policy/metadata";
 import {visitRulesThen} from "@cody-engine/cody/hooks/utils/rule-engine/visit-rule-then";
 import {
   isDeleteInformation,
-  isInsertInformation, isReplaceInformation,
+  isInsertInformation,
+  isReplaceInformation,
   isUpdateInformation,
   isUpsertInformation
 } from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
@@ -74,9 +75,16 @@ export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): P
 
     const {tree} = ctx;
 
+    const event = getSingleSource(policy, NodeType.event);
+
+    if(isCodyError(event)) {
+      return event;
+    }
+
     generateFiles(tree, __dirname + '/policy-files/be', ctx.beSrc, {
       'tmpl': '',
       'service': serviceNames.fileName,
+      'event': names(event.getName()).fileName,
       ...withErrorCheck(updateProophBoardInfo, [policy, ctx, tree]),
       serviceNames,
       dependencies,
@@ -88,7 +96,7 @@ export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): P
       toJSON,
     });
 
-    withErrorCheck(registerPolicy, [service, policy, ctx, tree]);
+    withErrorCheck(registerPolicy, [service, policy, event, ctx, tree]);
 
     await formatFiles(tree);
 

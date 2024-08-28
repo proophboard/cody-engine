@@ -25,6 +25,7 @@ import {ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/ty
 import {getOriginalEvent} from "@cody-engine/cody/hooks/utils/event/get-original-event";
 import {findAggregateState} from "@cody-engine/cody/hooks/utils/aggregate/find-aggregate-state";
 import {isObjectSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-object-schema";
+import {JSONSchema7} from "json-schema-to-ts";
 
 const project = new Project({
   compilerOptions: {
@@ -219,17 +220,30 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
       break;
     case NodeType.event:
       const eventNames = names(node.getName());
-      const evtAggregateState = findAggregateState(node, ctx);
-      if(isCodyError(evtAggregateState)) {
-        return evtAggregateState;
+      const eventMeta = getEventMetadata(node, ctx);
+      if(isCodyError(eventMeta)) {
+        return eventMeta;
       }
-      const evtArNames = names(evtAggregateState.getName());
 
-      registryPath = sharedRegistryPath('events.ts');
-      registryVarName = 'events';
-      entryId = `${serviceNames.className}.${evtArNames.className}.${eventNames.className}`;
-      entryValue = importName = `${serviceNames.className}${evtArNames.className}${eventNames.className}RuntimeInfo`;
-      importPath = `@app/shared/events/${serviceNames.fileName}/${evtArNames.fileName}/${eventNames.fileName}`;
+      if(eventMeta.aggregateEvent) {
+        const evtAggregateState = findAggregateState(node, ctx);
+        if(isCodyError(evtAggregateState)) {
+          return evtAggregateState;
+        }
+        const evtArNames = names(evtAggregateState.getName());
+
+        registryPath = sharedRegistryPath('events.ts');
+        registryVarName = 'events';
+        entryId = `${serviceNames.className}.${evtArNames.className}.${eventNames.className}`;
+        entryValue = importName = `${serviceNames.className}${evtArNames.className}${eventNames.className}RuntimeInfo`;
+        importPath = `@app/shared/events/${serviceNames.fileName}/${evtArNames.fileName}/${eventNames.fileName}`;
+      } else {
+        registryPath = sharedRegistryPath('events.ts');
+        registryVarName = 'events';
+        entryId = `${serviceNames.className}.${eventNames.className}`;
+        entryValue = importName = `${serviceNames.className}${eventNames.className}RuntimeInfo`;
+        importPath = `@app/shared/events/${serviceNames.fileName}/${eventNames.fileName}`;
+      }
       break;
     case NodeType.document:
       const voNames = names(node.getName());
@@ -284,16 +298,7 @@ export const register = (node: Node, ctx: Context, tree: FsTree): boolean | Cody
   return true;
 }
 
-export const registerPolicy = (service: string, policy: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
-  const events = getSourcesOfType(policy, NodeType.event, true);
-
-  if(isCodyError(events)) {
-    return events;
-  }
-
-  if(events.count() === 0) {
-    return true;
-  }
+export const registerPolicy = (service: string, policy: Node, event: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
 
   const policyName = `${names(service).className}.${names(policy.getName()).className}`;
 
@@ -302,27 +307,26 @@ export const registerPolicy = (service: string, policy: Node, ctx: Context, tree
   const registryFileContent = tree.read(registryPath)!.toString();
   const registrySource = project.createSourceFile('index.ts', registryFileContent, {overwrite: true});
 
-  for (const event of events) {
-    const result = registerPolicyForEvent(service, policyName, policy, event, ctx, registrySource);
+  const result = registerPolicyForEvent(service, policyName, policy, event, ctx, registrySource);
 
-    if(isCodyError(result)) {
-      return result;
-    }
+  if(isCodyError(result)) {
+    return result;
   }
 
   const policyNames = names(policy.getName());
   const  serviceNames = names(service);
+  const eventNames = names(event.getName());
 
-  if(!registrySource.getImportDeclaration(dec => dec.getModuleSpecifier().getLiteralValue() === `@server/policies/${serviceNames.fileName}/${policyNames.fileName}`)) {
+  if(!registrySource.getImportDeclaration(dec => dec.getModuleSpecifier().getLiteralValue() === `@server/policies/${serviceNames.fileName}/${eventNames.fileName}/${policyNames.fileName}`)) {
 
     registrySource.addImportDeclaration({
-      defaultImport: `{${policyNames.propertyName} as ${serviceNames.propertyName}${policyNames.className}}`,
-      moduleSpecifier: `@server/policies/${serviceNames.fileName}/${policyNames.fileName}`
+      defaultImport: `{${policyNames.propertyName} as ${serviceNames.propertyName}${eventNames.className}${policyNames.className}}`,
+      moduleSpecifier: `@server/policies/${serviceNames.fileName}/${eventNames.fileName}/${policyNames.fileName}`
     });
 
     registrySource.addImportDeclaration({
-      defaultImport: `{${serviceNames.className}${policyNames.className}PolicyDesc}`,
-      moduleSpecifier: `@server/policies/${serviceNames.fileName}/${policyNames.fileName}.desc`
+      defaultImport: `{${serviceNames.className}${policyNames.className}PolicyDesc as ${serviceNames.className}${eventNames.className}${policyNames.className}PolicyDesc}`,
+      moduleSpecifier: `@server/policies/${serviceNames.fileName}/${eventNames.fileName}/${policyNames.fileName}.desc`
     });
   }
 
@@ -343,6 +347,7 @@ const registerPolicyForEvent = (service: string, policyFQCN: string, policy: Nod
   const eventMeta = getEventMetadata(originalEvent, ctx);
   const policyNames = names(policy.getName());
   const serviceNames = names(service);
+  const eventNames = names(originalEvent.getName());
 
   if(isCodyError(eventMeta)) {
     return eventMeta;
@@ -368,14 +373,40 @@ const registerPolicyForEvent = (service: string, policyFQCN: string, policy: Nod
   if(!eventPoliciesInitializer.getProperty(`'${policyFQCN}'`)) {
     eventPoliciesInitializer.addPropertyAssignment({
       name: `'${policyFQCN}'`,
-      initializer: `{ policy: ${serviceNames.propertyName}${policyNames.className}, desc: ${serviceNames.className}${policyNames.className}PolicyDesc }`
+      initializer: `{ policy: ${serviceNames.propertyName}${eventNames.className}${policyNames.className}, desc: ${serviceNames.className}${eventNames.className}${policyNames.className}PolicyDesc }`
     })
   }
 
   return true;
 }
 
-export const registerCommandHandler = (service: string, aggregate: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+export const registerCommandHandler = (service: string, command: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
+  const serviceNames = names(service);
+
+  const commandNames = names(command.getName());
+
+  if(!isNewFile(
+    joinPathFragments('packages', 'be', 'src', 'command-handlers', serviceNames.fileName, `handle-${commandNames.fileName}.ts`),
+    tree
+  )
+  ) {
+    return true;
+  }
+
+  const registryPath = joinPathFragments('packages', 'be', 'src', 'command-handlers', 'index.ts');
+  const registryVarName = 'commandHandlers';
+  const entryId = `${serviceNames.className}.${commandNames.className}`;
+  const entryValue = `handle${serviceNames.className}${commandNames.className}`;
+  const importName = `handle${commandNames.className} as handle${serviceNames.className}${commandNames.className}`;
+  const importPath = `@server/command-handlers/${serviceNames.fileName}/handle-${commandNames.fileName}`;
+
+
+  addRegistryEntry(registryPath, registryVarName, entryId, entryValue, importName, importPath, tree);
+
+  return true;
+}
+
+export const registerAggregateCommandHandler = (service: string, aggregate: Node, ctx: Context, tree: FsTree): boolean | CodyResponse => {
   const serviceNames = names(service);
   const command = getSingleSource(aggregate, NodeType.command);
   const aggregateState = findAggregateState(aggregate, ctx);
@@ -557,7 +588,10 @@ export const registerValueObjectDefinition = (service: string, vo: Node, voMeta:
     const properties = schema.properties || {};
 
     Object.keys(properties).forEach(prop => {
-      addArrayRegistryItemIfNotExists(refPath, refVarName, `${refEntryValue}.properties.${prop}`, tree);
+      const propSchema: JSONSchema7 = properties[prop];
+      if(typeof propSchema === "object" && propSchema.type && propSchema.type === "string" && propSchema.format && propSchema.format === "uuid" ) {
+        addArrayRegistryItemIfNotExists(refPath, refVarName, `${refEntryValue}.properties.${prop}`, tree);
+      }
     })
   }
 

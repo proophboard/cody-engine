@@ -47,6 +47,7 @@ interface OwnProps {
   arrayFieldTemplate?: React.FunctionComponent<ArrayFieldTemplateProps>;
   fieldTemplate?: React.FunctionComponent<FieldTemplateProps>;
   definitions?: {[id: string]: DeepReadonly<JSONSchema7>};
+  hidden?: boolean;
 }
 
 type StateViewProps = OwnProps;
@@ -211,6 +212,10 @@ const StateView = (props: StateViewProps) => {
 
   if(!informationRuntimeInfo) {
     return <Alert severity="error">Information {infoFQCN} cannot be found in the Cody Play types config!</Alert>
+  }
+
+  if(props.hidden) {
+    return <></>;
   }
 
   return <>

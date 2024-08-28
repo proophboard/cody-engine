@@ -10,6 +10,8 @@ export const <%= className %>: TopLevelPageWithProophBoardDescription = {
     label: "<%= sidebar.label %>",
     Icon: <%= sidebar.icon %>,
     position: <%= sidebar.position %>,
+    <% if (isGroup) { %>group: <%- toJSON(group) %>,<% } %>
+    <% if (isDynamic) { %>dynamic: <%- toJSON(dynamic) %>,<% } %>
     <% if (typeof sidebar.invisible !== "undefined") { %>invisible: <%- toJSON(sidebar.invisible) %>,<% } %>
   },
   breadcrumb: <%- breadcrumb %>,

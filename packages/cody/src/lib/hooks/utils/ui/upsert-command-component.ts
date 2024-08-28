@@ -20,16 +20,18 @@ export const upsertCommandComponent = async (command: Node, ctx: Context, tree: 
     const commandMeta = withErrorCheck(parseJsonMetadata, [command]) as CommandMeta;
     const uiSchema = commandMeta.uiSchema || {};
     const buttonIcon = uiSchema['ui:button']?.icon ? names(uiSchema['ui:button'].icon).className : undefined;
-
-
-    const aggregateState = withErrorCheck(findAggregateState, [command, ctx]);
-    const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
-
     const serviceNames = names(service);
     const commandNames = names(command.getName());
-    const stateNames = names(aggregateState.getName());
-    const stateNsNames = namespaceNames(aggregateStateMeta.ns);
-    const identifier: string | undefined = commandMeta.newAggregate ? undefined : aggregateStateMeta.identifier;
+
+    let stateNames, stateNsNames, identifier: string | undefined;
+
+    if(commandMeta.aggregateCommand) {
+      const aggregateState = withErrorCheck(findAggregateState, [command, ctx]);
+      const aggregateStateMeta = withErrorCheck(getVoMetadata, [aggregateState, ctx]);
+      stateNames = names(aggregateState.getName());
+      stateNsNames = namespaceNames(aggregateStateMeta.ns);
+      identifier = commandMeta.newAggregate ? undefined : aggregateStateMeta.identifier;
+    }
 
     generateFiles(tree, __dirname + '/../../ui-files/command-files', ctx.feSrc, {
       tmpl: '',
@@ -41,7 +43,7 @@ export const upsertCommandComponent = async (command: Node, ctx: Context, tree: 
       newAggregate: commandMeta.newAggregate,
       buttonIcon,
       ...commandNames,
-      uiDisableFetchState: commandMeta.uiDisableFetchState,
+      uiDisableFetchState: commandMeta.uiDisableFetchState || !commandMeta.aggregateCommand,
     });
 
     return registerCommandComponent(service, command, ctx, tree);

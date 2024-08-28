@@ -10,10 +10,10 @@ import {formatFiles, generateFiles} from "@nx/devkit";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {namespaceToFilePath, namespaceToJSONPointer} from "./utils/value-object/namespace";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
-import {register, registerAggregateRepository, registerCommandHandler} from "./utils/registry";
+import {register, registerAggregateRepository, registerAggregateCommandHandler} from "./utils/registry";
 import {isNewFile, listChangesForCodyResponse} from "./utils/fs-tree";
 import {alwaysRecordEvent} from "./utils/aggregate/always-record-event";
-import {convertRuleConfigToAggregateBehavior} from "./utils/rule-engine/convert-rule-config-to-behavior";
+import {convertRuleConfigToCommandHandlingBehavior} from "./utils/rule-engine/convert-rule-config-to-behavior";
 import {AggregateMetadata} from "./utils/aggregate/metadata";
 
 
@@ -40,7 +40,7 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
       events.forEach(evt => rules.push(alwaysRecordEvent(evt)))
     }
 
-    const behavior = withErrorCheck(convertRuleConfigToAggregateBehavior, [
+    const behavior = withErrorCheck(convertRuleConfigToCommandHandlingBehavior, [
       aggregate,
       ctx,
       rules,
@@ -109,7 +109,7 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
     }
 
     withErrorCheck(register, [aggregate, ctx, tree]);
-    withErrorCheck(registerCommandHandler, [service, aggregate, ctx, tree]);
+    withErrorCheck(registerAggregateCommandHandler, [service, aggregate, ctx, tree]);
     withErrorCheck(registerAggregateRepository, [service, aggregate, ctx, tree]);
 
     await formatFiles(tree);

@@ -123,7 +123,7 @@ export class DocumentStoreInformationService implements InformationService {
     }
 
     if(isQueryableStateListDescription(runtimeInfo.desc)) {
-      return this.detectVoRuntimeInfoWithCollection(runtimeInfo.desc.itemType);
+      return runtimeInfo;
     }
 
     if(isQueryableStateDescription(runtimeInfo.desc) || isQueryableValueObjectDescription(runtimeInfo.desc) || isQueryableNotStoredValueObjectDescription(runtimeInfo.desc)) {
