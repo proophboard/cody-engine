@@ -5,7 +5,7 @@ export const <%= className %>Desc: <% if (isAggregateCommand) { %>Aggregate<% } 
   aggregateCommand: <%= isAggregateCommand %>,
   streamCommand: <%= isStreamCommand %>,
   <% if (dependencies) { %>dependencies: <%- toJSON(dependencies) %>,<% } %>
-  <% if (isStreamCommand) { %>streamIdExpr: "<%= streamId %>",<% } %>
+  <% if (isStreamCommand) { %>streamIdExpr: "<%- streamId %>",<% } %>
   <% if (!isAggregateCommand && streamName) { %>streamName: "<%= streamName %>",<% } %>
   <% if (!isAggregateCommand && publicStream) { %>publicStream: "<%= publicStream %>",<% } %>
   <% if (isAggregateCommand) { %>newAggregate: <% if (newAggregate) { %>true<% } else { %>false<% } %>,<% } %>
