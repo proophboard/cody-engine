@@ -12,6 +12,7 @@ import {
   META_KEY_USER
 } from "@event-engine/infrastructure/AggregateRepository";
 import {asyncIterableToArray} from "@app/shared/utils/async-iterable-to-array";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 export const STREAM_AGGREGATE_TYPE = '$stream';
 
@@ -126,7 +127,9 @@ export class StreamEventsRepository {
     // Trigger live projections
     this.infoService.useSession(session);
     try {
-      for (const projectionEvent of [...writeModelEvents, ...publicEvents]) {
+      for (let projectionEvent of [...writeModelEvents, ...publicEvents]) {
+        // Only map userId, a projection should not implicitly get access to GDPR relevant user data
+        projectionEvent = (await mapMetadataFromEventStore([projectionEvent]))[0];
         await this.messageBox.eventBus.on(projectionEvent, true);
       }
       this.infoService.forgetSession();

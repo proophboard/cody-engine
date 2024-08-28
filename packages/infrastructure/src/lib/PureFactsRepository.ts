@@ -6,6 +6,7 @@ import {Event, providesPublicEvent} from "@event-engine/messaging/event";
 import {Command} from "@event-engine/messaging/command";
 import {setMessageMetadata} from "@event-engine/messaging/message";
 import {AggregateMeta, AggregateMetaKeys, META_KEY_USER} from "@event-engine/infrastructure/AggregateRepository";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 export const NON_AGGREGATE_TYPE = '$none';
 
@@ -93,7 +94,9 @@ export class PureFactsRepository {
     // Trigger live projections
     this.infoService.useSession(session);
     try {
-      for (const projectionEvent of [...writeModelEvents, ...publicEvents]) {
+      for (let projectionEvent of [...writeModelEvents, ...publicEvents]) {
+        // Only map userId, a projection should not implicitly get access to GDPR relevant user data
+        projectionEvent = (await mapMetadataFromEventStore([projectionEvent]))[0];
         await this.messageBox.eventBus.on(projectionEvent, true);
       }
       this.infoService.forgetSession();

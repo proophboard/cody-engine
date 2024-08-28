@@ -275,7 +275,9 @@ export class AggregateRepository<T extends object = any> {
         // Trigger live projections
         this.infoService.useSession(session);
         try {
-            for (const projectionEvent of [...writeModelEvents, ...publicEvents]) {
+            for (let projectionEvent of [...writeModelEvents, ...publicEvents]) {
+                // Only map userId, a projection should not implicitly get access to GDPR relevant user data
+                projectionEvent = (await mapMetadataFromEventStore([projectionEvent]))[0];
                 await this.messageBox.eventBus.on(projectionEvent, true);
             }
             this.infoService.forgetSession();
