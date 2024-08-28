@@ -2,6 +2,8 @@ import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageB
 import {getConfiguredEventStore, PUBLIC_STREAM, WRITE_MODEL_STREAM} from "@server/infrastructure/configuredEventStore";
 import * as process from "process";
 import {Command} from "commander";
+import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 
 // Do not remove messageBox, without that import the script fails
 // Somehow ts-node is not able to load the event store module correctly
@@ -21,7 +23,7 @@ commander.version('1.0.0', '-v, --version')
 const options = commander.opts();
 
 if(options.eventid) {
-  eventStore.republish(WRITE_MODEL_STREAM, {'$eventId': options.eventid})
+  eventStore.republish(WRITE_MODEL_STREAM, getExternalServiceOrThrow<AuthService>('AuthService', {}), {'$eventId': options.eventid})
     .catch(e => console.error(e));
 }
 
