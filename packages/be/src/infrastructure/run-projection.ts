@@ -4,6 +4,7 @@ import * as process from "process";
 import {Command} from "commander";
 import {DEFAULT_READ_MODEL_PROJECTION} from "@event-engine/infrastructure/Projection/types";
 import {getConfiguredEventBus} from "@server/infrastructure/configuredEventBus";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 // Do not remove messageBox, without that import the script fails
 // Somehow ts-node is not able to load the event store module correctly
@@ -28,7 +29,11 @@ if(options.eventid) {
   (async () => {
     const events = await eventStore.load(WRITE_MODEL_STREAM, {'$eventId': options.eventid})
 
-    for await (const event of events) {
+
+
+    for await (let event of events) {
+      // Only map userId, a projection should not implicitly get access to GDPR relevant user data
+      event = (await mapMetadataFromEventStore([event]))[0];
       await eventBus.runProjection(event, options.name);
     }
   })().catch(e => console.error(e));
