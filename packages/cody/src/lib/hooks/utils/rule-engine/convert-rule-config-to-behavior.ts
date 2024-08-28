@@ -546,9 +546,13 @@ const convertThenFind = (node: Node, ctx: Context, then: ThenFindInformation, ru
   makeFilter(then.find.filter, lines, indent + '  ');
   if(typeof then.find.skip !== 'undefined') {
     lines.push(`${indent}  , ${then.find.skip}`);
+  } else {
+    lines.push(`${indent}  , undefined`);
   }
   if(typeof then.find.limit !== 'undefined') {
     lines.push(`${indent}  , ${then.find.limit}`);
+  } else {
+    lines.push(`${indent}  , undefined`);
   }
   if(then.find.orderBy) {
     lines.push(`${indent}  , ${JSON.stringify(then.find.orderBy)}`);

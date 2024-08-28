@@ -223,7 +223,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
       // Upsert View Component
       if(isList) {
         await asyncWithErrorCheck(upsertListViewComponent, [vo, voMeta, ctx, tree, voMeta.itemType as string, itemSchema as JSONSchema7, itemUiSchema]);
-      } else if (!isSingleVOQuery /* aka isState */) {
+      } else {
         await asyncWithErrorCheck(upsertStateViewComponent, [vo, voMeta, ctx, tree]);
       }
     }
