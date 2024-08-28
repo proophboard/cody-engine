@@ -55,7 +55,7 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
   const voRegistryId = `${serviceNames.className}${ns.JSONPointer}${voNames.className}`;
   const dataReference = registryIdToDataReference(voRegistryId);
 
-  if(!isQueryableStateListDescription(voMeta) && !isQueryableListDescription(voMeta)) {
+  if(!isQueryableStateListDescription(voMeta) && !isQueryableNotStoredStateListDescription(voMeta) && !isQueryableListDescription(voMeta)) {
     return {
       cody: `Upps, upsertListViewComponent is called with a non-queryable list Value Object.`,
       type: CodyResponseType.Error,

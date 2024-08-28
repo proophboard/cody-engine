@@ -2,13 +2,13 @@ import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
 import {Context} from "../../context";
 import {
   isQueryableListDescription,
-  isQueryableNotStoredStateDescription,
+  isQueryableNotStoredStateDescription, isQueryableNotStoredStateListDescription,
   isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
   isQueryableStateListDescription,
   isQueryableValueObjectDescription,
   QueryableListDescription,
-  QueryableNotStoredStateDescription,
+  QueryableNotStoredStateDescription, QueryableNotStoredStateListDescription,
   QueryableNotStoredValueObjectDescription,
   QueryableStateDescription,
   QueryableStateListDescription,
@@ -31,7 +31,6 @@ import {
   GtFilter,
   InArrayFilter,
   isAndFilter,
-  isAnyFilter,
   isAnyOfDocIdFilter,
   isAnyOfFilter,
   isDocIdFilter,
@@ -46,12 +45,9 @@ import {
   LteFilter,
   LtFilter
 } from "../value-object/query/filter-types";
-import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {isCodyError} from "@proophboard/cody-utils";
 import {ResolveConfig, ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
-import {requireUncachedTypes} from "@cody-engine/cody/hooks/utils/value-object/require-uncached-types";
-import {voRegistryId} from "@cody-engine/cody/hooks/utils/value-object/vo-registry-id";
 import {withErrorCheck} from "@cody-engine/cody/hooks/utils/error-handling";
 
 export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
@@ -63,6 +59,7 @@ export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Co
     }
   }
 
+
   if(isQueryableNotStoredStateDescription(voMeta)) {
     return makeSingleValueObjectQueryResolver(vo, voMeta, ctx);
   }
@@ -71,7 +68,7 @@ export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Co
     return makeStateQueryResolver(vo, voMeta, ctx);
   }
 
-  if(isQueryableStateListDescription(voMeta) || isQueryableListDescription(voMeta)) {
+  if(isQueryableStateListDescription(voMeta) || isQueryableNotStoredStateListDescription(voMeta) || isQueryableListDescription(voMeta)) {
     return makeListQueryResolver(vo, voMeta, ctx);
   }
 
@@ -185,7 +182,7 @@ const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableS
 `
 }
 
-const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & (QueryableStateListDescription | QueryableListDescription ), ctx: Context): string | CodyResponse => {
+const makeListQueryResolver = (vo: Node, meta: ValueObjectMetadata & (QueryableStateListDescription | QueryableListDescription | QueryableNotStoredStateListDescription ), ctx: Context): string | CodyResponse => {
   const voNames = names(vo.getName());
   const querySchema = meta.querySchema;
 
