@@ -69,7 +69,7 @@ export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): P
       rules,
       [
         {name: 'event', initializer: 'event.payload'},
-        {name: 'eventMeta', initializer: 'event.meta'},
+        {name: 'meta', initializer: 'event.meta'},
         {name: 'eventCreatedAt', initializer: 'event.createdAt'}
       ]
     ]);
