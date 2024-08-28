@@ -6,6 +6,7 @@ import {Message} from "@event-engine/messaging/message";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
 export type MessageType = 'command' | 'event' | 'query';
 
@@ -35,20 +36,21 @@ export class MessageBus {
 
       switch (dep.type) {
         case "query":
-          if(dep.options?.query) {
+          const options = cloneDeepJSON(dep.options || {});
+          if(options.query) {
             const payload: Record<string, any> = {};
 
             const messageDep: Record<string, object> = {};
             messageDep[type] = message.payload;
 
-            for (const prop in dep.options.query) {
-              payload[prop] = await jexl.eval(dep.options.query[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
+            for (const prop in options.query) {
+              payload[prop] = await jexl.eval(options.query[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
             }
 
-            dep.options.query = payload;
+            options.query = payload;
           }
 
-          loadedDependencies[depName] = await this.loadQueryDependency(dependencyKey, message, dep.options);
+          loadedDependencies[depName] = await this.loadQueryDependency(dependencyKey, message, options);
           break;
         case "service":
           loadedDependencies[depName] = this.loadServiceDependency(dependencyKey, message, dep.options);
