@@ -42,7 +42,7 @@ export class MessageBus {
             messageDep[type] = message.payload;
 
             for (const prop in dep.options.query) {
-              payload[prop] = await jexl.eval(dep.options.query[prop], {...loadedDependencies, ...messageDep});
+              payload[prop] = await jexl.eval(dep.options.query[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
             }
 
             dep.options.query = payload;
