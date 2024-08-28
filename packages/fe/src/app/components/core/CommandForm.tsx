@@ -57,7 +57,7 @@ type CommandFormProps = OwnProps;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 const CommandForm = (props: CommandFormProps, ref: any) => {
-  let formRef: any = useRef();
+  const formRef: any = useRef();
   const [isInitialized, setInitialized] = useState(false);
   const [formData, setFormData] = useState<{[prop: string]: any}>({});
   const [liveValidate, setLiveValidate] = useState(false);
@@ -71,8 +71,8 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   useImperativeHandle(ref, () => ({
     submit: (): void => {
       setLiveValidate(true);
-      setFormData(cloneDeepJSON(formRef.state.formData));
-      formRef.submit();
+      setFormData(cloneDeepJSON(formRef.current.state.formData));
+      formRef.current.submit();
     },
   }));
 
@@ -87,7 +87,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     ) {
       initialFormData[desc.aggregateIdentifier] = v4();
     }
-
+    console.log("Set form data", initialFormData);
     setFormData({...initialFormData});
     setInitialized(true);
 
@@ -130,9 +130,12 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
       clearTimeout(debounceTimer);
     }
 
+    const currentData = cloneDeepJSON(formRef.current.state.formData);
+
     debounceTimer = setTimeout(() => {
       if(formRef) {
-        setFormData(cloneDeepJSON(formRef.state.formData));
+        console.log("Set form data in debounce timer", currentData);
+        setFormData(currentData);
       }
     }, 300);
 
@@ -157,7 +160,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   const handleUpdateFormFromContext = (fD: {[prop: string]: any}) => {
     setTimeout(() => {
       if(formRef) {
-        setFormData({...formRef.state.formData, ...fD});
+        setFormData({...formRef.current.state.formData, ...fD});
       }
     }, 310) /* wait until debounce timer of onChange fired */
   }
@@ -177,37 +180,37 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
       <Grid2 container={true} spacing={3}>
         <Grid2 md={12}>
           {!mutation.isSuccess && !mutation.isError && <Form
-              schema={schema}
-              children={<></>}
-              // @ts-ignore
-              ref={(form) => formRef = form}
-              onSubmit={handleSubmit}
-              formData={formData}
-              formContext={{data: formData, updateForm: handleUpdateFormFromContext}}
-              uiSchema={uiSchema}
-              liveValidate={liveValidate}
-              showErrorList={false}
-              onError={handleValidationError}
-              onChange={handleChange}
-              validator={getRjsfValidator()}
-              // default browser validation needs to be turned off, otherwise optional objects with required props don't work
-              noHtml5Validate={true}
-              templates={{
-                ...(props.objectFieldTemplate? {ObjectFieldTemplate: props.objectFieldTemplate} : {ObjectFieldTemplate}),
-                ...(props.arrayFieldTemplate? {ArrayFieldTemplate: props.arrayFieldTemplate} : {}),
-              }}
-              widgets={
-                {
-                  ...widgets,
-                  ...userWidgets
-                }
+            schema={schema}
+            children={<></>}
+            // @ts-ignore
+            ref={formRef}
+            onSubmit={handleSubmit}
+            formData={formData}
+            formContext={{data: formData, updateForm: handleUpdateFormFromContext}}
+            uiSchema={uiSchema}
+            liveValidate={liveValidate}
+            showErrorList={false}
+            onError={handleValidationError}
+            onChange={handleChange}
+            validator={getRjsfValidator()}
+            // default browser validation needs to be turned off, otherwise optional objects with required props don't work
+            noHtml5Validate={true}
+            templates={{
+              ...(props.objectFieldTemplate? {ObjectFieldTemplate: props.objectFieldTemplate} : {ObjectFieldTemplate}),
+              ...(props.arrayFieldTemplate? {ArrayFieldTemplate: props.arrayFieldTemplate} : {}),
+            }}
+            widgets={
+              {
+                ...widgets,
+                ...userWidgets
               }
-              fields={
-                {
-                  ...fields,
-                  ...props.fields
-                }
+            }
+            fields={
+              {
+                ...fields,
+                ...props.fields
               }
+            }
           />}
           {(mutation.isSuccess || mutation.isError) && <div>
             {mutation.isSuccess && <AxiosResponseViewer response={mutation.data as AxiosResponse} successMessageCreated={<Alert severity={'success'}>

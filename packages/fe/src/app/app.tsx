@@ -23,24 +23,32 @@ import User from "@frontend/app/providers/User";
 import PageDataProvider from "@frontend/app/providers/PageData";
 import ErrorBoundary from "@frontend/app/components/core/ErrorBoundary";
 import GlobalStore from "@frontend/app/providers/GlobalStore";
+import TypesProvider from "@frontend/app/providers/Types";
+import {types} from "@app/shared/types";
+import EnvProvider from "@frontend/app/providers/UseEnvironment";
+import {environment} from "@frontend/environments/environment";
 
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
-      <User>
-        <GlobalStore>
-          <PageDataProvider>
-            <ToggleColorMode>
-              <SnackbarProvider maxSnack={3} >
-                <MainLayout>
-                  <ScrollToTop />
-                  <Outlet />
-                </MainLayout>
-              </SnackbarProvider>
-            </ToggleColorMode>
-          </PageDataProvider>
-        </GlobalStore>
-      </User>
+      <EnvProvider env={{UI_ENV: environment.production? 'prod' : 'dev'}}>
+        <User>
+          <GlobalStore>
+            <PageDataProvider>
+              <TypesProvider types={types}>
+                <ToggleColorMode>
+                  <SnackbarProvider maxSnack={3} >
+                    <MainLayout>
+                      <ScrollToTop />
+                      <Outlet />
+                    </MainLayout>
+                  </SnackbarProvider>
+                </ToggleColorMode>
+              </TypesProvider>
+            </PageDataProvider>
+          </GlobalStore>
+        </User>
+      </EnvProvider>
     </>
   };
 

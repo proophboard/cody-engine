@@ -21,8 +21,6 @@ export const normalizeUiSchema = (uiSchema: UiSchema, ctx: any): UiSchema => {
       parts.pop();
       const orgUISchemaKey = parts.join(":");
 
-      console.log("Normalize expr: ", schemaKey, schema[schemaKey], {...ctx}, jexl.evalSync(schema[schemaKey], ctx));
-
       schema[orgUISchemaKey] = jexl.evalSync(schema[schemaKey], ctx);
     }
   }

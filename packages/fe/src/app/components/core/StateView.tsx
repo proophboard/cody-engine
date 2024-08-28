@@ -31,12 +31,13 @@ import {
 } from "@frontend/app/components/core/form/templates/ObjectFieldTemplate";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
-import {configStore} from "@cody-play/state/config-store";
 import {useParams} from "react-router-dom";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {merge} from "lodash";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
+import {useTypes} from "@frontend/hooks/use-types";
+import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 
 interface OwnProps {
   state?: Record<string, any>;
@@ -129,8 +130,8 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
     <Grid2 container>
       <Grid2 xs>
         {props.title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
-                     className={(headingVariant === 'h2' || headingVariant === 'h3') ? 'sidebar-anchor' : ''}
-                     sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>}
+                                    className={(headingVariant === 'h2' || headingVariant === 'h3') ? 'sidebar-anchor' : ''}
+                                    sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>}
       </Grid2>
       <TopRightActions  uiOptions={uiOptions} information={props.formContext.information} jexlCtx={jexlCtx} />
     </Grid2>
@@ -141,7 +142,7 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
           element.hidden ? (
               element.content
             ) :
-          <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema) as Grid2Props}>{element.content}</Grid2>)
+            <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema) as Grid2Props}>{element.content}</Grid2>)
       }
     </Grid2>
   </div>
@@ -164,8 +165,8 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
 
   return <div>
     {props.title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
-                 className={(headingVariant === 'h2' || headingVariant === 'h3') ? 'sidebar-anchor' : ''}
-                 sx={getObjPropTitleStyle(headingVariant)}>{props.title}</Typography>}
+                                className={(headingVariant === 'h2' || headingVariant === 'h3') ? 'sidebar-anchor' : ''}
+                                sx={getObjPropTitleStyle(headingVariant)}>{props.title}</Typography>}
     {!props.items.length && <Box className={'array-element-wrapper'} key={'array_ele_wrapper_empty'}><Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Box> }
     {props.items.map((element, index) => <Box className={'array-element-wrapper'} key={'array_ele_wrapper_' + index}>{element.children}</Box>)}
   </div>
@@ -176,7 +177,7 @@ const StateView = (props: StateViewProps) => {
   const theme = useTheme();
   const [user,] = useUser();
   const [pageData,] = usePageData();
-  const {config} = useContext(configStore);
+  const [types] = useTypes();
   const routeParams = useParams();
   const [globalStore] = useGlobalStore();
   const jexlCtx: FormJexlContext = {
@@ -208,10 +209,10 @@ const StateView = (props: StateViewProps) => {
 
   const infoFQCN = playFQCNFromDefinitionId(schema['$id'] || '');
 
-  const informationRuntimeInfo = config.types[infoFQCN];
+  const informationRuntimeInfo = types[infoFQCN];
 
   if(!informationRuntimeInfo) {
-    return <Alert severity="error">Information {infoFQCN} cannot be found in the Cody Play types config!</Alert>
+    return <Alert severity="error">Information {infoFQCN} cannot be found in the types config!</Alert>
   }
 
   if(props.hidden) {
@@ -252,7 +253,7 @@ const StateView = (props: StateViewProps) => {
         />
       </CardContent>
     </Card>
-    <BottomActions uiOptions={uiOptions} information={informationRuntimeInfo} jexlCtx={jexlCtx} />
+    <BottomActions uiOptions={uiOptions} information={informationRuntimeInfo as unknown as PlayInformationRuntimeInfo} jexlCtx={jexlCtx} />
   </>;
 };
 

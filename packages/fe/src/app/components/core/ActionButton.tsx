@@ -14,7 +14,9 @@ import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jex
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
-import MdiIcon from "@cody-play/app/components/core/MdiIcon";
+import {useEnv} from "@frontend/hooks/use-env";
+import {commands} from "@frontend/app/components/commands";
+import {useParams} from "react-router-dom";
 
 interface OwnProps {
   action: Action;
@@ -36,7 +38,7 @@ const makeButton = (config: ButtonConfig, additionalProps: object) => {
                        color={config.color}
                        disabled={config.disabled}
                        {...additionalProps}
-                       >{config.icon}</IconButton>
+    >{config.icon}</IconButton>
   } else {
     return <Button variant={config.variant}
                    sx={{ textTransform: 'none', margin: '5px', ...config.style }}
@@ -51,17 +53,29 @@ const makeButton = (config: ButtonConfig, additionalProps: object) => {
 }
 
 const ActionButton = ({action, information, jexlCtx}: ActionButtonProps) => {
+  const env = useEnv();
   const {config} = useContext(configStore);
   const [,setGlobalStore] = useGlobalStore();
+  const params = useParams();
 
   if(isCommandAction(action)) {
-    const command = config.commands[action.command];
+    if(env.UI_ENV == "play") {
+      const command = config.commands[action.command];
 
-    if(!command) {
+      if(!command) {
+        return <Alert severity="error">{"Unknown command: " + action.command}</Alert>
+      }
+
+      return <PlayCommand command={command} buttonProps={action.button} />
+    }
+
+    const CmdComponent = commands[action.command];
+
+    if(!CmdComponent) {
       return <Alert severity="error">{"Unknown command: " + action.command}</Alert>
     }
 
-    return <PlayCommand command={command} buttonProps={action.button} />
+    return <CmdComponent buttonProps={action.button} {...params} />
   }
 
   if(isLinkAction(action)) {
