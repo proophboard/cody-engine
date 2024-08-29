@@ -408,7 +408,7 @@ const convertThenTriggerCommand = (node: Node, ctx: Context, then: ThenTriggerCo
     return mapping;
   }
 
-  const meta = then.trigger.meta? convertMapping(node, ctx, then.trigger.meta, rule, indent, true) : 'ctx["eventMeta"]';
+  const meta = then.trigger.meta? convertMapping(node, ctx, then.trigger.meta, rule, indent, true) : 'ctx["meta"]';
   if(isCodyError(meta)) {
     return meta;
   }
