@@ -48,6 +48,7 @@ export interface Tab {
   styleExpr?: string;
   hidden?: string;
   disabled?: string;
+  position?: number;
 }
 
 export type TopLevelPageWithProophBoardDescription = TopLevelPage & ProophBoardDescription;
