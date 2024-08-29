@@ -1,4 +1,7 @@
-import {convertMapping} from "@cody-engine/cody/hooks/utils/rule-engine/convert-rule-config-to-behavior";
+import {
+  convertMapping,
+  wrapExpression
+} from "@cody-engine/cody/hooks/utils/rule-engine/convert-rule-config-to-behavior";
 import {makeNodeRecord, NodeType} from "@proophboard/cody-types";
 import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {Context} from "@cody-engine/cody/hooks/context";
@@ -33,11 +36,25 @@ const source = {propA: "a", propB: "b"};
 
 const ctx: Context = {beSrc: "", feSrc: "", boardId: "11111", boardName: "Test Board", sharedSrc: "", tree: new FsTree("", true), projectRoot: ".", userId: "333", syncedNodes: Map()}
 
+describe("wrapExpression", () => {
+  test("sync eval", () => {
+    const expr = wrapExpression("'test'", true);
+
+    expect(expr).toEqual(`jexl.evalSync(\`'test'\`, ctx)`);
+  })
+
+  test("expr with double quotes", () => {
+    const expr = wrapExpression("['a','b','c']|filter('item == \"a\"')", true);
+
+    expect(expr).toEqual(`jexl.evalSync(\`['a','b','c']|filter('item == "a"')\`, ctx)`);
+  })
+})
+
 describe("convertMapping", () => {
   test("map string expr", () => {
     const target = convertMapping(testNode, ctx, "source", rule, "", true);
 
-    expect(target).toEqual("jexl.evalSync(\"source\", ctx)");
+    expect(target).toEqual("jexl.evalSync(`source`, ctx)");
   })
 
 
@@ -47,7 +64,7 @@ describe("convertMapping", () => {
       propB: "source.propB"
     }, rule, "", true);
 
-    expect(target).toEqual("{\n  \"propA\": jexl.evalSync(\"source.propA\", ctx),\n  \"propB\": jexl.evalSync(\"source.propB\", ctx),\n}");
+    expect(target).toEqual("{\n  \"propA\": jexl.evalSync(`source.propA`, ctx),\n  \"propB\": jexl.evalSync(`source.propB`, ctx),\n}");
   })
 
 
@@ -59,7 +76,7 @@ describe("convertMapping", () => {
       }
     }, rule, "", true);
 
-    expect(target).toEqual("{\n  \"target\": {\n    \"propA\": jexl.evalSync(\"source.propA\", ctx),\n    \"propB\": jexl.evalSync(\"source.propB\", ctx),\n  },\n}");
+    expect(target).toEqual("{\n  \"target\": {\n    \"propA\": jexl.evalSync(`source.propA`, ctx),\n    \"propB\": jexl.evalSync(`source.propB`, ctx),\n  },\n}");
   })
 
   test("map nested objs in array expr", () => {
@@ -70,7 +87,7 @@ describe("convertMapping", () => {
       }
     }], rule, "", true);
 
-    expect(target).toEqual("[\n  {\n    \"target\": {\n      \"propA\": jexl.evalSync(\"source.propA\", ctx),\n      \"propB\": jexl.evalSync(\"source.propB\", ctx),\n    },\n  },\n]");
+    expect(target).toEqual("[\n  {\n    \"target\": {\n      \"propA\": jexl.evalSync(`source.propA`, ctx),\n      \"propB\": jexl.evalSync(`source.propB`, ctx),\n    },\n  },\n]");
   })
 
   test("map nested obj with merge expr", () => {
@@ -82,7 +99,7 @@ describe("convertMapping", () => {
       }
     }, rule, "", true);
 
-    expect(target).toEqual("{\n  \"target\": {\n    ...jexl.evalSync(\"{propC: 'c'}\", ctx),\n    \"propA\": jexl.evalSync(\"source.propA\", ctx),\n    \"propB\": jexl.evalSync(\"source.propB\", ctx),\n  },\n}");
+    expect(target).toEqual("{\n  \"target\": {\n    ...jexl.evalSync(`{propC: 'c'}`, ctx),\n    \"propA\": jexl.evalSync(`source.propA`, ctx),\n    \"propB\": jexl.evalSync(`source.propB`, ctx),\n  },\n}");
   })
 
   test("map nested obj with merge array expr", () => {
@@ -94,7 +111,7 @@ describe("convertMapping", () => {
       }
     }, rule, "", true);
 
-    expect(target).toEqual("{\n  \"target\": {\n    ...jexl.evalSync(\"{propC: 'c'}\", ctx),\n    ...jexl.evalSync(\"{propD: 'd'}\", ctx),\n    \"propA\": jexl.evalSync(\"source.propA\", ctx),\n    \"propB\": jexl.evalSync(\"source.propB\", ctx),\n  },\n}");
+    expect(target).toEqual("{\n  \"target\": {\n    ...jexl.evalSync(`{propC: 'c'}`, ctx),\n    ...jexl.evalSync(`{propD: 'd'}`, ctx),\n    \"propA\": jexl.evalSync(`source.propA`, ctx),\n    \"propB\": jexl.evalSync(`source.propB`, ctx),\n  },\n}");
   })
 
   test("map nested obj with merge array objs expr", () => {
@@ -106,6 +123,6 @@ describe("convertMapping", () => {
       }
     }, rule, "", true);
 
-    expect(target).toEqual("{\n  \"target\": {\n    ...{\n      \"propC\": jexl.evalSync(\"'c'\", ctx),\n    },\n    ...{\n      \"propD\": jexl.evalSync(\"'d'\", ctx),\n    },\n    \"propA\": jexl.evalSync(\"source.propA\", ctx),\n    \"propB\": jexl.evalSync(\"source.propB\", ctx),\n  },\n}");
+    expect(target).toEqual("{\n  \"target\": {\n    ...{\n      \"propC\": jexl.evalSync(`'c'`, ctx),\n    },\n    ...{\n      \"propD\": jexl.evalSync(`'d'`, ctx),\n    },\n    \"propA\": jexl.evalSync(`source.propA`, ctx),\n    \"propB\": jexl.evalSync(`source.propB`, ctx),\n  },\n}");
   })
 })

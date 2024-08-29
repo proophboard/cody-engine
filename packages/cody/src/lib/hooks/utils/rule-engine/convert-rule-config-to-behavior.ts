@@ -761,6 +761,6 @@ export const convertMapping = (node: Node, ctx: Context, mapping: string | strin
 
 export const wrapExpression = (expr: string, evalSync = false): string => {
   return evalSync
-    ? `jexl.evalSync("${expr}", ctx)`
-    : `await jexl.eval("${expr}", ctx)`;
+    ? `jexl.evalSync(\`${expr}\`, ctx)`
+    : `await jexl.eval(\`${expr}\`, ctx)`;
 }
