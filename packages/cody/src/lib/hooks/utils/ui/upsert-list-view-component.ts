@@ -96,6 +96,7 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
     imports: imports.join(";\n"),
     hooks: hooks.join(";\n"),
     ...voNames,
+    name: (voMeta.schema as {title?: string}).title || voNames.name,
     toJSON,
   })
 
