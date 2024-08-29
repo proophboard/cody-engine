@@ -17,6 +17,8 @@ export interface FindByArguments {
   orderBy?: SortOrder
 }
 
+export const SERVICE_NAME_AUTH_SERVICE = 'AuthService';
+
 export interface AuthService {
   register: (user: UnregisteredUser) => Promise<string>;
   get: (userId: string) => Promise<User>;

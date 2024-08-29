@@ -2,6 +2,9 @@ import {InMemoryEventStore} from "@event-engine/infrastructure/EventStore/InMemo
 import {EventQueue} from "@event-engine/infrastructure/EventQueue";
 import {InMemoryStreamListenerQueue} from "@event-engine/infrastructure/Queue/InMemoryStreamListenerQueue";
 import {MessageBox} from "@event-engine/messaging/message-box";
+import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
+import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
 
 export class PlayStreamListener {
   private readonly queue: EventQueue;
@@ -13,6 +16,7 @@ export class PlayStreamListener {
 
 
     this.queue.attachConsumer(async (event) => {
+      event = (await mapMetadataFromEventStore([event], getConfiguredPlayAuthService()))[0];
       return this.messageBox.eventBus.on(event);
     })
   }

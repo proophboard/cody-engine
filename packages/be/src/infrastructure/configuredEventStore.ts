@@ -5,9 +5,11 @@ import {InMemoryEventStore} from "@event-engine/infrastructure/EventStore/InMemo
 import {InMemoryStreamListenerQueue} from "@event-engine/infrastructure/Queue/InMemoryStreamListenerQueue";
 import {env} from "@server/environments/environment.current";
 import {EventQueue} from "@event-engine/infrastructure/EventQueue";
-import {getExternalService} from "@server/extensions/get-external-service";
+import {getExternalService, getExternalServiceOrThrow} from "@server/extensions/get-external-service";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 import {NodeFilesystem} from "@event-engine/infrastructure/helpers/node-file-system";
+import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
+import {AuthService, SERVICE_NAME_AUTH_SERVICE} from "@server/infrastructure/auth-service/auth-service";
 
 export const WRITE_MODEL_STREAM = 'write_model_stream';
 export const PUBLIC_STREAM = 'public_stream';
@@ -34,14 +36,16 @@ export const getConfiguredEventStore = (): EventStore => {
         es = new InMemoryEventStore(new NodeFilesystem());
     }
 
+    const authService = getExternalServiceOrThrow<AuthService>(SERVICE_NAME_AUTH_SERVICE, {});
+
     // Avoid circular deps in listeners
     const publicStreamListener = getExternalService<EventQueue>(SERVICE_NAME_PUBLIC_STREAM_LISTENER_QUEUE, {eventStore: es})
-      || makeDefaultStreamListener(es, PUBLIC_STREAM);
+      || makeDefaultStreamListener(es, PUBLIC_STREAM, authService);
 
     publicStreamListener.startProcessing();
 
     const writeModelStreamListener = getExternalService<EventQueue>(SERVICE_NAME_WRITE_MODEL_STREAM_LISTENER_QUEUE, {eventStore: es})
-      || makeDefaultStreamListener(es, WRITE_MODEL_STREAM);
+      || makeDefaultStreamListener(es, WRITE_MODEL_STREAM, authService);
 
     writeModelStreamListener.startProcessing();
   }
@@ -49,10 +53,11 @@ export const getConfiguredEventStore = (): EventStore => {
   return es;
 }
 
-const makeDefaultStreamListener = (es: EventStore, stream: string): EventQueue => {
+const makeDefaultStreamListener = (es: EventStore, stream: string, authService: AuthService): EventQueue => {
   const streamListener = new InMemoryStreamListenerQueue(es, stream);
 
-  streamListener.attachConsumer((event) => {
+  streamListener.attachConsumer(async (event) => {
+    event = (await mapMetadataFromEventStore([event], authService))[0];
     return getConfiguredMessageBox().eventBus.on(event);
   })
 
