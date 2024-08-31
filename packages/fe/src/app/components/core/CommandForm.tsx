@@ -59,7 +59,7 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 const CommandForm = (props: CommandFormProps, ref: any) => {
   const formRef: any = useRef();
   const [isInitialized, setInitialized] = useState(false);
-  const [formData, setFormData] = useState<{[prop: string]: any}>({});
+  const [formData, setFormData] = useState<{[prop: string]: any}>(props.formData || {});
   const [liveValidate, setLiveValidate] = useState(false);
   const [user,] = useUser();
   const [pageData,] = usePageData();
