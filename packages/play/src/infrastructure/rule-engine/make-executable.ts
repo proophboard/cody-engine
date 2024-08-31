@@ -614,11 +614,12 @@ export const execMappingSync = (mapping: string | string[] | PropMapping | PropM
       const setVal = mapping[propName] as PropMapping | string[] | PropMapping[];
 
       if(Array.isArray(setVal)) {
+        propMap[propName] = [];
         setVal.forEach(exp => {
           if(typeof exp === "string") {
-            propMap[propName] = execExprSync(exp, ctx);
+            propMap[propName].push(execExprSync(exp, ctx)) ;
           } else {
-            propMap[propName] = execMappingSync(exp, ctx);
+            propMap[propName].push(execMappingSync(exp, ctx));
           }
         })
       } else {
