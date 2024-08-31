@@ -682,11 +682,12 @@ export const execMappingAsync = async (mapping: string | string[] | PropMapping 
       const setVal = mapping[propName] as PropMapping | string[] | PropMapping[];
 
       if(Array.isArray(setVal)) {
+        propMap[propName] = [];
         for (const exp of setVal) {
           if(typeof exp === "string") {
-            propMap[propName] =  await execExprAsync(exp, ctx);
+            propMap[propName].push(await execExprAsync(exp, ctx));
           } else {
-            propMap[propName] = await execMappingAsync(exp, ctx);
+            propMap[propName].push(await execMappingAsync(exp, ctx));
           }
         }
       } else {
