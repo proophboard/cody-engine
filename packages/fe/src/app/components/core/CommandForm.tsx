@@ -126,18 +126,27 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
       return;
     }
 
+    let isFirstUpdate = true;
+
     if(debounceTimer) {
       clearTimeout(debounceTimer);
+      isFirstUpdate = false;
     }
 
     const currentData = cloneDeepJSON(formRef.current.state.formData);
 
     debounceTimer = setTimeout(() => {
-      if(formRef) {
+      if(formRef && !isFirstUpdate) {
+        debounceTimer = null;
         console.log("Set form data in debounce timer", currentData);
         setFormData(currentData);
       }
     }, 300);
+
+    if(isFirstUpdate) {
+      console.log("set form data as first update", currentData);
+      setFormData(currentData);
+    }
 
     if(props.onChange) {
       props.onChange();
