@@ -42,6 +42,8 @@ import _ from "lodash";
 import {
   playDefinitionIdFromFQCN,
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {useTypes} from "@frontend/hooks/use-types";
+import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -171,6 +173,7 @@ let currentDispatch: any;
 
 const PlayConfigProvider = (props: PropsWithChildren) => {
   const [user, ] = useUser();
+  const [, setTypes] = useTypes();
   const [config, dispatch] = useReducer((config: CodyPlayConfig, action: Action): CodyPlayConfig => {
     console.log(`[PlayConfigStore] Going to apply action: `, action);
     switch (action.type) {
@@ -226,7 +229,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.definitions = {...config.definitions};
         config.types[action.name] = action.information;
         config.definitions[action.definition.definitionId] = action.definition.schema;
-
+        setTypes(config.types as unknown as TypeRegistry);
         syncTypesWithSharedRegistry(config);
         return {...config};
       case "REMOVE_TYPE":
@@ -235,6 +238,8 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
 
         delete config.types[action.name];
         delete config.definitions[playDefinitionIdFromFQCN(action.name)];
+
+        setTypes(config.types as unknown as TypeRegistry);
         return {...config};
       case "ADD_QUERY":
         config.queries = {...config.queries};

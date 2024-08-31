@@ -44,6 +44,8 @@ import {
 import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 import GlobalStore from "@frontend/app/providers/GlobalStore";
 import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
+import EnvProvider, {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
+import TypesProvider from "@frontend/app/providers/Types";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -141,15 +143,19 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient!}>
       <User>
-        <PlayConfigProvider>
-          <PageDataProvider>
-            <CodyMessageServerInjection>
-              <PendingChanges>
-                <RouterProvider router={router} />
-              </PendingChanges>
-            </CodyMessageServerInjection>
-          </PageDataProvider>
-        </PlayConfigProvider>
+        <EnvProvider env={{UI_ENV: "play"}}>
+          <PlayConfigProvider>
+            <TypesProvider types={config.types as unknown as TypeRegistry}>
+              <PageDataProvider>
+                <CodyMessageServerInjection>
+                  <PendingChanges>
+                    <RouterProvider router={router} />
+                  </PendingChanges>
+                </CodyMessageServerInjection>
+              </PageDataProvider>
+            </TypesProvider>
+          </PlayConfigProvider>
+        </EnvProvider>
       </User>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
