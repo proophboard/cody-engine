@@ -104,6 +104,8 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
 
   const headingVariant = headingNestingLevel(props.idSchema.$id);
 
+  const title = props.uiSchema? props.uiSchema['ui:title'] : props.title;
+
   if(props.uiSchema && props.uiSchema['ui:widget'] && props.uiSchema['ui:widget'] === 'hidden') {
     return <></>
   }
@@ -129,9 +131,9 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
   return <div>
     <Grid2 container>
       <Grid2 xs>
-        {props.title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+        {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
                                     className={(headingVariant === 'h2' || headingVariant === 'h3') ? 'sidebar-anchor' : ''}
-                                    sx={getObjPropTitleStyle(headingVariant)}>{props.title}{index}</Typography>}
+                                    sx={getObjPropTitleStyle(headingVariant)}>{title}{index}</Typography>}
       </Grid2>
       <TopRightActions  uiOptions={uiOptions} information={props.formContext.information} jexlCtx={jexlCtx} />
     </Grid2>
@@ -157,6 +159,8 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
 
   let idPrefix = 'component_' + names(props.title).fileName + '_';
 
+  const title = props.uiSchema? props.uiSchema['ui:title'] : props.title;
+
   if(props.schema.$id) {
     const fqcn = playFQCNFromDefinitionId(props.schema.$id);
 
@@ -164,9 +168,9 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
   }
 
   return <div>
-    {props.title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+    {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
                                 className={(headingVariant === 'h2' || headingVariant === 'h3') ? 'sidebar-anchor' : ''}
-                                sx={getObjPropTitleStyle(headingVariant)}>{props.title}</Typography>}
+                                sx={getObjPropTitleStyle(headingVariant)}>{title}</Typography>}
     {!props.items.length && <Box className={'array-element-wrapper'} key={'array_ele_wrapper_empty'}><Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Box> }
     {props.items.map((element, index) => <Box className={'array-element-wrapper'} key={'array_ele_wrapper_' + index}>{element.children}</Box>)}
   </div>
