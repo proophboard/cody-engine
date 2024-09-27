@@ -1,8 +1,9 @@
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 import {getConfiguredEventStore, PUBLIC_STREAM, WRITE_MODEL_STREAM} from "@server/infrastructure/configuredEventStore";
 import {getConfiguredDocumentStore} from "@server/infrastructure/configuredDocumentStore";
-import {aggregates} from "@app/shared/aggregates";
 import {PostgresDocumentStore} from "@event-engine/infrastructure/DocumentStore/PostgresDocumentStore";
+import {types} from "@app/shared/types";
+import {ValueObjectDescription} from "@event-engine/descriptions/descriptions";
 
 // Do not remove messageBox, without that import the script fails
 // Somehow ts-node is not able to load the event store module correctly
@@ -47,10 +48,13 @@ interface Collection {
 
 const collections: Record<string, Collection> = {};
 
-for (const aggregateDesc of Object.values(aggregates)) {
-  if(!collections[aggregateDesc.collection]) {
-    collections[aggregateDesc.collection] = {
-      name: aggregateDesc.collection
+for (const typeInfo of Object.values(types)) {
+  const desc: ValueObjectDescription& {collection?: string} = typeInfo.desc;
+  if(desc.collection) {
+    if(!collections[desc.collection]) {
+      collections[desc.collection] = {
+        name: desc.collection
+      }
     }
   }
 }

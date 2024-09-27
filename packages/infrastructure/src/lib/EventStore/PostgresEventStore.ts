@@ -100,7 +100,7 @@ export class PostgresEventStore implements EventStore {
     return result.rows[0].exists;
   }
 
-  async appendTo(streamName: string, events: Event[], eventMatcher?: EventMatcher, expectedVersion?: number): Promise<boolean> {
+  async appendTo(streamName: string, events: Event[], eventMatcher?: EventMatcher, expectedVersion?: number, doNotPublish?: boolean): Promise<boolean> {
     // Since we have a unique index on aggregate meta, we can ignore eventMatcher and expectedVersion. It's checked by Postgres on insert
 
     const [query, bindings] = this.makeAppendToQuery(streamName, events);
@@ -117,6 +117,10 @@ export class PostgresEventStore implements EventStore {
       }
 
       throw err;
+    }
+
+    if(doNotPublish) {
+      return true;
     }
 
     this.triggerAppendToListeners(streamName, events);

@@ -122,7 +122,7 @@ export class InMemoryEventStore implements EventStore {
     return true;
   }
 
-  public async appendTo(streamName: string, events: Event[], eventMatcher?: EventMatcher, expectedVersion?: number): Promise<boolean> {
+  public async appendTo(streamName: string, events: Event[], eventMatcher?: EventMatcher, expectedVersion?: number, doNotPublish?: boolean): Promise<boolean> {
     if(!this.streams.hasOwnProperty(streamName)) {
       this.streams[streamName] = [];
     }
@@ -145,8 +145,12 @@ export class InMemoryEventStore implements EventStore {
 
     this.persistOnDiskIfEnabled();
 
+    if(doNotPublish) {
+      return true;
+    }
+
     if(this.publishOnFlush) {
-        this.session = {streamName, events};
+      this.session = {streamName, events};
     } else {
       this.appendToListeners.forEach(l => l(streamName, events));
     }

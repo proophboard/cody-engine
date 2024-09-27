@@ -64,7 +64,7 @@ export interface EventStore {
      */
     createStream: (streamName: string, type?: StreamType) => Promise<boolean>;
     deleteStream: (streamName: string) => Promise<boolean>;
-    appendTo: (streamName: string, events: Event[], eventMatcher?: EventMatcher, expectedVersion?: number) => Promise<boolean>;
+    appendTo: (streamName: string, events: Event[], eventMatcher?: EventMatcher, expectedVersion?: number, doNotPublish?: boolean) => Promise<boolean>;
     load: <P extends Payload = any, M extends EventMeta = any>(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number, reverse?: boolean) => Promise<AsyncIterable<Event<P,M>>>;
     delete: (streamName: string, eventMatcher: EventMatcher) => Promise<number>;
     republish: (streamName: string, authService: AuthService, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number) => Promise<void>;

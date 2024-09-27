@@ -20,10 +20,6 @@ This will start:
 - Webpack Dev Server + API Proxy serving React Frontend on: [http://localhost:4200](http://localhost:4200)
 - Cody Server on default port: [http://localhost:3311](http://localhost:3311)
 
-## Prepare Database
-
-`npx nx run be:preparedb`
-
 ## Push to your own repo
 
 If you want to keep a connection to the upstream repo `cody-engine` you can do:
@@ -149,6 +145,22 @@ npx nx run be:project --eventid <EventId> --name <ProjectionName>
 ```
 
 `--name` is optional and defaults to: "read_model"
+
+## Prepare Database
+
+_Not needed in prototype mode_
+
+`npx nx run be:preparedb`
+
+## Import Filesystem DB
+
+If you switch from filesystem db to Postgres, you can import the data from the filesystem using:
+
+`npx nx run be:importfsdb`
+
+_Run prepare database before the import to ensure that all tables exist._
+
+_If you want to rerun the import, make sure to empy the database before._
 
 
 ## Contribution
