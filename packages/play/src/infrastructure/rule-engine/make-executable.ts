@@ -359,7 +359,7 @@ const execCountInformation = async (then: ThenCountInformation, ctx: ExecutionCo
 
   const variable = then.count.variable || 'information';
 
-  ctx[variable] = await infoService.find(then.count.information, makeFilter(then.count.filter, ctx));
+  ctx[variable] = await infoService.count(then.count.information, makeFilter(then.count.filter, ctx));
 
   return ctx;
 }
