@@ -25,6 +25,11 @@ import {isAggregateCommandDescription} from "@event-engine/descriptions/descript
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
 import definitions from "@app/shared/types/definitions";
+import {getFormSuccessRedirect} from "@app/shared/utils/command-form/get-form-success-redirect";
+import {useUser} from "@frontend/hooks/use-user";
+import {usePageData} from "@frontend/hooks/use-page-data";
+import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
 
 export interface AggregateIdentifier {
   identifier: string;
@@ -80,6 +85,9 @@ const CommandDialog = (props: CommandDialogProps) => {
   const commandFormRef = useRef<{submit: () => void}>();
   const [transactionState, setTransactionState] = useState<TransactionState>({...defaultTransactionState});
   const [tryAgain, setTryAgain] = useState(false);
+  const [user,] = useUser();
+  const [pageData,] = usePageData();
+  const [store] = useGlobalStore();
 
   const filteredRouteParams: Record<string, string> = {};
 
@@ -134,7 +142,7 @@ const CommandDialog = (props: CommandDialogProps) => {
     }
   };
 
-  const handleResponseReceived = () => {
+  const handleResponseReceived = (formData: {[prop: string]: any}) => {
     setTransactionState({...defaultTransactionState});
     snackbar.enqueueSnackbar(commandTitle(props.commandDialogCommand) + ' was successful', {variant: "success"});
     if(!isAggregateCommandDescription(props.commandDialogCommand.desc) || !props.commandDialogCommand.desc.deleteState) {
@@ -142,6 +150,19 @@ const CommandDialog = (props: CommandDialogProps) => {
     }
     window.setTimeout(() => {
       props.onClose();
+
+      const redirect = getFormSuccessRedirect(props.commandDialogCommand, {
+        user,
+        page: pageData,
+        store,
+        routeParams,
+        data: formData
+      } as FormJexlContext);
+
+      if(redirect) {
+        navigate(redirect);
+        return;
+      }
 
       if(isAggregateCommandDescription(props.commandDialogCommand.desc) && props.commandDialogCommand.desc.deleteState) {
         const routeParts = location.pathname.split("/");
@@ -168,6 +189,7 @@ const CommandDialog = (props: CommandDialogProps) => {
       }
     }, 10);
   }
+
   return (
     <Dialog open={props.open} fullWidth={true} maxWidth={'lg'} onClose={handleCancel} sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}>
       <DialogTitle>
@@ -232,3 +254,4 @@ const CommandDialog = (props: CommandDialogProps) => {
 };
 
 export default CommandDialog;
+

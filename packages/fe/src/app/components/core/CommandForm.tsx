@@ -39,7 +39,7 @@ interface OwnProps {
   definitions: {[id: string]: DeepReadonly<JSONSchema7>};
   onBeforeSubmitting?: (formData: {[prop: string]: any}) => {[prop: string]: any};
   onSubmitted?: () => void;
-  onResponseReceived?: () => void;
+  onResponseReceived?: (formData: {[prop: string]: any}) => void;
   onBackendErrorReceived?: () => void;
   onValidationError?: () => void;
   onChange?: () => void;
@@ -109,7 +109,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     }
 
     if(mutation.isSuccess && props.onResponseReceived) {
-      props.onResponseReceived();
+      props.onResponseReceived(formData);
     }
   }, [mutation.isSuccess, mutation.isError])
 
