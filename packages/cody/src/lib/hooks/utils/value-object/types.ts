@@ -5,6 +5,7 @@ import {DependencyRegistry, ValueObjectDescriptionFlags} from "@event-engine/des
 import {JSONSchema7} from "json-schema-to-ts";
 import {UiSchema} from "@rjsf/utils";
 import {ProjectionConfig} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
+import {Action} from "@frontend/app/components/core/form/types/action";
 
 export interface ValueObjectMetadataRaw {
   identifier?: string;
@@ -36,6 +37,8 @@ export interface PageLinkTableColumn {
   mapping: Record<string, string>;
 }
 
+export type ActionTableColumn = Omit<Action, 'position'>;
+
 export interface TableColumnUiSchema {
   field: string;
   headerName?: string;
@@ -43,6 +46,8 @@ export interface TableColumnUiSchema {
   width?: string | number;
   value?: Rule[] | string;
   pageLink?: string | PageLinkTableColumn;
+  action?: ActionTableColumn;
+  actions?: ActionTableColumn[];
   ref?: { data: string; value: string; itemIdentifier?: string };
   link?: string | Rule[];
 }

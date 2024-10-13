@@ -38,6 +38,7 @@ import {makeSyncExecutable} from "@cody-play/infrastructure/rule-engine/make-exe
 import {QueryRuntimeInfo} from "@event-engine/messaging/query";
 import {configStore} from "@cody-play/state/config-store";
 import {
+  ActionTableColumn,
   PageLinkTableColumn, RefTableColumn,
   TableColumnUiSchema,
   TableUiSchema
@@ -51,6 +52,7 @@ import {useUser} from "@frontend/hooks/use-user";
 import {User} from "@app/shared/types/core/user/user";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
+import ColumnAction from "@frontend/app/components/core/table/ColumnAction";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc) && !isQueryableNotStoredStateListDescription(informationInfo.desc)) {
@@ -211,6 +213,20 @@ const compileTableColumns = (
       const cValue = column[cKey];
 
       switch (cKey) {
+        case "action":
+          const actionConfig = cValue as ActionTableColumn;
+
+          gridColDef.renderCell = (rowParams) => <ColumnAction  action={actionConfig} row={rowParams.row} information={information} />;
+          break;
+        case "actions":
+          const actionConfigs = cValue as ActionTableColumn[];
+
+          gridColDef.renderCell = (rowParams) => <div style={{display: "flex"}}>
+            {actionConfigs.map((c, index) => <div>
+              <ColumnAction action={c} row={rowParams.row} information={information} key={'action_column_'+index} />
+            </div>)}
+          </div>
+          break;
         case "pageLink":
           const pageLinkConfig: PageLinkTableColumn = typeof cValue === "string" ? {
             page: cValue,

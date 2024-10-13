@@ -3,7 +3,7 @@ import {CommandRuntimeInfo} from "@event-engine/messaging/command";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {execMappingSync} from "@cody-play/infrastructure/rule-engine/make-executable";
 
-export const getInitialValues = (commandInfo: PlayCommandRuntimeInfo | CommandRuntimeInfo, ctx: any): {[prop: string]: any} => {
+export const getInitialValues = (commandInfo: PlayCommandRuntimeInfo | CommandRuntimeInfo, ctx: any): {[prop: string]: unknown} => {
   let values: {[prop: string]: any} = {};
 
   const uiSchema = commandInfo.uiSchema;

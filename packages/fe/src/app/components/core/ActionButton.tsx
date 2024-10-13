@@ -13,7 +13,7 @@ import {PageLinkTableColumn} from "@cody-play/infrastructure/cody/vo/play-vo-met
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
-import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
+import {execMappingSync, makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {useEnv} from "@frontend/hooks/use-env";
 import {commands} from "@frontend/app/components/commands";
 import {useParams} from "react-router-dom";
@@ -59,6 +59,12 @@ const ActionButton = ({action, information, jexlCtx}: ActionButtonProps) => {
   const params = useParams();
 
   if(isCommandAction(action)) {
+    let initialValues;
+
+    if(action.data) {
+      initialValues = execMappingSync(action.data, jexlCtx);
+    }
+
     if(env.UI_ENV == "play") {
       const command = config.commands[action.command];
 
@@ -66,7 +72,7 @@ const ActionButton = ({action, information, jexlCtx}: ActionButtonProps) => {
         return <Alert severity="error">{"Unknown command: " + action.command}</Alert>
       }
 
-      return <PlayCommand command={command} buttonProps={action.button} />
+      return <PlayCommand command={command} buttonProps={action.button} initialValues={initialValues} />
     }
 
     const CmdComponent = commands[action.command];
@@ -75,7 +81,7 @@ const ActionButton = ({action, information, jexlCtx}: ActionButtonProps) => {
       return <Alert severity="error">{"Unknown command: " + action.command}</Alert>
     }
 
-    return <CmdComponent buttonProps={action.button} {...params} />
+    return <CmdComponent buttonProps={action.button} initialValues={initialValues} {...params} />
   }
 
   if(isLinkAction(action)) {

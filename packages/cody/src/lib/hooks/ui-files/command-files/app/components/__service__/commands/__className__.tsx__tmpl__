@@ -19,6 +19,7 @@ interface OwnProps {
 <% if (!newAggregate && !uiDisableFetchState && identifier) { %>
   <%= identifier %>: string;
 <% } %>
+  initialValues?: {[prop: string]: unknown};
 }
 
 type <%= className %>Props = OwnProps & WithCommandButtonProps;
@@ -35,7 +36,7 @@ const <%= className %> = (props: <%= className %>Props) => {
   const handleOpenDialog = () => {setDialogOpen(true)};
   const handleCloseDialog = () => {setDialogOpen(false)};
 
-  const initialValues = getInitialValues(<%= serviceNames.className %><%= className %>RuntimeInfo, {user, routeParams, page});
+  const initialValues = props.initialValues || getInitialValues(<%= serviceNames.className %><%= className %>RuntimeInfo, {user, routeParams, page});
 
   return <>
     <CommandButton command={<%= serviceNames.className %><%= className %>RuntimeInfo} onClick={handleOpenDialog} {...{<% if (buttonIcon) { %>startIcon: <<%= buttonIcon %> />, <% } %>...props.buttonProps}} />

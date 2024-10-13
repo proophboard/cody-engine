@@ -22,7 +22,8 @@ import {getInitialValues} from "@app/shared/utils/command-form/get-initial-value
 
 interface OwnProps {
   command: PlayCommandRuntimeInfo,
-  buttonProps?: Partial<CommandButtonProps>
+  buttonProps?: Partial<CommandButtonProps>,
+  initialValues?: {[prop: string]: unknown},
 }
 
 type PlayCommandProps = OwnProps;
@@ -60,7 +61,7 @@ const PlayCommand = (props: PlayCommandProps) => {
     incompleteCommandConfigError = `Cannot handle command. No business rules defined. Please connect the command to an aggregate and define business rules in the Cody Wizard`;
   }
 
-  const initialValues = getInitialValues(props.command, {user, page, routeParams});
+  const initialValues = props.initialValues || getInitialValues(props.command, {user, page, routeParams});
 
   /** Aggregate Command **/
   if(isAggregateCommandDescription(commandDesc)) {
