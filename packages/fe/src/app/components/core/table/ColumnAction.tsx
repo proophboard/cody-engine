@@ -7,6 +7,7 @@ import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import ActionButton from "@frontend/app/components/core/ActionButton";
 import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
+import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row-jexl-context";
 
 interface OwnProps {
   action: ActionTableColumn;
@@ -21,10 +22,10 @@ const ColumnAction = (props: ColumnActionProps) => {
   const [pageData,] = usePageData();
   const routeParams = useParams();
   const [globalStore] = useGlobalStore();
-  const jexlCtx: FormJexlContext = {
+  const jexlCtx: TableRowJexlContext = {
     user,
     page: pageData,
-    data: props.row,
+    row: props.row,
     routeParams,
     store: globalStore,
   }

@@ -17,11 +17,12 @@ import {execMappingSync, makeAsyncExecutable} from "@cody-play/infrastructure/ru
 import {useEnv} from "@frontend/hooks/use-env";
 import {commands} from "@frontend/app/components/commands";
 import {useParams} from "react-router-dom";
+import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row-jexl-context";
 
 interface OwnProps {
   action: Action;
   information: PlayInformationRuntimeInfo;
-  jexlCtx: FormJexlContext;
+  jexlCtx: FormJexlContext | TableRowJexlContext;
 }
 
 type ActionButtonProps = OwnProps;
