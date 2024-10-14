@@ -8,6 +8,8 @@ import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jex
 import ActionButton from "@frontend/app/components/core/ActionButton";
 import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row-jexl-context";
+import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
+import {Action} from "@frontend/app/components/core/form/types/action";
 
 interface OwnProps {
   action: ActionTableColumn;
@@ -30,8 +32,10 @@ const ColumnAction = (props: ColumnActionProps) => {
     store: globalStore,
   }
 
+  const action = normalizeUiSchema(props.action, jexlCtx) as Action;
+
   return <ActionButton
-    action={{...props.action, position: "bottom-center"}}
+    action={{...action, position: "bottom-center"}}
     information={props.information}
     jexlCtx={jexlCtx}
   />
