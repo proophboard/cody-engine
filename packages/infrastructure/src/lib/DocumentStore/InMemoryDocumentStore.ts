@@ -313,7 +313,7 @@ export class InMemoryDocumentStore implements DocumentStore {
         continue;
       }
 
-      const doc = this.documents[collectionName][docId];
+      const {doc} = this.documents[collectionName][docId];
 
       if (!filterFunction(doc, docId)) {
         continue;
