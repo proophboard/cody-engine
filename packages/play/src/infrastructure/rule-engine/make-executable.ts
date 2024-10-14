@@ -1,18 +1,42 @@
 import {
-  isAssignVariable, isCallService, isCountInformation, isDeleteInformation,
-  isExecuteRules, isFindInformation, isForEach,
+  isAssignVariable,
+  isCallService,
+  isCountInformation,
+  isDeleteInformation,
+  isExecuteRules,
+  isFindInformation,
+  isForEach,
   isIfConditionRule,
-  isIfNotConditionRule, isInsertInformation, isLookupUser, isLookupUsers,
-  isRecordEvent, isReplaceInformation,
+  isIfNotConditionRule,
+  isInsertInformation, isLogMessage,
+  isLookupUser,
+  isLookupUsers,
+  isRecordEvent,
+  isReplaceInformation,
   isThrowError,
-  isTriggerCommand, isUpdateInformation, isUpsertInformation,
+  isTriggerCommand,
+  isUpdateInformation,
+  isUpsertInformation,
   PropMapping,
   Rule,
-  ThenAssignVariable, ThenCallService, ThenCountInformation, ThenDeleteInformation,
-  ThenExecuteRules, ThenFindInformation, ThenForEach, ThenInsertInformation, ThenLookupUser, ThenLookupUsers,
-  ThenRecordEvent, ThenReplaceInformation,
-  ThenThrowError, ThenTriggerCommand,
-  ThenType, ThenUpdateInformation, ThenUpsertInformation
+  ThenAssignVariable,
+  ThenCallService,
+  ThenCountInformation,
+  ThenDeleteInformation,
+  ThenExecuteRules,
+  ThenFindInformation,
+  ThenForEach,
+  ThenInsertInformation,
+  ThenLogMessage,
+  ThenLookupUser,
+  ThenLookupUsers,
+  ThenRecordEvent,
+  ThenReplaceInformation,
+  ThenThrowError,
+  ThenTriggerCommand,
+  ThenType,
+  ThenUpdateInformation,
+  ThenUpsertInformation
 } from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {
@@ -32,6 +56,7 @@ import {
 import {makeFilter} from "@cody-play/queries/make-filters";
 import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
 import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {Logger, LOGGER_SERVICE_NAME} from "@app/shared/utils/logger/Logger";
 
 type ExecutionContext = any;
 
@@ -135,7 +160,10 @@ const execThenSync = (then: ThenType, ctx: ExecutionContext): ExecutionContext =
       return execExecuteRulesSync(then as ThenExecuteRules, ctx);
     case isThrowError(then):
       execThrowError(then as ThenThrowError, ctx);
-      return;
+      return ctx;
+    case isLogMessage(then):
+      execLogMessage(then as ThenLogMessage, ctx);
+      return ctx;
     case isForEach(then):
       return execForEachSync(then as ThenForEach, ctx);
     case isTriggerCommand(then):
@@ -169,7 +197,10 @@ const execThenAsync = async (then: ThenType, ctx: ExecutionContext): Promise<Exe
       return await execExecuteRulesAsync(then as ThenExecuteRules, ctx);
     case isThrowError(then):
       execThrowError(then as ThenThrowError, ctx);
-      return;
+      return ctx;
+    case isLogMessage(then):
+      execLogMessage(then as ThenLogMessage, ctx);
+      return ctx;
     case isForEach(then):
       return execForEachAsync(then as ThenForEach, ctx);
     case isTriggerCommand(then):
@@ -481,6 +512,28 @@ const execTriggerCommandAsync = async (then: ThenTriggerCommand, ctx: ExecutionC
 
 const execThrowError = (then: ThenThrowError, ctx: ExecutionContext) => {
   throw new Error(jexl.evalSync(then.throw.error, ctx));
+}
+
+const execLogMessage = (then: ThenLogMessage, ctx: ExecutionContext) => {
+  const logger: Logger = ctx[LOGGER_SERVICE_NAME] || console;
+
+  const logLevel = then.log.logLevel || 'info';
+
+  const msgs = Array.isArray(then.log.msg) ? then.log.msg : [then.log.msg];
+
+  const contextualMsgs = msgs.map(msg => jexl.evalSync(msg, ctx));
+
+  switch (logLevel) {
+    case "info":
+      logger.log(...contextualMsgs);
+      break;
+    case "error":
+      logger.error(...contextualMsgs);
+      break;
+    case "warn":
+      logger.warn(...contextualMsgs);
+      break;
+  }
 }
 
 const execExecuteRulesSync = (then: ThenExecuteRules, ctx: ExecutionContext): ExecutionContext => {

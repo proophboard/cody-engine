@@ -10,7 +10,7 @@ import {
   isForEach,
   isIfConditionRule,
   isIfNotConditionRule,
-  isInsertInformation, isLookupUser, isLookupUsers,
+  isInsertInformation, isLogMessage, isLookupUser, isLookupUsers,
   isRecordEvent,
   isReplaceInformation,
   isThrowError,
@@ -26,7 +26,7 @@ import {
   ThenExecuteRules,
   ThenFindInformation,
   ThenForEach,
-  ThenInsertInformation, ThenLookupUser, ThenLookupUsers,
+  ThenInsertInformation, ThenLogMessage, ThenLookupUser, ThenLookupUsers,
   ThenRecordEvent,
   ThenReplaceInformation,
   ThenThrowError,
@@ -46,6 +46,8 @@ import {voRegistryId} from "@cody-engine/cody/hooks/utils/value-object/vo-regist
 import {makeFilter} from "@cody-engine/cody/hooks/utils/query/make-query-resolver";
 import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
 import {validateResolverRules} from "@cody-engine/cody/hooks/utils/rule-engine/validate-resolver-rules";
+import {LOGGER_SERVICE_NAME} from "@app/shared/utils/logger/Logger";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 
 export interface Variable {
   name: string;
@@ -321,6 +323,8 @@ const convertThen = (node: Node, ctx: Context, then: ThenType, rule: Rule, lines
       return convertThenAssignVariable(node, ctx, then as ThenAssignVariable, rule, lines, indent, evalSync);
     case isThrowError(then):
       return convertThenThrowError(node, ctx, then as ThenThrowError, rule, lines, indent, evalSync);
+    case isLogMessage(then):
+      return convertThenLogMessage(node, ctx, then as ThenLogMessage, rule, lines, indent, evalSync);
     case isTriggerCommand(then):
       return convertThenTriggerCommand(node, ctx, then as ThenTriggerCommand, rule, lines, indent, evalSync);
     case isForEach(then):
@@ -439,7 +443,25 @@ const convertThenAssignVariable = (node: Node, ctx: Context, then: ThenAssignVar
 }
 
 const convertThenThrowError = (node: Node, ctx: Context, then: ThenThrowError, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  lines.push(`throw new Error("" + (${wrapExpression(then.throw.error, evalSync)}))`);
+  lines.push(`${indent}throw new Error("" + (${wrapExpression(then.throw.error, evalSync)}))`);
+
+  return true;
+}
+
+const convertThenLogMessage = (node: Node, ctx: Context, then: ThenLogMessage, rule: Rule, lines: string[], indent = '', evalSync = true): boolean | CodyResponse => {
+  lines.push(`${indent}if (!ctx['${LOGGER_SERVICE_NAME}']) {`);
+  lines.push(`${indent}  ctx['${LOGGER_SERVICE_NAME}'] = console;`);
+  lines.push(`${indent}}`);
+
+  const logLevel = then.log.logLevel || 'info';
+
+  const logMethod = logLevel === 'info' ? 'log' : logLevel;
+
+  const logMsgs = Array.isArray(then.log.msg) ? then.log.msg : [then.log.msg];
+
+  const contextualMsgs = logMsgs.map(msg => wrapExpression(msg, true));
+
+  lines.push(`${indent}ctx['${LOGGER_SERVICE_NAME}'].${logMethod}(${contextualMsgs.join(', ')})`);
 
   return true;
 }

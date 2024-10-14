@@ -36,7 +36,7 @@ export const isIfNotConditionRule = (rule: any): rule is IfNotConditionRule => {
 
 export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenExecuteRules | ThenForEach
   | ThenFilter | ThenFindInformation | ThenCountInformation | ThenInsertInformation | ThenUpsertInformation | ThenUpdateInformation | ThenReplaceInformation | ThenDeleteInformation
-  | ThenLookupUsers | ThenLookupUser;
+  | ThenLookupUsers | ThenLookupUser | ThenLogMessage;
 
 export type PropMapping = {[name: string]: string | string[] | PropMapping | PropMapping[]};
 
@@ -217,5 +217,14 @@ export interface ThenExecuteRules {
 }
 
 export const isExecuteRules = (then: any): then is ThenExecuteRules => typeof then.execute !== 'undefined';
+
+export interface ThenLogMessage {
+  log: {
+    msg: string | string[],
+    logLevel?: 'info' | 'error' | 'warn'
+  }
+}
+
+export const isLogMessage = (then: any): then is ThenLogMessage => typeof then.log !== 'undefined';
 
 
