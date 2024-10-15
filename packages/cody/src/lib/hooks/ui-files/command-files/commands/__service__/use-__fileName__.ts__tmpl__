@@ -8,10 +8,10 @@ export const <%= propertyName %> = async (params: <%= className %>): Promise<Axi
   return await Api.executeCommand(<%= className %>Desc.name, params);
 }
 
-export const use<%= className %> = (params: <%= className %>) => {
+export const use<%= className %> = () => {
   return useMutation({
-    mutationKey: [<%= className %>Desc.name, params],
-    mutationFn: (): Promise<AxiosResponse> => {
+    mutationKey: [<%= className %>Desc.name],
+    mutationFn: (params: <%= className %>): Promise<AxiosResponse> => {
       return <%= propertyName %>(params);
     }
   })
