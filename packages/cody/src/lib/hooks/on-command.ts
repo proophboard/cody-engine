@@ -12,6 +12,7 @@ import {
 } from "@proophboard/cody-utils";
 import {detectService} from "./utils/detect-service";
 import {findAggregateState} from "./utils/aggregate/find-aggregate-state";
+import {findParentByType} from "./utils/node-tree";
 import {asyncWithErrorCheck, CodyResponseException, withErrorCheck} from "./utils/error-handling";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
@@ -49,8 +50,19 @@ export interface CommandMeta {
 }
 
 export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) => {
-
   try {
+    const feature = findParentByType(command, NodeType.feature);
+
+    if(feature) {
+      const featureMeta = parseJsonMetadata<{mode?: string}>(feature);
+
+      if(!isCodyError(featureMeta) && featureMeta.mode === 'test-scenario') {
+        return {
+          cody: `Inside test feature, skipping generation of command "${command.getName()}".`,
+        }
+      }
+    }
+
     const cmdNames = names(command.getName());
     const aggregate = getSingleTarget(command, NodeType.aggregate);
 

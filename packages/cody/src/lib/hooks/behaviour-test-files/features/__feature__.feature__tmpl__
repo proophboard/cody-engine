@@ -1,0 +1,5 @@
+Feature: <%= featureNames.name %>
+  Scenario: <%= featureNames.name %>
+    Given <%= given %>
+    When <%= when %>
+    Then <%= then %>
