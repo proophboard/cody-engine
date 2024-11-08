@@ -1,10 +1,10 @@
-import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {Rule} from "@app/shared/rule-engine/configuration";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {GridDensity} from "@mui/x-data-grid";
 import {DependencyRegistry, ValueObjectDescriptionFlags} from "@event-engine/descriptions/descriptions";
 import {JSONSchema7} from "json-schema-to-ts";
 import {UiSchema} from "@rjsf/utils";
-import {ProjectionConfig} from "@cody-engine/cody/hooks/rule-engine/projection-config";
+import {ProjectionConfig} from "@app/shared/rule-engine/projection-config";
 import {Action} from "@frontend/app/components/core/form/types/action";
 
 export interface ValueObjectMetadataRaw {

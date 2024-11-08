@@ -1,6 +1,6 @@
 import {CommandMutationFunction} from "@cody-play/infrastructure/commands/command-mutation-function";
 import {PlayCommandRuntimeInfo, PlayEventRegistry, PlaySchemaDefinitions} from "@cody-play/state/types";
-import {AnyRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {AnyRule} from "@app/shared/rule-engine/configuration";
 import {User} from "@app/shared/types/core/user/user";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {Payload} from "@event-engine/messaging/message";

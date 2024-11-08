@@ -18,7 +18,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {isObjectSchema, ObjectSchema} from "../json-schema/is-object-schema";
 import {voClassNameFromFQCN} from "../value-object/definitions";
 import {JSONSchema7} from "json-schema-to-ts";
-import {isExecuteRules, isFilter, isIfConditionRule, isIfNotConditionRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {isExecuteRules, isFilter, isIfConditionRule, isIfNotConditionRule} from "@app/shared/rule-engine/configuration";
 import {convertRuleConfigToQueryResolverRules, wrapExpression} from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
 import {
   AnyOfDocIdFilter,

@@ -23,7 +23,7 @@ import {makeInformationFactory} from "@cody-play/infrastructure/information/make
 import {makeEventReducer} from "@cody-play/infrastructure/events/make-event-reducer";
 import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
 import {makeAggregateCommandHandler} from "@cody-play/infrastructure/commands/make-aggregate-command-handler";
-import {AnyRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {AnyRule} from "@app/shared/rule-engine/configuration";
 import {handleAggregateCommand} from "@server/infrastructure/commandHandling";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {ValidationError} from "ajv";

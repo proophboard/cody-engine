@@ -24,7 +24,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {mapProperties} from "@app/shared/utils/map-properties";
 import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
-import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {Rule} from "@app/shared/rule-engine/configuration";
 import {makeSyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 

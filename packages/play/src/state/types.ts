@@ -13,7 +13,7 @@ import {
   StateListDescription, StreamCommandDescription,
   ValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
-import {AnyRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {AnyRule} from "@app/shared/rule-engine/configuration";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
 import {UiSchema} from "@rjsf/utils";

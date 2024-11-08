@@ -1,4 +1,4 @@
-import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {Rule} from "@app/shared/rule-engine/configuration";
 import {makeSyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {cloneDeep} from "lodash";
 

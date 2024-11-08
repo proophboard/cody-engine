@@ -5,7 +5,7 @@ import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {User} from "@app/shared/types/core/user/user";
 import {v4} from "uuid";
 import {DependencyRegistry} from "@event-engine/descriptions/descriptions";
-import {AnyRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {AnyRule} from "@app/shared/rule-engine/configuration";
 import {PlayMessageType} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
 import {playFQCNFromDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 

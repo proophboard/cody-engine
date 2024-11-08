@@ -37,7 +37,7 @@ import {
   ThenType,
   ThenUpdateInformation,
   ThenUpsertInformation
-} from "@cody-engine/cody/hooks/rule-engine/configuration";
+} from "@app/shared/rule-engine/configuration";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {
   PlayCommandRegistry,

@@ -1,6 +1,6 @@
 import {
   AnyRule, isRecordEvent
-} from "@cody-engine/cody/hooks/rule-engine/configuration";
+} from "@app/shared/rule-engine/configuration";
 import {names} from "@event-engine/messaging/helpers";
 import {visitRulesThen} from "@cody-engine/cody/hooks/rule-engine/visit-rule-then";
 

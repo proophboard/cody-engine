@@ -33,7 +33,7 @@ import {informationTitle} from "@cody-play/infrastructure/information/titelize";
 import {UseQueryResult} from "@tanstack/react-query";
 import {isListSchema} from "@cody-engine/cody/hooks/utils/json-schema/list-schema";
 import {camelCaseToTitle} from "@frontend/util/string";
-import {AnyRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {AnyRule} from "@app/shared/rule-engine/configuration";
 import {makeSyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {QueryRuntimeInfo} from "@event-engine/messaging/query";
 import {configStore} from "@cody-play/state/config-store";

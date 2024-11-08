@@ -4,7 +4,7 @@ import {
   isIfNotConditionRule, isRecordEvent,
   Rule,
   ThenType
-} from "@cody-engine/cody/hooks/rule-engine/configuration";
+} from "@app/shared/rule-engine/configuration";
 
 type Visitor = (then: ThenType) => ThenType;
 export const visitRulesThen = (rules: Rule[], visitor: Visitor): Rule[] => {

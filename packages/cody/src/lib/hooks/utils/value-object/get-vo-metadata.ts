@@ -20,7 +20,7 @@ import {addPropertySchemaIds} from "@cody-engine/cody/hooks/utils/json-schema/ad
 import {isRefSchema, RefSchema} from "@app/shared/utils/json-schema/is-ref-schema";
 import {JSONSchema7} from "json-schema-to-ts";
 import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
-import {normalizeProjectionConfig} from "@cody-engine/cody/hooks/rule-engine/projection-config";
+import {normalizeProjectionConfig} from "@app/shared/rule-engine/projection-config";
 
 export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | CodyResponse => {
   const meta = parseJsonMetadata<ValueObjectMetadataRaw>(vo);

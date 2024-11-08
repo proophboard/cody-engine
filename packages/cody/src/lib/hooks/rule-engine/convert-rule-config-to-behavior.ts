@@ -34,7 +34,7 @@ import {
   ThenType,
   ThenUpdateInformation,
   ThenUpsertInformation
-} from "./configuration";
+} from "@app/shared/rule-engine/configuration";
 import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
 import {getTargetsOfType, isCodyError} from "@proophboard/cody-utils";
 import {names} from "@event-engine/messaging/helpers";

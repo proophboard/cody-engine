@@ -29,7 +29,7 @@ import {namespaceToJSONPointer} from "@cody-engine/cody/hooks/utils/value-object
 import {playDefinitionId, playDefinitionIdFromFQCN,} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {JSONSchema7} from "json-schema";
 import {normalizeProjectionRules} from "@cody-play/infrastructure/rule-engine/normalize-projection-rules";
-import {convertProjectionConfigCaseToRules} from "@cody-engine/cody/hooks/rule-engine/projection-config";
+import {convertProjectionConfigCaseToRules} from "@app/shared/rule-engine/projection-config";
 import {playFindEventInfoByName} from "@cody-play/infrastructure/events/play-find-event-info-by-name";
 import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 

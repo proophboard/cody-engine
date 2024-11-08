@@ -1,5 +1,5 @@
 import {ProcessingFunctionWithDeps} from "@server/infrastructure/commandHandling";
-import {AnyRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {AnyRule} from "@app/shared/rule-engine/configuration";
 import {PlayEventRegistry, PlaySchemaDefinitions} from "@cody-play/state/types";
 import {Command} from "@event-engine/messaging/command";
 import {Event} from "@event-engine/messaging/event";

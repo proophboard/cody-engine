@@ -1,6 +1,6 @@
 import {CodyResponse, Node} from "@proophboard/cody-types";
 import {Context} from "../../context";
-import {AlwaysRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {AlwaysRule} from "@app/shared/rule-engine/configuration";
 import {names} from "@event-engine/messaging/helpers";
 
 export const alwaysMapPayload = (event: Node, aggregateState: Node, ctx: Context): AlwaysRule | CodyResponse => {

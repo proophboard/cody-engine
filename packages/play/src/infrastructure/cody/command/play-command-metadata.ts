@@ -14,7 +14,7 @@ import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
 import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-normalize-refs";
 import {names} from "@event-engine/messaging/helpers";
-import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {Rule} from "@app/shared/rule-engine/configuration";
 
 interface RawCommandMeta {
   schema: JSONSchema7 | ShorthandObject;

@@ -1,7 +1,7 @@
 import {CodyResponse, Node, NodeType} from "@proophboard/cody-types";
 import {ElementEditedContext} from "@cody-play/infrastructure/cody/cody-message-server";
 import {PlayInformationRegistry} from "@cody-play/state/types";
-import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {Rule} from "@app/shared/rule-engine/configuration";
 import {JSONSchema7} from "json-schema";
 import {names} from "@event-engine/messaging/helpers";
 import {isShorthand} from "@cody-engine/cody/hooks/utils/json-schema/shorthand";

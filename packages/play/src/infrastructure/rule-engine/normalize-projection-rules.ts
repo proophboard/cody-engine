@@ -2,7 +2,7 @@ import {
   AnyRule, isCountInformation, isDeleteInformation, isFindInformation,
   isInsertInformation, isReplaceInformation, isUpdateInformation,
   isUpsertInformation
-} from "@cody-engine/cody/hooks/rule-engine/configuration";
+} from "@app/shared/rule-engine/configuration";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {visitRulesThen} from "@cody-engine/cody/hooks/rule-engine/visit-rule-then";
 import {playGetVoRuntimeInfoFromDataReference} from "@cody-play/state/play-get-vo-runtime-info-from-data-reference";

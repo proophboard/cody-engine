@@ -17,7 +17,7 @@ import {camelCaseToTitle} from "@frontend/util/string";
 import {addImport} from "../imports";
 import {generateFiles} from "@nx/devkit";
 import {registerViewComponent} from "../registry";
-import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {Rule} from "@app/shared/rule-engine/configuration";
 import {convertRuleConfigToTableColumnValueGetterRules} from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
 import {toJSON} from "../to-json";
 import {GridDensity} from "@mui/x-data-grid";

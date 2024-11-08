@@ -20,7 +20,7 @@ import {
   isInsertInformation, isReplaceInformation,
   isUpdateInformation,
   isUpsertInformation
-} from "@cody-engine/cody/hooks/rule-engine/configuration";
+} from "@app/shared/rule-engine/configuration";
 import {DEFAULT_READ_MODEL_PROJECTION} from "@event-engine/infrastructure/Projection/types";
 
 export const onPolicy = async (policy: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {

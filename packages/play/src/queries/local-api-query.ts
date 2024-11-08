@@ -25,7 +25,7 @@ import {QueryRuntimeInfo} from "@event-engine/messaging/query";
 import {User} from "@app/shared/types/core/user/user";
 import {JSONSchema7} from "json-schema-to-ts";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
-import {AnyRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {AnyRule} from "@app/shared/rule-engine/configuration";
 import {makeInformationFactory} from "@cody-play/infrastructure/information/make-information-factory";
 import {ResolveConfig} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {

@@ -1,4 +1,4 @@
-import {Filter} from "../utils/value-object/query/filter-types";
+import {Filter} from "@cody-engine/cody/hooks/utils/value-object/query/filter-types";
 import {SortOrder} from "@event-engine/infrastructure/DocumentStore";
 
 export type RuleType = 'always' | 'condition';
