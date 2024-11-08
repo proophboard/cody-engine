@@ -1,8 +1,8 @@
 import {
   AnyRule, isRecordEvent
-} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {names} from "@event-engine/messaging/helpers";
-import {visitRulesThen} from "@cody-engine/cody/hooks/utils/rule-engine/visit-rule-then";
+import {visitRulesThen} from "@cody-engine/cody/hooks/rule-engine/visit-rule-then";
 
 export const normalizeThenRecordEventRules = (aggregate: string, rules: AnyRule[]): AnyRule[] => {
   return visitRulesThen(rules, then => {

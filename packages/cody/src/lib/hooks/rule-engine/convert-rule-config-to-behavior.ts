@@ -38,14 +38,14 @@ import {
 import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
 import {getTargetsOfType, isCodyError} from "@proophboard/cody-utils";
 import {names} from "@event-engine/messaging/helpers";
-import {detectService} from "../detect-service";
-import {Context} from "../../context";
-import {withErrorCheck} from "../error-handling";
+import {detectService} from "../utils/detect-service";
+import {Context} from "../context";
+import {withErrorCheck} from "../utils/error-handling";
 import {getVOFromDataReference} from "@cody-engine/cody/hooks/utils/value-object/get-vo-from-data-reference";
 import {voRegistryId} from "@cody-engine/cody/hooks/utils/value-object/vo-registry-id";
 import {makeFilter} from "@cody-engine/cody/hooks/utils/query/make-query-resolver";
 import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";
-import {validateResolverRules} from "@cody-engine/cody/hooks/utils/rule-engine/validate-resolver-rules";
+import {validateResolverRules} from "@cody-engine/cody/hooks/rule-engine/validate-resolver-rules";
 import {LOGGER_SERVICE_NAME} from "@app/shared/utils/logger/Logger";
 
 export interface Variable {

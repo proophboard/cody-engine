@@ -4,7 +4,7 @@ import {JSONSchema7} from "json-schema";
 import {ShorthandObject} from "@cody-play/infrastructure/cody/schema/play-json-schema-from-shorthand";
 import {UiSchema} from "@rjsf/utils";
 import {DependencyRegistry} from "@event-engine/descriptions/descriptions";
-import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {Context} from "@cody-engine/cody/hooks/context";
 import {detectService} from "@cody-engine/cody/hooks/utils/detect-service";

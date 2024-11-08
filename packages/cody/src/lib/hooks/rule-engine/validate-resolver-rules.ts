@@ -3,8 +3,8 @@ import {
   isCountInformation, isExecuteRules,
   isFindInformation, isForEach, isLookupUser, isLookupUsers, isThrowError,
   Rule
-} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
-import {visitRulesThen} from "@cody-engine/cody/hooks/utils/rule-engine/visit-rule-then";
+} from "@cody-engine/cody/hooks/rule-engine/configuration";
+import {visitRulesThen} from "@cody-engine/cody/hooks/rule-engine/visit-rule-then";
 
 export const validateResolverRules = (rules: Rule[]): void => {
   visitRulesThen(rules, then => {

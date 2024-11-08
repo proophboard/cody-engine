@@ -1,4 +1,4 @@
-import {AlwaysRule} from "../rule-engine/configuration";
+import {AlwaysRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 
 export const alwaysTriggerCommand = (commandName: string): AlwaysRule => {
   return {

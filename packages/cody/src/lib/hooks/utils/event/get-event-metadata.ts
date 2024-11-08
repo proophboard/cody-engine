@@ -2,7 +2,7 @@ import {CodyResponse, Node, NodeType} from "@proophboard/cody-types";
 import {Context} from "../../context";
 import {JSONSchema} from "json-schema-to-ts";
 import {ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
-import {Rule} from "../rule-engine/configuration";
+import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {getSingleSource, isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {detectService} from "../detect-service";
 import {names} from "@event-engine/messaging/helpers";

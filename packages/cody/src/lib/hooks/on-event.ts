@@ -14,7 +14,7 @@ import {register, registerEventReducer} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {createApplyFunctionRegistryIfNotExists} from "./utils/aggregate/create-apply-function-registry";
 import {alwaysMapPayload} from "./utils/event/always-map-payload";
-import {convertRuleConfigToEventReducerRules} from "./utils/rule-engine/convert-rule-config-to-behavior";
+import {convertRuleConfigToEventReducerRules} from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
 import {EventMeta, getEventMetadata} from "./utils/event/get-event-metadata";
 import {ensureAllRefsAreKnown} from "./utils/json-schema/ensure-all-refs-are-known";
 import {getOriginalEvent} from "@cody-engine/cody/hooks/utils/event/get-original-event";

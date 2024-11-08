@@ -5,7 +5,7 @@ import {
   isUpsertInformation,
   Rule,
   ThenType
-} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {names} from "@event-engine/messaging/helpers";
 

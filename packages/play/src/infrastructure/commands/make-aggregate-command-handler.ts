@@ -1,4 +1,4 @@
-import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {AnyRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {Command} from "@event-engine/messaging/command";
 import {Event} from "@event-engine/messaging/event";
 import {AggregateProcessingFunctionWithDeps} from "@server/infrastructure/commandHandling";

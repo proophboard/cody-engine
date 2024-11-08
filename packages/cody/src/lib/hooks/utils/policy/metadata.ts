@@ -1,5 +1,5 @@
 import {DependencyRegistry} from "@event-engine/descriptions/descriptions";
-import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 
 export interface PolicyMeta {
   service?: string;

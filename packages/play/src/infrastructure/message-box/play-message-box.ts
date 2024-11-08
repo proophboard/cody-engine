@@ -29,7 +29,7 @@ import {User} from "@app/shared/types/core/user/user";
 import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-command-factory";
 import {makeEventFactory} from "@cody-play/infrastructure/events/make-event-factory";
 import {makeQueryFactory} from "@cody-play/queries/make-query-factory";
-import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {AnyRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {StreamEventsRepository} from "@server/infrastructure/StreamEventsRepository";
 import {
   getConfiguredPlayMultiModelStore

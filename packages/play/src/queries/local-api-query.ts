@@ -25,7 +25,7 @@ import {QueryRuntimeInfo} from "@event-engine/messaging/query";
 import {User} from "@app/shared/types/core/user/user";
 import {JSONSchema7} from "json-schema-to-ts";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
-import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {AnyRule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {makeInformationFactory} from "@cody-play/infrastructure/information/make-information-factory";
 import {ResolveConfig} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {
@@ -37,7 +37,7 @@ import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
 import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";
-import {validateResolverRules} from "@cody-engine/cody/hooks/utils/rule-engine/validate-resolver-rules";
+import {validateResolverRules} from "@cody-engine/cody/hooks/rule-engine/validate-resolver-rules";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
 import {makeQueryFactory} from "@cody-play/queries/make-query-factory";

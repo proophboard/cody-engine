@@ -1,4 +1,4 @@
-import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {ApplyFunction} from "@server/infrastructure/AggregateRepository";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {CodyPlayConfig} from "@cody-play/state/config-store";

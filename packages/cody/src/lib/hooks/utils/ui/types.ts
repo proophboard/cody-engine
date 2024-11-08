@@ -1,4 +1,4 @@
-import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {SxProps} from "@mui/material";
 import {DynamicSidebar, Tab, TopLevelGroup} from "@frontend/app/pages/page-definitions";
 

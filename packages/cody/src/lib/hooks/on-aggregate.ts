@@ -13,7 +13,7 @@ import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {register, registerAggregateRepository, registerAggregateCommandHandler} from "./utils/registry";
 import {isNewFile, listChangesForCodyResponse} from "./utils/fs-tree";
 import {alwaysRecordEvent} from "./utils/aggregate/always-record-event";
-import {convertRuleConfigToCommandHandlingBehavior} from "./utils/rule-engine/convert-rule-config-to-behavior";
+import {convertRuleConfigToCommandHandlingBehavior} from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
 import {AggregateMetadata} from "./utils/aggregate/metadata";
 
 

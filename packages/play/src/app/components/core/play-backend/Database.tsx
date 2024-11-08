@@ -25,7 +25,7 @@ import {
   isUpdateInformation,
   isUpsertInformation,
   Rule
-} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {Videocam} from "@mui/icons-material";
 import {
   getConfiguredPlayReadModelProjector

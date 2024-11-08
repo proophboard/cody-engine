@@ -26,13 +26,13 @@ import {PlayInformationRegistry} from "@cody-play/state/types";
 import {JSONSchema7} from "json-schema";
 import {
   Rule,ThenType
-} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {UiSchema} from "@rjsf/utils";
 import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
 import {SortOrder, SortOrderItem} from "@event-engine/infrastructure/DocumentStore";
 import {GridDensity} from "@mui/x-data-grid";
 import {valueObjectNameFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
-import {normalizeProjectionConfig, ProjectionConfig} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
+import {normalizeProjectionConfig, ProjectionConfig} from "@cody-engine/cody/hooks/rule-engine/projection-config";
 import {isRefSchema} from "@app/shared/utils/json-schema/is-ref-schema";
 import {isInlineItemsArraySchema, isListSchema} from "@app/shared/utils/schema-checks";
 

@@ -1,9 +1,9 @@
 import {
   convertMapping,
   wrapExpression
-} from "@cody-engine/cody/hooks/utils/rule-engine/convert-rule-config-to-behavior";
+} from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
 import {makeNodeRecord, NodeType} from "@proophboard/cody-types";
-import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {Context} from "@cody-engine/cody/hooks/context";
 import {FsTree} from "nx/src/generators/tree";
 import {Map} from "immutable";

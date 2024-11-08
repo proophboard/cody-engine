@@ -15,7 +15,7 @@ import {
   isQueryableStateDescription,
   isQueryableStateListDescription, isQueryableValueObjectDescription
 } from "@event-engine/descriptions/descriptions";
-import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "../rule-engine/convert-rule-config-to-behavior";
+import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
 import {getNodesOfTypeNearby} from "../node-tree";
 import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference";
 import {isDynamicBreadcrumb, UiMetadata, ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";

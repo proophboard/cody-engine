@@ -1,6 +1,6 @@
 import {ButtonConfig, determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
-import {AnyRule, PropMapping} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {AnyRule, PropMapping} from "@cody-engine/cody/hooks/rule-engine/configuration";
 
 export interface Action {
   type: "command" | "link" | "rules";

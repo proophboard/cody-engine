@@ -1,4 +1,4 @@
-import {Rule} from "../rule-engine/configuration";
+import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 
 export interface AggregateMetadata {
   stream?: string;

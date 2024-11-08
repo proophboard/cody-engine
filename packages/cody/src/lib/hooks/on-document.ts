@@ -22,7 +22,7 @@ import {
 import {detectService} from "./utils/detect-service";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {toJSON} from "./utils/to-json";
-import {convertRuleConfigToValueObjectInitializeRules} from "./utils/rule-engine/convert-rule-config-to-behavior";
+import {convertRuleConfigToValueObjectInitializeRules} from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
 import {register, registerQuery, registerQueryResolver, registerValueObjectDefinition} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {makeQueryResolver} from "./utils/query/make-query-resolver";
@@ -34,10 +34,10 @@ import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 import {ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {JSONSchema7} from "json-schema-to-ts";
 import {requireUncachedTypes} from "@cody-engine/cody/hooks/utils/value-object/require-uncached-types";
-import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {List} from "immutable";
 import {getSourcesOfType, isCodyError, mergeWithSimilarNodes} from "@proophboard/cody-utils";
-import {convertProjectionConfigCaseToRules} from "@cody-engine/cody/hooks/utils/rule-engine/projection-config";
+import {convertProjectionConfigCaseToRules} from "@cody-engine/cody/hooks/rule-engine/projection-config";
 import {onPolicy} from "@cody-engine/cody/hooks/on-policy";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {

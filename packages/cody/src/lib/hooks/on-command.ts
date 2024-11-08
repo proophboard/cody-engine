@@ -24,12 +24,12 @@ import {ensureAllRefsAreKnown} from "./utils/json-schema/ensure-all-refs-are-kno
 import {upsertCommandComponent} from "./utils/ui/upsert-command-component";
 import {onAggregate} from "@cody-engine/cody/hooks/on-aggregate";
 import {List} from "immutable";
-import {Rule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
+import {Rule} from "@cody-engine/cody/hooks/rule-engine/configuration";
 import {getCommandMetadata} from "@cody-engine/cody/hooks/utils/command/command-metadata";
 import {alwaysRecordEvent} from "@cody-engine/cody/hooks/utils/aggregate/always-record-event";
 import {
   convertRuleConfigToCommandHandlingBehavior
-} from "@cody-engine/cody/hooks/utils/rule-engine/convert-rule-config-to-behavior";
+} from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
 
 export interface CommandMeta {
   newAggregate: boolean;
