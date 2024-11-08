@@ -27,7 +27,7 @@ import {getConfiguredMultiModelStore} from "@server/infrastructure/configuredMul
 import {PUBLIC_STREAM, WRITE_MODEL_STREAM} from "@server/infrastructure/configuredEventStore";
 import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
-import {PureFactsRepository} from "@event-engine/infrastructure/PureFactsRepository";
+import {PureFactsRepository} from "@server/infrastructure/PureFactsRepository";
 
 export const SERVICE_NAME_COMMAND_BUS = '$CommandBus';
 

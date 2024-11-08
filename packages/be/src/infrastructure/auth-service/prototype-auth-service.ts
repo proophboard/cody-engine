@@ -1,30 +1,28 @@
 import {
-  AuthService,
+  AuthService, AuthUser,
   convertFindByFilter,
   FindByArguments,
   UnregisteredUser
 } from "@event-engine/infrastructure/auth-service/auth-service";
 import {Persona} from "@app/shared/extensions/personas";
 import {v4} from "uuid";
-import {flushChanges, FsTree} from "nx/src/generators/tree";
-import {formatFiles, generateFiles} from "@nx/devkit";
 import {User} from "@app/shared/types/core/user/user";
 import {InMemoryFilterProcessor} from "@event-engine/infrastructure/DocumentStore/InMemory/InMemoryFilterProcessor";
 import {FilterProcessor} from "@event-engine/infrastructure/DocumentStore/FilterProcessor";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {SortOrder} from "@event-engine/infrastructure/DocumentStore";
 import {areValuesEqualForAllSorts, getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
-import {EqFilter} from "@event-engine/infrastructure/DocumentStore/Filter/EqFilter";
-import {InArrayFilter} from "@event-engine/infrastructure/DocumentStore/Filter/InArrayFilter";
+import * as fs from "node:fs";
+import {renderFile} from "ejs";
 
 export class PrototypeAuthService implements AuthService {
   private personas: Persona[];
-  private tree: FsTree;
+  private personasFile: string;
   private filterProcessor: FilterProcessor;
 
-  public constructor(personas: Persona[], tree: FsTree) {
+  public constructor(personas: Persona[], personasFile: string) {
     this.personas = personas;
-    this.tree = tree;
+    this.personasFile = personasFile;
     this.filterProcessor = new InMemoryFilterProcessor();
   }
 
@@ -34,18 +32,22 @@ export class PrototypeAuthService implements AuthService {
     }
     const userId = v4();
 
-    const newPersona: Persona = {
+    const newPersona: AuthUser & {description: string, color: string} = {
       userId,
       ...user,
       description: `This persona is auto generated from a user registered via AuthService.\n\nRole${user.roles.length > 1? 's' : ''}: ${user.roles.join(', ')}`,
       color: '#'+Math.floor(Math.random()*16777215).toString(16)
     };
 
-    this.personas.push(newPersona);
+    this.personas.push(newPersona as Persona);
 
     await this.savePersonas();
 
     return userId;
+  }
+
+  public async tokenToUser(raw: unknown): Promise<User> {
+    return raw as User;
   }
 
   public async get(userId: string): Promise<User> {
@@ -148,18 +150,20 @@ export class PrototypeAuthService implements AuthService {
   }
 
   private async savePersonas(): Promise<void> {
-    generateFiles(this.tree, __dirname + '/files', '.', {
+    renderFile(__dirname + '/files/personas.ts__tmpl__', {
       tmpl: '',
       toJSON: (obj: unknown): string => {
         return JSON.stringify(obj, null, 2);
       },
       personas: this.personas,
+    }, (err: Error | null, content: string | null) => {
+      if(err) {
+        throw err;
+      }
+
+      if(content) {
+        fs.writeFileSync(this.personasFile, content);
+      }
     })
-
-    await formatFiles(this.tree);
-
-    const changes = this.tree.listChanges();
-
-    flushChanges(this.tree.root, changes);
   }
 }

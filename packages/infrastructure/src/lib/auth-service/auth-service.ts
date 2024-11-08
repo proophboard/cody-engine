@@ -1,4 +1,3 @@
-import {User} from "@app/shared/types/core/user/user";
 import {SortOrder} from "@event-engine/infrastructure/DocumentStore";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {AnyFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AnyFilter";
@@ -6,7 +5,16 @@ import {EqFilter} from "@event-engine/infrastructure/DocumentStore/Filter/EqFilt
 import {AndFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AndFilter";
 import {InArrayFilter} from "@event-engine/infrastructure/DocumentStore/Filter/InArrayFilter";
 
-export type UnregisteredUser = Omit<User, 'userId'>;
+export interface AuthUser {
+  displayName: string;
+  userId: string;
+  email: string;
+  avatar?: string;
+  roles: string[];
+  attributes?: Record<string, unknown>;
+}
+
+export type UnregisteredUser = Omit<AuthUser, 'userId'>;
 
 export type FindByProperty = "userId" | "role" | string;
 
@@ -21,10 +29,10 @@ export const SERVICE_NAME_AUTH_SERVICE = 'AuthService';
 
 export interface AuthService {
   register: (user: UnregisteredUser) => Promise<string>;
-  get: (userId: string) => Promise<User>;
-  find: (filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder) => Promise<User[]>;
-  findBy: (by: FindByArguments) => Promise<User[]>;
-  findOneBy: (by: FindByArguments) => Promise<User|undefined>;
+  get: (userId: string) => Promise<AuthUser>;
+  find: (filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder) => Promise<AuthUser[]>;
+  findBy: (by: FindByArguments) => Promise<AuthUser[]>;
+  findOneBy: (by: FindByArguments) => Promise<AuthUser|undefined>;
 }
 
 export const convertFindByFilter = (filter: Record<FindByProperty, any>): Filter => {

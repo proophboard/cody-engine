@@ -42,7 +42,7 @@ import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
 import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";
-import {PureFactsRepository} from "@event-engine/infrastructure/PureFactsRepository";
+import {PureFactsRepository} from "@server/infrastructure/PureFactsRepository";
 import {makePureCommandHandler} from "@cody-play/infrastructure/commands/make-pure-command-handler";
 import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";

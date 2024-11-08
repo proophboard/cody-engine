@@ -4,7 +4,7 @@ import {AggregateRepository} from "@server/infrastructure/AggregateRepository";
 import {Payload} from "@event-engine/messaging/message";
 import {StreamEventsRepository} from "@server/infrastructure/StreamEventsRepository";
 import jexl from '@app/shared/jexl/get-configured-jexl';
-import {PureFactsRepository} from "@event-engine/infrastructure/PureFactsRepository";
+import {PureFactsRepository} from "@server/infrastructure/PureFactsRepository";
 
 export type ProcessingFunction<C extends Payload = any, E extends Payload = any> = (command: Command<C>) => AsyncGenerator<Event<E>>;
 export type ProcessingFunctionWithDeps<C extends Payload = any, E extends Payload = any, D = any> = (command: Command<C>, dependencies: D) => AsyncGenerator<Event<E>>;

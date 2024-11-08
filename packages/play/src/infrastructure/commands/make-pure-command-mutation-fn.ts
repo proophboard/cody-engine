@@ -26,7 +26,7 @@ import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
 import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";
-import {PureFactsRepository} from "@event-engine/infrastructure/PureFactsRepository";
+import {PureFactsRepository} from "@server/infrastructure/PureFactsRepository";
 import {
   getStreamId,
   handlePureCommand,
