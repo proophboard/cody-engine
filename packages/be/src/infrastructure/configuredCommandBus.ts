@@ -25,7 +25,7 @@ import {CommandBus} from "@event-engine/messaging/command-bus";
 import {StreamEventsRepository} from "@event-engine/infrastructure/StreamEventsRepository";
 import {getConfiguredMultiModelStore} from "@server/infrastructure/configuredMultiModelStore";
 import {PUBLIC_STREAM, WRITE_MODEL_STREAM} from "@server/infrastructure/configuredEventStore";
-import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
+import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 import {PureFactsRepository} from "@event-engine/infrastructure/PureFactsRepository";
 

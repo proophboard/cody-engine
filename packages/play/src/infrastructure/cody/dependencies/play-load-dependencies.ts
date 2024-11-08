@@ -11,7 +11,7 @@ import {User} from "@app/shared/types/core/user/user";
 import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
-import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
+import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";
 import {EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {Event} from "@event-engine/messaging/event";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";

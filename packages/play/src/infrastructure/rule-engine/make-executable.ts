@@ -52,7 +52,7 @@ import {ValidationError} from "ajv";
 import {
   INFORMATION_SERVICE_NAME,
   InformationService
-} from "@server/infrastructure/information-service/information-service";
+} from "@event-engine/infrastructure/information-service/information-service";
 import {makeFilter} from "@cody-play/queries/make-filters";
 import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
 import {AuthService} from "@server/infrastructure/auth-service/auth-service";

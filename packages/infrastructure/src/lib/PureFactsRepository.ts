@@ -1,5 +1,5 @@
 import {MultiModelStore} from "@event-engine/infrastructure/MultiModelStore";
-import {InformationService} from "@server/infrastructure/information-service/information-service";
+import {InformationService} from "@event-engine/infrastructure/information-service/information-service";
 import {MessageBox} from "@event-engine/messaging/message-box";
 import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {Event, providesPublicEvent} from "@event-engine/messaging/event";

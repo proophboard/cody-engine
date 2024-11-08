@@ -5,7 +5,7 @@ import {services} from "@server/extensions/services";
 import {Message} from "@event-engine/messaging/message";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 import jexl from "@app/shared/jexl/get-configured-jexl";
-import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
+import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
 export type MessageType = 'command' | 'event' | 'query';

@@ -8,7 +8,7 @@ import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
 import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {makeValueObject} from "@event-engine/messaging/value-object";
 import {AuthService} from "@server/infrastructure/auth-service/auth-service";
-import {InformationService} from "@server/infrastructure/information-service/information-service";
+import {InformationService} from "@event-engine/infrastructure/information-service/information-service";
 import {MessageBox} from "@event-engine/messaging/message-box";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 

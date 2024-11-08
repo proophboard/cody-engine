@@ -1,4 +1,4 @@
-import {InformationService} from "@server/infrastructure/information-service/information-service";
+import {InformationService} from "@event-engine/infrastructure/information-service/information-service";
 import {DocumentStore, SortOrder} from "@event-engine/infrastructure/DocumentStore";
 import {
   isQueryableNotStoredValueObjectDescription,

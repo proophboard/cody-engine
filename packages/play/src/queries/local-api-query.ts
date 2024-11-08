@@ -36,7 +36,7 @@ import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
 import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
-import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
+import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";
 import {validateResolverRules} from "@cody-engine/cody/hooks/utils/rule-engine/validate-resolver-rules";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";

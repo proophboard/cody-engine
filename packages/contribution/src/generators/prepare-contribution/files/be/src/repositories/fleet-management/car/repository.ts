@@ -10,7 +10,7 @@ import {AuthService} from "@server/infrastructure/auth-service/auth-service";
 import {
   INFORMATION_SERVICE_NAME,
   InformationService
-} from "@server/infrastructure/information-service/information-service";
+} from "@event-engine/infrastructure/information-service/information-service";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 
 let repository: AggregateRepository<Car>;
