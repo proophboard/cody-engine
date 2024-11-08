@@ -1,5 +1,5 @@
 import {Event} from "@event-engine/messaging/event";
-import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {setMessageMetadata} from "@event-engine/messaging/message";
 import {META_KEY_USER} from "@event-engine/infrastructure/AggregateRepository";
 

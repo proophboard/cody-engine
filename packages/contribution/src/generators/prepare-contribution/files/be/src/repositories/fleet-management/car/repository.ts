@@ -6,7 +6,7 @@ import {FleetManagementCarAggregateDesc} from "@app/shared/aggregates/fleet-mana
 import {Car, car} from "@app/shared/types/fleet-management/car/car";
 import {eventReducerExtensions} from "@server/extensions/event-reducers";
 import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
-import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {
   INFORMATION_SERVICE_NAME,
   InformationService

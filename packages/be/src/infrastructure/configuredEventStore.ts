@@ -9,7 +9,7 @@ import {getExternalService, getExternalServiceOrThrow} from "@server/extensions/
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 import {NodeFilesystem} from "@event-engine/infrastructure/helpers/node-file-system";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
-import {AuthService, SERVICE_NAME_AUTH_SERVICE} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService, SERVICE_NAME_AUTH_SERVICE} from "@event-engine/infrastructure/auth-service/auth-service";
 
 export const WRITE_MODEL_STREAM = 'write_model_stream';
 export const PUBLIC_STREAM = 'public_stream';

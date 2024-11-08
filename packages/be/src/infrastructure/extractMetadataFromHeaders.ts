@@ -1,7 +1,7 @@
 import {IncomingMessage} from "http";
 import {Meta} from "@event-engine/messaging/message";
 import {names} from "@event-engine/messaging/helpers";
-import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 
 export const CE_HEADER_PREFIX = 'Ce-';
 

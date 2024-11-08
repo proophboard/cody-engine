@@ -1,4 +1,4 @@
-import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {env} from "@server/environments/environment.current";
 import {PrototypeAuthService} from "@server/infrastructure/auth-service/prototype-auth-service";
 import {FsTree} from "nx/src/generators/tree";

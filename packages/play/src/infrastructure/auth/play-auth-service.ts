@@ -3,7 +3,7 @@ import {
   convertFindByFilter,
   FindByArguments,
   UnregisteredUser
-} from "@server/infrastructure/auth-service/auth-service";
+} from "@event-engine/infrastructure/auth-service/auth-service";
 import {Persona} from "@app/shared/extensions/personas";
 import {v4} from "uuid";
 import {User} from "@app/shared/types/core/user/user";

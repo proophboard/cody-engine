@@ -1,6 +1,6 @@
 import {Event, EventMeta} from "@event-engine/messaging/event";
 import {Payload} from "@event-engine/messaging/message";
-import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 
 export enum MatchOperator {
     EQ = '===',

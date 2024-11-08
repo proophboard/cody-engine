@@ -9,7 +9,7 @@ import {messageFromJSON, Payload} from "@event-engine/messaging/message";
 import {Filesystem} from "@event-engine/infrastructure/helpers/fs";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
-import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 
 export interface InMemoryStreamStore {
   [streamName: string]: Event[];

@@ -2,7 +2,7 @@ import {InMemoryEventStore} from "@event-engine/infrastructure/EventStore/InMemo
 import {EventQueue} from "@event-engine/infrastructure/EventQueue";
 import {InMemoryStreamListenerQueue} from "@event-engine/infrastructure/Queue/InMemoryStreamListenerQueue";
 import {MessageBox} from "@event-engine/messaging/message-box";
-import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
 

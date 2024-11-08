@@ -10,7 +10,7 @@ import {AggregateMeta} from "@event-engine/infrastructure/AggregateRepository";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {Payload} from "@event-engine/messaging/message";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
-import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 interface Row<P,M> {

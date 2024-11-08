@@ -55,7 +55,7 @@ import {
 } from "@event-engine/infrastructure/information-service/information-service";
 import {makeFilter} from "@cody-play/queries/make-filters";
 import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
-import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {Logger, LOGGER_SERVICE_NAME} from "@app/shared/utils/logger/Logger";
 
 type ExecutionContext = any;

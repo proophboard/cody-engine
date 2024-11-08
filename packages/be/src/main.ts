@@ -8,7 +8,7 @@ import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {extractMetadataFromHeaders} from "@server/infrastructure/extractMetadataFromHeaders";
 import {ensureCEUserIsNotSetInProductionMode} from "@server/infrastructure/ensureCEUserIsNotSetInProductionMode";
 import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
-import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import util from "node:util";
 
 const host = process.env.HOST ?? 'localhost';
