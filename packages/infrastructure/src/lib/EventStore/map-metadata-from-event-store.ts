@@ -1,7 +1,7 @@
 import {Event} from "@event-engine/messaging/event";
 import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {setMessageMetadata} from "@event-engine/messaging/message";
-import {META_KEY_USER} from "@event-engine/infrastructure/AggregateRepository";
+import {META_KEY_USER} from "@server/infrastructure/AggregateRepository";
 
 export const mapMetadataFromEventStore = async (events: Event[], authService?: AuthService | undefined): Promise<Event[]> => {
   const mappedEvents: Event[] = [];

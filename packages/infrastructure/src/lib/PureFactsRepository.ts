@@ -5,7 +5,7 @@ import {Session} from "@event-engine/infrastructure/MultiModelStore/Session";
 import {Event, providesPublicEvent} from "@event-engine/messaging/event";
 import {Command} from "@event-engine/messaging/command";
 import {setMessageMetadata} from "@event-engine/messaging/message";
-import {AggregateMeta, AggregateMetaKeys, META_KEY_USER} from "@event-engine/infrastructure/AggregateRepository";
+import {AggregateMeta, AggregateMetaKeys, META_KEY_USER} from "@server/infrastructure/AggregateRepository";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 
 export const NON_AGGREGATE_TYPE = '$none';

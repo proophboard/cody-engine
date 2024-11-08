@@ -6,7 +6,7 @@ import {
 } from "@event-engine/infrastructure/EventStore";
 import {DB} from "@event-engine/infrastructure/Postgres/DB";
 import {Event, EventMeta} from "@event-engine/messaging/event";
-import {AggregateMeta} from "@event-engine/infrastructure/AggregateRepository";
+import {AggregateMeta} from "@server/infrastructure/AggregateRepository";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {Payload} from "@event-engine/messaging/message";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";

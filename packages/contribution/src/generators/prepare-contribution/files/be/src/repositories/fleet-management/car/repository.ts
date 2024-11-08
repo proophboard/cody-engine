@@ -1,4 +1,4 @@
-import {AggregateRepository} from "@event-engine/infrastructure/AggregateRepository";
+import {AggregateRepository} from "@server/infrastructure/AggregateRepository";
 import applyFunctions from "@server/event-reducers/fleet-management/car/index";
 import {WRITE_MODEL_STREAM} from "@server/infrastructure/configuredEventStore";
 import {getConfiguredMultiModelStore} from "@server/infrastructure/configuredMultiModelStore";

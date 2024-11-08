@@ -1,6 +1,6 @@
 import {Event} from "@event-engine/messaging/event";
 import {Command} from "@event-engine/messaging/command";
-import {AggregateRepository} from "@event-engine/infrastructure/AggregateRepository";
+import {AggregateRepository} from "@server/infrastructure/AggregateRepository";
 import {Payload} from "@event-engine/messaging/message";
 import {StreamEventsRepository} from "@event-engine/infrastructure/StreamEventsRepository";
 import jexl from '@app/shared/jexl/get-configured-jexl';

@@ -10,7 +10,7 @@ import {
   AggregateMetaKeys,
   EventMetadata,
   META_KEY_USER
-} from "@event-engine/infrastructure/AggregateRepository";
+} from "@server/infrastructure/AggregateRepository";
 import {asyncIterableToArray} from "@app/shared/utils/async-iterable-to-array";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 

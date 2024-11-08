@@ -11,7 +11,7 @@ import {
   AggregateRepository,
   ApplyFunction, META_KEY_DELETE_HISTORY,
   META_KEY_DELETE_STATE
-} from "@event-engine/infrastructure/AggregateRepository";
+} from "@server/infrastructure/AggregateRepository";
 import {
   AggregateDescription,
   isAggregateCommandDescription

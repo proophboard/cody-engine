@@ -12,7 +12,7 @@ import {
   QueryDescription
 } from "@event-engine/descriptions/descriptions";
 import {Meta, Payload, setMessageMetadata} from "@event-engine/messaging/message";
-import {META_KEY_DELETE_HISTORY, META_KEY_DELETE_STATE} from "@event-engine/infrastructure/AggregateRepository";
+import {META_KEY_DELETE_HISTORY, META_KEY_DELETE_STATE} from "@server/infrastructure/AggregateRepository";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
 import {makeAggregateRepository} from "@cody-play/infrastructure/commands/make-aggregate-command-mutation-fn";
 import {makeAggregateCommandHandler} from "@cody-play/infrastructure/commands/make-aggregate-command-handler";
