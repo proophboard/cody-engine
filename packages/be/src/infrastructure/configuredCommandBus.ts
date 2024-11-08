@@ -6,7 +6,7 @@ import {
   AggregateProcessingFunction,
   AggregateProcessingFunctionWithDeps,
   ProcessingFunction, ProcessingFunctionWithDeps, getStreamId, handleStreamCommand, handlePureCommand
-} from "@event-engine/infrastructure/commandHandling";
+} from "@server/infrastructure/commandHandling";
 import {repositories} from "@server/repositories/index";
 import {
   AggregateCommandDescription,

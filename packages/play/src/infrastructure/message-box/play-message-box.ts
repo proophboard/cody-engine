@@ -21,7 +21,7 @@ import {
   handleAggregateCommand,
   handlePureCommand,
   handleStreamCommand
-} from "@event-engine/infrastructure/commandHandling";
+} from "@server/infrastructure/commandHandling";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {PlayEventPolicyDescription, PlayEventPolicyRegistry} from "@cody-play/state/types";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";

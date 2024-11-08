@@ -31,7 +31,7 @@ import {
   getStreamId,
   handlePureCommand,
   handleStreamCommand
-} from "@event-engine/infrastructure/commandHandling";
+} from "@server/infrastructure/commandHandling";
 import {ValidationError} from "ajv";
 
 export const makePureCommandMutationFn = (

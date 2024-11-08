@@ -1,7 +1,7 @@
 import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
 import {Command} from "@event-engine/messaging/command";
 import {Event} from "@event-engine/messaging/event";
-import {AggregateProcessingFunctionWithDeps} from "@event-engine/infrastructure/commandHandling";
+import {AggregateProcessingFunctionWithDeps} from "@server/infrastructure/commandHandling";
 import {CTX_RECORDED_EVENTS_KEY, execRuleAsync} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {PlayEventRegistry, PlaySchemaDefinitions} from "@cody-play/state/types";
 
