@@ -1,20 +1,18 @@
 import * as React from 'react';
-import {ActionTableColumn} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {useParams} from "react-router-dom";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
-import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import ActionButton from "@frontend/app/components/core/ActionButton";
-import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row-jexl-context";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
-import {Action} from "@frontend/app/components/core/form/types/action";
+import {Action, TableActionConfig} from "@frontend/app/components/core/form/types/action";
 
 interface OwnProps {
-  action: ActionTableColumn;
+  action: TableActionConfig;
   row: {[prop: string]: any};
-  information: PlayInformationRuntimeInfo;
+  defaultService: string;
+  onDialogClose?: () => void;
 }
 
 type ColumnActionProps = OwnProps;
@@ -36,8 +34,9 @@ const ColumnAction = (props: ColumnActionProps) => {
 
   return <ActionButton
     action={{...action, position: "bottom-center"}}
-    information={props.information}
+    defaultService={props.defaultService}
     jexlCtx={jexlCtx}
+    onDialogClose={props.onDialogClose}
   />
 };
 

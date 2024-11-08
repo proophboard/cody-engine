@@ -2,7 +2,29 @@ import {Filter} from "./DocumentStore/Filter";
 import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
 
 export type Sort = 'asc' | 'desc';
-export type PartialSelect = Array<string|[string, string]>;
+export type FieldName = string;
+export type AliasFieldNameMapping = {field: string; alias: string;};
+export type PartialSelect = Array<FieldName|AliasFieldNameMapping|Lookup>;
+
+export interface Lookup {
+  lookup: string;
+  alias?: string; /* Lookup collection alias */
+  using?: string; /* Which query collection provides the localKey? Defaults to "local" alias */
+  on: {
+    localKey: string;
+    foreignKey?: string;
+  },
+  select?: Array<FieldName|AliasFieldNameMapping>;
+}
+
+export const isAliasFieldNameMapping = (partialSelectItem: unknown): partialSelectItem is AliasFieldNameMapping => {
+  return partialSelectItem === "object" && !isLookup(partialSelectItem);
+}
+
+export const isLookup = (partialSelectItem: FieldName|AliasFieldNameMapping|Lookup): partialSelectItem is Lookup => {
+  return typeof partialSelectItem === "object" && !Array.isArray(partialSelectItem);
+}
+
 export interface SortOrderItem {
   prop: string;
   sort: Sort;

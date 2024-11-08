@@ -1,14 +1,25 @@
 /* eslint-disable no-prototype-builtins */
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
-import {DocumentStore, PartialSelect, SortOrder} from "@event-engine/infrastructure/DocumentStore";
+import {
+  AliasFieldNameMapping,
+  DocumentStore, isLookup, Lookup,
+  PartialSelect,
+  SortOrder
+} from "@event-engine/infrastructure/DocumentStore";
 import {asyncEmptyIterator} from "@event-engine/infrastructure/helpers/async-empty-iterator";
 import {InMemoryFilterProcessor} from "@event-engine/infrastructure/DocumentStore/InMemory/InMemoryFilterProcessor";
 import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
-import {areValuesEqualForAllSorts, getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
+import {
+  areValuesEqualForAllSorts,
+  getValueFromPath,
+  transformPartialDoc
+} from "@event-engine/infrastructure/DocumentStore/helpers";
 import {Filesystem} from "@event-engine/infrastructure/helpers/fs";
 import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-iterator-to-array";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {cloneDeep} from "lodash";
+import {EqFilter} from "@event-engine/infrastructure/DocumentStore/Filter/EqFilter";
+import {DocIdFilter} from "@event-engine/infrastructure/DocumentStore/Filter/DocIdFilter";
 
 export type Documents = {[collectionName: string]: {[docId: string]: {doc: object, version: number}}};
 
@@ -288,11 +299,36 @@ export class InMemoryDocumentStore implements DocumentStore {
   public async findPartialDocs<D extends object>(collectionName: string, partialSelect: PartialSelect, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<AsyncIterable<[string, D, number]>> {
     const cursor = await this.findDocs<D>(collectionName, filter, skip, limit, orderBy);
 
-    throw new Error(`@TODO: implement findPartialDocs`);
+    return asyncMap(cursor, async ([docId, doc, version]) => {
+      let finalDoc: any = {};
+      const docRegistry: Record<string, any> = {local: doc};
 
-    return asyncMap(cursor, ([docId, doc, version]) => {
+      for (const s of partialSelect) {
+        if(isLookup(s)) {
+          const foreignDoc = await this.lookupPartialDoc(s, docRegistry);
 
-      return [docId, doc, version];
+          const alias = s.alias || s.lookup;
+          docRegistry[alias] = foreignDoc;
+
+
+          if(s.select) {
+            finalDoc = {
+              ...finalDoc,
+              ...this.selectFieldsFromDoc(s.select, foreignDoc)
+            }
+          }
+          continue;
+        }
+
+        finalDoc = {
+          ...finalDoc,
+          ...this.selectFieldsFromDoc([s], doc)
+        }
+      }
+
+      finalDoc = transformPartialDoc(partialSelect, finalDoc);
+
+      return [docId, finalDoc, version];
     });
   }
 
@@ -347,6 +383,63 @@ export class InMemoryDocumentStore implements DocumentStore {
 
   public syncExportDocuments(): Documents {
     return this.documents;
+  }
+
+  private selectFieldsFromDoc (partialSelect: Array<string|AliasFieldNameMapping>, doc: any): any {
+    let finalDoc: any = {};
+
+    partialSelect.forEach(item => {
+      const isStringItem = typeof item === 'string';
+      const alias = isStringItem ? item.replace(/\?$/, '') : item.alias;
+      let field = isStringItem ? item : item.field;
+
+      field = field.replace(/\?$/, '');
+
+      const value = getValueFromPath<any>(field, doc, null);
+
+      if(alias === "$merge") {
+        finalDoc = {
+          ...finalDoc,
+          ...value
+        }
+
+        return;
+      }
+
+      finalDoc[alias] = value;
+    })
+
+    return finalDoc;
+  }
+
+  private async lookupPartialDoc(lookup: Lookup, docRegistry: Record<string, any>): Promise<any> {
+    const using = lookup.using || 'local';
+    const withDoc = docRegistry[using];
+
+    if(!withDoc) {
+      throw new Error(`Unable to lookup document using "${using}". The document is not specified in the partial select query.`);
+    }
+
+    const localKey = lookup.on.localKey;
+    const localValue = getValueFromPath(localKey, withDoc);
+
+    if(!localValue) {
+      throw new Error(`Unable to perform lookup. Document "${using}" has no value set for localKey "${localKey}"`);
+    }
+
+    const filter = lookup.on.foreignKey ? new EqFilter(lookup.on.foreignKey, localValue) : new DocIdFilter(localValue);
+
+    const cursor = await this.findDocs(lookup.lookup, filter, 0, 1);
+
+    const docs = await asyncIteratorToArray(cursor);
+
+    if(!docs.length) {
+      throw new Error(`Failed to lookup "${lookup.lookup}" with filter: ${JSON.stringify(filter)}`);
+    }
+
+    const [docId, matchingDoc] = docs[0];
+
+    return matchingDoc;
   }
 
   private migrateDocs(documents: Documents): Documents {

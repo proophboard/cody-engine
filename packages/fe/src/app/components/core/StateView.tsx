@@ -135,7 +135,7 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
                                     className={(headingVariant === 'h2' || headingVariant === 'h3') ? 'sidebar-anchor' : ''}
                                     sx={getObjPropTitleStyle(headingVariant)}>{title}{index}</Typography>}
       </Grid2>
-      <TopRightActions  uiOptions={uiOptions} information={props.formContext.information} jexlCtx={jexlCtx} />
+      <TopRightActions  uiOptions={uiOptions} defaultService={props.formContext.defaultService} jexlCtx={jexlCtx} />
     </Grid2>
     {props.description}
     <Grid2 container={true} {...gridConfig as Grid2Props}>
@@ -212,6 +212,7 @@ const StateView = (props: StateViewProps) => {
   const schema = resolveRefs(cloneSchema(props.description.schema as any), props.definitions || definitions) as RJSFSchema;
 
   const infoFQCN = playFQCNFromDefinitionId(schema['$id'] || '');
+  const defaultService = infoFQCN.split(".").shift() || '';
 
   const informationRuntimeInfo = types[infoFQCN];
 
@@ -231,7 +232,7 @@ const StateView = (props: StateViewProps) => {
           validator={getRjsfValidator()}
           children={<></>}
           formData={props.state}
-          formContext={{data: props.state, information: informationRuntimeInfo}}
+          formContext={{data: props.state, information: informationRuntimeInfo, defaultService}}
           uiSchema={uiSchema}
           className="stateview"
           templates={
@@ -257,7 +258,7 @@ const StateView = (props: StateViewProps) => {
         />
       </CardContent>
     </Card>
-    <BottomActions uiOptions={uiOptions} information={informationRuntimeInfo as unknown as PlayInformationRuntimeInfo} jexlCtx={jexlCtx} />
+    <BottomActions uiOptions={uiOptions} defaultService={defaultService} jexlCtx={jexlCtx} />
   </>;
 };
 

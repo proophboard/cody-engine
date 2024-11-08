@@ -47,7 +47,6 @@ import {makeFilter} from "@cody-engine/cody/hooks/utils/query/make-query-resolve
 import {INFORMATION_SERVICE_NAME} from "@server/infrastructure/information-service/information-service";
 import {validateResolverRules} from "@cody-engine/cody/hooks/utils/rule-engine/validate-resolver-rules";
 import {LOGGER_SERVICE_NAME} from "@app/shared/utils/logger/Logger";
-import jexl from "@app/shared/jexl/get-configured-jexl";
 
 export interface Variable {
   name: string;
@@ -443,7 +442,7 @@ const convertThenAssignVariable = (node: Node, ctx: Context, then: ThenAssignVar
 }
 
 const convertThenThrowError = (node: Node, ctx: Context, then: ThenThrowError, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  lines.push(`${indent}throw new Error("" + (${wrapExpression(then.throw.error, evalSync)}))`);
+  lines.push(`throw new Error("" + (${wrapExpression(then.throw.error, evalSync)}))`);
 
   return true;
 }
@@ -656,6 +655,37 @@ const convertThenUpdateInformation = (node: Node, ctx: Context, then: ThenUpdate
   const awaitStr = evalSync ? 'await ' : '';
   const vo = withErrorCheck(getVOFromDataReference, [then.update.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+  const loadDoc = then.update.loadDocIntoVariable;
+
+  if(loadDoc) {
+    const thenFind: ThenFindInformation = {
+      find: {
+        information: then.update.information,
+        filter: then.update.filter,
+        limit: 1,
+        variable: `_${loadDoc}Result`,
+      }
+    };
+
+    const thenAssignVariable: ThenAssignVariable = {
+      assign: {
+        variable: loadDoc,
+        value: `_${loadDoc}Result|first({})`
+      }
+    }
+
+    const loadResult = convertThenFind(node, ctx, thenFind, rule, lines, indent, evalSync);
+
+    if(isCodyError(loadResult)) {
+      return loadResult;
+    }
+
+    const assignResult = convertThenAssignVariable(node, ctx, thenAssignVariable, rule, lines, indent, evalSync);
+
+    if(isCodyError(assignResult)) {
+      return assignResult;
+    }
+  }
 
   lines.push(`${indent}${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].update('${registryId}',`);
   makeFilter(then.update.filter, lines, indent + '  ', ',');
@@ -676,6 +706,37 @@ const convertThenReplaceInformation = (node: Node, ctx: Context, then: ThenRepla
   const awaitStr = evalSync ? 'await ' : '';
   const vo = withErrorCheck(getVOFromDataReference, [then.replace.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+  const loadDoc = then.replace.loadDocIntoVariable;
+
+  if(loadDoc) {
+    const thenFind: ThenFindInformation = {
+      find: {
+        information: then.replace.information,
+        filter: then.replace.filter,
+        limit: 1,
+        variable: `_${loadDoc}Result`,
+      }
+    };
+
+    const thenAssignVariable: ThenAssignVariable = {
+      assign: {
+        variable: loadDoc,
+        value: `_${loadDoc}Result|first({})`
+      }
+    }
+
+    const loadResult = convertThenFind(node, ctx, thenFind, rule, lines, indent, evalSync);
+
+    if(isCodyError(loadResult)) {
+      return loadResult;
+    }
+
+    const assignResult = convertThenAssignVariable(node, ctx, thenAssignVariable, rule, lines, indent, evalSync);
+
+    if(isCodyError(assignResult)) {
+      return assignResult;
+    }
+  }
 
   lines.push(`${indent}${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].replace('${registryId}',`);
   makeFilter(then.replace.filter, lines, indent + '  ', ',');

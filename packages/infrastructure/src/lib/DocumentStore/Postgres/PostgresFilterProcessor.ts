@@ -28,29 +28,29 @@ export class PostgresFilterProcessor implements FilterProcessor {
 
   processAnyFilter(filter: AnyFilter): string {
     return '1=1';
-  };
+  }
 
   processEqFilter(filter: EqFilter): string {
     const argumentRef = this.registerArgument(JSON.stringify(filter.val));
     const propPath = this.propToJsonPath(filter.prop);
 
-    return `${propPath}=$${argumentRef}`;
-  };
+    return `${filter.collection}.${propPath}=$${argumentRef}`;
+  }
 
   processAndFilter(filter: AndFilter): string {
     const subFilterQueries = filter.internalFilters.map(filter => filter.processWith(this));
     return '(' + subFilterQueries.join(') AND (') + ')';
-  };
+  }
 
   processOrFilter(filter: OrFilter): string {
     const subFilterQueries = filter.internalFilters.map(filter => filter.processWith(this));
     return '(' + subFilterQueries.join(') OR (') + ')';
-  };
+  }
 
   processDocIdFilter(filter: DocIdFilter): string {
     const argumentRef = this.registerArgument(filter.val);
-    return `id=$${argumentRef}`;
-  };
+    return `${filter.collection}.id=$${argumentRef}`;
+  }
 
   processExistsFilter(filter: ExistsFilter): string {
     const jsonPath = this.propToJsonPath(filter.prop);
@@ -58,35 +58,35 @@ export class PostgresFilterProcessor implements FilterProcessor {
     const lastProp = jsonPathParts.pop();
     const parentProps = jsonPathParts.join('->');
 
-    return `JSONB_EXISTS(${parentProps}, ${lastProp})`;
+    return `JSONB_EXISTS(${filter.collection}.${parentProps}, ${lastProp})`;
   }
 
   processGtFilter(filter: GtFilter): string {
     const argumentRef = this.registerArgument(JSON.stringify(filter.val));
     const propPath = this.propToJsonPath(filter.prop);
 
-    return `${propPath} > $${argumentRef}`;
+    return `${filter.collection}.${propPath} > $${argumentRef}`;
   }
 
   processGteFilter(filter: GteFilter): string {
     const argumentRef = this.registerArgument(JSON.stringify(filter.val));
     const propPath = this.propToJsonPath(filter.prop);
 
-    return `${propPath} >= $${argumentRef}`;
+    return `${filter.collection}.${propPath} >= $${argumentRef}`;
   }
 
   processLtFilter(filter: LtFilter): string {
     const argumentRef = this.registerArgument(JSON.stringify(filter.val));
     const propPath = this.propToJsonPath(filter.prop);
 
-    return `${propPath} < $${argumentRef}`;
+    return `${filter.collection}.${propPath} < $${argumentRef}`;
   }
 
   processLteFilter(filter: LteFilter): string {
     const argumentRef = this.registerArgument(JSON.stringify(filter.val));
     const propPath = this.propToJsonPath(filter.prop);
 
-    return `${propPath} <= $${argumentRef}`;
+    return `${filter.collection}.${propPath} <= $${argumentRef}`;
   }
 
   processInArrayFilter(filter: InArrayFilter): string {
@@ -94,14 +94,14 @@ export class PostgresFilterProcessor implements FilterProcessor {
     const propPath = this.propToJsonPath(filter.prop);
 
 
-    return `${propPath} @> $${argumentRef}`;
+    return `${filter.collection}.${propPath} @> $${argumentRef}`;
   }
 
   processLikeFilter(filter: LikeFilter): string {
     const argumentRef = this.registerArgument(filter.val);
     const propPath = this.propToJsonStringPath(filter.prop);
 
-    return `${propPath} iLIKE $${argumentRef}`;
+    return `${filter.collection}.${propPath} iLIKE $${argumentRef}`;
   }
 
   processNotFilter(filter: NotFilter): string {
@@ -117,7 +117,7 @@ export class PostgresFilterProcessor implements FilterProcessor {
       options.push(`$${argumentRef}`);
     });
 
-    return `id IN(${options.join(',')})`;
+    return `${filter.collection}.id IN(${options.join(',')})`;
   }
 
   processAnyOfFilter(filter: AnyOfFilter): string {
@@ -128,12 +128,12 @@ export class PostgresFilterProcessor implements FilterProcessor {
     });
     const propPath = this.propToJsonPath(filter.prop);
 
-    return `${propPath} IN(${options.join(',')})`;
+    return `${filter.collection}.${propPath} IN(${options.join(',')})`;
   }
 
 
   private propToJsonPath(field: string): string {
-    return `doc->'${field.replace('.', "'->'")}'`;
+    return `doc->'${field.replaceAll('.', "'->'")}'`;
   }
 
   private propToJsonStringPath(field: string): string {

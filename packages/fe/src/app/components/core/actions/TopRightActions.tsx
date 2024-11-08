@@ -3,11 +3,10 @@ import {Action, parseActionsFromUiOptions} from "@frontend/app/components/core/f
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import ActionButton from "@frontend/app/components/core/ActionButton";
-import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
-  information: PlayInformationRuntimeInfo;
+  defaultService: string;
   jexlCtx: FormJexlContext;
 }
 
@@ -29,7 +28,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
                 direction="column"
                 alignItems="center"
                 justifyContent="flex-end"
-  >{actions.map(action => <ActionButton action={action} information={props.information} jexlCtx={props.jexlCtx} />)}</Grid2>
+  >{actions.map(action => <ActionButton action={action} defaultService={props.defaultService} jexlCtx={props.jexlCtx} />)}</Grid2>
 };
 
 export default TopRightActions;

@@ -10,7 +10,7 @@ import {
   isQueryableNotStoredStateListDescription,
   isQueryableStateListDescription
 } from "@event-engine/descriptions/descriptions";
-import {FQCNFromDefinitionId, voClassNameFromFQCN} from "../value-object/definitions";
+import {voClassNameFromFQCN} from "../value-object/definitions";
 import {isObjectSchema} from "../json-schema/is-object-schema";
 import {JSONSchema7} from "json-schema-to-ts";
 import {camelCaseToTitle} from "@frontend/util/string";
@@ -168,6 +168,26 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVOFQCN: 
       const cValue = column[cKey];
 
       switch (cKey) {
+        case "action":
+          imports = addImport('import {TableActionConfig} from "@frontend/app/components/core/form/types/action"', imports);
+          imports = addImport('import {environment} from "@frontend/environments/environment"', imports);
+          imports = addImport('import ColumnAction from "@frontend/app/components/core/table/ColumnAction"', imports);
+
+          objStr += `${indent}renderCell: (rowParams) => {\n`;
+          objStr += `${indent}  const action = ${JSON.stringify(cValue, null, 2)} as TableActionConfig;\n`;
+          objStr += `${indent}  return <ColumnAction  action={action} row={rowParams.row} defaultService={environment.defaultService} />\n`
+          objStr += `${indent}},`
+          break;
+        case "actions":
+          imports = addImport('import {TableActionConfig} from "@frontend/app/components/core/form/types/action"', imports);
+          imports = addImport('import {environment} from "@frontend/environments/environment"', imports);
+          imports = addImport('import ColumnActionsMenu from "@frontend/app/components/core/table/ColumnActionsMenu"', imports);
+
+          objStr += `${indent}renderCell: (rowParams) => {\n`;
+          objStr += `${indent}  const actions = ${JSON.stringify(cValue, null, 2)} as TableActionConfig[];\n`;
+          objStr += `${indent}  return <ColumnActionsMenu actions={actions} row={rowParams.row} defaultService={environment.defaultService} />\n`;
+          objStr += `${indent}},`
+          break;
         case "pageLink":
           const pageLinkConfig: PageLinkTableColumn = typeof cValue === "string" ? {page: cValue, mapping: {}} : cValue as PageLinkTableColumn;
 

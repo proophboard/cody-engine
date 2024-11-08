@@ -20,6 +20,8 @@ interface OwnProps {
   <%= identifier %>: string;
 <% } %>
   initialValues?: {[prop: string]: unknown};
+  onDialogOpen?: () => void;
+  onDialogClose?: () => void;
 }
 
 type <%= className %>Props = OwnProps & WithCommandButtonProps;
@@ -33,8 +35,18 @@ const <%= className %> = (props: <%= className %>Props) => {
 <% if (!newAggregate && !uiDisableFetchState) { %>
   const query = useGet<%= stateNames.className %>(determineQueryPayload(props, <%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeInfo));
 <% } %>
-  const handleOpenDialog = () => {setDialogOpen(true)};
-  const handleCloseDialog = () => {setDialogOpen(false)};
+  const handleOpenDialog = () => {
+    setDialogOpen(true);
+    if(props.onDialogOpen) {
+      props.onDialogOpen();
+    }
+  };
+  const handleCloseDialog = () => {
+    setDialogOpen(false);
+    if(props.onDialogClose) {
+      props.onDialogClose();
+    }
+  };
 
   const initialValues = props.initialValues || getInitialValues(<%= serviceNames.className %><%= className %>RuntimeInfo, {user, routeParams, page});
 

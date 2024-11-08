@@ -25,6 +25,14 @@ export interface ButtonConfig {
   icon?: React.ReactNode,
   label?: string,
   endIcon?: React.ReactNode,
+  'variant:expr'?: string,
+  'color:expr'?: string,
+  'disabled:expr'?: string,
+  'style:expr'?: string,
+  'hidden:expr'?: string,
+  'icon:expr'?: string,
+  'label:expr'?: string,
+  'endIcon:expr'?: string,
 }
 
 export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, jexlCtx: FormJexlContext): ButtonConfig => {

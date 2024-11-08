@@ -67,7 +67,7 @@ const executeEvent = async (eventName: string, payload: any): Promise<AxiosRespo
 
 const queryErrorTimers: Record<string, number> = {};
 
-async function executeQuery<T = any>(queryName: string, payload: any): Promise<AxiosResponse<T>> {
+async function executeQuery<T = any>(queryName: string, payload: any, allowNotFound = false): Promise<AxiosResponse<T>> {
   const [service, query] = queryName.split(".");
   const timerKey = queryName + JSON.stringify(payload);
 
@@ -85,6 +85,10 @@ async function executeQuery<T = any>(queryName: string, payload: any): Promise<A
       },
     });
 
+    if(allowNotFound && response.status === 404) {
+      return response;
+    }
+
     if (response.status >= 400) {
       queryErrorTimers[timerKey] = window.setTimeout(() => {
         enqueueSnackbar(`Query "${queryName}" failed with status: ${response.status}`, {variant: "error"});
@@ -94,6 +98,10 @@ async function executeQuery<T = any>(queryName: string, payload: any): Promise<A
     return response;
   } catch (e) {
     if (e instanceof AxiosError) {
+      if(allowNotFound && (e as AxiosError).response?.status === 404) {
+        return (e as AxiosError).response as AxiosResponse;
+      }
+
       queryErrorTimers[timerKey] = window.setTimeout(() => {
         enqueueSnackbar(`Query "${queryName}" failed with status: ${(e as AxiosError).response?.status || 500}. See browser logs for details`, {variant: "error"});
       }, (e as AxiosError).response?.status === 504 ? 5000 : 1000);

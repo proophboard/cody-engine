@@ -1,6 +1,12 @@
 import {PostgresFilterProcessor} from "@event-engine/infrastructure/DocumentStore/Postgres/PostgresFilterProcessor";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
-import {PartialSelect, SortOrder} from "@event-engine/infrastructure/DocumentStore";
+import {
+  AliasFieldNameMapping,
+  isLookup,
+  Lookup,
+  PartialSelect,
+  SortOrder
+} from "@event-engine/infrastructure/DocumentStore";
 import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
 import {PostgresIndexProcessor} from "@event-engine/infrastructure/DocumentStore/Postgres/PostgresIndexProcessor";
 import {MetadataFieldIndex} from "@event-engine/infrastructure/DocumentStore/Index/MetadataFieldIndex";
@@ -55,7 +61,7 @@ export class PostgresQueryBuilder {
     }
 
     const queryString = `
-      UPDATE ${this.tableName(collectionName)}
+      UPDATE ${this.tableName(collectionName)} AS "local"
       SET doc = (to_jsonb(doc) || $2) ${metaUpdate}
       WHERE id = $1
     `;
@@ -78,7 +84,7 @@ export class PostgresQueryBuilder {
     }
 
     const queryString = `
-      UPDATE ${this.tableName(collectionName)}
+      UPDATE ${this.tableName(collectionName)} AS "local"
       SET doc = (to_jsonb(doc) || $${++argumentCounter}) ${metaUpdate}
       WHERE ${filterClause[0]};
     `;
@@ -123,7 +129,7 @@ export class PostgresQueryBuilder {
     }
 
     const queryString = `
-      UPDATE ${this.tableName(collectionName)}
+      UPDATE ${this.tableName(collectionName)} AS "local"
       SET doc = $2 ${metaUpdate}
       WHERE id = $1;
     `;
@@ -146,7 +152,7 @@ export class PostgresQueryBuilder {
     }
 
     const queryString = `
-      UPDATE ${this.tableName(collectionName)}
+      UPDATE ${this.tableName(collectionName)} AS "local"
       SET doc = $${++argumentCounter} ${metaUpdate}
       WHERE ${filterClause[0]};
     `;
@@ -156,7 +162,7 @@ export class PostgresQueryBuilder {
 
   public makeDeleteDocQuery(collectionName: string, docId: string): PostgresQuery {
     const queryString = `
-        DELETE FROM ${this.tableName(collectionName)}
+        DELETE FROM ${this.tableName(collectionName)} AS "local"
         WHERE id = $1;
       `;
 
@@ -169,7 +175,7 @@ export class PostgresQueryBuilder {
     const filterClause = this.filterProcessor.process(filter);
 
     const queryString = `
-      DELETE FROM ${this.tableName(collectionName)}
+      DELETE FROM ${this.tableName(collectionName)} AS "local"
       WHERE ${filterClause[0]};
     `;
 
@@ -181,7 +187,7 @@ export class PostgresQueryBuilder {
 
     const queryString = `
       SELECT count(doc)
-      FROM ${this.tableName(collectionName)}
+      FROM ${this.tableName(collectionName)} AS "local"
       WHERE ${filterClause[0]};
     `;
 
@@ -191,7 +197,7 @@ export class PostgresQueryBuilder {
   public makeGetDocQuery(collectionName: string, docId: string): PostgresQuery {
     const queryString = `
       SELECT *
-      FROM ${this.tableName(collectionName)}
+      FROM ${this.tableName(collectionName)} AS "local"
       WHERE id = $1
     `;
 
@@ -203,7 +209,7 @@ export class PostgresQueryBuilder {
   public makeGetDocVersionQuery(collectionName: string, docId: string): PostgresQuery {
     const queryString = `
       SELECT version
-      FROM ${this.tableName(collectionName)}
+      FROM ${this.tableName(collectionName)} AS "local"
       WHERE id = $1
     `;
 
@@ -215,8 +221,9 @@ export class PostgresQueryBuilder {
   public makeGetPartialDocQuery(collectionName: string, docId: string, partialSelect: PartialSelect): PostgresQuery {
     const queryString = `
       SELECT ${this.makePartialDocSelect(partialSelect)}
-      FROM ${this.tableName(collectionName)}
-      WHERE id = $1
+      FROM ${this.tableName(collectionName)} AS "local"
+      ${this.makePartialJoins(partialSelect)}
+      WHERE local.id = $1
     `;
 
     const bindings = [docId];
@@ -233,7 +240,7 @@ export class PostgresQueryBuilder {
 
     const queryString = `
       SELECT id, doc
-      FROM ${this.tableName(collectionName)}
+      FROM ${this.tableName(collectionName)} AS "local"
       WHERE ${filterClause[0]}
       ${orderByClause}
       ${limitClause}
@@ -252,7 +259,8 @@ export class PostgresQueryBuilder {
 
     const queryString = `
       SELECT ${this.makePartialDocSelect(partialSelect)}
-      FROM ${this.tableName(collectionName)}
+      FROM ${this.tableName(collectionName)} AS "local"
+      ${this.makePartialJoins(partialSelect)}
       WHERE ${filterClause[0]}
       ${orderByClause}
       ${limitClause}
@@ -270,8 +278,8 @@ export class PostgresQueryBuilder {
     const orderByClause = orderBy ? this.makeOrderByClause(orderBy) : '';
 
     const queryString = `
-      SELECT id
-      FROM ${this.tableName(collectionName)}
+      SELECT local.id
+      FROM ${this.tableName(collectionName)} as "local"
       WHERE ${filterClause[0]}
       ${orderByClause}
       ${limitClause}
@@ -364,14 +372,24 @@ export class PostgresQueryBuilder {
 
 
 
-  private makePartialDocSelect(partialSelect: Array<string|[string, string]>): string {
-    let select = `id as "${PARTIAL_SELECT_DOC_ID}", version as "${PARTIAL_SELECT_DOC_VERSION}"`;
+  private makePartialDocSelect(partialSelect: Array<string|AliasFieldNameMapping|Lookup>, collection = 'local'): string {
+    let select = collection === 'local' ? `local.id as "${PARTIAL_SELECT_DOC_ID}", local.version as "${PARTIAL_SELECT_DOC_VERSION}", ` : '';
 
     for (const item of partialSelect) {
+      if(isLookup(item)) {
+        if(item.select && item.select.length) {
+          select += `${this.makePartialDocSelect(item.select, item.alias || this.tableName(item.lookup))}, `;
+        }
+
+        continue;
+      }
+
       const isStringItem = typeof item === 'string';
 
-      let alias = isStringItem ? item : item[0];
-      const field = isStringItem ? item : item[1];
+      let alias = isStringItem ? item.replace(/\?$/, '') : item.alias;
+      let field = isStringItem ? item : item.field;
+
+      field = field.replace(/\?$/, '');
 
       if (RESERVED_ALIASES.includes(alias)) {
         throw new Error(`Invalid select alias. You cannot use ${alias} as alias, because it is reserved for internal use`);
@@ -381,10 +399,28 @@ export class PostgresQueryBuilder {
         alias = PARTIAL_SELECT_MERGE;
       }
 
-      select += `${this.propToJsonPath(field)} as "${alias}", `;
+      select += `${collection}.${this.propToJsonPath(field)} as "${alias}", `;
     }
 
     return select.slice(0, -2);
+  }
+
+  private makePartialJoins(partialSelect: PartialSelect): string {
+    let join = '';
+
+    for (const item of partialSelect) {
+      if(isLookup(item)) {
+        const localCollection = item.using || 'local';
+        const as = item.alias ? ` as ${item.alias}` : '';
+        const foreignCollection = item.alias || this.tableName(item.lookup);
+        const cast = !item.on.foreignKey ? '::uuid' : undefined;
+        const foreignProp = item.on.foreignKey ? this.propToTextPath(item.on.foreignKey) : 'id';
+
+        join += `JOIN ${this.tableName(item.lookup)}${as} ON (${localCollection}.${this.propToTextPath(item.on.localKey)})${cast || ''} = ${foreignCollection}.${foreignProp}\n`;
+      }
+    }
+
+    return join;
   }
 
   private extractMetadata(argumentOffsetCounter: number, metadata?: object): { metaKeys: string, metaValues: any[], metaBindings: string } {
@@ -402,12 +438,24 @@ export class PostgresQueryBuilder {
   }
 
   private makeOrderByClause(orderBy: SortOrder): string {
-    return `ORDER BY ${orderBy.map(({ prop, sort }) => `${this.propToJsonPath(prop)} ${sort.toUpperCase()}`).join(', ')}`;
+    return `ORDER BY ${orderBy.map(({ prop, sort }) => `${this.propToTextPath(prop)} ${sort.toUpperCase()}`).join(', ')}`;
   }
 
   // @todo code duplication with PostgresFilterProcessor
   private propToJsonPath(field: string): string {
-    return `doc->'${field.replace('.', "'->'")}'`;
+    return `doc->'${field.replaceAll('.', "'->'")}'`;
+  }
+
+  private propToTextPath(field: string): string {
+    const parts = field.split(".");
+
+
+    if(parts.length === 1) {
+      return `doc->>'${field}'`;
+    }
+
+    const lastPart = parts.pop();
+    return `doc->'` + parts.join("'->'") + "'->>'" + lastPart + `'`;
   }
 
   private tableName(collectionName: string): string {

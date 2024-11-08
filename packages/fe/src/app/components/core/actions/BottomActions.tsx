@@ -1,5 +1,4 @@
 import * as React from 'react';
-import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {Action, parseActionsFromUiOptions} from "@frontend/app/components/core/form/types/action";
 import Grid2 from "@mui/material/Unstable_Grid2";
@@ -7,7 +6,7 @@ import ActionButton from "@frontend/app/components/core/ActionButton";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
-  information: PlayInformationRuntimeInfo;
+  defaultService: string;
   jexlCtx: FormJexlContext;
 }
 
@@ -31,7 +30,7 @@ const BottomActions = (props: BottomActionsProps) => {
           alignItems="center"
           justifyContent="flex-start"
    >
-     {actions.filter(a => a.position === "bottom-left").map(action => <ActionButton action={action} information={props.information} jexlCtx={props.jexlCtx} />)}
+     {actions.filter(a => a.position === "bottom-left").map(action => <ActionButton action={action} defaultService={props.defaultService} jexlCtx={props.jexlCtx} />)}
    </Grid2>
    <Grid2 xs
           display="flex"
@@ -39,7 +38,7 @@ const BottomActions = (props: BottomActionsProps) => {
           alignItems="center"
           justifyContent="center"
    >
-     {actions.filter(a => a.position === "bottom-center").map(action => <ActionButton action={action} information={props.information} jexlCtx={props.jexlCtx} />)}
+     {actions.filter(a => a.position === "bottom-center").map(action => <ActionButton action={action} defaultService={props.defaultService} jexlCtx={props.jexlCtx} />)}
    </Grid2>
    <Grid2 xs
           display="flex"
@@ -47,7 +46,7 @@ const BottomActions = (props: BottomActionsProps) => {
           alignItems="center"
           justifyContent="flex-end"
    >
-     {actions.filter(a => a.position === "bottom-right").map(action => <ActionButton action={action} information={props.information} jexlCtx={props.jexlCtx} />)}
+     {actions.filter(a => a.position === "bottom-right").map(action => <ActionButton action={action} defaultService={props.defaultService} jexlCtx={props.jexlCtx} />)}
    </Grid2>
  </Grid2>
 };

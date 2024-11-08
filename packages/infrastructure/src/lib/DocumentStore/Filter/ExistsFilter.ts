@@ -3,9 +3,11 @@ import {FilterProcessor} from "@event-engine/infrastructure/DocumentStore/Filter
 
 export class ExistsFilter implements Filter {
   public readonly prop: string;
+  public readonly collection: string;
 
-  constructor(prop: string) {
+  constructor(prop: string, collection = 'local') {
     this.prop = prop;
+    this.collection = collection;
   }
 
   processWith(processor: FilterProcessor): any {

@@ -5,10 +5,12 @@ import {FilterProcessor} from "@event-engine/infrastructure/DocumentStore/Filter
 export class GteFilter implements Filter {
     public readonly prop: string;
     public readonly val: any;
+    public readonly collection: string;
 
-    constructor(prop: string, val: any) {
+    constructor(prop: string, val: any, collection = 'local') {
         this.prop = prop;
         this.val = val;
+        this.collection = collection;
     }
 
     processWith(processor: FilterProcessor): any {

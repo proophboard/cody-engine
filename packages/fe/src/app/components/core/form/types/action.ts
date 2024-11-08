@@ -34,6 +34,10 @@ export interface RulesAction extends Action {
   rules: AnyRule[];
 }
 
+export type ActionConfig = LinkAction | CommandAction | RulesAction;
+
+export type TableActionConfig = (Omit<Omit<LinkAction, 'position'>, 'button'> | Omit<Omit<CommandAction, 'position'>, 'button'> | Omit<Omit<RulesAction, 'position'>, 'button'>) & {button: Partial<ButtonConfig>};
+
 export const parseActionsFromUiOptions = (uiOptions: Record<string, any>, jexlCtx: FormJexlContext): Action[] => {
   const actions: Action[] = [];
 

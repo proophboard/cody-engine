@@ -52,7 +52,9 @@ export class PrototypeAuthService implements AuthService {
     const matchingPersonas = this.personas.filter(p => p.userId === userId);
 
     if(matchingPersonas.length) {
-      return matchingPersonas[0];
+      const persona = matchingPersonas[0];
+
+      return this.mapPersonaToUser(persona);
     }
 
     return {
@@ -128,10 +130,21 @@ export class PrototypeAuthService implements AuthService {
       if(skip && count <= skip) continue;
       if(limit && (count - (skip || 0)) > limit) break;
 
-      resultSet.push(persona);
+      resultSet.push(this.mapPersonaToUser(persona));
     }
 
     return resultSet;
+  }
+
+  private mapPersonaToUser(persona: Persona): User {
+    return {
+      userId: persona.userId,
+      displayName: persona.displayName,
+      roles: persona.roles,
+      email: persona.email,
+      avatar: persona.avatar,
+      attributes: persona.attributes,
+    }
   }
 
   private async savePersonas(): Promise<void> {

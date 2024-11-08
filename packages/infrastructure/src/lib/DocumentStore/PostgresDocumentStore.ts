@@ -1,4 +1,11 @@
-import {DocumentStore, PartialSelect, SortOrder} from "@event-engine/infrastructure/DocumentStore";
+import {
+  AliasFieldNameMapping,
+  DocumentStore,
+  FieldName, isLookup,
+  Lookup,
+  PartialSelect,
+  SortOrder
+} from "@event-engine/infrastructure/DocumentStore";
 import {DB} from "@event-engine/infrastructure/Postgres/DB";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {PostgresFilterProcessor} from "@event-engine/infrastructure/DocumentStore/Postgres/PostgresFilterProcessor";
@@ -10,6 +17,7 @@ import {
 import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
 import {PostgresIndexProcessor} from "@event-engine/infrastructure/DocumentStore/Postgres/PostgresIndexProcessor";
 import {MetadataFieldIndex} from "@event-engine/infrastructure/DocumentStore/Index/MetadataFieldIndex";
+import {transformPartialDoc as transformPartialDocHelper} from "@event-engine/infrastructure/DocumentStore/helpers";
 
 // @TODO: Handle database schema (public by default)
 
@@ -197,6 +205,7 @@ export class PostgresDocumentStore implements DocumentStore {
     this.assertLimitValid(limit);
 
     const [queryString, bindings] = this.queryBuilder.makeFindPartialDocsQuery(collectionName, partialSelect, filter, skip, limit, orderBy);
+
     const cursor = await this.db.iterableCursor(queryString, bindings);
 
     return asyncMap(cursor, (row: any) => [row[PARTIAL_SELECT_DOC_ID], this.transformPartialDoc(partialSelect, row), parseInt(row[PARTIAL_SELECT_DOC_VERSION])]);
@@ -227,44 +236,8 @@ export class PostgresDocumentStore implements DocumentStore {
     return this.docIdSchema;
   }
 
-  private transformPartialDoc(partialSelect: Array<string|[string, string]>, doc: any): any {
-    let finalDoc: Record<string, any> = {};
-
-    for (const item of partialSelect) {
-      const isStringItem = typeof item === 'string';
-
-      const alias = isStringItem ? item : item[0];
-
-      if (alias === '$merge') {
-        if (!doc[PARTIAL_SELECT_DOC_ID]) {
-          continue;
-        }
-
-        finalDoc = {...finalDoc, ...doc[PARTIAL_SELECT_MERGE]};
-        continue;
-      }
-
-      const value = doc[alias] || null;
-
-      if (alias.includes('.')) {
-        let tmpDocRef = finalDoc;
-        const aliasItems = alias.split('.');
-
-        aliasItems.slice(0, -1).forEach(aliasItem => {
-          if (!(aliasItem in tmpDocRef)) {
-            tmpDocRef[aliasItem] = {};
-            tmpDocRef = tmpDocRef[aliasItem];
-          }
-        });
-
-        tmpDocRef[aliasItems.slice(-1)[0]] = value;
-        continue;
-      }
-
-      finalDoc[alias] = value;
-    }
-
-    return finalDoc;
+  private transformPartialDoc(partialSelect: Array<FieldName|AliasFieldNameMapping|Lookup>, doc: any): any {
+    return transformPartialDocHelper(partialSelect, doc);
   }
 
   private assertSkipValid(skip?: number) {

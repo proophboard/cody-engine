@@ -9,6 +9,7 @@ import {extractMetadataFromHeaders} from "@server/infrastructure/extractMetadata
 import {ensureCEUserIsNotSetInProductionMode} from "@server/infrastructure/ensureCEUserIsNotSetInProductionMode";
 import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
 import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import util from "node:util";
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 4100;
@@ -31,7 +32,7 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
       message: err.message
     })
   } else {
-    console.error(err.stack);
+    console.error(util.inspect(err));
     res.status(500).send({message: "Internal server error"});
   }
 }

@@ -4,10 +4,12 @@ import {FilterProcessor} from "@event-engine/infrastructure/DocumentStore/Filter
 export class AnyOfFilter implements Filter {
     public readonly prop: string;
     public readonly valList: any[];
+    public readonly collection: string;
 
-    constructor(prop: string, valList: any[]) {
+    constructor(prop: string, valList: any[], collection = 'local') {
         this.prop = prop;
         this.valList = valList;
+        this.collection = collection;
     }
 
     processWith(processor: FilterProcessor): any {

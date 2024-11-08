@@ -7,4 +7,5 @@ export const environment = {
   production: false,
   appName: 'Cody Engine',
   mode: 'prototype' as CodyEngineMode,
+  defaultService: 'CodyEngine',
 };

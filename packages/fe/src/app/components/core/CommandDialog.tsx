@@ -41,6 +41,7 @@ export interface ButtonConfig {
   style?: SxProps | undefined;
   variant?: "text" | "outlined" | "contained";
   startIcon?: React.ReactNode | undefined;
+  label?: string;
 }
 
 interface OwnProps {
@@ -56,6 +57,10 @@ interface OwnProps {
   button?: ButtonConfig;
   widgets?: {[name: string]: Widget};
   fields?: {[name: string]: Field};
+  slots?: {
+    beforeForm?: React.ReactNode;
+    afterForm?: React.ReactNode;
+  }
   onBeforeSubmitting?: (formData: {[prop: string]: any}) => {[prop: string]: any};
 }
 
@@ -203,6 +208,7 @@ const CommandDialog = (props: CommandDialogProps) => {
         </IconButton>
       </DialogTitle>
       <DialogContent sx={{ padding: '24px 24px' }}>
+        {props.slots?.beforeForm}
         <CommandForm
           command={props.commandDialogCommand}
           commandFn={props.commandFn}
@@ -228,6 +234,7 @@ const CommandDialog = (props: CommandDialogProps) => {
           fields={props.fields}
           tryAgain={tryAgain}
         />
+        {props.slots?.afterForm}
       </DialogContent>
       <DialogActions>
         {transactionState.isValidationError && <Alert severity="error">Validation failed! Please check your inputs.</Alert>}
@@ -244,7 +251,7 @@ const CommandDialog = (props: CommandDialogProps) => {
           onClick={handleExecuteCommand}
           disabled={transactionState.isSubmitting}
         >
-          {transactionState.isError ? 'Try again' : commandTitle(props.commandDialogCommand)}
+          {transactionState.isError ? 'Try again' : props.button?.label || commandTitle(props.commandDialogCommand)}
         </Button>}
         {!props.commandFn && !props.incompleteCommandConfigError && <Alert severity="warning">Cannot process the command. It is not connected to an event that results in a state change (state = Information with identifier). Please check your prooph board configuration.</Alert>}
         {!props.commandFn && props.incompleteCommandConfigError && <Alert severity="error">{props.incompleteCommandConfigError}</Alert>}

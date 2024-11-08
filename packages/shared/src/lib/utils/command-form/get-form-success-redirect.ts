@@ -11,9 +11,13 @@ export const getFormSuccessRedirect = (commandInfo: PlayCommandRuntimeInfo | Com
 
   const uiForm = {...uiSchema['ui:form']};
 
-  if(!uiForm.successRedirect) {
-    return null;
+  if(uiForm.successRedirect) {
+    return uiForm.successRedirect;
   }
 
-  return jexl.evalSync(uiForm.successRedirect, ctx);
+  if(uiForm['successRedirect:expr']) {
+    return jexl.evalSync(uiForm['successRedirect:expr'], ctx);
+  }
+
+  return null;
 }

@@ -157,6 +157,7 @@ const compileTableColumns = (
   schemaDefinitions: PlaySchemaDefinitions
 ): GridColDef[] => {
   const schema = information.schema;
+  const defaultService = information.desc.name.split('.').shift() || '';
 
   if (!isListSchema(schema) && !isInlineItemsArraySchema(schema)) {
     throw new Error(`Cannot render table. Schema of "${information.desc.name}" is not a list.`);
@@ -216,14 +217,14 @@ const compileTableColumns = (
         case "action":
           const actionConfig = cValue as ActionTableColumn;
 
-          gridColDef.renderCell = (rowParams) => <ColumnAction  action={actionConfig} row={rowParams.row} information={information} />;
+          gridColDef.renderCell = (rowParams) => <ColumnAction  action={actionConfig} row={rowParams.row} defaultService={defaultService} />;
           break;
         case "actions":
           const actionConfigs = cValue as ActionTableColumn[];
 
           gridColDef.renderCell = (rowParams) => <div style={{display: "flex"}}>
             {actionConfigs.map((c, index) => <div>
-              <ColumnAction action={c} row={rowParams.row} information={information} key={'action_column_'+index} />
+              <ColumnAction action={c} row={rowParams.row} defaultService={defaultService} key={'action_column_'+index} />
             </div>)}
           </div>
           break;

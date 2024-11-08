@@ -24,6 +24,8 @@ interface OwnProps {
   command: PlayCommandRuntimeInfo,
   buttonProps?: Partial<CommandButtonProps>,
   initialValues?: {[prop: string]: unknown},
+  onDialogOpen?: () => void;
+  onDialogClose?: () => void;
 }
 
 type PlayCommandProps = OwnProps;
@@ -39,9 +41,15 @@ const PlayCommand = (props: PlayCommandProps) => {
 
   const handleOpenDialog = () => {
     setDialogOpen(true);
+    if(props.onDialogOpen) {
+      props.onDialogOpen();
+    }
   };
   const handleCloseDialog = () => {
     setDialogOpen(false);
+    if(props.onDialogClose) {
+      props.onDialogClose();
+    }
   };
 
   const runtimeInfo: CommandRuntimeInfo = {

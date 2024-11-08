@@ -184,6 +184,7 @@ export interface ThenUpdateInformation {
     set: string | PropMapping;
     meta?: string | PropMapping;
     version?: number;
+    loadDocIntoVariable?: string;
   }
 }
 
@@ -196,6 +197,7 @@ export interface ThenReplaceInformation {
     set: string | PropMapping;
     meta?: string | PropMapping;
     version?: number;
+    loadDocIntoVariable?: string;
   }
 }
 

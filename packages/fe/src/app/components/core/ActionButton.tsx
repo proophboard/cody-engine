@@ -8,7 +8,6 @@ import {ButtonConfig} from "@frontend/app/components/core/button/determine-butto
 import {getPageDefinition} from "@cody-play/infrastructure/ui-table/utils";
 import {PageDefinition} from "@frontend/app/pages/page-definitions";
 import PageLink from "@frontend/app/components/core/PageLink";
-import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {PageLinkTableColumn} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import jexl from "@app/shared/jexl/get-configured-jexl";
@@ -21,92 +20,120 @@ import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row
 
 interface OwnProps {
   action: Action;
-  information: PlayInformationRuntimeInfo;
+  defaultService: string;
   jexlCtx: FormJexlContext | TableRowJexlContext;
+  onDialogClose?: () => void;
 }
 
 type ActionButtonProps = OwnProps;
 
 const makeButton = (config: ButtonConfig, additionalProps: object) => {
-  if(config.hidden) {
+  if (config.hidden) {
     return <></>;
   }
 
-  console.log("button config", config);
-
-  if(config.icon && !config.label) {
-    return <IconButton sx={config.style}
-                       color={config.color}
-                       disabled={config.disabled}
-                       {...additionalProps}
-    >{config.icon}</IconButton>
+  if (config.icon && !config.label) {
+    return (
+      <IconButton
+        sx={config.style}
+        color={config.color}
+        disabled={config.disabled}
+        {...additionalProps}
+      >
+        {config.icon}
+      </IconButton>
+    );
   } else {
-    return <Button variant={config.variant}
-                   sx={{ textTransform: 'none', margin: '5px', ...config.style }}
-                   color={config.color}
-                   startIcon={config.icon}
-                   endIcon={config.endIcon}
-                   children={config.label? config.label : "change"}
-                   disabled={config.disabled}
-                   {...additionalProps}
-    />
+    return (
+      <Button
+        variant={config.variant}
+        sx={{ ...config.style }}
+        color={config.color}
+        startIcon={config.icon}
+        endIcon={config.endIcon}
+        children={config.label ? config.label : 'change'}
+        disabled={config.disabled}
+        {...additionalProps}
+      />
+    );
   }
-}
+};
 
-const ActionButton = ({action, information, jexlCtx}: ActionButtonProps) => {
+const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: ActionButtonProps) => {
   const env = useEnv();
-  const {config} = useContext(configStore);
-  const [,setGlobalStore] = useGlobalStore();
+  const { config } = useContext(configStore);
+  const [, setGlobalStore] = useGlobalStore();
   const params = useParams();
 
-  if(isCommandAction(action)) {
+  if (isCommandAction(action)) {
     let initialValues;
 
     if(action.data) {
       initialValues = execMappingSync(action.data, jexlCtx);
     }
 
-    if(env.UI_ENV == "play") {
+    if (env.UI_ENV == 'play') {
       const command = config.commands[action.command];
 
-      if(!command) {
-        return <Alert severity="error">{"Unknown command: " + action.command}</Alert>
+      if (!command) {
+        return (
+          <Alert severity="error">{'Unknown command: ' + action.command}</Alert>
+        );
       }
 
-      return <PlayCommand command={command} buttonProps={action.button} initialValues={initialValues} />
+      return <PlayCommand command={command} buttonProps={action.button} initialValues={initialValues} onDialogClose={onDialogClose} />;
     }
 
     const CmdComponent = commands[action.command];
 
-    if(!CmdComponent) {
-      return <Alert severity="error">{"Unknown command: " + action.command}</Alert>
+    if (!CmdComponent) {
+      return (
+        <Alert severity="error">{'Unknown command: ' + action.command}</Alert>
+      );
     }
 
-    return <CmdComponent buttonProps={action.button} initialValues={initialValues} {...params} />
+    return <CmdComponent buttonProps={action.button} {...params} initialValues={initialValues} onDialogClose={onDialogClose} />;
   }
 
-  if(isLinkAction(action)) {
-    if(action.href) {
-      return makeButton(action.button, {component: "a", href: action.href});
-    } else if(action.pageLink) {
+  if (isLinkAction(action)) {
+    if (action.href) {
+      return makeButton(action.button, { component: 'a', href: action.href });
+    } else if (action.pageLink) {
       const paramsMapping: Record<string, any> = {};
 
-      if(typeof action.pageLink === "object" && action.pageLink.mapping) {
+      if (typeof action.pageLink === 'object' && action.pageLink.mapping) {
         for (const mappingKey in action.pageLink.mapping) {
-          paramsMapping[mappingKey] = jexl.evalSync(action.pageLink.mapping[mappingKey], jexlCtx);
+          paramsMapping[mappingKey] = jexl.evalSync(
+            action.pageLink.mapping[mappingKey],
+            jexlCtx
+          );
         }
       }
 
-      const CompiledPageLink = <PageLink page={getPageDefinition(action.pageLink as PageLinkTableColumn, information, config.pages) as unknown as PageDefinition}
-                                         params={{...jexlCtx.routeParams, ...paramsMapping}}
-      >{(action.button.icon && !action.button.label ? action.button.icon : action.button.label)}</PageLink>;
+      const CompiledPageLink = (
+        <PageLink
+          page={
+            getPageDefinition(
+              action.pageLink as PageLinkTableColumn,
+              defaultService,
+              config.pages
+            ) as unknown as PageDefinition
+          }
+          params={{ ...jexlCtx.routeParams, ...paramsMapping }}
+        >
+          {action.button.icon && !action.button.label
+            ? action.button.icon
+            : action.button.label}
+        </PageLink>
+      );
 
-      return makeButton(action.button, {component: CompiledPageLink});
+      return makeButton(action.button, { component: CompiledPageLink });
     }
   }
 
-  if(isRulesAction(action)) {
-    return makeButton(action.button, {onClick: (event: MouseEvent) => {
+  if (isRulesAction(action)) {
+    return makeButton(action.button, {
+      onClick: (event: MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();
 
@@ -114,8 +141,9 @@ const ActionButton = ({action, information, jexlCtx}: ActionButtonProps) => {
           const exec = makeAsyncExecutable(action.rules);
           await exec(jexlCtx);
           setGlobalStore(jexlCtx.store);
-        })().catch(e => console.error(e));
-      }})
+        })().catch((e) => console.error(e));
+      },
+    });
   }
 
   return <></>;

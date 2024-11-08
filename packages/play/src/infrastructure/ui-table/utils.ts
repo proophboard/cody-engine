@@ -73,14 +73,14 @@ const deriveColumnsFromSchema = (information: PlayInformationRuntimeInfo, itemSc
   return columns;
 }
 
-export const getPageDefinition = (linkedPage: PageLinkTableColumn, information: PlayInformationRuntimeInfo, pages: PlayPageRegistry): PlayPageDefinition => {
+export const getPageDefinition = (linkedPage: PageLinkTableColumn, defaultService: string, pages: PlayPageRegistry): PlayPageDefinition => {
   const parts = linkedPage.page.split(".");
   let service: string, pageName: string;
 
   if(parts.length === 2) {
     [service, pageName] = parts;
   } else {
-    service = information.desc.name.split('.').shift() || '';
+    service = defaultService;
     pageName = linkedPage.page;
   }
 
