@@ -22,7 +22,7 @@ import {
 } from "@server/infrastructure/AggregateRepository";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
 import {CommandBus} from "@event-engine/messaging/command-bus";
-import {StreamEventsRepository} from "@event-engine/infrastructure/StreamEventsRepository";
+import {StreamEventsRepository} from "@server/infrastructure/StreamEventsRepository";
 import {getConfiguredMultiModelStore} from "@server/infrastructure/configuredMultiModelStore";
 import {PUBLIC_STREAM, WRITE_MODEL_STREAM} from "@server/infrastructure/configuredEventStore";
 import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";

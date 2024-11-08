@@ -2,7 +2,7 @@ import {Event} from "@event-engine/messaging/event";
 import {Command} from "@event-engine/messaging/command";
 import {AggregateRepository} from "@server/infrastructure/AggregateRepository";
 import {Payload} from "@event-engine/messaging/message";
-import {StreamEventsRepository} from "@event-engine/infrastructure/StreamEventsRepository";
+import {StreamEventsRepository} from "@server/infrastructure/StreamEventsRepository";
 import jexl from '@app/shared/jexl/get-configured-jexl';
 import {PureFactsRepository} from "@event-engine/infrastructure/PureFactsRepository";
 

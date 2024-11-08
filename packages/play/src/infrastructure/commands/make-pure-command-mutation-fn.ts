@@ -14,7 +14,7 @@ import {
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {makePureCommandHandler} from "@cody-play/infrastructure/commands/make-pure-command-handler";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
-import {StreamEventsRepository} from "@event-engine/infrastructure/StreamEventsRepository";
+import {StreamEventsRepository} from "@server/infrastructure/StreamEventsRepository";
 import {
   getConfiguredPlayMultiModelStore
 } from "@cody-play/infrastructure/multi-model-store/configured-multi-model-store";

@@ -30,7 +30,7 @@ import {makeCommandFactory} from "@cody-play/infrastructure/commands/make-comman
 import {makeEventFactory} from "@cody-play/infrastructure/events/make-event-factory";
 import {makeQueryFactory} from "@cody-play/queries/make-query-factory";
 import {AnyRule} from "@cody-engine/cody/hooks/utils/rule-engine/configuration";
-import {StreamEventsRepository} from "@event-engine/infrastructure/StreamEventsRepository";
+import {StreamEventsRepository} from "@server/infrastructure/StreamEventsRepository";
 import {
   getConfiguredPlayMultiModelStore
 } from "@cody-play/infrastructure/multi-model-store/configured-multi-model-store";
