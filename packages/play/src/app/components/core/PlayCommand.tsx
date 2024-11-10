@@ -17,7 +17,6 @@ import {CommandMutationFunction} from "@cody-play/infrastructure/commands/comman
 import {makePureCommandMutationFn} from "@cody-play/infrastructure/commands/make-pure-command-mutation-fn";
 import {useParams} from "react-router-dom";
 import {usePageData} from "@frontend/hooks/use-page-data";
-import jexl from "@app/shared/jexl/get-configured-jexl";
 import {getInitialValues} from "@app/shared/utils/command-form/get-initial-values";
 
 interface OwnProps {
@@ -69,7 +68,7 @@ const PlayCommand = (props: PlayCommandProps) => {
     incompleteCommandConfigError = `Cannot handle command. No business rules defined. Please connect the command to an aggregate and define business rules in the Cody Wizard`;
   }
 
-  const initialValues = props.initialValues || getInitialValues(props.command, {user, page, routeParams});
+  const initialValues = props.initialValues || getInitialValues(props.command as unknown as CommandRuntimeInfo, {user, page, routeParams});
 
   /** Aggregate Command **/
   if(isAggregateCommandDescription(commandDesc)) {
