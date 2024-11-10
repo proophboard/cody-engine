@@ -1,5 +1,5 @@
 import {
-  AuthService,
+  AuthService, AuthUser,
   convertFindByFilter,
   FindByArguments,
   UnregisteredUser
@@ -35,15 +35,15 @@ export class PlayAuthService implements AuthService {
     }
     const userId = v4();
 
-    const newPersona: Persona = {
+    const newPersona: AuthUser & {description: string, color: string} = {
       userId,
       ...user,
       description: `This persona is auto generated from a user registered via AuthService.\n\nRole${user.roles.length > 1? 's' : ''}: ${user.roles.join(', ')}`,
       color: '#'+Math.floor(Math.random()*16777215).toString(16)
     };
 
-    this.personas.push(newPersona);
-    this.onPersonaAdded(newPersona);
+    this.personas.push(newPersona as Persona);
+    this.onPersonaAdded(newPersona as Persona);
 
     return userId;
   }
