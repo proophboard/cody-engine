@@ -150,7 +150,7 @@
     },
     "docker-build": {
       "dependsOn": ["build"],
-      "command": "docker build -f packages/be/Dockerfile . -t be"
+      "command": "docker build --no-cache -f packages/be/Dockerfile . -t be"
     }
   },
   "tags": []

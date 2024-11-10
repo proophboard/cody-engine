@@ -1,7 +1,6 @@
 import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {env} from "@server/environments/environment.current";
 import {PrototypeAuthService} from "@server/infrastructure/auth-service/prototype-auth-service";
-import {FsTree} from "nx/src/generators/tree";
 import {Personas} from "@app/shared/extensions/personas";
 
 let authService: AuthService;
@@ -12,8 +11,7 @@ export const authServiceFactory = (): AuthService => {
   }
 
   if(env.mode === 'prototype') {
-    const tree = new FsTree(__dirname + '/../../../../shared/src/lib/extensions', true);
-    authService = new PrototypeAuthService(Personas, tree);
+    authService = new PrototypeAuthService(Personas, __dirname + '/../../../../shared/src/lib/extensions/personas.ts');
 
     return authService;
   }
