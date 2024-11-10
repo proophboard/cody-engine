@@ -226,7 +226,7 @@ export class PostgresEventStore implements EventStore {
 
     const result = await this.db.query(query, bindings);
 
-    return result.rowCount;
+    return result.rowCount ? result.rowCount : 0;
   }
 
   public async republish(streamName: string, authService: AuthService, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number): Promise<void> {
