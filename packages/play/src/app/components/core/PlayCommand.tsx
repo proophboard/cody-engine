@@ -17,7 +17,7 @@ import {CommandMutationFunction} from "@cody-play/infrastructure/commands/comman
 import {makePureCommandMutationFn} from "@cody-play/infrastructure/commands/make-pure-command-mutation-fn";
 import {useParams} from "react-router-dom";
 import {usePageData} from "@frontend/hooks/use-page-data";
-import {getInitialValues} from "@app/shared/utils/command-form/get-initial-values";
+import {getInitialValues} from "@frontend/util/command-form/get-initial-values";
 
 interface OwnProps {
   command: PlayCommandRuntimeInfo,

@@ -37,11 +37,6 @@ export type PlayViewRegistry = {
   [valueObjectName: string]: React.FunctionComponent<any> | { information: string };
 };
 
-
-
-
-
-
 export interface PlayInitAction {
   type: 'INIT',
   payload: CodyPlayConfig,

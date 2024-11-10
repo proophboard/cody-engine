@@ -25,11 +25,11 @@ import {isAggregateCommandDescription} from "@event-engine/descriptions/descript
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
 import definitions from "@app/shared/types/definitions";
-import {getFormSuccessRedirect} from "@app/shared/utils/command-form/get-form-success-redirect";
 import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
+import {getFormSuccessRedirect} from "@frontend/util/command-form/get-form-success-redirect";
 
 export interface AggregateIdentifier {
   identifier: string;

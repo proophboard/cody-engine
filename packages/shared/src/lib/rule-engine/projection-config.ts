@@ -6,8 +6,10 @@ import {
   Rule,
   ThenType
 } from "@app/shared/rule-engine/configuration";
-import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
-import {names} from "@event-engine/messaging/helpers";
+
+const cloneDeepJSON = <T>(val: T): T => {
+  return JSON.parse(JSON.stringify(val));
+}
 
 export interface ProjectionConfig {
   name: string,
