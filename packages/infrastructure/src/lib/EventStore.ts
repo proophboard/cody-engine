@@ -2,6 +2,12 @@ import {Event, EventMeta} from "@event-engine/messaging/event";
 import {Payload} from "@event-engine/messaging/message";
 import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 
+export const AggregateMeta = {
+    VERSION: "aggregateVersion",
+    TYPE: "aggregateType",
+    ID: "aggregateId",
+}
+
 export enum MatchOperator {
     EQ = '===',
     GT = '>',

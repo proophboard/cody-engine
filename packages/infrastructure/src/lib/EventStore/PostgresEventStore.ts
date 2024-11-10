@@ -1,4 +1,5 @@
 import {
+  AggregateMeta,
   AppendToListener,
   checkMatchObject, EventMatcher,
   EventStore,
@@ -6,12 +7,13 @@ import {
 } from "@event-engine/infrastructure/EventStore";
 import {DB} from "@event-engine/infrastructure/Postgres/DB";
 import {Event, EventMeta} from "@event-engine/messaging/event";
-import {AggregateMeta} from "@server/infrastructure/AggregateRepository";
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {Payload} from "@event-engine/messaging/message";
 import {ConcurrencyError} from "@event-engine/infrastructure/EventStore/ConcurrencyError";
 import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
+
+type Binding = string | object | Date;
 
 interface Row<P,M> {
   no: number;
@@ -46,32 +48,32 @@ export class PostgresEventStore implements EventStore {
 
     await this.db.query(`
         CREATE TABLE ${streamName} (
-          no BIGSERIAL,
-          uuid UUID NOT NULL,
-          name VARCHAR(100) NOT NULL,
-          payload JSON NOT NULL,
-          meta JSONB NOT NULL,
-          created_at TIMESTAMPTZ NOT NULL,
-          PRIMARY KEY (no),
-          ${constraints}
-          UNIQUE (uuid)
-      );
+                                       no BIGSERIAL,
+                                       uuid UUID NOT NULL,
+                                       name VARCHAR(100) NOT NULL,
+                                       payload JSON NOT NULL,
+                                       meta JSONB NOT NULL,
+                                       created_at TIMESTAMPTZ NOT NULL,
+                                       PRIMARY KEY (no),
+                                       ${constraints}
+                                           UNIQUE (uuid)
+        );
     `);
 
     if(isWriteModelStream) {
       await this.db.query(`
-      CREATE UNIQUE INDEX ON ${streamName}
-      (
-        (meta->>'${AggregateMeta.TYPE}'), (meta->>'${AggregateMeta.ID}'), (meta->>'${AggregateMeta.VERSION}')
-      );
-    `);
+          CREATE UNIQUE INDEX ON ${streamName}
+              (
+              (meta->>'${AggregateMeta.TYPE}'), (meta->>'${AggregateMeta.ID}'), (meta->>'${AggregateMeta.VERSION}')
+              );
+      `);
 
       await this.db.query(`
-      CREATE INDEX ON ${streamName}
-      (
-        (meta->>'${AggregateMeta.TYPE}'), (meta->>'${AggregateMeta.ID}'), no
-      );
-    `);
+          CREATE INDEX ON ${streamName}
+              (
+              (meta->>'${AggregateMeta.TYPE}'), (meta->>'${AggregateMeta.ID}'), no
+              );
+      `);
     }
 
     return true;
@@ -79,7 +81,7 @@ export class PostgresEventStore implements EventStore {
 
   async deleteStream(streamName: string): Promise<boolean> {
     await this.db.query(`
-      DROP TABLE IF EXISTS ${streamName}
+        DROP TABLE IF EXISTS ${streamName}
     `);
 
     return true;
@@ -87,14 +89,14 @@ export class PostgresEventStore implements EventStore {
 
   async hasStream(streamName: string): Promise<boolean> {
     const result = await this.db.query(`
-    SELECT EXISTS (
-    SELECT FROM 
-        information_schema.tables 
-    WHERE 
-        table_schema LIKE 'public' AND 
-        table_type LIKE 'BASE TABLE' AND
-        table_name = $1
-    );
+        SELECT EXISTS (
+            SELECT FROM
+                information_schema.tables
+            WHERE
+                table_schema LIKE 'public' AND
+                table_type LIKE 'BASE TABLE' AND
+                table_name = $1
+        );
     `, [streamName]);
 
     return result.rows[0].exists;
@@ -128,12 +130,32 @@ export class PostgresEventStore implements EventStore {
     return true;
   }
 
-  makeAppendToQuery(streamName: string, events: Event[]): [string | null, any[]] {
+  makeDeleteFromQuery(streamName: string, eventMatcher: EventMatcher): [string, any[]] {
+    let valuePos = 1;
+    let where = '';
+    const bindings = [];
+    for(const prop in eventMatcher) {
+      const [matchWhere, value] = this.matchObjectToWhereClause(prop, valuePos, eventMatcher[prop]);
+      where += matchWhere + ' AND ';
+      bindings.push(value);
+      valuePos++;
+    }
+
+    const query = `DELETE FROM ${streamName} WHERE ${where};`;
+
+    return [query, bindings];
+  }
+
+  triggerAppendToListeners(streamName: string, events: Event[]): void {
+    this.appendToListeners.forEach(l => l(streamName, events));
+  }
+
+  makeAppendToQuery(streamName: string, events: Event[]): [string | null, Binding[]] {
     if(events.length === 0) {
       return [null, []];
     }
 
-    const bindings: any[] = [];
+    const bindings: Binding[] = [];
     let valuesStr = '';
 
     events.forEach((event, index) => {
@@ -159,33 +181,19 @@ export class PostgresEventStore implements EventStore {
     return [query, bindings];
   }
 
-  makeDeleteFromQuery(streamName: string, eventMatcher: EventMatcher): [string, any[]] {
-    let valuePos = 1;
-    let where = '';
-    const bindings = [];
-    for(const prop in eventMatcher) {
-      const [matchWhere, value] = this.matchObjectToWhereClause(prop, valuePos, eventMatcher[prop]);
-      where += matchWhere + ' AND ';
-      bindings.push(value);
-      valuePos++;
-    }
-
-    const query = `DELETE FROM ${streamName} WHERE ${where};`;
-
-    return [query, bindings];
-  }
-
-  triggerAppendToListeners(streamName: string, events: Event[]): void {
-    this.appendToListeners.forEach(l => l(streamName, events));
-  }
-
-  async load<P extends Payload = any, M extends EventMeta = any>(streamName: string, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number, reverse?: boolean): Promise<AsyncIterable<Event<P, M>>> {
+  async load<P extends Payload, M extends EventMeta>(
+    streamName: string,
+    eventMatcher?: EventMatcher,
+    fromEventId?: string,
+    limit?: number,
+    reverse?: boolean
+  ): Promise<AsyncIterable<Event<P, M>>> {
     let fromEventNo;
     const bindings = [];
 
     if(fromEventId) {
       const fromEventResult = await this.db.query(`
-        SELECT no FROM ${streamName} WHERE uuid = $1;
+          SELECT no FROM ${streamName} WHERE uuid = $1;
       `, [fromEventId]);
 
       if(fromEventResult.rowCount === 1) {
@@ -228,6 +236,7 @@ export class PostgresEventStore implements EventStore {
 
     return result.rowCount ? result.rowCount : 0;
   }
+
 
   public async republish(streamName: string, authService: AuthService, eventMatcher?: EventMatcher, fromEventId?: string, limit?: number): Promise<void> {
     const events = await this.load(streamName, eventMatcher, fromEventId, limit);
