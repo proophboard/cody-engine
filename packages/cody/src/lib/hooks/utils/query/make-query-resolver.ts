@@ -44,7 +44,7 @@ import {
   LikeFilter,
   LteFilter,
   LtFilter
-} from "../value-object/query/filter-types";
+} from "@app/shared/value-object/query/filter-types";
 import {isCodyError} from "@proophboard/cody-utils";
 import {ResolveConfig, ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";

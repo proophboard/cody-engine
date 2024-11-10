@@ -23,7 +23,7 @@ import {
   isInArrayFilter, isLikeFilter, isLteFilter, isLtFilter,
   isNotFilter,
   isOrFilter
-} from "@cody-engine/cody/hooks/utils/value-object/query/filter-types";
+} from "@app/shared/value-object/query/filter-types";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {isObjectSchema} from "@app/shared/utils/schema-checks";
 
