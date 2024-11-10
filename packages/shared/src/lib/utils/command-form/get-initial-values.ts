@@ -1,9 +1,72 @@
-import {PlayCommandRuntimeInfo} from "@cody-play/state/types";
 import {CommandRuntimeInfo} from "@event-engine/messaging/command";
+import {PropMapping} from "@app/shared/rule-engine/configuration";
 import jexl from "@app/shared/jexl/get-configured-jexl";
-import {execMappingSync} from "@cody-play/infrastructure/rule-engine/make-executable";
 
-export const getInitialValues = (commandInfo: PlayCommandRuntimeInfo | CommandRuntimeInfo, ctx: any): {[prop: string]: unknown} => {
+type ExecutionContext = any;
+
+const execExprSync = (expr: string, ctx: ExecutionContext): any => {
+  return jexl.evalSync(expr, ctx);
+}
+
+const execMappingSync = (mapping: string | string[] | PropMapping | PropMapping[], ctx: ExecutionContext): any => {
+  if(typeof mapping === "string") {
+    return execExprSync(mapping, ctx);
+  }
+
+  if(Array.isArray(mapping)) {
+    const arrMapping: any[] = [];
+
+    mapping.forEach(mappingItem => {
+      arrMapping.push(execMappingSync(mappingItem, ctx));
+    })
+
+    return arrMapping;
+  }
+
+  let propMap: Record<string, any> = {};
+
+  for (const propName in (mapping as PropMapping)) {
+    if(propName === '$merge') {
+      let mergeVal = mapping['$merge'];
+      if(typeof mergeVal === 'string') {
+        mergeVal = [mergeVal];
+      }
+
+      if(Array.isArray(mergeVal)) {
+        mergeVal.forEach(exp => {
+          if(typeof exp === "string") {
+            propMap = {...propMap, ...execExprSync(exp, ctx)};
+          } else {
+            propMap = {...propMap, ...execMappingSync(exp, ctx)};
+          }
+        })
+      } else {
+        propMap = {...propMap, ...execMappingSync(mergeVal, ctx)};
+      }
+    } else if (typeof mapping[propName] === "object") {
+      const setVal = mapping[propName] as PropMapping | string[] | PropMapping[];
+
+      if(Array.isArray(setVal)) {
+        propMap[propName] = [];
+        setVal.forEach(exp => {
+          if(typeof exp === "string") {
+            propMap[propName].push(execExprSync(exp, ctx)) ;
+          } else {
+            propMap[propName].push(execMappingSync(exp, ctx));
+          }
+        })
+      } else {
+        propMap[propName] = execMappingSync(setVal, ctx);
+      }
+    } else {
+      propMap[propName] = execExprSync(mapping[propName] as string, ctx);
+    }
+  }
+
+  return propMap;
+}
+
+export const getInitialValues = (commandInfo:  CommandRuntimeInfo, ctx: any): {[prop: string]: unknown} => {
   let values: {[prop: string]: any} = {};
 
   const uiSchema = commandInfo.uiSchema;
