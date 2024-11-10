@@ -5,6 +5,7 @@
     "@event-engine/messaging": "*",
     "@event-engine/descriptions": "*",
     "@event-engine/infrastructure": "*",
+    "@cody-engine/cody": "*",
     "@app/extensions": "*"
   }
 }

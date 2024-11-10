@@ -4,7 +4,10 @@ import {Writable} from "json-schema-to-ts/lib/types/type-utils";
 import {UiSchema} from "@rjsf/utils";
 import {names} from "@event-engine/messaging/helpers";
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
-import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+
+const cloneDeepJSON = <T>(val: T): T => {
+  return JSON.parse(JSON.stringify(val));
+}
 
 const FQCNFromDefinitionId = (definitionId: string): string => {
   const withoutPrefix = definitionId.replace('/definitions/', '');
