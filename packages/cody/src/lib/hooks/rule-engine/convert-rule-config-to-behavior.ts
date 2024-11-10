@@ -38,9 +38,9 @@ import {
 import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
 import {getTargetsOfType, isCodyError} from "@proophboard/cody-utils";
 import {names} from "@event-engine/messaging/helpers";
-import {detectService} from "../utils/detect-service";
-import {Context} from "../context";
-import {withErrorCheck} from "../utils/error-handling";
+import {detectService} from "@cody-engine/cody/hooks/utils/detect-service";
+import {Context} from "@cody-engine/cody/hooks/context";
+import {withErrorCheck} from "@cody-engine/cody/hooks/utils/error-handling";
 import {getVOFromDataReference} from "@cody-engine/cody/hooks/utils/value-object/get-vo-from-data-reference";
 import {voRegistryId} from "@cody-engine/cody/hooks/utils/value-object/vo-registry-id";
 import {makeFilter} from "@cody-engine/cody/hooks/utils/query/make-query-resolver";

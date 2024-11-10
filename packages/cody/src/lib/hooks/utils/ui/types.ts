@@ -7,7 +7,7 @@ export interface DynamicBreadcrumbMetadata {
   label: Rule[] | string;
 }
 
-export type ViewComponent = string | { view: string, hidden: boolean}
+export type ViewComponent = string | { view: string, hidden?: boolean, props?: Record<string, unknown>}
 
 export interface UiMetadata {
   route?: string;

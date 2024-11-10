@@ -7,7 +7,7 @@ import {<%= voNames.className %>Desc} from "@app/shared/types/<%= serviceNames.f
 import {
   INFORMATION_SERVICE_NAME,
   InformationService
-} from "@server/infrastructure/information-service/information-service";
+} from "@event-engine/infrastructure/information-service/information-service";
 import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
 <% if (!isList) { %>import {NotFoundError} from "@event-engine/messaging/error/not-found-error";<% } %>
 <% if (isList) { %>import {<%= itemNames.propertyName %>, <%= itemNames.className %>} from "@app/shared/types/<%= serviceNames.fileName %><%= itemNS.fileName %><%= itemNames.fileName %>";<% } %>

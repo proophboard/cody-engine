@@ -12,7 +12,7 @@ import {<%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeI
 import {useUser} from "@frontend/hooks/use-user";
 import {useParams} from "react-router-dom";
 import {usePageData} from "@frontend/hooks/use-page-data";
-import {getInitialValues} from "@app/shared/utils/command-form/get-initial-values";
+import {getInitialValues} from "@frontend/util/command-form/get-initial-values";
 <% if (buttonIcon) { %>import {<%= buttonIcon %>} from "mdi-material-ui";<% } %>
 
 interface OwnProps {

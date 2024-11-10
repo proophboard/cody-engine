@@ -1,4 +1,4 @@
-import {AggregateRepository} from "@event-engine/infrastructure/AggregateRepository";
+import {AggregateRepository} from "@server/infrastructure/AggregateRepository";
 import applyFunctions from "@server/event-reducers/<%= serviceNames.fileName %>/<%= fileName %>/index";
 import {WRITE_MODEL_STREAM} from "@server/infrastructure/configuredEventStore";
 import {getConfiguredMultiModelStore} from "@server/infrastructure/configuredMultiModelStore";
@@ -6,11 +6,11 @@ import {<%= serviceNames.className %><%= className %>AggregateDesc} from "@app/s
 import {<%= aggregateStateNames.className %>, <%= aggregateStateNames.propertyName %>} from "@app/shared/types/<%= serviceNames.fileName %><%= aggregateStateNames.fileNameWithNamespace %>";
 import {eventReducerExtensions} from "@server/extensions/event-reducers";
 import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
-import {AuthService} from "@server/infrastructure/auth-service/auth-service";
+import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {
   INFORMATION_SERVICE_NAME,
   InformationService
-} from "@server/infrastructure/information-service/information-service";
+} from "@event-engine/infrastructure/information-service/information-service";
 import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageBox";
 
 let repository: AggregateRepository<<%= aggregateStateNames.className %>>;
