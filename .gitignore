@@ -41,3 +41,6 @@ Thumbs.db
 # Filesystem storage
 data/*
 !data/.gitkeep
+
+# docker env
+!env/docker/pgadmin/tmp/.gitkeep

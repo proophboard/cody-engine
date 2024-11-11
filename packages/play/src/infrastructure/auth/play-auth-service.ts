@@ -11,10 +11,7 @@ import {SortOrder} from "@event-engine/infrastructure/DocumentStore";
 import {areValuesEqualForAllSorts, getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
 import {FilterProcessor} from "@event-engine/infrastructure/DocumentStore/FilterProcessor";
 import {InMemoryFilterProcessor} from "@event-engine/infrastructure/DocumentStore/InMemory/InMemoryFilterProcessor";
-import {makeFilter} from "@cody-play/queries/make-filters";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
-import {EqFilter} from "@event-engine/infrastructure/DocumentStore/Filter/EqFilter";
-import {InArrayFilter} from "@event-engine/infrastructure/DocumentStore/Filter/InArrayFilter";
 
 export type OnPersonaAdded = (newPersona: Persona) => void;
 
@@ -48,6 +45,10 @@ export class PlayAuthService implements AuthService {
     return userId;
   }
 
+  public async tokenToUser(raw: unknown): Promise<User> {
+    return raw as User;
+  }
+
   public async get(userId: string): Promise<User> {
     const matchingPersonas = this.personas.filter(p => p.userId === userId);
 
@@ -76,7 +77,6 @@ export class PlayAuthService implements AuthService {
   }
 
   public async findBy(by: FindByArguments): Promise<User[]> {
-    debugger;
     return this.find(convertFindByFilter(by.filter), by.skip, by.limit, by.orderBy);
   }
 

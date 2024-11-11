@@ -41,6 +41,20 @@
           "namedChunks": false,
           "extractLicenses": true,
           "vendorChunk": false
+        },
+        "staging": {
+          "fileReplacements": [
+            {
+              "replace": "packages/fe/src/environments/environment.ts",
+              "with": "packages/fe/src/environments/environment.stage.ts"
+            }
+          ],
+          "optimization": true,
+          "outputHashing": "all",
+          "sourceMap": false,
+          "namedChunks": false,
+          "extractLicenses": true,
+          "vendorChunk": false
         }
       }
     },
@@ -88,6 +102,10 @@
           "codeCoverage": true
         }
       }
+    } ,
+    "docker-build": {
+      "dependsOn": ["build"],
+      "command": "docker build -f packages/fe/Dockerfile . -t fe"
     }
   },
   "tags": []

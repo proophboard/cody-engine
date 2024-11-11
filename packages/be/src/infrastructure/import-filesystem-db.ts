@@ -14,23 +14,29 @@ const documentStore = getConfiguredDocumentStore();
 
 const eventStreams = JSON.parse(fs.readFileSync(PERSISTENT_STREAMS_FILE).toString());
 
-for (const eventStream in eventStreams.streams) {
-  console.log(`Importing events of stream ${eventStream} ...`);
-  eventStore.appendTo(eventStream, eventStreams.streams[eventStream], undefined, undefined, true);
-  console.log(`Imported ${eventStreams.streams[eventStream].length} events into ${eventStream}`)
-}
-
-const collections = JSON.parse(fs.readFileSync(PERSISTENT_COLLECTION_FILE).toString());
-
-for (const collectionName in collections.documents) {
-  const collection = collections.documents[collectionName];
-
-  console.log(`Importing documents of collection ${collectionName} ...`);
-
-  for (const docId in collection) {
-    const doc = collection[docId];
-    documentStore.addDoc(collectionName, docId, doc.doc, undefined, doc.version);
+(async () => {
+  for (const eventStream in eventStreams.streams) {
+    console.log(`Importing events of stream ${eventStream} ...`);
+    await eventStore.appendTo(eventStream, eventStreams.streams[eventStream], undefined, undefined, true);
+    console.log(`Imported ${eventStreams.streams[eventStream].length} events into ${eventStream}`)
   }
 
-  console.log(`Imported ${Object.values(collection).length} documents into ${collectionName}.`);
-}
+  const collections = JSON.parse(fs.readFileSync(PERSISTENT_COLLECTION_FILE).toString());
+
+  for (const collectionName in collections.documents) {
+    const collection = collections.documents[collectionName];
+
+    console.log(`Importing documents of collection ${collectionName} ...`);
+
+    for (const docId in collection) {
+      const doc = collection[docId];
+      await documentStore.addDoc(collectionName, docId, doc.doc, undefined, doc.version);
+    }
+
+    console.log(`Imported ${Object.values(collection).length} documents into ${collectionName}.`);
+  }
+})().catch((e) => {
+  throw e;
+});
+
+

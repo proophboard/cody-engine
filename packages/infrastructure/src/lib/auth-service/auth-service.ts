@@ -29,6 +29,7 @@ export const SERVICE_NAME_AUTH_SERVICE = 'AuthService';
 
 export interface AuthService {
   register: (user: UnregisteredUser) => Promise<string>;
+  tokenToUser: (token: unknown) => Promise<AuthUser>;
   get: (userId: string) => Promise<AuthUser>;
   find: (filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder) => Promise<AuthUser[]>;
   findBy: (by: FindByArguments) => Promise<AuthUser[]>;

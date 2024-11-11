@@ -6,10 +6,15 @@ import 'express-async-errors';
 import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
 import {extractMetadataFromHeaders} from "@server/infrastructure/extractMetadataFromHeaders";
-import {ensureCEUserIsNotSetInProductionMode} from "@server/infrastructure/ensureCEUserIsNotSetInProductionMode";
+import {
+  CE_USER_HEADER,
+  ensureCEUserIsNotSetInProductionMode
+} from "@server/infrastructure/ensureCEUserIsNotSetInProductionMode";
 import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
 import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
-import util from "node:util";
+import { expressjwt } from 'express-jwt';
+import { env } from '@server/environments/environment.current';
+import * as util from "node:util";
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 4100;
@@ -20,6 +25,28 @@ const authService = getExternalServiceOrThrow<AuthService>('AuthService', {});
 
 app.use(json());
 app.use(ensureCEUserIsNotSetInProductionMode);
+
+if(!env.authentication?.disabled) {
+  app.use(expressjwt({
+    secret: env.keycloak.publicKey,
+    issuer: env.keycloak.issuer,
+    algorithms: ['RS256'],
+    getToken: request => {
+      if (request.headers.authorization && request.headers.authorization.split(' ')[0] === 'Bearer') {
+        return request.headers.authorization.split(' ')[1];
+      } else if (request.query && request.query.token) {
+        return request.query.token as string;
+      }
+      return undefined;
+    },
+  }));
+
+  app.use((req, res, next) => {
+    req.headers[CE_USER_HEADER] = (req as any).auth.sub;
+    next();
+  });
+}
+
 
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   if(err instanceof ValidationError) {
@@ -104,6 +131,6 @@ app.get('/api/health', (req, res) => {
 
 app.use(errorHandler);
 
-app.listen(port, host, () => {
+app.listen(port, host, async () => {
   console.log(`[ ready ] http://${host}:${port}`);
 });

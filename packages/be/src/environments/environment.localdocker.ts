@@ -5,7 +5,7 @@ import {Environment} from "./environment.schema";
 
 export const env: Environment = {
   production: false,
-  mode: "prototype",
+  mode: "production-stack",
   keycloak: {
     baseUrl: process.env.KC_BASE_URL || 'http://keycloak:8080/auth',
     realm: process.env.KC_REALM || '',
@@ -25,19 +25,19 @@ export const env: Environment = {
   },
   postgres: {
     host: 'localhost',
-    port: 5433,
-    database: 'test',
-    user: 'dev',
-    password: 'dev',
+    port: 5432,
+    database: 'app',
+    user: 'dbadmin',
+    password: 'password',
     max: 200
   },
   eventStore: {
-    adapter: "filesystem"
+    adapter: "postgres"
   },
   documentStore: {
-    adapter: "filesystem"
+    adapter: "postgres"
   },
   authentication: {
-    disabled: true
+    disabled: false
   }
 };

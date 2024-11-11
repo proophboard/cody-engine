@@ -33,6 +33,82 @@ git remote add origin my-app-repo
 
 Otherwise, just delete the `.git` folder in the project root and start with a fresh `git init`
 
+## Prototype Mode
+
+By default, Cody Engine runs in a prototyping mode. This means, that the app is not secured by authentication and data is
+only written to json files located in the `data` directory.
+
+The mode can be changed so that Cody Engine connects to a `Postgres` database and uses the authentication server `Keycloak`.
+
+## Run with docker
+
+You can also run Keycloak auth server, Postgres DB and Minio S3 object storage in a local docker stack.
+This is similar to the production stack.
+
+Here are the steps to switch from prototype mode to "production-stack" mode.
+
+### Environment
+> cp .env.dist .env
+
+### Install network
+> docker network create cody
+
+### Update hosts
+
+>sudo vim /etc/hosts
+
+```
+127.0.0.1   cody.local 
+127.0.0.1   app.cody.local
+127.0.0.1   pgadmin.cody.local 
+127.0.0.1   s3.cody.local 
+127.0.0.1   s3admin.cody.local 
+127.0.0.1   auth.cody.local 
+127.0.0.1   socket.cody.local 
+```
+
+### Switch Cody Engine mode
+
+The `.env` file sets `NODE_ENV=localdocker` so that `packages/be/src/environments/environment.localdocker.ts` configuration is used.
+This switches the backend to `production-stack` mode.
+
+For the frontend you need to switch the mode by hand in `packages/fe/src/environments/environment.ts`:
+
+```ts
+export const environment = {
+    production: false,
+    appName: 'Cody',
+    mode: 'production-stack' as CodyEngineMode,
+    // ...
+};
+```
+
+### Configure Keycloak Public Key
+
+1. Log into the Keycloak Admin UI.
+2. Switch to the `App` realm.
+3. Go to `Realm Settings -> Keys`.
+4. Click on the `Public key` button of the `RS256` key.
+5. Copy the public key into the `.env` file to `KC_PUBLIC_KEY=...`
+
+### Run Cody Infrastructure
+
+> docker-compose up -d
+
+### Prepare Database
+
+`npx nx run be:preparedb`
+
+### Import Filesystem DB
+
+If you switch from filesystem db to Postgres, you can import the data from the filesystem using:
+
+`npx nx run be:importfsdb`
+
+_Run prepare database before the import to ensure that all tables exist._
+
+_If you want to rerun the import, make sure to empty the database before._
+
 ## Production Build
 
 Cody Engine works with packages insight a mono repo. The packages you'll likely deploy to production are:
@@ -56,18 +132,17 @@ You can also build a docker image with:
 
 `npx nx build fe` -> builds into `dist/packages/fe`
 
-The frontend build can be served by a reverse proxy like Nginx. The reverse proxy should forward all requests to `/api/*`
-to the backend service.
+_For Staging_
 
-## Prototype Mode
+`npx nx build fe --configuration=staging`
 
-By default, Cody Engine runs in a prototyping mode. This means, that the app is not secured by authentication and data is
-only written to json files located in the `data` directory.
+You can also build a docker image to serve the frontend build via Nginx with:
 
-The mode can be changed so that Cody Engine connects to a `Postgres` database and uses an authentication server like `Keycloak`.
+`npx nx run fe:docker-build`
 
-However, the needed extensions are not part of the Open Source Cody Engine. If you're interested in running Cody Engine as a
-production system, please get in touch with the [prooph board team](https://prooph-software.de/#board).
+_For Staging_
+
+`npx nx run fe:docker-build --configuration=staging`
 
 ## Extension Points
 
@@ -145,23 +220,6 @@ npx nx run be:project --eventid <EventId> --name <ProjectionName>
 ```
 
 `--name` is optional and defaults to: "read_model"
-
-## Prepare Database
-
-_Not needed in prototype mode_
-
-`npx nx run be:preparedb`
-
-## Import Filesystem DB
-
-If you switch from filesystem db to Postgres, you can import the data from the filesystem using:
-
-`npx nx run be:importfsdb`
-
-_Run prepare database before the import to ensure that all tables exist._
-
-_If you want to rerun the import, make sure to empy the database before._
-
 
 ## Contribution
 

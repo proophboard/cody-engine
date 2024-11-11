@@ -2,6 +2,8 @@ import {AuthService} from "@event-engine/infrastructure/auth-service/auth-servic
 import {env} from "@server/environments/environment.current";
 import {PrototypeAuthService} from "@server/infrastructure/auth-service/prototype-auth-service";
 import {Personas} from "@app/shared/extensions/personas";
+import {KeycloakAuthService} from "@server/infrastructure/auth-service/keycloak-auth-service";
+import { KeycloakAdminClient } from '@s3pweb/keycloak-admin-client-cjs';
 
 let authService: AuthService;
 
@@ -16,5 +18,11 @@ export const authServiceFactory = (): AuthService => {
     return authService;
   }
 
-  throw new Error(`Production mode auth service is not implemented`);
+  return new KeycloakAuthService(makeKeycloakAdminApiClient(), env.keycloak.admin, env.keycloak.realm, env.keycloak.useAttributeRoles);
+}
+
+const makeKeycloakAdminApiClient = (): KeycloakAdminClient => {
+  return new KeycloakAdminClient({
+    baseUrl: env.keycloak.baseUrl
+  });
 }
