@@ -44,3 +44,7 @@ data/*
 
 # docker env
 !env/docker/pgadmin/tmp/.gitkeep
+
+# Environment
+.env
+packages/fe/src/environments/environment.ts
