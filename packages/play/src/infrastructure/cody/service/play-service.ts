@@ -37,5 +37,5 @@ export const playService = (node: Node, ctx: ElementEditedContext): string | Cod
     }
   }
 
-  return names(ctx.boardName).className;
+  return ctx.service;
 }

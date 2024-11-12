@@ -11,6 +11,7 @@ import {InMemoryEventStore, InMemoryStreamStore} from "@event-engine/infrastruct
 import {v4} from "uuid";
 import {Record} from "mdi-material-ui";
 import {saveToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-to-local-storage";
+import {names} from "@event-engine/messaging/helpers";
 
 interface Message {
   messageId: string;
@@ -55,7 +56,7 @@ const allowedOrigins = ['https://ee.local', 'http://localhost:3001', 'https://fr
 
 export type PlayConfigDispatch = (action: Action) => void;
 
-export type ElementEditedContext = {boardId: string, boardName: string, userId: string, syncedNodes: Map<string, Node>};
+export type ElementEditedContext = {boardId: string, boardName: string, userId: string, syncedNodes: Map<string, Node>, service: string};
 
 export class CodyMessageServer {
   private pbTab: typeof window | undefined;
@@ -204,7 +205,11 @@ export class CodyMessageServer {
       };
     }
 
-    return checkQuestion(await onNode(makeNodeRecord(payload.node), this.dispatch, {...payload.context, syncedNodes: this.syncedNodes}, this.config));
+    return checkQuestion(await onNode(makeNodeRecord(payload.node), this.dispatch, {
+      ...payload.context,
+      syncedNodes: this.syncedNodes,
+      service: names(this.config.appName).className
+    }, this.config));
   }
 
   private async handlePlayshotSaved(payload: PlayshotSaved): Promise<CodyResponse> {
