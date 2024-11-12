@@ -9,6 +9,7 @@ import {ParsedToken, parsedTokenToUser} from "@app/shared/utils/keycloak/parsed-
 import {getConfiguredKeycloak} from "@frontend/keycloak/get-configured-keycloak";
 import {Loading} from "mdi-material-ui";
 import {useNavigate} from "react-router-dom";
+import {useEnv} from "@frontend/hooks/use-env";
 
 const LAST_LOGIN_KEY = 'Cody_Last_Login'
 
@@ -42,11 +43,14 @@ if (environment.mode === "prototype") {
 
 const User = (props: UserProps) => {
   const [user, setUser] = useState(defaultPersona);
-  const [authenticated, setAuthenticated] = useState<boolean>(environment.mode !== "production-stack");
+  const env = useEnv();
+  const isProductionStack = env.UI_ENV !== "play" && environment.mode === "production-stack";
+  const [authenticated, setAuthenticated] = useState<boolean>(!isProductionStack);
   const naviagte = useNavigate();
 
+
   useEffect(() => {
-    if(environment.mode === "production-stack") {
+    if(isProductionStack) {
       console.log("init keycloak");
       initKeycloak(() => {
         console.log("Authenticated!");

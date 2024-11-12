@@ -156,8 +156,9 @@ const compileTableColumns = (
   types: PlayInformationRegistry,
   schemaDefinitions: PlaySchemaDefinitions
 ): GridColDef[] => {
+  const {config} = useContext(configStore);
   const schema = information.schema;
-  const defaultService = information.desc.name.split('.').shift() || '';
+  const defaultService = names(config.appName).className;
 
   if (!isListSchema(schema) && !isInlineItemsArraySchema(schema)) {
     throw new Error(`Cannot render table. Schema of "${information.desc.name}" is not a list.`);
@@ -234,7 +235,7 @@ const compileTableColumns = (
             mapping: {}
           } : cValue as PageLinkTableColumn;
 
-          gridColDef.renderCell = (rowParams) => <PageLink page={getPageDefinition(pageLinkConfig, information, pages) as unknown as PageDefinition}
+          gridColDef.renderCell = (rowParams) => <PageLink page={getPageDefinition(pageLinkConfig, defaultService, pages) as unknown as PageDefinition}
                                                            params={mapProperties({...rowParams.row, ...params}, pageLinkConfig.mapping)}
           >{rowParams.value}</PageLink>;
           break;

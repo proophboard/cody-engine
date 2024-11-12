@@ -18,6 +18,7 @@ import {Tab} from "@frontend/app/pages/page-definitions";
 import { Alert } from "@mui/material";
 import {playIsCommandButtonHidden} from "@cody-play/infrastructure/cody/command/play-is-command-button-hidden";
 import PlayStaticView from "@cody-play/app/components/core/PlayStaticView";
+import {names} from "@event-engine/messaging/helpers";
 
 interface Props {
   page: string
@@ -38,6 +39,7 @@ export const PlayStandardPage = (props: Props) => {
   const pageMatch = usePageMatch();
   const {config} = useContext(configStore);
   const {reset} = useContext(PageDataContext);
+  const defaultService = names(config.appName).className;
 
   useEffect(() => {
     return () => {
@@ -79,7 +81,7 @@ export const PlayStandardPage = (props: Props) => {
     let isHiddenView = false;
 
     if(typeof valueObjectName !== "string") {
-      isHiddenView = valueObjectName.hidden;
+      isHiddenView = !!valueObjectName.hidden;
       valueObjectName = valueObjectName.view;
     }
 
