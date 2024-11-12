@@ -1,0 +1,19 @@
+log:
+  level: DEBUG
+api:
+  insecure: true
+providers:
+  docker:
+    watch: true
+    exposedByDefault: false
+entryPoints:
+  web:
+    address: ':80'
+  websecure:
+    address: ':443'
+serversTransport:
+  insecureSkipVerify: true
+#tls:
+#  certificates:
+#    - certFile: /etc/traefik/traefik.crt
+#    - keyFile: /etc/traefik/traefik.key

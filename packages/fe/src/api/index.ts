@@ -3,9 +3,19 @@ import {Logger} from "../util/Logger";
 import {configuredAxios} from "../extensions/http/configured-axios";
 import {kebabCase} from "lodash";
 import {enqueueSnackbar} from "notistack";
+import {environment} from "@frontend/environments/environment";
+import {getConfiguredKeycloak} from "@frontend/keycloak/get-configured-keycloak";
 
-configuredAxios.interceptors.request.use((requestConfig: any) => {
+const keycloakInstance = getConfiguredKeycloak();
+
+configuredAxios.interceptors.request.use(async (requestConfig: any) => {
   requestConfig.metadata = {startTime: new Date()};
+
+  if (environment.mode === "production-stack" && keycloakInstance.token) {
+    await keycloakInstance.updateToken(10);
+    requestConfig.headers.Authorization = `Bearer ${keycloakInstance.token}`;
+  }
+
   return requestConfig;
 });
 

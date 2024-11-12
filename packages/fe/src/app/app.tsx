@@ -27,11 +27,15 @@ import TypesProvider from "@frontend/app/providers/Types";
 import {types} from "@app/shared/types";
 import EnvProvider from "@frontend/app/providers/UseEnvironment";
 import {environment} from "@frontend/environments/environment";
+import jexl from "@app/shared/jexl/get-configured-jexl";
+
+// Register frontend-only jexl func
+jexl.addFunction('env', () => environment);
 
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
-      <EnvProvider env={{UI_ENV: environment.production? 'prod' : 'dev'}}>
+      <EnvProvider env={{ UI_ENV: environment.production ? 'prod' : 'dev' }}>
         <User>
           <GlobalStore>
             <PageDataProvider>
@@ -52,17 +56,17 @@ export function App() {
     </>
   };
 
-  const routeObjects: RouteObject[] = Object.values(pages).map(p => ({
+  const routeObjects: RouteObject[] = Object.values(pages).map((p) => ({
     path: p.route,
-    handle: {page: p},
-    element: <StandardPage page={p} key={p.route}/>,
+    handle: { page: p },
+    element: <StandardPage page={p} key={p.route} />,
     errorElement: <ErrorBoundary codyEngine={true} />,
   }));
 
   routeObjects.unshift({
-    path: "/",
-    loader: async () => redirect('/dashboard')
-  })
+    path: '/',
+    loader: async () => redirect('/dashboard'),
+  });
 
   const rootRoute: RouteObject = {
     element: <Layout />,

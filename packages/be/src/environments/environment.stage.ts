@@ -21,11 +21,11 @@ export const env: Environment = {
     }
   },
   postgres: {
-    host: process.env.CORE_DB_HOST || '',
-    port: parseInt(process.env.CORE_DB_PORT || '5432'),
-    database: process.env.CORE_DB_NAME || '',
-    user: process.env.CORE_DB_USER || '',
-    password: process.env.CORE_DB_PWD || '',
+    host: process.env.APP_DB_HOST || '',
+    port: parseInt(process.env.APP_DB_PORT || '5432'),
+    database: process.env.APP_DB_NAME || '',
+    user: process.env.APP_DB_USER || '',
+    password: process.env.APP_DB_PWD || '',
     ssl: true,
     max: 200
   },

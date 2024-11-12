@@ -89,7 +89,7 @@ const CommandBar = (props: CommandBarProps) => {
     return () => {
       window.removeEventListener('scroll', listener);
     }
-  });
+  }, []);
 
   const cardActions = <CardActions sx={{
     overflow: "auto",

@@ -24,11 +24,11 @@ export const env: Environment = {
     }
   },
   postgres: {
-    host: 'localhost',
-    port: 5432,
-    database: 'app',
-    user: 'dbadmin',
-    password: 'password',
+    host: process.env.APP_DB_HOST || 'localhost',
+    port: parseInt(process.env.APP_DB_PORT || '5432'),
+    database: process.env.APP_DB_NAME || 'app',
+    user: process.env.APP_DB_USER || 'dbadmin',
+    password: process.env.APP_DB_PWD || 'password',
     max: 200
   },
   eventStore: {

@@ -23,7 +23,12 @@ module.exports = {
     boardId: '',
     boardName: '',
     userId: '',
-    tree: new FsTree(__dirname + '/../..', true)
+    tree: new FsTree(__dirname + '/../..', true),
+    /**
+     * Default service is used if no service is set on prooph board for a given node
+     * Make sure to align this setting with frontend config, see packages/fe/src/environments/*
+     */
+    service: 'App'
   },
   hooks: {
     /**

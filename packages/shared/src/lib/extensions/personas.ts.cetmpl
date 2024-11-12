@@ -12,7 +12,7 @@ export const Personas: Persona[] = [
   {
     displayName: 'Anyone',
     userId: '0299cda3-a2f7-4e94-9899-e1e37e5fe088',
-    email: 'anyone@example.local',
+    email: 'anyone@cody.local',
     roles: ['Anyone'],
     avatar: '/assets/account-circle-outline.svg',
     description: 'Anyone represents a standard user of the app without a specific role. This user has access to functionality that is not explicitly restricted.'

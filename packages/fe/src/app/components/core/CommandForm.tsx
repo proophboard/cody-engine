@@ -184,6 +184,8 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
 
   const schema = resolveRefs(cloneSchema(props.command.schema as any), props.definitions) as RJSFSchema;
 
+  console.log("current form data", formData);
+
   return (
     <div>
       <Grid2 container={true} spacing={3}>

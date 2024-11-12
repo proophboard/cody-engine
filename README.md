@@ -109,6 +109,27 @@ _Run prepare database before the import to ensure that all tables exist._
 
 _If you want to rerun the import, make sure to empty the database before._
 
+### Access local services
+
+| service        | user     | password   | link                                                                     |
+|----------------|----------|------------|--------------------------------------------------------------------------|
+| Keycloak Admin | admin    | password   | [https://auth.cody.local/auth/admin](https://auth.cody.local/auth/admin) |
+| pgadmin        | postgres | password   | [https://pgadmin.cody.local](https://pgadmin.cody.local)                 |
+| minio          | minio    | miniominio | [https://s3admin.cody.local](https://s3admin.cody.local)                 |
+
+### Test Users
+
+The Keycloak realm `App` is set up with a test user. If you have more personas defined in your prototype, you can add
+them to the realm config and import the users into keycloak.
+
+_See realm config in `env/docker/keycloak/import/app-realm.json`_
+
+| email             | password | role                 |
+|-------------------|----------|----------------------|
+| anyone@cody.local | dev      | Anyone               |
+
+
+
 ## Production Build
 
 Cody Engine works with packages insight a mono repo. The packages you'll likely deploy to production are:
