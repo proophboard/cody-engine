@@ -8,7 +8,6 @@ import {initKeycloak} from "@frontend/keycloak/init-keycloak";
 import {ParsedToken, parsedTokenToUser} from "@app/shared/utils/keycloak/parsed-token-to-user";
 import {getConfiguredKeycloak} from "@frontend/keycloak/get-configured-keycloak";
 import {Loading} from "mdi-material-ui";
-import {useNavigate} from "react-router-dom";
 import {useEnv} from "@frontend/hooks/use-env";
 
 const LAST_LOGIN_KEY = 'Cody_Last_Login'
@@ -46,8 +45,6 @@ const User = (props: UserProps) => {
   const env = useEnv();
   const isProductionStack = env.UI_ENV !== "play" && environment.mode === "production-stack";
   const [authenticated, setAuthenticated] = useState<boolean>(!isProductionStack);
-  const naviagte = useNavigate();
-
 
   useEffect(() => {
     if(isProductionStack) {
@@ -59,12 +56,11 @@ const User = (props: UserProps) => {
         setUser(newUser);
         setAuthenticated(true);
         const lastLogin = sessionStorage.getItem(LAST_LOGIN_KEY);
+        sessionStorage.setItem(LAST_LOGIN_KEY, newUser.userId);
 
         if(lastLogin && lastLogin !== newUser.userId) {
-          naviagte('/dashboard');
+          window.location.href = '/dashboard';
         }
-
-        sessionStorage.setItem(LAST_LOGIN_KEY, newUser.userId);
       });
     }
   }, []);

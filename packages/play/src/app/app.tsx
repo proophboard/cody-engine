@@ -59,20 +59,16 @@ const updateConfigAndGlobalProjector = (config: CodyPlayConfig) => {
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
-      <EnvProvider env={{UI_ENV: "play"}}>
-        <User>
-          <GlobalStore>
-            <PlayToggleColorMode>
-              <SnackbarProvider maxSnack={3}>
-                <MainLayout>
-                  <ScrollToTop />
-                    <Outlet />
-                </MainLayout>
-              </SnackbarProvider>
-            </PlayToggleColorMode>
-          </GlobalStore>
-        </User>
-      </EnvProvider>
+      <GlobalStore>
+        <PlayToggleColorMode>
+          <SnackbarProvider maxSnack={3}>
+            <MainLayout>
+              <ScrollToTop />
+                <Outlet />
+            </MainLayout>
+          </SnackbarProvider>
+        </PlayToggleColorMode>
+      </GlobalStore>
     </>
   };
 
@@ -146,17 +142,21 @@ export function App() {
 
   return (
     <QueryClientProvider client={queryClient!}>
-      <PlayConfigProvider>
-        <TypesProvider types={config.types as unknown as TypeRegistry}>
-          <PageDataProvider>
-            <CodyMessageServerInjection>
-              <PendingChanges>
-                <RouterProvider router={router} />
-              </PendingChanges>
-            </CodyMessageServerInjection>
-          </PageDataProvider>
-        </TypesProvider>
-      </PlayConfigProvider>
+      <EnvProvider env={{UI_ENV: "play"}}>
+        <User>
+          <PlayConfigProvider>
+            <TypesProvider types={config.types as unknown as TypeRegistry}>
+              <PageDataProvider>
+                <CodyMessageServerInjection>
+                  <PendingChanges>
+                    <RouterProvider router={router} />
+                  </PendingChanges>
+                </CodyMessageServerInjection>
+              </PageDataProvider>
+            </TypesProvider>
+          </PlayConfigProvider>
+        </User>
+      </EnvProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
