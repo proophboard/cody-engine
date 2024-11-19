@@ -28,6 +28,7 @@ export interface FindByArguments {
 export const SERVICE_NAME_AUTH_SERVICE = 'AuthService';
 
 export interface AuthService {
+  update: (user: AuthUser) => Promise<void>;
   register: (user: UnregisteredUser) => Promise<string>;
   tokenToUser: (token: unknown) => Promise<AuthUser>;
   get: (userId: string) => Promise<AuthUser>;

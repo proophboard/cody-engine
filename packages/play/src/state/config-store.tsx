@@ -26,8 +26,9 @@ import {
   PlaySchemaDefinitions,
   PlaySetPersonas,
   PlayTopLevelPage,
+  PlayUpdatePersona,
   PlayViewRegistry
-} from "@cody-play/state/types";
+} from '@cody-play/state/types';
 import {createContext, PropsWithChildren, useEffect, useReducer} from "react";
 import {injectCustomApiQuery} from "@frontend/queries/use-api-query";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
@@ -42,10 +43,6 @@ import _ from "lodash";
 import {
   playDefinitionIdFromFQCN,
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
-import {useTypes} from "@frontend/hooks/use-types";
-import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
-import {fqcnToViewName} from "@cody-play/infrastructure/cody/vo/fqcn-to-view-name";
-import {names} from "@event-engine/messaging/helpers";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -80,7 +77,7 @@ const initialPlayConfig: CodyPlayConfig = {
   ],
   pages: {
     Dashboard: ({
-      service: 'App',
+      service: 'CrmTest',
       commands: [],
       components: ["Core.Welcome"],
       sidebar: {
@@ -154,7 +151,7 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction | PlayRenameApp | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayAddPageAction | PlayRemovePageAction
+type Action = PlayInitAction | PlayRenameApp | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayUpdatePersona| PlayAddPageAction | PlayRemovePageAction
   | PlayAddCommandAction | PlayRemoveCommandAction | PlayAddCommandHandlerAction | PlayRemoveCommandHandlerAction | PlayAddTypeAction | PlayRemoveTypeAction
   | PlayAddQueryAction | PlayRemoveQueryAction | PlayAddViewAction | PlayRemoveViewAction | PlayAddAggregateAction | PlayRemoveAggregateAction
   | PlayAddAggregateEventAction | PlayRemoveAggregateEventAction | PlayAddPureEventAction | PlayRemovePureEventAction | PlayAddEventPolicyAction | PlayRemoveEventPolicyAction;
@@ -175,11 +172,8 @@ let currentDispatch: any;
 
 const PlayConfigProvider = (props: PropsWithChildren) => {
   const [user, ] = useUser();
-  const [, setTypes] = useTypes();
   const [config, dispatch] = useReducer((config: CodyPlayConfig, action: Action): CodyPlayConfig => {
     console.log(`[PlayConfigStore] Going to apply action: `, action);
-    const defaultService = names(config.appName).className;
-
     switch (action.type) {
       case "INIT":
         const newConfig = _.isEmpty(action.payload)? initialPlayConfig : enhanceConfigWithDefaults(action.payload);
@@ -200,7 +194,17 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
           }
         }
 
-        const updatedPersonas =  [...config.personas, action.persona];
+        const personasWithNew =  [...config.personas, action.persona];
+        // Sync Auth Service
+        getConfiguredPlayAuthService(personasWithNew, currentDispatch);
+        return {...config, personas: personasWithNew};
+      case "UPDATE_PERSONA":
+        const personasWithoutUpdates = config.personas.filter(p => p.userId !== action.persona.userId);
+        if (personasWithoutUpdates.length === config.personas.length) {
+          return config;
+        }
+
+        const updatedPersonas =  [...personasWithoutUpdates, action.persona];
         // Sync Auth Service
         getConfiguredPlayAuthService(updatedPersonas, currentDispatch);
         return {...config, personas: updatedPersonas};
@@ -233,7 +237,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.definitions = {...config.definitions};
         config.types[action.name] = action.information;
         config.definitions[action.definition.definitionId] = action.definition.schema;
-        setTypes(config.types as unknown as TypeRegistry);
+
         syncTypesWithSharedRegistry(config);
         return {...config};
       case "REMOVE_TYPE":
@@ -242,8 +246,6 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
 
         delete config.types[action.name];
         delete config.definitions[playDefinitionIdFromFQCN(action.name)];
-
-        setTypes(config.types as unknown as TypeRegistry);
         return {...config};
       case "ADD_QUERY":
         config.queries = {...config.queries};
@@ -251,7 +253,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.views = {...config.views};
         config.queries[action.name] = action.query;
         config.resolvers[action.name] = action.resolver;
-        config.views[fqcnToViewName(action.query.desc.returnType, defaultService)] = {information: action.query.desc.returnType};
+        config.views[action.query.desc.returnType] = {information: action.query.desc.returnType};
         return {...config};
       case "REMOVE_QUERY":
         config.queries = {...config.queries};
@@ -262,11 +264,11 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         return {...config};
       case "ADD_VIEW":
         config.views = {...config.views};
-        config.views[fqcnToViewName(action.name, defaultService)] = {information: action.name};
+        config.views[action.name] = {information: action.name};
         return {...config};
       case "REMOVE_VIEW":
         config.views = {...config.views};
-        delete config.views[fqcnToViewName(action.name, defaultService)];
+        delete config.views[action.name];
         return {...config};
       case "ADD_AGGREGATE":
         config.aggregates = {...config.aggregates};

@@ -13,6 +13,7 @@ import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {SortOrder} from "@event-engine/infrastructure/DocumentStore";
 import {areValuesEqualForAllSorts, getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
 import * as fs from "node:fs";
+import {generateFiles} from "@nx/devkit";
 import {renderFile} from "ejs";
 
 export class PrototypeAuthService implements AuthService {
@@ -24,6 +25,24 @@ export class PrototypeAuthService implements AuthService {
     this.personas = personas;
     this.personasFile = personasFile;
     this.filterProcessor = new InMemoryFilterProcessor();
+  }
+
+  public async update(user: AuthUser): Promise<void> {
+    const personaToUpdate = this.personas.filter(p => p.userId === user.userId).pop();
+
+    if(!personaToUpdate) {
+      throw new Error(`Persona with id ${user.userId} not found.`);
+    }
+
+    const updatedPersona = {
+      ...personaToUpdate,
+      ...user,
+    }
+
+    this.personas = this.personas.filter(p => p.userId !== user.userId);
+    this.personas.push(updatedPersona as Persona);
+
+    await this.savePersonas();
   }
 
   public async register(user: UnregisteredUser): Promise<string> {

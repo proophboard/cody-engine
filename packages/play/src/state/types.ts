@@ -62,6 +62,11 @@ export interface PlayAddPersona {
   persona: Persona,
 }
 
+export interface PlayUpdatePersona {
+  type: 'UPDATE_PERSONA',
+  persona: Persona,
+}
+
 export interface PlayAddPageAction {
   type: 'ADD_PAGE',
   name: string,

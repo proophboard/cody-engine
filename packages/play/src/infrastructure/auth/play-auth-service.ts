@@ -14,16 +14,34 @@ import {InMemoryFilterProcessor} from "@event-engine/infrastructure/DocumentStor
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 
 export type OnPersonaAdded = (newPersona: Persona) => void;
+export type OnPersonaUpdated = (updatedPersona: Persona) => void;
 
 export class PlayAuthService implements AuthService {
   private readonly personas: Persona[];
   private readonly onPersonaAdded: OnPersonaAdded;
+  private readonly onPersonaUpdated: OnPersonaUpdated;
   private filterProcessor: FilterProcessor;
 
-  public constructor(personas: Persona[], onPersonaAdded: OnPersonaAdded) {
+  public constructor(personas: Persona[], onPersonaAdded: OnPersonaAdded, onPersonaUpdated: OnPersonaUpdated) {
     this.personas = personas;
     this.onPersonaAdded = onPersonaAdded;
+    this.onPersonaUpdated = onPersonaUpdated;
     this.filterProcessor = new InMemoryFilterProcessor();
+  }
+
+  public async update(user: AuthUser): Promise<void> {
+    const personaToUpdate = this.personas.filter(p => p.userId === user.userId).pop();
+
+    if(!personaToUpdate) {
+      throw new Error(`Persona with id ${user.userId} not found.`);
+    }
+
+    const updatedPersona = {
+      ...personaToUpdate,
+      ...user,
+    }
+
+    this.onPersonaUpdated(updatedPersona as Persona);
   }
 
   public async register(user: UnregisteredUser): Promise<string> {

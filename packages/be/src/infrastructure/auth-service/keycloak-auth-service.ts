@@ -1,5 +1,6 @@
 import {
   AuthService,
+  AuthUser,
   convertFindByFilter,
   FindByArguments,
   UnregisteredUser
@@ -35,8 +36,73 @@ export class KeycloakAuthService implements AuthService {
     this.useAttributeRoles = !!useAttributeRoles;
   }
 
+  public async update(user: AuthUser): Promise<void> {
+    await this.authenticateAsAdmin();
+
+    const isEnabled: boolean = user.attributes ? user.attributes['enabled'] === true : false;
+
+    const attributes = {...user.attributes};
+
+    delete attributes['enabled'];
+
+    let realmRoles: string[] | undefined = undefined;
+
+    if(this.useAttributeRoles) {
+      attributes.roles = user.roles;
+    } else {
+      realmRoles = user.roles;
+    }
+
+    return this.adminClient.users.update(
+      {
+        id: user.userId,
+        realm: this.realm
+      },
+      {
+        email: user.email,
+        firstName: user.displayName,
+        attributes,
+        realmRoles,
+        enabled: isEnabled,
+      }
+    )
+  }
+
   async register(user: UnregisteredUser): Promise<string> {
-    throw new Error(`Register user in Keycloak is not implemented yet! You have to register the user in the Keycloak Admin UI instead.`)
+    await this.authenticateAsAdmin();
+
+    const isEnabled: boolean = user.attributes ? user.attributes['enabled'] === true : false;
+
+    const attributes = {...user.attributes};
+
+    delete attributes['enabled'];
+
+    let realmRoles: string[] | undefined = undefined;
+
+    if(this.useAttributeRoles) {
+      attributes.roles = user.roles;
+    } else {
+      realmRoles = user.roles;
+    }
+
+    const { id }  = await this.adminClient.users.create({
+      username: user.email,
+      email: user.email,
+      firstName: user.displayName,
+      attributes,
+      realmRoles,
+      enabled: isEnabled,
+      requiredActions: ['UPDATE_PASSWORD', 'VERIFY_EMAIL'],
+      realm: this.realm
+    });
+
+    await this.adminClient.users.executeActionsEmail({
+      id: id,
+      actions: ['VERIFY_EMAIL', 'UPDATE_PASSWORD'],
+      realm: this.realm,
+    });
+
+    return id;
   }
 
   async tokenToUser(parsedToken: unknown): Promise<User> {
@@ -134,10 +200,12 @@ export class KeycloakAuthService implements AuthService {
     }
 
     for (const attribute in attributes) {
-      if(Array.isArray(attributes[attribute])) {
+      if(Array.isArray(attributes[attribute]) && attributes[attribute].length === 1) {
         attributes[attribute] = attributes[attribute][0];
       }
     }
+
+    attributes['enabled'] = user.enabled;
 
     return {
       userId: user.id || '',
