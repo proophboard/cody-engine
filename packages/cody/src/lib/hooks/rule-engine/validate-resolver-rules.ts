@@ -1,7 +1,7 @@
 import {
   isAssignVariable, isCallService,
   isCountInformation, isExecuteRules,
-  isFindInformation, isForEach, isLookupUser, isLookupUsers, isThrowError,
+  isFindInformation, isForEach, isLogMessage, isLookupUser, isLookupUsers, isThrowError,
   Rule
 } from "@app/shared/rule-engine/configuration";
 import {visitRulesThen} from "@cody-engine/cody/hooks/rule-engine/visit-rule-then";
@@ -18,6 +18,7 @@ export const validateResolverRules = (rules: Rule[]): void => {
       case isForEach(then):
       case isExecuteRules(then):
       case isThrowError(then):
+      case isLogMessage(then):
         return then;
       default:
         throw new Error(`Rule ${JSON.stringify(then)} is not allowed in a query resolver`);

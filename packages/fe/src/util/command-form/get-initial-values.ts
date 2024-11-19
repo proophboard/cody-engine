@@ -85,20 +85,29 @@ export const getInitialValues = (commandInfo:  CommandRuntimeInfo, ctx: any): {[
     values = execMappingSync(uiForm['data:expr'], ctx);
   }
 
-  if(typeof values !== "object" || commandInfo.schema.type !== "object") {
+  // Data is not yet available, but user has not provided a fallback
+  if(typeof values === "undefined") {
     return {}
   }
 
-  const schemaProps = commandInfo.schema.properties || {};
-  const schemaPropKeys = Object.keys(schemaProps);
-
-  const filteredValues: {[prop: string]: any} = {};
-
-  for (const valProp in values) {
-    if(schemaPropKeys.includes(valProp)) {
-      filteredValues[valProp] = values[valProp];
-    }
+  if(typeof values !== "object") {
+    throw new Error(`ui:form.data:expr did not return an object. Expr: "${uiForm['data:expr']}" | returned data: ${JSON.stringify(values)}`);
   }
 
-  return filteredValues;
+  if(commandInfo.schema.type === "object") {
+    const schemaProps = commandInfo.schema.properties || {};
+    const schemaPropKeys = Object.keys(schemaProps);
+
+    const filteredValues: {[prop: string]: any} = {};
+
+    for (const valProp in values) {
+      if(schemaPropKeys.includes(valProp)) {
+        filteredValues[valProp] = values[valProp];
+      }
+    }
+
+    return filteredValues;
+  }
+
+  return values;
 }
