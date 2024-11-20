@@ -276,6 +276,18 @@ const execForEachAsync = async (then: ThenForEach, ctx: ExecutionContext): Promi
   return ctx;
 }
 
+const argsToArrayOrUndefined = (args?: any): any[] | undefined => {
+  if(typeof args === "undefined") {
+    return undefined;
+  }
+
+  if(Array.isArray(args)) {
+    return args;
+  }
+
+  return [args];
+}
+
 const execCallServiceSync = (then: ThenCallService, ctx: ExecutionContext): ExecutionContext => {
   const service = ctx[then.call.service];
 
@@ -284,8 +296,8 @@ const execCallServiceSync = (then: ThenCallService, ctx: ExecutionContext): Exec
   }
 
   const method = then.call.method
-    ? (args?: object) => {return ctx[then.call.service][then.call.method!](args)}
-    : (args?: object) => {return ctx[then.call.service](args)};
+    ? (args?: object) => {return ctx[then.call.service][then.call.method!].apply(service, argsToArrayOrUndefined(args))}
+    : (args?: object) => {return ctx[then.call.service].apply(service, argsToArrayOrUndefined(args))};
 
   const result = then.call.arguments ? method(execMappingSync(then.call.arguments, ctx)) : method();
 
@@ -310,8 +322,8 @@ const execCallServiceAsync = async (then: ThenCallService, ctx: ExecutionContext
   }
 
   const method = then.call.method
-    ? async (args?: object) => {return await ctx[then.call.service][then.call.method!](args)}
-    : async (args?: object) => {return await ctx[then.call.service](args)};
+    ? async (args?: object) => {return await ctx[then.call.service][then.call.method!].apply(service, argsToArrayOrUndefined(args))}
+    : async (args?: object) => {return await ctx[then.call.service].apply(service, argsToArrayOrUndefined(args))};
 
   const result = then.call.arguments ? await method(await execMappingAsync(then.call.arguments, ctx)) : await method();
 

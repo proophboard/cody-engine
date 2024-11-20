@@ -484,8 +484,8 @@ const convertThenForEach = (node: Node, ctx: Context, then: ThenForEach, rule: R
 
 const convertThenCallService = (node: Node, ctx: Context, then: ThenCallService, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
   const awaitStr = then.call.async ? 'await ' : '';
-  const invokeService = `${awaitStr}ctx['${then.call.service}']${(then.call.method? '.'+then.call.method : '')}`
-    + (then.call.arguments? '(' + withErrorCheck(convertMapping, [node, ctx, then.call.arguments, rule, indent + '  ', evalSync]) +')' : '()') + ';';
+  const invokeService = `${awaitStr}ctx['${then.call.service}']${(then.call.method? '.'+then.call.method : '')}.apply`
+    + (then.call.arguments? '(' + `ctx['${then.call.service}'], ((args: any): any[] => Array.isArray(args) ? args : [args])(` + withErrorCheck(convertMapping, [node, ctx, then.call.arguments, rule, indent + '  ', evalSync]) +'))' : `(ctx['${then.call.service}'])`) + ';';
 
 
   if(then.call.result.mapping) {
