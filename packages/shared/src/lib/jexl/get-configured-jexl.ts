@@ -85,7 +85,15 @@ const generateUuuid = () => {
   return v4();
 }
 
-const isRole = (user: User, role: UserRole): boolean => {
+const isRole = (user: User, role: UserRole, disableActiveRoleCheck?: boolean): boolean => {
+  if(!disableActiveRoleCheck) {
+    const activeRole = getAttribute(user, 'activeRole');
+
+    if(activeRole) {
+      return activeRole === role;
+    }
+  }
+
   return user.roles.includes(role);
 }
 

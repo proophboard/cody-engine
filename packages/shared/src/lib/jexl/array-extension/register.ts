@@ -15,6 +15,7 @@ export const registerArrayExtensions = (jexl: Jexl): void => {
   jexl.addTransform('first', (arr: Array<unknown>, notSetValue?: any) => arr.length? arr[0] : notSetValue);
   jexl.addTransform('last', (arr: Array<unknown>, notSetValue?: any) => arr.length? arr[arr.length-1] : notSetValue);
   jexl.addTransform('orderBy', (arr: Array<unknown>, iteratees: string|string[], orders: Array<"asc"|"desc">) => orderBy(arr, iteratees, orders));
+  jexl.addTransform('list', (v: unknown): unknown[] => typeof v === "undefined" ? [] :Array.isArray(v) ? v : [v]);
 }
 
 const arrayPush = (arr: Array<unknown>, val: unknown): Array<unknown> => {
