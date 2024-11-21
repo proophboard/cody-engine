@@ -47,6 +47,7 @@ export interface PlayValueObjectMetadataRaw {
   uiSchema?: UiSchema & TableUiSchema;
   queryDependencies?: DependencyRegistry;
   projection?: ProjectionConfig;
+  shorthand?: boolean;
 }
 
 export interface ResolveConfig {
@@ -125,7 +126,9 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
     ns += '/';
   }
 
-  if(isShorthand(meta.schema)) {
+  const isMaybeShorthand = typeof meta.shorthand === "undefined" || meta.shorthand;
+
+  if(isMaybeShorthand && isShorthand(meta.schema)) {
     const jsonSchema = playJsonSchemaFromShorthand(meta.schema as ShorthandObject, ns);
 
     if(playIsCodyError(jsonSchema)) {

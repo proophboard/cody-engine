@@ -18,6 +18,7 @@ export interface ValueObjectMetadataRaw {
   initialize?: Rule[];
   uiSchema?: UiSchema & TableUiSchema;
   projection?: ProjectionConfig;
+  shorthand?: boolean;
 }
 
 export interface ResolveConfig {

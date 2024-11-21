@@ -36,7 +36,9 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     ns += '/';
   }
 
-  if(isShorthand(meta.schema)) {
+  const isMaybeShorthand = typeof meta.shorthand === "undefined" || meta.shorthand;
+
+  if(isMaybeShorthand && isShorthand(meta.schema)) {
     const jsonSchema = jsonSchemaFromShorthand(meta.schema as ShorthandObject, ns);
 
     if(isCodyError(jsonSchema)) {
