@@ -1,7 +1,17 @@
 import * as React from 'react';
 import {useContext, useEffect, useState} from "react";
 import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
-import {Alert, Box, Button, FormLabel, ListItemIcon, ListItemText, MenuItem, TextField} from "@mui/material";
+import {
+  Alert,
+  Autocomplete,
+  Box,
+  Button,
+  FormLabel,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  TextField
+} from "@mui/material";
 import {StickyNote2} from "@mui/icons-material";
 import Editor from "@monaco-editor/react";
 import {
@@ -31,7 +41,8 @@ type MessageboxProps = OwnProps;
 const Messagebox = (props: MessageboxProps) => {
   const {config} = useContext(configStore);
   const [messageOptions, setMessageOptions] = useState<MessageOption[]>([]);
-  const [selectedMessage, setSelectedMessage] = useState<string>('');
+  const [selectedMessage, setSelectedMessage] = useState<MessageOption|null>(null);
+  const [searchStr, setSearchStr] = useState<string>('');
   const [messageContext, setMessageContext] = useState<MessageContext | undefined>();
   const [messageContextStr, setMessageContextStr] = useState<string>('');
   const [result, setResult] = useState<object | undefined>();
@@ -47,8 +58,7 @@ const Messagebox = (props: MessageboxProps) => {
 
   const deriveMessageContextFromSelectedOption = () => {
     if(selectedMessage) {
-      const messageOption = getMessageOption(selectedMessage, messageOptions);
-      const ctx = getMessageContext(messageOption.name, messageOption.type, config, user);
+      const ctx = getMessageContext(selectedMessage.name, selectedMessage.type, config, user);
       setMessageContext(ctx);
       setMessageContextStr(JSON.stringify(ctx, null ,2));
     } else {
@@ -111,23 +121,31 @@ const Messagebox = (props: MessageboxProps) => {
 
   return <div style={{marginTop: "30px", marginLeft: "10px", marginRight: "10px"}}>
     <Box sx={{display: 'flex', marginBottom: "20px"}}>
-      <TextField
+      <Autocomplete<MessageOption>
+        disablePortal={true}
         id="message"
-        label="MESSAGE"
-        variant="standard"
-        value={selectedMessage}
-        helperText={<span>Select a message. You can also change dependencies and rules to test your logic.</span>}
-        select={true}
         sx={{width: '45%'}}
-        onChange={(e: any) => setSelectedMessage(e.target.value)}
-      >
-        {messageOptions.map(msg => <MenuItem key={msg.name} value={msg.name}>
-          <div style={{display: 'flex', alignItems: 'center'}}>
-            <StickyNote2 sx={{color: getMessageColor(msg)}}/>
-            <ListItemText style={{marginLeft: '10px'}}>{msg.name}</ListItemText>
-          </div>
-        </MenuItem>)}
-      </TextField>
+        renderInput={(params) => <TextField {...params}
+                                            helperText={<span>Select a message. You can also change dependencies and rules to test your logic.</span>}
+                                            variant="standard"
+                                            label="MESSAGE" />}
+        value={selectedMessage}
+        inputValue={searchStr}
+        onChange={(e,v) => setSelectedMessage(v)}
+        onInputChange={(e,v) => setSearchStr(v)}
+        options={messageOptions}
+        getOptionLabel={o => o.name}
+        isOptionEqualToValue={(o, v) => o.name === v.name}
+        renderOption={(props, option: MessageOption) => {
+            return <MenuItem key={option.name} {...props}>
+              <div style={{display: 'flex', alignItems: 'center'}}>
+                <StickyNote2 sx={{color: getMessageColor(option)}}/>
+                <ListItemText style={{marginLeft: '10px'}}>{option.name}</ListItemText>
+              </div>
+            </MenuItem>
+          }
+        }
+      />
     </Box>
     <Grid2 container={true} spacing={4}>
       <Grid2 xs={12} md={6}>
