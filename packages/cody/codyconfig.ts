@@ -6,7 +6,7 @@ import {onDocument} from "./src/lib/hooks/on-document";
 import {onUi} from "./src/lib/hooks/on-ui";
 import {onPolicy} from "./src/lib/hooks/on-policy";
 import {onRole} from "./src/lib/hooks/on-role";
-import {FsTree} from "nx/src/generators/tree";
+import {CodyIgnoreAwareTree} from "@cody-engine/cody/hooks/utils/fs-tree";
 
 module.exports = {
   context: {
@@ -23,7 +23,7 @@ module.exports = {
     boardId: '',
     boardName: '',
     userId: '',
-    tree: new FsTree(__dirname + '/../..', true),
+    tree: new CodyIgnoreAwareTree(__dirname + '/../..', true),
     /**
      * Default service is used if no service is set on prooph board for a given node
      * Make sure to align this setting with frontend config, see packages/fe/src/environments/*
