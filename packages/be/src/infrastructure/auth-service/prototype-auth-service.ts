@@ -2,8 +2,9 @@ import {
   AuthService, AuthUser,
   convertFindByFilter,
   FindByArguments,
-  UnregisteredUser
-} from "@event-engine/infrastructure/auth-service/auth-service";
+  UnregisteredUser,
+  UserId
+} from '@event-engine/infrastructure/auth-service/auth-service';
 import {Persona} from "@app/shared/extensions/personas";
 import {v4} from "uuid";
 import {User} from "@app/shared/types/core/user/user";
@@ -13,7 +14,6 @@ import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {SortOrder} from "@event-engine/infrastructure/DocumentStore";
 import {areValuesEqualForAllSorts, getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
 import * as fs from "node:fs";
-import {generateFiles} from "@nx/devkit";
 import {renderFile} from "ejs";
 
 export class PrototypeAuthService implements AuthService {
@@ -67,6 +67,10 @@ export class PrototypeAuthService implements AuthService {
 
   public async tokenToUser(raw: unknown): Promise<User> {
     return raw as User;
+  }
+
+  public async resetPasswordEmail(userId: UserId|string): Promise<void> {
+    // Do nothing on purpose
   }
 
   public async get(userId: string): Promise<User> {

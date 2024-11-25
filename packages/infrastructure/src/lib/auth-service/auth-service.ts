@@ -15,6 +15,7 @@ export interface AuthUser {
 }
 
 export type UnregisteredUser = Omit<AuthUser, 'userId'>;
+export type UserId = {userId: string};
 
 export type FindByProperty = "userId" | "role" | string;
 
@@ -31,6 +32,7 @@ export interface AuthService {
   update: (user: AuthUser) => Promise<void>;
   register: (user: UnregisteredUser) => Promise<string>;
   tokenToUser: (token: unknown) => Promise<AuthUser>;
+  resetPasswordEmail: (userId: string|UserId) => Promise<void>;
   get: (userId: string) => Promise<AuthUser>;
   find: (filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder) => Promise<AuthUser[]>;
   findBy: (by: FindByArguments) => Promise<AuthUser[]>;

@@ -3,7 +3,8 @@ import {
   AuthUser,
   convertFindByFilter,
   FindByArguments,
-  UnregisteredUser
+  UnregisteredUser,
+  UserId
 } from '@event-engine/infrastructure/auth-service/auth-service';
 import { User } from '@app/shared/types/core/user/user';
 import { Filter } from '@event-engine/infrastructure/DocumentStore/Filter';
@@ -103,6 +104,18 @@ export class KeycloakAuthService implements AuthService {
     });
 
     return id;
+  }
+
+  public async resetPasswordEmail(userId: UserId|string): Promise<void> {
+    const stringUserId = typeof userId === "string" ? userId : userId.userId;
+
+    await this.authenticateAsAdmin();
+
+    await this.adminClient.users.executeActionsEmail({
+      id: stringUserId,
+      actions: ['UPDATE_PASSWORD'],
+      realm: this.realm,
+    });
   }
 
   async tokenToUser(parsedToken: unknown): Promise<User> {
