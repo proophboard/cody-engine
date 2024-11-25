@@ -39,6 +39,7 @@ import {List} from "immutable";
 import {getSourcesOfType, isCodyError, mergeWithSimilarNodes} from "@proophboard/cody-utils";
 import {convertProjectionConfigCaseToRules} from "@app/shared/rule-engine/projection-config";
 import {onPolicy} from "@cody-engine/cody/hooks/on-policy";
+import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
   try {
@@ -52,7 +53,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
       queryNames = names('Get' + voNames.className);
     }
 
-    const {tree} = ctx;
+    const tree = ctx.tree();
 
     const ns = namespaceNames(voMeta.ns);
 
@@ -150,7 +151,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
 
       withErrorCheck(ensureAllRefsAreKnown, [vo, voMeta.querySchema!]);
 
-      const dependencies = voMeta.queryDependencies;
+      const dependencies = normalizeDependencies(voMeta.queryDependencies, serviceNames.className);
 
       generateFiles(tree, __dirname + '/query-files/shared', ctx.sharedSrc, {
         tmpl: "",

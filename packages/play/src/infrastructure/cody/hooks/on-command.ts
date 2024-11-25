@@ -1,6 +1,5 @@
 import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
 import {ElementEditedContext, PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
-import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {
   CodyResponseException,
   playIsCodyError,
@@ -21,6 +20,8 @@ import {isStateDescription} from "@event-engine/descriptions/descriptions";
 import {playVoFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {alwaysRecordEvent} from "@cody-engine/cody/hooks/utils/aggregate/always-record-event";
 import {normalizeThenRecordEventRules} from "@cody-play/infrastructure/rule-engine/normalize-then-record-event-rules";
+import {CodyPlayConfig} from "@cody-play/state/config-store";
+import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
 
 export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -36,7 +37,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
 
     const cmdFQCN = `${serviceNames.className}.${cmdNames.className}`;
     const pbInfo = playUpdateProophBoardInfo(command, ctx, config.commands[cmdFQCN]?.desc);
-    const dependencies = meta.dependencies;
+    const dependencies = normalizeDependencies(meta.dependencies, serviceNames.className);
     const deleteState = !!meta.deleteState;
     const deleteHistory = !!meta.deleteHistory;
     const streamId = meta.streamId;

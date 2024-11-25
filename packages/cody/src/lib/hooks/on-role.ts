@@ -12,7 +12,7 @@ export const onRole: CodyHook<Context> = async (role: Node, ctx: Context): Promi
 
     const {UserRoles} = requireUncached('@app/shared/types/core/user/user-role');
 
-    const {tree} = ctx;
+    const tree = ctx.tree();
 
     if(!UserRoles.includes(roleName)) {
       withErrorCheck(register, [role, ctx, tree]);

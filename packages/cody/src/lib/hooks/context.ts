@@ -11,6 +11,6 @@ export interface Context {
   boardId: string,
   boardName: string,
   userId: string,
-  tree: FsTree,
+  tree: () => FsTree,
   service?: string,
 }

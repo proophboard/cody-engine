@@ -30,6 +30,7 @@ import {alwaysRecordEvent} from "@cody-engine/cody/hooks/utils/aggregate/always-
 import {
   convertRuleConfigToCommandHandlingBehavior
 } from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
+import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
 
 export interface CommandMeta {
   newAggregate: boolean;
@@ -58,7 +59,7 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
     const serviceNames = names(service);
     const meta = withErrorCheck(getCommandMetadata, [command, ctx]);
     const uiSchema = meta.uiSchema || {};
-    const dependencies = meta.dependencies;
+    const dependencies = normalizeDependencies(meta.dependencies, serviceNames.className);
 
     let isAggregateCommand = !isCodyError(aggregate);
     let aggregateName = '';
@@ -86,7 +87,7 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
 
     withErrorCheck(ensureAllRefsAreKnown, [command, meta.schema]);
 
-    const {tree} = ctx;
+    const tree = ctx.tree();
 
     generateFiles(tree, __dirname + '/command-files/shared', ctx.sharedSrc, {
       'tmpl': '',

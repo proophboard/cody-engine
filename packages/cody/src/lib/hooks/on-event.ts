@@ -30,7 +30,7 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
 
     withErrorCheck(ensureAllRefsAreKnown, [event, meta.schema]);
 
-    const {tree} = ctx;
+    const tree = ctx.tree();
 
     if(meta.aggregateEvent) {
       const aggregateState = withErrorCheck(findAggregateState, [event, ctx]);

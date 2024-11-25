@@ -1,6 +1,5 @@
 import {CodyResponse, CodyResponseType, Node} from "@proophboard/cody-types";
 import {ElementEditedContext, PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
-import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {
   CodyResponseException,
   playwithErrorCheck
@@ -28,10 +27,12 @@ import {
 import {namespaceToJSONPointer} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 import {playDefinitionId, playDefinitionIdFromFQCN,} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {JSONSchema7} from "json-schema";
-import {normalizeProjectionRules} from "@cody-play/infrastructure/rule-engine/normalize-projection-rules";
+import {normalizePolicyRules} from "@cody-play/infrastructure/rule-engine/normalize-policy-rules";
 import {convertProjectionConfigCaseToRules} from "@app/shared/rule-engine/projection-config";
 import {playFindEventInfoByName} from "@cody-play/infrastructure/events/play-find-event-info-by-name";
 import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
+import {CodyPlayConfig} from "@cody-play/state/config-store";
+import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
 
 export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -101,7 +102,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
       const queryPbInfo = playUpdateProophBoardInfo(vo, ctx, config.queries[queryName]?.desc);
 
       if(voMeta.resolve && voMeta.resolve.rules) {
-        voMeta.resolve = {...voMeta.resolve, rules: normalizeProjectionRules(voMeta.resolve.rules, service, config)}
+        voMeta.resolve = {...voMeta.resolve, rules: normalizePolicyRules(voMeta.resolve.rules, service, config)}
       }
 
       dispatch({
@@ -112,7 +113,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
             ...queryPbInfo,
             name: queryName,
             returnType: voFQCN,
-            dependencies: voMeta.queryDependencies,
+            dependencies: normalizeDependencies(voMeta.queryDependencies, serviceNames.className),
           },
           schema: voMeta.querySchema || {} as JSONSchema7,
           factory: []

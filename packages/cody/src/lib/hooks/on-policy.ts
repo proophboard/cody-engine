@@ -17,11 +17,13 @@ import {visitRulesThen} from "@cody-engine/cody/hooks/rule-engine/visit-rule-the
 import {
   isDeleteInformation,
   isInsertInformation,
-  isReplaceInformation,
+  isReplaceInformation, isTriggerCommand,
   isUpdateInformation,
   isUpsertInformation
 } from "@app/shared/rule-engine/configuration";
 import {DEFAULT_READ_MODEL_PROJECTION} from "@event-engine/infrastructure/Projection/types";
+import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
+import {normalizeCommandName} from "@cody-play/infrastructure/rule-engine/normalize-command-name";
 
 export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): Promise<CodyResponse> => {
   try {
@@ -29,7 +31,7 @@ export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): P
     const meta = policy.getMetadata() ? withErrorCheck(parseJsonMetadata, [policy]) as PolicyMeta : {} as PolicyMeta;
     const service = withErrorCheck(detectService, [policy, ctx]);
     const serviceNames = names(service);
-    const dependencies = meta.dependencies;
+    const dependencies = normalizeDependencies(meta.dependencies, serviceNames.className);
     const isLiveProjection = !!meta.live;
 
     const rules = meta.rules || [];
@@ -44,7 +46,17 @@ export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): P
         case isReplaceInformation(then):
         case isDeleteInformation(then):
           isProjection = true;
-          break
+          break;
+        case isTriggerCommand(then):
+          if(isTriggerCommand(then)) {
+            then = {
+              trigger: {
+                ...then.trigger,
+                command: normalizeCommandName(then.trigger.command, serviceNames.className)
+              }
+            }
+          }
+          break;
       }
 
       return then;
@@ -74,7 +86,7 @@ export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): P
       ]
     ]);
 
-    const {tree} = ctx;
+    const tree = ctx.tree();
 
     const event = getSingleSource(policy, NodeType.event);
 

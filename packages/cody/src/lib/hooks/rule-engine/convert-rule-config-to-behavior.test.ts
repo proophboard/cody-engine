@@ -34,7 +34,7 @@ const rule: Rule = {
 
 const source = {propA: "a", propB: "b"};
 
-const ctx: Context = {beSrc: "", feSrc: "", boardId: "11111", boardName: "Test Board", sharedSrc: "", tree: new FsTree("", true), projectRoot: ".", userId: "333", syncedNodes: Map()}
+const ctx: Context = {beSrc: "", feSrc: "", boardId: "11111", boardName: "Test Board", sharedSrc: "", tree: () => new FsTree("", true), projectRoot: ".", userId: "333", syncedNodes: Map()}
 
 describe("wrapExpression", () => {
   test("sync eval", () => {

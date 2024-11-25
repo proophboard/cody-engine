@@ -1,6 +1,5 @@
 import {CodyResponse, Node, NodeType} from "@proophboard/cody-types";
 import {ElementEditedContext, PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
-import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {
   CodyResponseException,
   playwithErrorCheck
@@ -13,7 +12,7 @@ import {alwaysTriggerCommand} from "@cody-engine/cody/hooks/utils/policy/always-
 import {playOriginalEvent} from "@cody-play/infrastructure/cody/event/play-original-event";
 import {playEventMetadata} from "@cody-play/infrastructure/cody/event/play-event-metadata";
 import {playUpdateProophBoardInfo} from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
-import {normalizeProjectionRules} from "@cody-play/infrastructure/rule-engine/normalize-projection-rules";
+import {normalizePolicyRules} from "@cody-play/infrastructure/rule-engine/normalize-policy-rules";
 import {visitRulesThen} from "@cody-engine/cody/hooks/rule-engine/visit-rule-then";
 import {
   isDeleteInformation,
@@ -22,6 +21,8 @@ import {
   isUpsertInformation
 } from "@app/shared/rule-engine/configuration";
 import {DEFAULT_READ_MODEL_PROJECTION} from "@event-engine/infrastructure/Projection/types";
+import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
+import {CodyPlayConfig} from "@cody-play/state/config-store";
 
 export const onPolicy = async (policy: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -30,8 +31,8 @@ export const onPolicy = async (policy: Node, dispatch: PlayConfigDispatch, ctx: 
     const serviceNames = names(service);
     const policyName = `${serviceNames.className}.${policyNames.className}`;
     const meta = playwithErrorCheck(playEventPolicyMetadata, [policy, ctx]);
-    const dependencies = meta.dependencies || {};
-    const rules = normalizeProjectionRules(meta.rules || [], service, config);
+    const dependencies = normalizeDependencies(meta.dependencies || {}, serviceNames.className);
+    const rules = normalizePolicyRules(meta.rules || [], service, config);
     const isLiveProjection = !!meta.live;
 
     let isProjection = false;

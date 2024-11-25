@@ -1,14 +1,24 @@
 import {
   AnyRule, isCountInformation, isDeleteInformation, isFindInformation,
-  isInsertInformation, isReplaceInformation, isUpdateInformation,
+  isInsertInformation, isReplaceInformation, isTriggerCommand, isUpdateInformation,
   isUpsertInformation
 } from "@app/shared/rule-engine/configuration";
-import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {visitRulesThen} from "@cody-engine/cody/hooks/rule-engine/visit-rule-then";
 import {playGetVoRuntimeInfoFromDataReference} from "@cody-play/state/play-get-vo-runtime-info-from-data-reference";
+import {normalizeCommandName} from "@cody-play/infrastructure/rule-engine/normalize-command-name";
+import {CodyPlayConfig} from "@cody-play/state/config-store";
 
-export const normalizeProjectionRules = (rules: AnyRule[], service: string, config: CodyPlayConfig): AnyRule[] => {
+export const normalizePolicyRules = (rules: AnyRule[], service: string, config: CodyPlayConfig): AnyRule[] => {
   return visitRulesThen(rules, then => {
+    if(isTriggerCommand(then)) {
+      return {
+        trigger: {
+          ...then.trigger,
+          command: normalizeCommandName(then.trigger.command, service)
+        }
+      }
+    }
+
     if(isFindInformation(then)) {
       return {
         find: {

@@ -5,11 +5,11 @@ import {
   CodyResponseException,
   playwithErrorCheck
 } from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {PlaySubLevelPage, PlayTopLevelPage} from "@cody-play/state/types";
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {names} from "@event-engine/messaging/helpers";
 import {playIsTopLevelPage} from "@cody-play/infrastructure/cody/ui/play-is-top-level-page";
-import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {
   isQueryableNotStoredStateDescription,
   isQueryableStateDescription
@@ -21,6 +21,8 @@ import {
 import {playVoMetadata} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 import {playVoFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
+import {normalizePageCommands} from "@cody-play/infrastructure/rule-engine/normalize-page-commands";
+import {normalizePageViewComponents} from "@cody-play/infrastructure/rule-engine/normalize-page-view-components";
 
 export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -65,20 +67,20 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       mergedComponents.push(...existingPage.components);
       mergedCommands.push(...existingPage.commands);
 
-      views.forEach(v => {
+      normalizePageViewComponents(views, serviceNames.className).forEach(v => {
         if(!mergedComponents.includes(v)) {
           mergedComponents.push(v);
         }
       })
 
-      commands.forEach(c => {
+      normalizePageCommands(commands, serviceNames.className).forEach(c => {
         if(!mergedCommands.includes(c)) {
           mergedCommands.push(c);
         }
       })
     } else {
-      mergedComponents.push(...views);
-      mergedCommands.push(...commands);
+      mergedComponents.push(...normalizePageViewComponents(views, serviceNames.className));
+      mergedCommands.push(...normalizePageCommands(commands, serviceNames.className));
     }
 
     const page = topLevelPage ? ({
