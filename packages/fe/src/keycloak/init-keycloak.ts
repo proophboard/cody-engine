@@ -25,3 +25,13 @@ export const initKeycloak = async (onAuthenticatedCallback: () => void): Promise
     }
   }
 };
+
+// Default access token lifetime in KC is 5 min, by default we set minValidity higher than max token validity to force a refresh
+export const refreshToken = async (minValidity = (61*5)): Promise<boolean> => {
+  if(!isInitialized) {
+    return false;
+  }
+
+  return keycloakInstance.updateToken(minValidity);
+}
+

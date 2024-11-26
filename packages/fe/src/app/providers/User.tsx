@@ -4,7 +4,7 @@ import {PropsWithChildren, useEffect, useState} from "react";
 import {PERSONA_STORAGE_KEY} from "@app/shared/extensions/personas";
 import {environment} from "@frontend/environments/environment";
 import {setPrototypePersonaHeader} from "@frontend/extensions/http/configured-axios";
-import {initKeycloak} from "@frontend/keycloak/init-keycloak";
+import {initKeycloak, refreshToken} from "@frontend/keycloak/init-keycloak";
 import {ParsedToken, parsedTokenToUser} from "@app/shared/utils/keycloak/parsed-token-to-user";
 import {getConfiguredKeycloak} from "@frontend/keycloak/get-configured-keycloak";
 import {Loading} from "mdi-material-ui";
@@ -62,10 +62,30 @@ const User = (props: UserProps) => {
           window.location.href = '/dashboard';
         }
       });
+
+      const refreshInterval = setInterval(() => {
+        refreshToken(35).catch(e => {throw e;});
+      }, 1000 * 30);
+
+      return () => {
+        clearInterval(refreshInterval);
+      }
     }
   }, []);
 
-  return <UserContext.Provider value={{user, setUser}}>
+  const setUserAndRefreshToken = (user: AppUser): void => {
+    setUser(user);
+    if(isProductionStack) {
+      // Give Keycloak a second to update user attributes before requesting a new token
+      window.setTimeout(() => {
+        refreshToken().catch((e) => {
+          throw e;
+        });
+      }, 1000)
+    }
+  }
+
+  return <UserContext.Provider value={{user, setUser: setUserAndRefreshToken}}>
     {!authenticated && <Loading />}
     {authenticated && props.children}
   </UserContext.Provider>
