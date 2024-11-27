@@ -72,7 +72,8 @@ export class KeycloakAuthService implements AuthService {
   async register(user: UnregisteredUser): Promise<string> {
     await this.authenticateAsAdmin();
 
-    const isEnabled: boolean = user.attributes ? user.attributes['enabled'] === true : false;
+    // User is enabled by default, but can be registered as disabled when "enabled" attribute is present and set to false.
+    const isEnabled: boolean = user.attributes ? typeof user.attributes['enabled'] === 'undefined' ? true : !!user.attributes['enabled'] : true;
 
     const attributes = {...user.attributes};
 
@@ -97,11 +98,13 @@ export class KeycloakAuthService implements AuthService {
       realm: this.realm
     });
 
-    await this.adminClient.users.executeActionsEmail({
-      id: id,
-      actions: ['VERIFY_EMAIL', 'UPDATE_PASSWORD'],
-      realm: this.realm,
-    });
+    if(isEnabled) {
+      await this.adminClient.users.executeActionsEmail({
+        id: id,
+        actions: ['VERIFY_EMAIL', 'UPDATE_PASSWORD'],
+        realm: this.realm,
+      });
+    }
 
     return id;
   }
