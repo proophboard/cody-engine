@@ -126,21 +126,25 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
         events.forEach(evt => rules.push(alwaysRecordEvent(evt)))
       }
 
-      const behavior = withErrorCheck(convertRuleConfigToCommandHandlingBehavior, [
-        command,
-        ctx,
-        rules,
-        [
-          {
-            name: 'command',
-            initializer: 'command.payload',
-          },
-          {
-            name: 'meta',
-            initializer: 'command.meta',
-          }
-        ]
-      ]);
+      let behavior = '';
+
+      if(ctx.codeGeneration.be.businessLogic) {
+        behavior = withErrorCheck(convertRuleConfigToCommandHandlingBehavior, [
+          command,
+          ctx,
+          rules,
+          [
+            {
+              name: 'command',
+              initializer: 'command.payload',
+            },
+            {
+              name: 'meta',
+              initializer: 'command.meta',
+            }
+          ]
+        ]);
+      }
 
       generateFiles(tree, __dirname + '/command-handler-files/be', ctx.beSrc, {
         'tmpl': '',

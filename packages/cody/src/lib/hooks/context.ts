@@ -13,4 +13,17 @@ export interface Context {
   userId: string,
   tree: () => FsTree,
   service?: string,
+  codeGeneration: {
+    be: {
+      businessLogic: boolean;
+      eventApplyLogic: boolean;
+      policyLogic: boolean;
+      resolverLogic: boolean;
+    },
+    fe: {
+      reactHooks: boolean;
+      reactComponents: boolean;
+      pages: boolean;
+    }
+  }
 }

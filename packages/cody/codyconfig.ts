@@ -28,7 +28,30 @@ module.exports = {
      * Default service is used if no service is set on prooph board for a given node
      * Make sure to align this setting with frontend config, see packages/fe/src/environments/*
      */
-    service: 'App'
+    service: 'App',
+    /**
+     * You have fain-grained control of the parts that Cody generates
+     */
+    codeGeneration: {
+      be: {
+        // Cody generates command handler logic based on rules defined on prooph board
+        businessLogic: true,
+        // Cody generates aggregate event apply logic based on rules defined on prooph board
+        eventApplyLogic: true,
+        // Cody generates process and projection policy logic based on rules defined on prooph board
+        policyLogic: true,
+        // Cody generates query resolve logic based on rules defined on prooph board
+        resolverLogic: true,
+      },
+      fe: {
+        // Cody generates react hooks for commands and queries
+        reactHooks: true,
+        // Cody generates react components for command dialogs and information views
+        reactComponents: true,
+        // Cody generates page configs
+        pages: true,
+      }
+    }
   },
   hooks: {
     /**

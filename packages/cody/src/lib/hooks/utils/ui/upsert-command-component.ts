@@ -33,20 +33,37 @@ export const upsertCommandComponent = async (command: Node, ctx: Context, tree: 
       identifier = commandMeta.newAggregate ? undefined : aggregateStateMeta.identifier;
     }
 
-    generateFiles(tree, __dirname + '/../../ui-files/command-files', ctx.feSrc, {
-      tmpl: '',
-      service: serviceNames.fileName,
-      serviceNames,
-      stateNames,
-      stateNsNames,
-      identifier,
-      newAggregate: commandMeta.newAggregate,
-      buttonIcon,
-      ...commandNames,
-      uiDisableFetchState: commandMeta.uiDisableFetchState || !commandMeta.aggregateCommand,
-    });
+    if(ctx.codeGeneration.fe.reactComponents) {
+      generateFiles(tree, __dirname + '/../../ui-files/command-files/component', ctx.feSrc, {
+        tmpl: '',
+        service: serviceNames.fileName,
+        serviceNames,
+        stateNames,
+        stateNsNames,
+        identifier,
+        newAggregate: commandMeta.newAggregate,
+        buttonIcon,
+        ...commandNames,
+        uiDisableFetchState: commandMeta.uiDisableFetchState || !commandMeta.aggregateCommand,
+      });
+    }
 
-    return registerCommandComponent(service, command, ctx, tree);
+    if(ctx.codeGeneration.fe.reactHooks) {
+      generateFiles(tree, __dirname + '/../../ui-files/command-files/react-hook', ctx.feSrc, {
+        tmpl: '',
+        service: serviceNames.fileName,
+        serviceNames,
+        stateNames,
+        stateNsNames,
+        identifier,
+        newAggregate: commandMeta.newAggregate,
+        buttonIcon,
+        ...commandNames,
+        uiDisableFetchState: commandMeta.uiDisableFetchState || !commandMeta.aggregateCommand,
+      });
+    }
+
+    return ctx.codeGeneration.fe.reactComponents ? registerCommandComponent(service, command, ctx, tree) : true;
   } catch (e) {
     if(e instanceof CodyResponseException) {
       return e.codyResponse;

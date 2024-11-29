@@ -79,7 +79,7 @@ export const onEvent: CodyHook<Context> = async (event: Node, ctx: Context) => {
           fileNameWithNamespace: `${namespaceToFilePath(aggregateStateMeta.ns)}${aggregateStateNames.fileName}`,
         },
         ...eventNames,
-        rules: withErrorCheck(convertRuleConfigToEventReducerRules, [event, ctx, rules]),
+        rules: ctx.codeGeneration.be.eventApplyLogic ? withErrorCheck(convertRuleConfigToEventReducerRules, [event, ctx, rules]) : '',
       });
 
       withErrorCheck(registerEventReducer, [service, event, aggregateState, ctx, tree]);

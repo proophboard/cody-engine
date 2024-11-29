@@ -75,16 +75,21 @@ export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): P
       });
     }
 
-    const behavior = withErrorCheck(convertRuleConfigToPolicyRules, [
-      policy,
-      ctx,
-      rules,
-      [
-        {name: 'event', initializer: 'event.payload'},
-        {name: 'meta', initializer: 'event.meta'},
-        {name: 'eventCreatedAt', initializer: 'event.createdAt'}
-      ]
-    ]);
+    let behavior = '';
+
+
+    if(ctx.codeGeneration.be.policyLogic) {
+      behavior = withErrorCheck(convertRuleConfigToPolicyRules, [
+        policy,
+        ctx,
+        rules,
+        [
+          {name: 'event', initializer: 'event.payload'},
+          {name: 'meta', initializer: 'event.meta'},
+          {name: 'eventCreatedAt', initializer: 'event.createdAt'}
+        ]
+      ]);
+    }
 
     const tree = ctx.tree();
 

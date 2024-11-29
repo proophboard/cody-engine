@@ -22,6 +22,12 @@ import {register} from "./utils/registry";
 export const onUi: CodyHook<Context> = async (ui, ctx) => {
   try {
 
+    if(!ctx.codeGeneration.fe.pages) {
+      return {
+        cody: `Skipped UI page "${ui.getName()}", because code generation for pages is disabled in the codyconfig.ts`
+      }
+    }
+
     const uiMeta = withErrorCheck(getUiMetadata, [ui, ctx]);
     const routeParams: string[] = uiMeta.routeParams || [];
 

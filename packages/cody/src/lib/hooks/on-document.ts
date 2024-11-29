@@ -195,6 +195,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
         isSingleVOQuery = true;
       }
 
+
       generateFiles(tree, __dirname + '/query-files/be', ctx.beSrc, {
         tmpl: "",
         service: serviceNames.fileName,
@@ -206,26 +207,29 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
         itemNames,
         itemNS,
         ...queryNames,
-        resolve: withErrorCheck(makeQueryResolver, [vo, voMeta, ctx])
+        resolve: ctx.codeGeneration.be.resolverLogic ? withErrorCheck(makeQueryResolver, [vo, voMeta, ctx]) : '',
       });
 
       withErrorCheck(registerQueryResolver, [service, vo, ctx, tree]);
 
-      generateFiles(tree, __dirname + '/query-files/fe', ctx.feSrc, {
-        tmpl: "",
-        service: serviceNames.fileName,
-        serviceNames,
-        voNames,
-        ns,
-        ...queryNames
-      });
+      if(ctx.codeGeneration.fe.reactHooks) {
+        generateFiles(tree, __dirname + '/query-files/fe', ctx.feSrc, {
+          tmpl: "",
+          service: serviceNames.fileName,
+          serviceNames,
+          voNames,
+          ns,
+          ...queryNames
+        });
+      }
 
-
-      // Upsert View Component
-      if(isList) {
-        await asyncWithErrorCheck(upsertListViewComponent, [vo, voMeta, ctx, tree, voMeta.itemType as string, itemSchema as JSONSchema7, itemUiSchema]);
-      } else {
-        await asyncWithErrorCheck(upsertStateViewComponent, [vo, voMeta, ctx, tree]);
+      if(ctx.codeGeneration.fe.reactComponents) {
+        // Upsert View Component
+        if(isList) {
+          await asyncWithErrorCheck(upsertListViewComponent, [vo, voMeta, ctx, tree, voMeta.itemType as string, itemSchema as JSONSchema7, itemUiSchema]);
+        } else {
+          await asyncWithErrorCheck(upsertStateViewComponent, [vo, voMeta, ctx, tree]);
+        }
       }
     }
 

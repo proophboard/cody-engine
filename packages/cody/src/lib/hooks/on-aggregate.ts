@@ -40,25 +40,29 @@ export const onAggregate: CodyHook<Context> = async (aggregate: Node, ctx: Conte
       events.forEach(evt => rules.push(alwaysRecordEvent(evt)))
     }
 
-    const behavior = withErrorCheck(convertRuleConfigToCommandHandlingBehavior, [
-      aggregate,
-      ctx,
-      rules,
-      [
-        {
-          name: 'information',
-          initializer: aggregateStateNames.propertyName
-        },
-        {
-          name: 'command',
-          initializer: 'command.payload',
-        },
-        {
-          name: 'meta',
-          initializer: 'command.meta',
-        }
-      ]
-    ]);
+    let behavior = '';
+
+    if(ctx.codeGeneration.be.businessLogic) {
+      behavior = withErrorCheck(convertRuleConfigToCommandHandlingBehavior, [
+        aggregate,
+        ctx,
+        rules,
+        [
+          {
+            name: 'information',
+            initializer: aggregateStateNames.propertyName
+          },
+          {
+            name: 'command',
+            initializer: 'command.payload',
+          },
+          {
+            name: 'meta',
+            initializer: 'command.meta',
+          }
+        ]
+      ]);
+    }
 
 
     const tree = ctx.tree();
