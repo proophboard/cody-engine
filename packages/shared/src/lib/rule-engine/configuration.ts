@@ -96,7 +96,7 @@ export interface ThenCallService {
     arguments?: string | PropMapping;
     method?: string;
     async?: boolean;
-    result: {
+    result?: {
       variable: string;
       mapping?: string | PropMapping;
     }

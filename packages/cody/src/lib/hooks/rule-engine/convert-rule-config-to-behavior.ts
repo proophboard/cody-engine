@@ -488,7 +488,7 @@ const convertThenCallService = (node: Node, ctx: Context, then: ThenCallService,
     + (then.call.arguments? '(' + `...((args: any): any[] => Array.isArray(args) ? args : [args])(` + withErrorCheck(convertMapping, [node, ctx, then.call.arguments, rule, indent + '  ', evalSync]) +'))' : `()`) + ';';
 
 
-  if(then.call.result.mapping) {
+  if(then.call.result && then.call.result.mapping) {
     lines.push(`${indent}ctx['${then.call.service}__Result'] = ${invokeService}`);
     lines.push(`${indent}ctx['__data'] = ctx['data'];`);
     lines.push(`${indent}ctx['data'] = ctx['${then.call.service}__Result'];`);
@@ -496,8 +496,10 @@ const convertThenCallService = (node: Node, ctx: Context, then: ThenCallService,
     lines.push(`${indent}ctx['data'] = ctx['__data'];`);
     lines.push(`${indent}delete ctx['__data'];`);
     lines.push(`${indent}delete ctx['${then.call.service}__Result'];`)
-  } else {
+  } else if (then.call.result) {
     lines.push(`${indent}ctx['${then.call.result.variable}'] = ${invokeService}`);
+  } else {
+    lines.push(`${indent}${invokeService}`)
   }
 
   return true;
