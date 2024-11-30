@@ -301,13 +301,13 @@ const execCallServiceSync = (then: ThenCallService, ctx: ExecutionContext): Exec
 
   const result = then.call.arguments ? method(execMappingSync(then.call.arguments, ctx)) : method();
 
-  if(then.call.result.mapping) {
+  if(then.call.result && then.call.result.mapping) {
     ctx[`__data`] = ctx['data'];
     ctx['data'] = result;
     ctx[then.call.result.variable] = execMappingSync(then.call.result.mapping, ctx);
     ctx['data'] = ctx['__data'];
     delete ctx['__data'];
-  } else {
+  } else if (then.call.result) {
     ctx[then.call.result.variable] = result;
   }
 
@@ -327,13 +327,13 @@ const execCallServiceAsync = async (then: ThenCallService, ctx: ExecutionContext
 
   const result = then.call.arguments ? await method(await execMappingAsync(then.call.arguments, ctx)) : await method();
 
-  if(then.call.result.mapping) {
+  if(then.call.result && then.call.result.mapping) {
     ctx[`__data`] = ctx['data'];
     ctx['data'] = result;
     ctx[then.call.result.variable] = await execMappingAsync(then.call.result.mapping, ctx);
     ctx['data'] = ctx['__data'];
     delete ctx['__data'];
-  } else {
+  } else if (then.call.result) {
     ctx[then.call.result.variable] = result;
   }
 
