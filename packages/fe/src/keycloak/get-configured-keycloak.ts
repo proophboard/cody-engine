@@ -9,7 +9,8 @@ const keycloakConfig = {
 let keycloak: Keycloak;
 
 export const getConfiguredKeycloak = (): Keycloak => {
-  if(!keycloak) {
+  // Workaround for Cody to avoid that Keycloak gets initialized during code generation
+  if(!keycloak && typeof window !== "undefined") {
     keycloak = new Keycloak(keycloakConfig);
   }
 
