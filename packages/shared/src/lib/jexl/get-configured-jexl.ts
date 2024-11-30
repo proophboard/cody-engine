@@ -27,6 +27,7 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addTransform('role', isRole);
     configuredJexl.addTransform('attr', getAttribute);
     configuredJexl.addTransform('count', count);
+    configuredJexl.addTransform('typeof', isTypeof);
 
     configuredJexl.addTransform('default', getValOrDefault)
 
@@ -153,5 +154,9 @@ const getValOrDefault = (val: any, notSetVal: any, strict?: boolean) => {
     }
   }
 };
+
+const isTypeof = (val: any, type: string): boolean => {
+  return typeof val === type;
+}
 
 export default getConfiguredJexl();
