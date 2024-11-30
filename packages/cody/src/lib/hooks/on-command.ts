@@ -79,7 +79,7 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
         const events = getTargetsOfType(command, NodeType.event);
 
         if(!isCodyError(events)) {
-          await asyncWithErrorCheck(onAggregate, [makeTempAggregateFromCommand(command, aggregateState, events), ctx]);
+          await asyncWithErrorCheck(onAggregate, [makeTempAggregateFromCommand(command, aggregateState, events, meta), ctx]);
           isAggregateCommand = true;
         }
       }
@@ -178,7 +178,7 @@ export const onCommand: CodyHook<Context> = async (command: Node, ctx: Context) 
   }
 }
 
-const makeTempAggregateFromCommand = (command: Node, aggregateState: Node, events: List<Node>): Node => {
+const makeTempAggregateFromCommand = (command: Node, aggregateState: Node, events: List<Node>, meta: CommandMeta): Node => {
   return new NodeRecord({
     id: 'tmp_ar_from_cmd_' + command.getId(),
     name: aggregateState.getName(),
@@ -186,5 +186,8 @@ const makeTempAggregateFromCommand = (command: Node, aggregateState: Node, event
     link: command.getLink(),
     sourcesList: List([command]),
     targetsList: events,
+    metadata: JSON.stringify({
+      rules: meta.rules
+    })
   })
 }
