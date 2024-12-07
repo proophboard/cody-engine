@@ -3,6 +3,7 @@ import {staticLabel} from "@frontend/util/breadcrumb/static-label";
 import {ViewDashboard} from "mdi-material-ui";
 
 export const Dashboard: TopLevelPage = {
+  name: "App.Dashboard",
   commands: [],
   components: ["Core.Welcome"],
   sidebar: {

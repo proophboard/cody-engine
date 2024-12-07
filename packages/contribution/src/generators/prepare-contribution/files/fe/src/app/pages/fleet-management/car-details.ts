@@ -6,6 +6,7 @@ import {dynamicLabel} from "@frontend/util/breadcrumb/dynamic-label";
 import {getCar} from "@frontend/queries/fleet-management/use-get-car";
 
 export const CarDetails: SubLevelPageWithProophBoardDescription = {
+  name: "FleetManagement.CarDetails",
   commands: [],
   components: ["FleetManagement.Car"],
   topLevel: false,

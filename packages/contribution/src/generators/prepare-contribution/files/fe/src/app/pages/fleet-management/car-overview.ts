@@ -3,6 +3,7 @@ import {staticLabel} from "@frontend/util/breadcrumb/static-label";
 import {CarMultiple} from "mdi-material-ui";
 
 export const CarOverview: TopLevelPageWithProophBoardDescription = {
+  name: "FleetManagement.CarOverview",
   topLevel: true,
   breadcrumb: staticLabel('Car Overview'),
   route: '/cars',

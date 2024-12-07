@@ -5,6 +5,10 @@ import {UiSchema} from "@rjsf/utils";
 import {names} from "@event-engine/messaging/helpers";
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 
+export type UiSchemaTFunction = (uiSchema: UiSchema, key: string) => UiSchema;
+export type JsonSchemaTFunction = (schema: JSONSchema7, key: string) => JSONSchema7;
+
+
 const cloneDeepJSON = <T>(val: T): T => {
   return JSON.parse(JSON.stringify(val));
 }
@@ -34,7 +38,7 @@ export const splitPropertyRef = (ref: string): [string, string] => {
   return split as [string, string];
 }
 
-export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: string]: ValueObjectRuntimeInfo }): UiSchema | undefined => {
+export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: string]: ValueObjectRuntimeInfo }, t: UiSchemaTFunction): UiSchema | undefined => {
   let uiSchema: UiSchema = {};
   if(schema['$ref']) {
 
@@ -53,16 +57,16 @@ export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: 
 
     if(refUiSchema && Object.keys(refUiSchema).length > 0) {
       if(!isPropRef) {
-        uiSchema = cloneDeepJSON(refUiSchema);
+        uiSchema = t(refUiSchema, `${fqcn}.uiSchema`);
       } else {
-        uiSchema = cloneDeepJSON(refUiSchema[prop]);
+        uiSchema = t(refUiSchema[prop], `${fqcn}.uiSchema`);
       }
     }
   }
 
   if(schema && schema.properties) {
     for (const prop in schema.properties) {
-      const propUiSchema = resolveUiSchema(schema.properties[prop] as JSONSchema7, types);
+      const propUiSchema = resolveUiSchema(schema.properties[prop] as JSONSchema7, types, t);
 
       if(propUiSchema) {
         uiSchema[prop] = uiSchema[prop]? {...uiSchema[prop], ...propUiSchema} : propUiSchema;
@@ -71,7 +75,7 @@ export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: 
   }
 
   if(schema && schema.items) {
-    const itemsUiSchema = resolveUiSchema(schema.items as JSONSchema7, types);
+    const itemsUiSchema = resolveUiSchema(schema.items as JSONSchema7, types, t);
 
     if(itemsUiSchema) {
       uiSchema['items'] = uiSchema['items']? {...uiSchema['items'], ...itemsUiSchema} : itemsUiSchema;
@@ -81,7 +85,7 @@ export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: 
   return Object.keys(uiSchema).length > 0 ? uiSchema : undefined;
 }
 
-export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: DeepReadonly<JSONSchema7>}, isNested?: boolean): JSONSchema7 => {
+export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: DeepReadonly<JSONSchema7>}, isNested?: boolean, t?: JsonSchemaTFunction): JSONSchema7 => {
   schema = cloneSchema(schema);
 
   if(schema['$ref']) {
@@ -96,8 +100,13 @@ export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: Dee
         delete resolvedSchema['$id'];
       }
 
+      if(t) {
+        const refFQCN = FQCNFromDefinitionId(ref);
+        resolvedSchema = t(resolvedSchema, `${refFQCN}.schema`);
+      }
+
       if(resolvedSchema.type && (resolvedSchema.type === 'object' || resolvedSchema.type === 'array')) {
-        resolvedSchema = resolveRefs(resolvedSchema, definitions);
+        resolvedSchema = resolveRefs(resolvedSchema, definitions, isNested, t);
       }
 
       if(isPropRef) {
@@ -115,12 +124,12 @@ export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: Dee
 
   if(schema && schema.properties) {
     for (const prop in schema.properties) {
-      schema.properties[prop] = resolveRefs(schema.properties[prop] as JSONSchema7, definitions, true);
+      schema.properties[prop] = resolveRefs(schema.properties[prop] as JSONSchema7, definitions, true, t);
     }
   }
 
   if(schema && schema.items) {
-    schema.items = resolveRefs(schema.items as JSONSchema7, definitions, true);
+    schema.items = resolveRefs(schema.items as JSONSchema7, definitions, true, t);
   }
 
   // Remove $id from resolved schema to avoid ajv complaining about ambiguous schemas

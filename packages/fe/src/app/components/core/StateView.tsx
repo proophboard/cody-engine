@@ -18,7 +18,6 @@ import {cloneSchema, resolveRefs, resolveUiSchema} from "@event-engine/messaging
 import definitions from "@app/shared/types/definitions";
 import {useUser} from "@frontend/hooks/use-user";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
-import {types} from "@app/shared/types";
 import {getRjsfValidator} from "@frontend/util/rjsf-validator";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
@@ -37,7 +36,9 @@ import {merge} from "lodash";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {useTypes} from "@frontend/hooks/use-types";
-import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
+import {useTranslation} from "react-i18next";
+import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
+import {translateSchema} from "@frontend/util/schema/translate-schema";
 
 interface OwnProps {
   state?: any;
@@ -99,6 +100,7 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
   const [pageData,] = usePageData();
   const routeParams = useParams();
   const [store] = useGlobalStore();
+  const {t} = useTranslation();
 
   const jexlCtx: FormJexlContext = {user, page: pageData, routeParams, data: props.formContext.data, store};
 
@@ -184,6 +186,7 @@ const StateView = (props: StateViewProps) => {
   const [types] = useTypes();
   const routeParams = useParams();
   const [globalStore] = useGlobalStore();
+  const {t} = useTranslation();
   const jexlCtx: FormJexlContext = {
     user,
     page: pageData,
@@ -192,8 +195,15 @@ const StateView = (props: StateViewProps) => {
     store: globalStore,
   }
 
-  const resolvedUiSchema = resolveUiSchema(props.description.schema as any, types);
-  const mainUiSchema = props.description.uiSchema;
+  const resolvedUiSchema = resolveUiSchema(
+    props.description.schema as any,
+    types,
+    (s, k) => translateUiSchema(s, k, t)
+  );
+
+  const mainUiSchema = props.description.uiSchema
+    ? translateUiSchema(props.description.uiSchema, `${props.description.desc.name}.uiSchema`, t)
+    : undefined;
   const mergedUiSchema: UiSchema = merge(resolvedUiSchema, mainUiSchema) as UiSchema;
   const uiSchema = Object.keys(mergedUiSchema).length > 0
     ? {
@@ -209,7 +219,12 @@ const StateView = (props: StateViewProps) => {
     triggerSideBarAnchorsRendered();
   }, [props.state]);
 
-  const schema = resolveRefs(cloneSchema(props.description.schema as any), props.definitions || definitions) as RJSFSchema;
+  const schema = resolveRefs(
+    translateSchema(props.description.schema as any, `${props.description.desc.name}.schema`, t),
+    props.definitions || definitions,
+    false,
+    (s, k) => translateSchema(s, k, t)
+  ) as RJSFSchema;
 
   const infoFQCN = playFQCNFromDefinitionId(schema['$id'] || '');
   const defaultService = infoFQCN.split(".").shift() || '';

@@ -32,6 +32,9 @@ import {JSONSchema7} from "json-schema";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import ObjectFieldTemplate from "@frontend/app/components/core/form/templates/ObjectFieldTemplate";
+import {translateSchema} from "@frontend/util/schema/translate-schema";
+import {useTranslation} from "react-i18next";
+import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -58,6 +61,7 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 const CommandForm = (props: CommandFormProps, ref: any) => {
   const formRef: any = useRef();
+  const {t} = useTranslation();
   const [isInitialized, setInitialized] = useState(false);
   const [formData, setFormData] = useState<{[prop: string]: any}>(props.formData || {});
   const [liveValidate, setLiveValidate] = useState(false);
@@ -178,11 +182,18 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
 
   const userWidgets = props.widgets || {};
 
-  const mainUiSchema = props.command.uiSchema ? props.command.uiSchema : undefined;
-  const resolvedUiSchema = resolveUiSchema(props.command.schema as any, types);
+  const mainUiSchema = props.command.uiSchema
+    ? translateUiSchema(props.command.uiSchema, `${props.command.desc.name}.uiSchema`, t)
+    : undefined;
+  const resolvedUiSchema = resolveUiSchema(props.command.schema as any, types, (s, k) => translateUiSchema(s, k, t));
   const uiSchema = normalizeUiSchema({...resolvedUiSchema, ...mainUiSchema}, {form: formData, user, page: pageData});
 
-  const schema = resolveRefs(cloneSchema(props.command.schema as any), props.definitions) as RJSFSchema;
+  const schema = resolveRefs(
+    translateSchema(props.command.schema as JSONSchema7, `${props.command.desc.name}.schema`, t) as any,
+    props.definitions,
+    false,
+    (s, k) => translateSchema(s, k, t)
+  ) as RJSFSchema;
 
   console.log("current form data", formData);
 
@@ -225,7 +236,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
           />}
           {(mutation.isSuccess || mutation.isError) && <div>
             {mutation.isSuccess && <AxiosResponseViewer response={mutation.data as AxiosResponse} successMessageCreated={<Alert severity={'success'}>
-              <AlertTitle>{commandTitle(props.command)} was successful</AlertTitle>
+              <AlertTitle>{commandTitle(props.command, t)} was successful</AlertTitle>
             </Alert>}/>}
             {mutation.isError && (
               <Container disableGutters={true}>

@@ -7,9 +7,11 @@ export type UnsubscribeBreadcrumbListener = () => void;
 export type BreadcrumbFn = (params: Record<string, string>, queryClient: QueryClient, onLabelChanged: (label: string) => void) => UnsubscribeBreadcrumbListener;
 
 export interface PageDefinition {
+  name: string;
   topLevel: boolean;
   route: string;
-  breadcrumb: BreadcrumbFn;
+  breadcrumb?: BreadcrumbFn;
+  'breadcrumb:t'?: string;
   components: ViewComponent[];
   commands: string[];
   tab?: Omit<Tab, "route">;
@@ -25,23 +27,26 @@ export interface DynamicSidebar {
 
 export interface TopLevelPage extends PageDefinition {
   sidebar: {
-    label: string,
-    Icon: typeof SvgIcon,
-    invisible?: string | boolean,
-    group?: string | TopLevelGroup,
-    position?: number,
-    dynamic?: DynamicSidebar,
-  }
+    label: string;
+    Icon: typeof SvgIcon;
+    'label:t'?: string;
+    invisible?: string | boolean;
+    group?: string | TopLevelGroup;
+    position?: number;
+    dynamic?: DynamicSidebar;
+  };
 }
 
 export interface TopLevelGroup {
-  label: string,
-  icon: string,
+  label: string;
+  icon: string;
+  'label:t'?: string;
 }
 
 export interface Tab {
   group: string;
   label: string;
+  'label:t'?: string;
   route: string;
   icon?: string;
   style?: SxProps;

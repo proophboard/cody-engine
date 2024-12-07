@@ -84,6 +84,7 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
     }
 
     const page = topLevelPage ? ({
+      name: pageName,
       service: serviceNames.className,
       route,
       commands: mergedCommands,
@@ -97,6 +98,7 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       breadcrumb: meta.breadcrumb,
       tab: meta.tab,
     } as PlayTopLevelPage) : ({
+      name: pageName,
       service: serviceNames.className,
       route,
       routeParams,

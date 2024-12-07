@@ -77,7 +77,8 @@ const initialPlayConfig: CodyPlayConfig = {
   ],
   pages: {
     Dashboard: ({
-      service: 'CrmTest',
+      name: 'App.Dashboard',
+      service: 'App',
       commands: [],
       components: ["Core.Welcome"],
       sidebar: {

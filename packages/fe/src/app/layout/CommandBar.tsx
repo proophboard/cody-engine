@@ -10,6 +10,8 @@ import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {makeButtonSx} from "@frontend/app/layout/Sidebar";
 import {Tab} from "@frontend/app/pages/page-definitions";
+import {useTranslation} from "react-i18next";
+import {TFunction} from "i18next";
 
 
 
@@ -46,7 +48,7 @@ const determineTabConfig = (tab: Tab, user: User, page: PageData): TabConfig => 
   }
 }
 
-const renderTabs = (tabs: Tab[], user: User, page: PageData, theme: Theme) => {
+const renderTabs = (tabs: Tab[], user: User, page: PageData, theme: Theme, t: TFunction) => {
   const tabComponents = tabs.map(tab => {
     const config = determineTabConfig(tab, user, page);
     return <Button
@@ -54,7 +56,7 @@ const renderTabs = (tabs: Tab[], user: User, page: PageData, theme: Theme) => {
       disabled={config.disabled}
       hidden={config.hidden}
       startIcon={tab.icon? <MdiIcon icon={tab.icon} /> : undefined}
-      children={tab.label}
+      children={tab['label:t'] ? t(tab['label:t']) : tab.label}
       key={tab.route}
       component={NavLink}
       to={tab.route}
@@ -70,6 +72,7 @@ const CommandBar = (props: CommandBarProps) => {
   const [pageData,] = usePageData();
   const theme = useTheme();
   const hasCommands = Array.isArray(props.children) && props.children.length;
+  const {t} = useTranslation();
 
   useEffect(() => {
     const listener = () => {
@@ -117,12 +120,12 @@ const CommandBar = (props: CommandBarProps) => {
     } : {
       width: 'auto',
     }}>
-      {!fixed && (props.tabs ? renderTabs(props.tabs, user, pageData, theme) : <CardHeader title="Actions"/>)}
+      {!fixed && (props.tabs ? renderTabs(props.tabs, user, pageData, theme, t) : <CardHeader title="Actions"/>)}
       {!fixed && <Divider/>}
       {cardActions}
     </Card>
     {fixed && /* Mirror card to keep same space in the DOM */ <Card>
-      {props.tabs? renderTabs(props.tabs, user, pageData, theme) : <CardHeader title="Actions"/>}
+      {props.tabs? renderTabs(props.tabs, user, pageData, theme, t) : <CardHeader title="Actions"/>}
       <Divider/>
       {cardActions}
     </Card>}

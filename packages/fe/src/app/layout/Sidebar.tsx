@@ -8,7 +8,6 @@ import {
   TopLevelGroup,
   TopLevelPage
 } from "@frontend/app/pages/page-definitions";
-import SidebarSubMenu from "@frontend/app/layout/SidebarSubMenu";
 import {usePageMatch} from "@frontend/util/hook/use-page-match";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useUser} from "@frontend/hooks/use-user";
@@ -17,6 +16,7 @@ import SidebarNavGroup from "@frontend/app/layout/SidebarNavGroup";
 import {names} from "@event-engine/messaging/helpers";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import SidebarItem from "@frontend/app/layout/SidebarItem";
+import {useTranslation} from "react-i18next";
 
 interface OwnProps {
   open: boolean;
@@ -99,6 +99,7 @@ type Group = {config: TopLevelGroup, pages: TopLevelPage[]};
 const Sidebar = (props: SidebarProps) => {
 
   const theme = useTheme();
+  const {t} = useTranslation();
   const pageMatch = usePageMatch();
   const [user,] = useUser();
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
@@ -130,18 +131,28 @@ const Sidebar = (props: SidebarProps) => {
     return true;
   })
 
-  const topLevelPageItems = topLevelPagesWithoutGroups.map(({route, service, sidebar: {label, Icon, invisible, group, dynamic}}) => {
-    const pGroup = belongsToGroup({sidebar: {group}})
+  const topLevelPageItems = topLevelPagesWithoutGroups.map(({route, service, sidebar}) => {
+    const pGroup = belongsToGroup({sidebar})
     if(pGroup) {
       const cachedPGroup = groups[pGroup.label];
       return <SidebarNavGroup name={'group-' + names(cachedPGroup.config.label).fileName}
-                              label={cachedPGroup.config.label}
+                              label={cachedPGroup.config['label:t'] ? t(cachedPGroup.config['label:t']) : cachedPGroup.config.label}
                               Icon={<MdiIcon icon={cachedPGroup.config.icon} />}
-                              pages={cachedPGroup.pages.map(p => makeSidebarItem(p.route, p.sidebar.label, <p.sidebar.Icon />, theme, user, pageMatch, p.sidebar.invisible, service, dynamic))}
+                              pages={cachedPGroup.pages.map(p => makeSidebarItem(
+                                p.route,
+                                p.sidebar['label:t'] ? t(p.sidebar['label:t']) : p.sidebar.label,
+                                <p.sidebar.Icon />,
+                                theme,
+                                user,
+                                pageMatch,
+                                p.sidebar.invisible,
+                                service,
+                                p.sidebar.dynamic
+                              ))}
       />
     }
 
-    return makeSidebarItem(route, label, <Icon />, theme, user, pageMatch, invisible, service, dynamic)
+    return makeSidebarItem(route, sidebar['label:t'] ? t(sidebar['label:t']) : sidebar.label, <sidebar.Icon />, theme, user, pageMatch, sidebar.invisible, service, sidebar.dynamic)
   });
 
   return <Drawer

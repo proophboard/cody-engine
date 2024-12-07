@@ -10,6 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import {useUser} from "@frontend/hooks/use-user";
 import {getConfiguredKeycloak} from "@frontend/keycloak/get-configured-keycloak";
 import {LogoutOutlined} from "@mui/icons-material";
+import LanguageSwitch from "@frontend/app/components/core/LanguageSwitch";
 
 
 interface OwnProps {
@@ -48,6 +49,7 @@ const TopBar = (props: TopBarProps) => {
         <Box
           sx={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginLeft: theme.spacing(2) }}
         >
+          <LanguageSwitch />
           <Avatar sx={{ backgroundColor: 'primary.dark' }} title={currentUser.displayName}>
             {`${currentUser.displayName.split(' ')[0][0]}${
               currentUser.displayName.split(' ').length > 1

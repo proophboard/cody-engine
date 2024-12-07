@@ -2,12 +2,14 @@ import {TopLevelPageWithProophBoardDescription} from "@frontend/app/pages/page-d
 <%- imports %>
 
 export const <%= className %>: TopLevelPageWithProophBoardDescription = {
+  name: "<%= serviceNames.className %>.<%= className %>",
   commands: <%- toJSON(commandNames) %>,
   components: <%- toJSON(componentNames) %>,
   topLevel: true,
   route: "<%= route %>",
   sidebar: {
     label: "<%= sidebar.label %>",
+    <% if (sidebar.labelT) { %>'label:t': "<%= sidebar.labelT %>",<% } %>
     Icon: <%= sidebar.icon %>,
     position: <%= sidebar.position %>,
     <% if (isGroup) { %>group: <%- toJSON(group) %>,<% } %>
@@ -15,6 +17,7 @@ export const <%= className %>: TopLevelPageWithProophBoardDescription = {
     <% if (typeof sidebar.invisible !== "undefined") { %>invisible: <%- toJSON(sidebar.invisible) %>,<% } %>
   },
   breadcrumb: <%- breadcrumb %>,
+  <% if (breadcrumbT) { %>'breadcrumb:t': "<%= breadcrumbT %>",<% } %>
   service: "<%= serviceNames.className %>",
   <% if (isTab) { %>tab: <%- toJSON(tab) %>,<% } %>
   _pbBoardId: "<%= _pbBoardId %>",

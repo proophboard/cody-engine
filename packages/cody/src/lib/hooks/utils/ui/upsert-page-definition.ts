@@ -19,6 +19,8 @@ import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "@cody-engine
 import {getNodesOfTypeNearby} from "../node-tree";
 import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference";
 import {isDynamicBreadcrumb, UiMetadata, ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
+import {normalizePageCommands} from "@cody-play/infrastructure/rule-engine/normalize-page-commands";
+import {normalizePageViewComponents} from "@cody-play/infrastructure/rule-engine/normalize-page-view-components";
 
 export const upsertTopLevelPage = async (
   ui: Node,
@@ -75,6 +77,7 @@ export const upsertTopLevelPage = async (
 
   const sidebar = {
     label: uiMeta.sidebar?.label || uiNames.name,
+    labelT: uiMeta.sidebar?.["label:t"],
     icon: sidebarIcon,
     invisible,
     position: uiMeta.sidebar?.position || 5,
@@ -100,9 +103,10 @@ export const upsertTopLevelPage = async (
     dynamic: uiMeta.sidebar?.dynamic,
     toJSON,
     breadcrumb,
+    breadcrumbT: uiMeta['breadcrumb:t'],
     imports: imports.join(";\n"),
-    commandNames: uiMeta.commands || commandNames,
-    componentNames: uiMeta.views || componentNames,
+    commandNames: normalizePageCommands(uiMeta.commands || commandNames, serviceNames.className),
+    componentNames: normalizePageViewComponents(uiMeta.views || componentNames, serviceNames.className),
   })
 
   return true;
@@ -165,9 +169,10 @@ export const upsertSubLevelPage = async (
     tab: uiMeta.tab,
     toJSON,
     breadcrumb,
+    breadcrumbT: uiMeta['breadcrumb:t'],
     breadcrumbImports: breadcrumbImports.join(";\n"),
-    commandNames: uiMeta.commands || commandNames,
-    componentNames: uiMeta.views || componentNames,
+    commandNames: normalizePageCommands(uiMeta.commands || commandNames, serviceNames.className),
+    componentNames: normalizePageViewComponents(uiMeta.views || componentNames, serviceNames.className),
   })
 
   return true;

@@ -30,6 +30,7 @@ import {usePageData} from "@frontend/hooks/use-page-data";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {getFormSuccessRedirect} from "@frontend/util/command-form/get-form-success-redirect";
+import {useTranslation} from "react-i18next";
 
 export interface AggregateIdentifier {
   identifier: string;
@@ -93,6 +94,7 @@ const CommandDialog = (props: CommandDialogProps) => {
   const [user,] = useUser();
   const [pageData,] = usePageData();
   const [store] = useGlobalStore();
+  const {t} = useTranslation();
 
   const filteredRouteParams: Record<string, string> = {};
 
@@ -149,7 +151,7 @@ const CommandDialog = (props: CommandDialogProps) => {
 
   const handleResponseReceived = (formData: {[prop: string]: any}) => {
     setTransactionState({...defaultTransactionState});
-    snackbar.enqueueSnackbar(commandTitle(props.commandDialogCommand) + ' was successful', {variant: "success"});
+    snackbar.enqueueSnackbar(commandTitle(props.commandDialogCommand, t) + ' was successful', {variant: "success"});
     if(!isAggregateCommandDescription(props.commandDialogCommand.desc) || !props.commandDialogCommand.desc.deleteState) {
       queryClient.invalidateQueries();
     }
@@ -251,7 +253,7 @@ const CommandDialog = (props: CommandDialogProps) => {
           onClick={handleExecuteCommand}
           disabled={transactionState.isSubmitting}
         >
-          {transactionState.isError ? 'Try again' : props.button?.label || commandTitle(props.commandDialogCommand)}
+          {transactionState.isError ? 'Try again' : props.button?.label || commandTitle(props.commandDialogCommand, t)}
         </Button>}
         {!props.commandFn && !props.incompleteCommandConfigError && <Alert severity="warning">Cannot process the command. It is not connected to an event that results in a state change (state = Information with identifier). Please check your prooph board configuration.</Alert>}
         {!props.commandFn && props.incompleteCommandConfigError && <Alert severity="error">{props.incompleteCommandConfigError}</Alert>}

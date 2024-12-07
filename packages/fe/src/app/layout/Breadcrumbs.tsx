@@ -3,6 +3,7 @@ import {Box, Breadcrumbs as MaterialBreadcrumbs} from "@mui/material";
 import Breadcrumb from "@frontend/app/layout/Breadcrumb";
 import {usePageMatch} from "@frontend/util/hook/use-page-match";
 import {useMatchingPages} from "@frontend/util/hook/use-matching-pages";
+import {BreadcrumbFn, PageDefinition} from "@frontend/app/pages/page-definitions";
 
 interface OwnProps {
 
@@ -15,8 +16,10 @@ const Breadcrumbs = (props: BreadcrumbsProps) => {
 
   const matchingPages = useMatchingPages();
 
-  const links = matchingPages.map((matchedPage, index) => {
-    return <Breadcrumb key={matchedPage.route} page={matchedPage} isLast={index === matchingPages.length - 1} />
+  const matchingPagesWithBreadcrumb = matchingPages.filter(p => !!p.breadcrumb);
+
+  const links = matchingPagesWithBreadcrumb.map((matchedPage, index) => {
+    return <Breadcrumb key={matchedPage.route} page={matchedPage as PageDefinition & {breadcrumb: BreadcrumbFn}} isLast={index === matchingPages.length - 1} />
   });
 
   return <Box component={"div"}

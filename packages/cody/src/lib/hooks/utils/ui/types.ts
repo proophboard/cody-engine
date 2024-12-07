@@ -12,8 +12,9 @@ export type ViewComponent = string | { view: string, hidden?: boolean, props?: R
 export interface UiMetadata {
   route?: string;
   routeParams?: string[];
-  sidebar?: { label?: string; icon?: string; show?: boolean | Rule[], invisible?: string, position: number, dynamic?: DynamicSidebar, group?: TopLevelGroup };
+  sidebar?: { label?: string; 'label:t'?: string; icon?: string; show?: boolean | Rule[], invisible?: string, position: number, dynamic?: DynamicSidebar, group?: TopLevelGroup };
   breadcrumb?: string | DynamicBreadcrumbMetadata;
+  'breadcrumb:t'?: string;
   tab?: Tab;
   commands?: string[];
   views?: ViewComponent[];

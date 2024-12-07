@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {PageDefinition} from "@frontend/app/pages/page-definitions";
+import {BreadcrumbFn, PageDefinition} from "@frontend/app/pages/page-definitions";
 import {Button, List, ListItem} from "@mui/material";
 import {generatePath, NavLink} from "react-router-dom";
 import {usePageMatch} from "@frontend/util/hook/use-page-match";
@@ -7,7 +7,7 @@ import {useEffect, useState} from "react";
 import {useQueryClient} from "@tanstack/react-query";
 
 interface OwnProps {
-  page: PageDefinition
+  page: PageDefinition;
 }
 
 type SubMenuItemProps = OwnProps;
@@ -18,7 +18,9 @@ const SubMenuItem = (props: SubMenuItemProps) => {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    return props.page.breadcrumb(params, queryClient, l => setLabel(l));
+    if(props.page.breadcrumb) {
+      return props.page.breadcrumb(params, queryClient, (l) => setLabel(l));
+    }
   }, [props.page, params]);
 
   return <ListItem sx={{
