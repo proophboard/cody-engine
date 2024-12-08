@@ -2,7 +2,8 @@
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 import {
   AliasFieldNameMapping,
-  DocumentStore, isLookup, Lookup,
+  DocumentStore, isLookup,
+  Lookup,
   PartialSelect,
   SortOrder
 } from "@event-engine/infrastructure/DocumentStore";
@@ -20,6 +21,8 @@ import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {cloneDeep} from "lodash";
 import {EqFilter} from "@event-engine/infrastructure/DocumentStore/Filter/EqFilter";
 import {DocIdFilter} from "@event-engine/infrastructure/DocumentStore/Filter/DocIdFilter";
+import {AndFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AndFilter";
+import {asyncFilter} from "@event-engine/infrastructure/helpers/async-filter";
 
 export type Documents = {[collectionName: string]: {[docId: string]: {doc: object, version: number}}};
 
@@ -299,7 +302,7 @@ export class InMemoryDocumentStore implements DocumentStore {
   public async findPartialDocs<D extends object>(collectionName: string, partialSelect: PartialSelect, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<AsyncIterable<[string, D, number]>> {
     const cursor = await this.findDocs<D>(collectionName, filter, skip, limit, orderBy);
 
-    return asyncMap(cursor, async ([docId, doc, version]) => {
+    return asyncFilter(asyncMap(cursor, async ([docId, doc, version]) => {
       let finalDoc: any = {};
       const docRegistry: Record<string, any> = {local: doc};
 
@@ -307,9 +310,17 @@ export class InMemoryDocumentStore implements DocumentStore {
         if(isLookup(s)) {
           const foreignDoc = await this.lookupPartialDoc(s, docRegistry);
 
+          if(!foreignDoc) {
+            if(s.optional) {
+              continue;
+            } else {
+              // Skip the entire document. async-filter removes the
+              return [docId, undefined, version];
+            }
+          }
+
           const alias = s.alias || s.lookup;
           docRegistry[alias] = foreignDoc;
-
 
           if(s.select) {
             finalDoc = {
@@ -329,7 +340,7 @@ export class InMemoryDocumentStore implements DocumentStore {
       finalDoc = transformPartialDoc(partialSelect, finalDoc);
 
       return [docId, finalDoc, version];
-    });
+    }), async ([docId, finalDoc, version]) => !!finalDoc);
   }
 
   public async findDocIds(collectionName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<string[]> {
@@ -427,19 +438,27 @@ export class InMemoryDocumentStore implements DocumentStore {
       throw new Error(`Unable to perform lookup. Document "${using}" has no value set for localKey "${localKey}"`);
     }
 
-    const filter = lookup.on.foreignKey ? new EqFilter(lookup.on.foreignKey, localValue) : new DocIdFilter(localValue);
+    let filter: Filter = lookup.on.foreignKey ? new EqFilter(lookup.on.foreignKey, localValue) : new DocIdFilter(localValue);
+
+    if(lookup.on.and) {
+      filter = new AndFilter(filter, lookup.on.and);
+    }
 
     const cursor = await this.findDocs(lookup.lookup, filter, 0, 1);
 
     const docs = await asyncIteratorToArray(cursor);
 
-    if(!docs.length) {
-      throw new Error(`Failed to lookup "${lookup.lookup}" with filter: ${JSON.stringify(filter)}`);
+    if(docs.length) {
+      const [docId, matchingDoc] = docs[0];
+
+      return matchingDoc;
+    } else {
+      if(!lookup.select || !lookup.optional) {
+        return undefined;
+      }
+
+      return this.selectFieldsFromDoc(lookup.select, {});
     }
-
-    const [docId, matchingDoc] = docs[0];
-
-    return matchingDoc;
   }
 
   private migrateDocs(documents: Documents): Documents {

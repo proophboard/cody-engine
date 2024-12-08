@@ -219,14 +219,14 @@ export class PostgresQueryBuilder {
   }
 
   public makeGetPartialDocQuery(collectionName: string, docId: string, partialSelect: PartialSelect): PostgresQuery {
+    const bindings = [docId];
+
     const queryString = `
       SELECT ${this.makePartialDocSelect(partialSelect)}
       FROM ${this.tableName(collectionName)} AS "local"
-      ${this.makePartialJoins(partialSelect)}
+      ${this.makePartialJoins(partialSelect, bindings)}
       WHERE local.id = $1
     `;
-
-    const bindings = [docId];
 
     return [queryString, bindings];
   }
@@ -256,18 +256,19 @@ export class PostgresQueryBuilder {
     const offsetClause = skip ? `OFFSET ${skip}` : '';
     const limitClause = limit ? `LIMIT ${limit}` : '';
     const orderByClause = orderBy ? this.makeOrderByClause(orderBy) : '';
+    const bindings = filterClause[1];
 
     const queryString = `
       SELECT ${this.makePartialDocSelect(partialSelect)}
       FROM ${this.tableName(collectionName)} AS "local"
-      ${this.makePartialJoins(partialSelect)}
+      ${this.makePartialJoins(partialSelect, bindings)}
       WHERE ${filterClause[0]}
       ${orderByClause}
       ${limitClause}
       ${offsetClause};
     `;
 
-    return [queryString, filterClause[1]];
+    return [queryString, bindings];
   }
 
   public makeFindDocIdsQuery(collectionName: string, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): PostgresQuery {
@@ -405,18 +406,26 @@ export class PostgresQueryBuilder {
     return select.slice(0, -2);
   }
 
-  private makePartialJoins(partialSelect: PartialSelect): string {
+  private makePartialJoins(partialSelect: PartialSelect, bindings: any[] = []): string {
     let join = '';
 
     for (const item of partialSelect) {
       if(isLookup(item)) {
+        const joinType = item.optional ? 'LEFT JOIN' : 'JOIN';
         const localCollection = item.using || 'local';
         const as = item.alias ? ` as ${item.alias}` : '';
         const foreignCollection = item.alias || this.tableName(item.lookup);
         const cast = !item.on.foreignKey ? '::uuid' : undefined;
         const foreignProp = item.on.foreignKey ? this.propToTextPath(item.on.foreignKey) : 'id';
+        let andJOINCondition = '';
 
-        join += `JOIN ${this.tableName(item.lookup)}${as} ON (${localCollection}.${this.propToTextPath(item.on.localKey)})${cast || ''} = ${foreignCollection}.${foreignProp}\n`;
+        if(item.on.and) {
+          // Note: bindings is passed by reference and new arguments are added to existing bindings
+          const filterClause = this.filterProcessor.process(item.on.and, bindings);
+          andJOINCondition += ' AND ' + filterClause[0];
+        }
+
+        join += `${joinType} ${this.tableName(item.lookup)}${as} ON (${localCollection}.${this.propToTextPath(item.on.localKey)})${cast || ''} = ${foreignCollection}.${foreignProp}${andJOINCondition}\n`;
       }
     }
 

@@ -10,10 +10,13 @@ export interface Lookup {
   lookup: string;
   alias?: string; /* Lookup collection alias */
   using?: string; /* Which query collection provides the localKey? Defaults to "local" alias */
+  optional?: boolean; /* Local select is included in result set even if foreign doc cannot be found. */
   on: {
     localKey: string;
     foreignKey?: string;
+    and?: Filter;
   },
+  /* If lookup is optional and foreignDoc cannot be found, non-optional select fields are returned as NULL */
   select?: Array<FieldName|AliasFieldNameMapping>;
 }
 
@@ -21,8 +24,8 @@ export const isAliasFieldNameMapping = (partialSelectItem: unknown): partialSele
   return partialSelectItem === "object" && !isLookup(partialSelectItem);
 }
 
-export const isLookup = (partialSelectItem: FieldName|AliasFieldNameMapping|Lookup): partialSelectItem is Lookup => {
-  return typeof partialSelectItem === "object" && !Array.isArray(partialSelectItem);
+export const isLookup = (partialSelectItem: unknown): partialSelectItem is Lookup => {
+  return typeof partialSelectItem === "object" && Object.keys(partialSelectItem as object).includes('lookup');
 }
 
 export interface SortOrderItem {

@@ -19,8 +19,9 @@ import {AnyOfFilter} from "@event-engine/infrastructure/DocumentStore/Filter/Any
 export class PostgresFilterProcessor implements FilterProcessor {
   private arguments: any[] = [];
 
-  process(filter: Filter): [string, any[]] {
-    this.arguments = [];
+  process(filter: Filter, existingArguments: any[] = []): [string, any[]] {
+    // Passed by reference, new arguments are added to existing array during process run
+    this.arguments = existingArguments;
     const query = filter.processWith(this);
 
     return [query, this.arguments];
