@@ -47,9 +47,7 @@ interface OwnProps {
   onValidationError?: () => void;
   onChange?: () => void;
   formData?: {[prop: string]: any};
-  objectFieldTemplate?: React.FunctionComponent<ObjectFieldTemplateProps>;
-  arrayFieldTemplate?: React.FunctionComponent<ArrayFieldTemplateProps>;
-  fieldTemplate?: React.FunctionComponent<FieldTemplateProps>;
+  templates?: {[name: string]: React.FunctionComponent};
   widgets?: {[name: string]: Widget};
   fields?: {[name: string]: Field};
   tryAgain?: boolean;
@@ -218,8 +216,8 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
             // default browser validation needs to be turned off, otherwise optional objects with required props don't work
             noHtml5Validate={true}
             templates={{
-              ...(props.objectFieldTemplate? {ObjectFieldTemplate: props.objectFieldTemplate} : {ObjectFieldTemplate}),
-              ...(props.arrayFieldTemplate? {ArrayFieldTemplate: props.arrayFieldTemplate} : {}),
+              ObjectFieldTemplate,
+              ...props.templates,
             }}
             widgets={
               {

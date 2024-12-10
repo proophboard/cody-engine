@@ -45,9 +45,7 @@ interface OwnProps {
   description: ValueObjectRuntimeInfo;
   widgets?: {[name: string]: Widget};
   fields?: {[name: string]: Field};
-  objectFieldTemplate?: React.FunctionComponent<ObjectFieldTemplateProps>;
-  arrayFieldTemplate?: React.FunctionComponent<ArrayFieldTemplateProps>;
-  fieldTemplate?: React.FunctionComponent<FieldTemplateProps>;
+  templates?: {[name: string]: React.FunctionComponent};
   definitions?: {[id: string]: DeepReadonly<JSONSchema7>};
   hidden?: boolean;
 }
@@ -252,9 +250,9 @@ const StateView = (props: StateViewProps) => {
           className="stateview"
           templates={
             {
-              ObjectFieldTemplate: props.objectFieldTemplate || ObjectFieldTemplate,
-              ArrayFieldTemplate: props.arrayFieldTemplate || ArrayFieldTemplate,
-              ...(props.fieldTemplate ? {FieldTemplate: props.fieldTemplate} : {})
+              ObjectFieldTemplate,
+              ArrayFieldTemplate,
+              ...props.templates
             }
           }
           widgets={

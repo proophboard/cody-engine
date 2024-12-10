@@ -58,6 +58,7 @@ interface OwnProps {
   button?: ButtonConfig;
   widgets?: {[name: string]: Widget};
   fields?: {[name: string]: Field};
+  templates?: {[name: string]: React.FunctionComponent};
   slots?: {
     beforeForm?: React.ReactNode;
     afterForm?: React.ReactNode;
@@ -234,6 +235,7 @@ const CommandDialog = (props: CommandDialogProps) => {
           formData={formData}
           widgets={props.widgets}
           fields={props.fields}
+          templates={props.templates}
           tryAgain={tryAgain}
         />
         {props.slots?.afterForm}
