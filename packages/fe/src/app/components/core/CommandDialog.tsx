@@ -58,7 +58,7 @@ interface OwnProps {
   button?: ButtonConfig;
   widgets?: {[name: string]: Widget};
   fields?: {[name: string]: Field};
-  templates?: {[name: string]: React.FunctionComponent};
+  templates?: {[name: string]: React.FunctionComponent<any>};
   slots?: {
     beforeForm?: React.ReactNode;
     afterForm?: React.ReactNode;

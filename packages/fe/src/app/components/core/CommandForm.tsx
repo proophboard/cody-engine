@@ -47,7 +47,7 @@ interface OwnProps {
   onValidationError?: () => void;
   onChange?: () => void;
   formData?: {[prop: string]: any};
-  templates?: {[name: string]: React.FunctionComponent};
+  templates?: {[name: string]: React.FunctionComponent<any>};
   widgets?: {[name: string]: Widget};
   fields?: {[name: string]: Field};
   tryAgain?: boolean;

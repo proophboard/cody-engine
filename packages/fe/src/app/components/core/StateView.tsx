@@ -45,7 +45,7 @@ interface OwnProps {
   description: ValueObjectRuntimeInfo;
   widgets?: {[name: string]: Widget};
   fields?: {[name: string]: Field};
-  templates?: {[name: string]: React.FunctionComponent};
+  templates?: {[name: string]: React.FunctionComponent<any>};
   definitions?: {[id: string]: DeepReadonly<JSONSchema7>};
   hidden?: boolean;
 }
