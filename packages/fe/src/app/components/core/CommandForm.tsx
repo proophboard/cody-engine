@@ -1,10 +1,7 @@
 import * as React from 'react';
 import {CommandRuntimeInfo} from "@event-engine/messaging/command";
 import {
-  ArrayFieldTemplateProps,
   Field,
-  FieldTemplateProps,
-  ObjectFieldTemplateProps,
   RJSFSchema,
   Widget
 } from "@rjsf/utils";
@@ -56,11 +53,11 @@ interface OwnProps {
 type CommandFormProps = OwnProps;
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+let isInitialized = false;
 
 const CommandForm = (props: CommandFormProps, ref: any) => {
   const formRef: any = useRef();
   const {t} = useTranslation();
-  const [isInitialized, setInitialized] = useState(false);
   const [formData, setFormData] = useState<{[prop: string]: any}>(props.formData || {});
   const [liveValidate, setLiveValidate] = useState(false);
   const [user,] = useUser();
@@ -91,10 +88,10 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     }
     console.log("Set form data", initialFormData);
     setFormData({...initialFormData});
-    setInitialized(true);
+    isInitialized = true;
 
     return () => {
-      setInitialized(false);
+      isInitialized = false;
     }
   }, [props.command.desc.name]);
 
@@ -124,9 +121,17 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   }
 
   const handleChange = (e: IChangeEvent<any>) => {
+    if(formRef.current) {
+      coordinateChange(cloneDeepJSON(formRef.current.state.formData));
+    }
+  }
+
+  const coordinateChange = (change: {[prop: string]: any}, forceUpdate = false) => {
     if(!isInitialized) {
       return;
     }
+
+    console.log("coordinating change", isInitialized, forceUpdate, change);
 
     let isFirstUpdate = true;
 
@@ -135,19 +140,17 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
       isFirstUpdate = false;
     }
 
-    const currentData = cloneDeepJSON(formRef.current.state.formData);
-
     debounceTimer = setTimeout(() => {
-      if(formRef && !isFirstUpdate) {
+      if(formRef && !isFirstUpdate && !forceUpdate) {
         debounceTimer = null;
-        console.log("Set form data in debounce timer", currentData);
-        setFormData(currentData);
+        console.log("Set form data in debounce timer", change);
+        setFormData(change);
       }
     }, 300);
 
-    if(isFirstUpdate) {
-      console.log("set form data as first update", currentData);
-      setFormData(currentData);
+    if(isFirstUpdate || forceUpdate) {
+      console.log("set form data as first update", forceUpdate, change);
+      setFormData(change);
     }
 
     if(props.onChange) {
@@ -169,11 +172,12 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   }
 
   const handleUpdateFormFromContext = (fD: {[prop: string]: any}) => {
-    setTimeout(() => {
-      if(formRef) {
-        setFormData({...formRef.current.state.formData, ...fD});
+    // fire after onChange
+    window.setTimeout(() => {
+      if(formRef.current) {
+        coordinateChange({...formRef.current.state.formData, ...fD}, true);
       }
-    }, 310) /* wait until debounce timer of onChange fired */
+    }, 100);
   }
 
   const {desc} = props.command;
