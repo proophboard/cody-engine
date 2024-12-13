@@ -93,8 +93,8 @@ export const transformPartialDoc = (partialSelect: Array<FieldName|AliasFieldNam
             aliasItems.slice(0, -1).forEach(aliasItem => {
                 if (!(aliasItem in tmpDocRef)) {
                     tmpDocRef[aliasItem] = {};
-                    tmpDocRef = tmpDocRef[aliasItem];
                 }
+                tmpDocRef = tmpDocRef[aliasItem];
             });
 
             tmpDocRef[aliasItems.slice(-1)[0]] = value;

@@ -312,7 +312,7 @@ export class PostgresQueryBuilder {
       CREATE TABLE ${this.tableName(collectionName)}
       (id ${docIdSchema},
       doc JSONB NOT NULL,
-      version INTEGER NOT NULL,   
+      version INTEGER NOT NULL,
       PRIMARY KEY (id));
     `;
 
@@ -446,8 +446,8 @@ export class PostgresQueryBuilder {
       : '';
   }
 
-  private makeOrderByClause(orderBy: SortOrder): string {
-    return `ORDER BY ${orderBy.map(({ prop, sort }) => `${this.propToTextPath(prop)} ${sort.toUpperCase()}`).join(', ')}`;
+  private makeOrderByClause(orderBy: SortOrder, alias = 'local'): string {
+    return `ORDER BY ${orderBy.map(({ prop, sort }) => `${alias}.${this.propToTextPath(prop)} ${sort.toUpperCase()}`).join(', ')}`;
   }
 
   // @todo code duplication with PostgresFilterProcessor
@@ -457,7 +457,6 @@ export class PostgresQueryBuilder {
 
   private propToTextPath(field: string): string {
     const parts = field.split(".");
-
 
     if(parts.length === 1) {
       return `doc->>'${field}'`;
