@@ -1,12 +1,13 @@
 import * as React from 'react';
 import {WidgetProps} from "@rjsf/utils";
 import StaticHtmlWidget from "@frontend/app/components/core/form/widgets/html/StaticHtmlWidget";
-import DynamicHtmlWidget, {JSONSchemaWithId} from "@frontend/app/components/core/form/widgets/html/DynamicHtmlWidget";
+import DynamicHtmlWidget from "@frontend/app/components/core/form/widgets/html/DynamicHtmlWidget";
 import {useParams} from "react-router-dom";
 import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import jexl from "@app/shared/jexl/get-configured-jexl";
+import {JSONSchemaWithId} from "@frontend/app/components/core/form/widgets/json-schema/json-schema-with-id";
 
 interface OwnProps {
 

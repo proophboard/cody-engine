@@ -7,94 +7,21 @@ import {
   StrictRJSFSchema,
   WidgetProps,
 } from '@rjsf/utils';
-import {MenuItem, TextField, TextFieldProps} from "@mui/material";
-import {types} from "@app/shared/types";
-import {
-  isQueryableListDescription, isQueryableNotStoredStateListDescription,
-  isQueryableStateListDescription, QueryableListDescription,
-  QueryableStateListDescription
-} from "@event-engine/descriptions/descriptions";
+import {Autocomplete, MenuItem, TextField, TextFieldProps} from "@mui/material";
 import {useApiQuery} from "@frontend/queries/use-api-query";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {commands} from "@frontend/app/components/commands";
 import {useParams} from "react-router-dom";
-import {JSONSchema7} from "json-schema-to-ts";
-import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
-import {names} from "@event-engine/messaging/helpers";
 import {mapProperties} from "@app/shared/utils/map-properties";
 import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
-import {Rule} from "@app/shared/rule-engine/configuration";
 import {makeSyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+import {parseOptions} from "@frontend/app/components/core/form/widgets/data-select/parse-options";
+import {JSONSchemaWithId} from "@frontend/app/components/core/form/widgets/json-schema/json-schema-with-id";
 
 // Copied from: https://github.com/rjsf-team/react-jsonschema-form/blob/main/packages/material-ui/src/SelectWidget/SelectWidget.tsx
 // and modified to use useApiQuery and turn result into select options
-
-type JSONSchemaWithId = JSONSchema7 & {$id: string};
-
-interface ParsedUiOptions {
-  data: QueryableStateListDescription | QueryableListDescription,
-  label: string,
-  value: string,
-  addItemCommand: string | null,
-  query: Record<string, string>,
-  filter?: string,
-  updateForm?: Rule[]
-}
-
-const getVOFromTypes = (refOrFQCN: string, rootSchema: JSONSchemaWithId): ValueObjectRuntimeInfo => {
-  if(refOrFQCN[0] === "/") {
-    const rootId = rootSchema.$id || '';
-    const definitionIdParts = rootId.replace('/definitions/', '').split('/');
-    const service = names(definitionIdParts[0] || '').className;
-    refOrFQCN = (service + refOrFQCN).split("/").join(".");
-  }
-
-  if(!types[refOrFQCN]) {
-    throw new Error(`DataSelect: Unknown type "${refOrFQCN}"`);
-  }
-
-  return types[refOrFQCN];
-}
-
-const parseOptions = (options: any, rootSchema: JSONSchemaWithId): ParsedUiOptions => {
-  if(!options.data || typeof options.data !== "string") {
-    throw new Error('DataSelect: no "data" attribute configured!');
-  }
-
-  const vo = getVOFromTypes(options.data, rootSchema);
-
-  if(!isQueryableStateListDescription(vo.desc) && !isQueryableListDescription(vo.desc) && !isQueryableNotStoredStateListDescription(vo.desc)) {
-    throw new Error(`DataSelect: Type "${options.data}" is not a queryable list`);
-  }
-
-  if((!options.label || typeof options.label !== "string") && (!options.text || typeof options.text !== "string")) {
-    throw new Error(`DataSelect: ui:options "label" is not a string`);
-  }
-
-  if(!options.value || typeof options.value !== "string") {
-    throw new Error(`DataSelect: ui:options "value" is not a string`);
-  }
-
-  if(options.addItemCommand && typeof options.addItemCommand !== "string") {
-    throw new Error(`DataSelect: ui:options "addItemCommand" is not a valid command name`)
-  }
-
-  if(options.updateForm && !Array.isArray(options.updateForm)) {
-    throw new Error(`DataSelect: ui:options "updateForm" must be an array of rules`)
-  }
-
-  return {
-    data: vo.desc,
-    label: options.label || options.text,
-    value: options.value,
-    addItemCommand: options.addItemCommand || null,
-    query: options.query || {},
-    filter: options.filter,
-    updateForm: options.updateForm,
-  }
-}
 
 export default function DataSelectWidget<
   T = any,
@@ -187,7 +114,7 @@ export default function DataSelectWidget<
   const emptyValue = multiple ? [] : '';
   const isEmpty = typeof value === 'undefined' || (multiple && value.length < 1) || (!multiple && value === emptyValue);
 
-  const _onChange = ({ target: { value } }: ChangeEvent<{ value: string }>) => {
+  const _onChange = (value: string | string[] | null) => {
     if(parsedOptions.updateForm && formContext) {
       const selectedOption = selectOptions.find(opt => opt.value === value);
 
@@ -212,6 +139,37 @@ export default function DataSelectWidget<
 
   return (
     <>
+      {options.autocomplete ?
+        <Autocomplete
+          id={id}
+          // value={isEmpty ? emptyValue : value}
+          value={selectOptions.find(opt => opt.value === value) ?? null}
+          disabled={disabled || readonly}
+          multiple={multiple}
+          getOptionDisabled={o => o.readonly}
+          renderOption={(props: any, option) => {
+            const { key, ...optionProps } = props;
+            return (
+              <MenuItem key={key} {...optionProps} sx={option.label === '- Empty -'? {color: theme => theme.palette.text.disabled} : {}}>
+                {option.label}
+              </MenuItem>
+            );
+          }}
+          renderInput={(params) => <TextField
+            name={id}
+            required={required}
+            autoFocus={autofocus}
+            placeholder={placeholder}
+            error={rawErrors.length > 0}
+            {...params}
+            label={labelValue(label, hideLabel || !label, false)} />
+          }
+          onFocus={_onFocus}
+          onBlur={_onBlur}
+          options={selectOptions}
+          onChange={(e, v) => _onChange(v? Array.isArray(v) ? v.map(v => v.value as string) : v.value as string : null)}
+        />
+        :
       <TextField
         id={id}
         name={id}
@@ -222,7 +180,7 @@ export default function DataSelectWidget<
         autoFocus={autofocus}
         placeholder={placeholder}
         error={rawErrors.length > 0}
-        onChange={_onChange}
+        onChange={e => _onChange(e.target.value)}
         onBlur={_onBlur}
         onFocus={_onFocus}
         {...(textFieldProps as TextFieldProps)}
@@ -246,7 +204,7 @@ export default function DataSelectWidget<
               </MenuItem>
             );
           })}
-      </TextField>
+      </TextField>}
       {AddItemCommand && <AddItemCommand buttonProps={{variant: 'text', style: {width: "fit-content", marginLeft: 0}}}/>}
     </>
   );

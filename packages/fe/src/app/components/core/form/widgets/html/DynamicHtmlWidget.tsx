@@ -15,8 +15,8 @@ import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import StaticHtmlWidget from "@frontend/app/components/core/form/widgets/html/StaticHtmlWidget";
 import {CircularProgress} from "@mui/material";
 import {WidgetProps} from "@rjsf/utils";
+import {JSONSchemaWithId} from "@frontend/app/components/core/form/widgets/json-schema/json-schema-with-id";
 
-export type JSONSchemaWithId = JSONSchema7 & {$id: string};
 
 interface OwnProps {
   config: HtmlConfig;
@@ -66,6 +66,11 @@ const DynamicHtmlWidget = (props: DynamicHtmlWidgetProps) => {
     jexlCtx.result = query.data;
 
     config = normalizeUiSchema(config, jexlCtx);
+
+    delete config.data;
+    delete config.hidden;
+    delete config.if;
+    delete config.query;
 
     return <StaticHtmlWidget
       {...props}
