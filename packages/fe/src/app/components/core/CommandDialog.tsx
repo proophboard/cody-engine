@@ -153,19 +153,24 @@ const CommandDialog = (props: CommandDialogProps) => {
   const handleResponseReceived = (formData: {[prop: string]: any}) => {
     setTransactionState({...defaultTransactionState});
     snackbar.enqueueSnackbar(commandTitle(props.commandDialogCommand, t) + ' was successful', {variant: "success"});
-    if(!isAggregateCommandDescription(props.commandDialogCommand.desc) || !props.commandDialogCommand.desc.deleteState) {
+
+    const redirect = getFormSuccessRedirect(props.commandDialogCommand, {
+      user,
+      page: pageData,
+      store,
+      routeParams,
+      data: formData
+    } as FormJexlContext);
+
+    if (
+      (!isAggregateCommandDescription(props.commandDialogCommand.desc) ||
+        !props.commandDialogCommand.desc.deleteState)
+      && !redirect
+    ) {
       queryClient.invalidateQueries();
     }
     window.setTimeout(() => {
       props.onClose();
-
-      const redirect = getFormSuccessRedirect(props.commandDialogCommand, {
-        user,
-        page: pageData,
-        store,
-        routeParams,
-        data: formData
-      } as FormJexlContext);
 
       if(redirect) {
         navigate(redirect);
