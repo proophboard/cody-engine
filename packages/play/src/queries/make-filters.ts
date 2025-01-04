@@ -26,6 +26,7 @@ import {
 } from "@app/shared/value-object/query/filter-types";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {isObjectSchema} from "@app/shared/utils/schema-checks";
+import {isLookup, Lookup, PartialSelect} from "@event-engine/infrastructure/DocumentStore";
 
 export const makeFiltersFromResolveConfig = (desc: QueryableStateListDescription | QueryableValueObjectDescription, resolve: ResolveConfig, queryPayload: any, user: User): DSFilter => {
   const rule = resolve.where;
@@ -101,6 +102,24 @@ export const makeFiltersFromQuerySchema = (schema: JSONSchema7, params: any, use
 
 const makeEqFilterFromProperty = (prop: string, params: any): DSFilter => {
   return new filters.EqFilter(`${prop}`, params[prop] || '$codyplay__not_set_value__');
+}
+
+export const makeFiltersInPartialSelect = (select: PartialSelect, ctx: any): PartialSelect => {
+  return select.map(s => isLookup(s) ? makeFiltersInLookup(s as Lookup & {on: {and?: Filter}}, ctx) : s)
+}
+
+const makeFiltersInLookup = (lookup: Lookup & {on: {and?: Filter}}, ctx: any): Lookup => {
+  if(lookup.on.and) {
+    return {
+      ...lookup,
+      on: {
+        ...lookup.on,
+        and: makeFilter(lookup.on.and, ctx)
+      }
+    }
+  } else {
+    return lookup;
+  }
 }
 
 export const makeFilter = (filter: Filter, ctx: any): DSFilter => {

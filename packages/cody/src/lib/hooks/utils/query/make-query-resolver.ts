@@ -49,6 +49,7 @@ import {isCodyError} from "@proophboard/cody-utils";
 import {ResolveConfig, ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
 import {withErrorCheck} from "@cody-engine/cody/hooks/utils/error-handling";
+import {isAliasFieldNameMapping, isLookup, Lookup, PartialSelect} from "@event-engine/infrastructure/DocumentStore";
 
 export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
   if(!voMeta.isQueryable) {
@@ -326,6 +327,70 @@ const makeFiltersFromResolveConfig = (vo: Node, resolveConfig: ResolveConfig, in
   }
 
   return lines.join("\n");
+}
+
+export const makePartialSelect = (select: PartialSelect, lines: string[], indent = '', endOfLine = '') => {
+  lines.push(`${indent}[`);
+
+  select.forEach(s => {
+    if(typeof s === 'string') {
+      lines.push(`${indent}  '${s}',`);
+      return;
+    }
+
+    if(isLookup(s)) {
+      makeLookup(s, lines, indent + '  ');
+      return;
+    }
+
+    if(isAliasFieldNameMapping(s)) {
+      lines.push(`${indent}  {`);
+      lines.push(`${indent}    field: '${s.field}',`)
+      lines.push(`${indent}    alias: '${s.alias}',`)
+      lines.push(`${indent}  },`);
+    }
+  })
+
+  lines.push(`${indent}]${endOfLine}`)
+}
+
+export const makeLookup = (lookup: Lookup, lines: string[], indent = '') => {
+  lines.push(`${indent}{`);
+
+  lines.push(`${indent}  lookup: '${lookup.lookup}',`);
+
+  if(lookup.alias) {
+    lines.push(`${indent}  alias: '${lookup.alias}',`);
+  }
+
+  if(lookup.using) {
+    lines.push(`${indent}  using: '${lookup.using}',`);
+  }
+
+  if(typeof lookup.optional !== "undefined") {
+    lines.push(`${indent}  optional: ${lookup.optional},`);
+  }
+
+  lines.push(`${indent}  on: {`)
+  lines.push(`${indent}    localKey: '${lookup.on.localKey}',`)
+
+  if(lookup.on.foreignKey) {
+    lines.push(`${indent}    foreignKey: '${lookup.on.foreignKey}',`)
+  }
+
+  if(lookup.on.and) {
+    lines.push(`${indent}    and:`);
+    makeFilter(lookup.on.and as unknown as Filter, lines, `${indent}      `, ',');
+  }
+
+  lines.push(`${indent}  },`);
+
+  if(lookup.select) {
+    lines.push(`${indent}  select:`)
+    makePartialSelect(lookup.select, lines, `${indent}    `, ',')
+  }
+
+  lines.push(`${indent}},`);
 }
 
 export const makeFilter = (filter: Filter, lines: string[], indent = '', endOfLine = '') => {

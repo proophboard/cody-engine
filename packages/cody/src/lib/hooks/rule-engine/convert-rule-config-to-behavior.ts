@@ -7,10 +7,17 @@ import {
   isDeleteInformation,
   isExecuteRules,
   isFindInformation,
+  isFindInformationById,
+  isFindOneInformation,
+  isFindOnePartialInformation,
+  isFindPartialInformation, isFindPartialInformationById,
   isForEach,
   isIfConditionRule,
   isIfNotConditionRule,
-  isInsertInformation, isLogMessage, isLookupUser, isLookupUsers,
+  isInsertInformation,
+  isLogMessage,
+  isLookupUser,
+  isLookupUsers,
   isRecordEvent,
   isReplaceInformation,
   isThrowError,
@@ -25,8 +32,15 @@ import {
   ThenDeleteInformation,
   ThenExecuteRules,
   ThenFindInformation,
+  ThenFindInformationById,
+  ThenFindOneInformation,
+  ThenFindOnePartialInformation,
+  ThenFindPartialInformation, ThenFindPartialInformationById,
   ThenForEach,
-  ThenInsertInformation, ThenLogMessage, ThenLookupUser, ThenLookupUsers,
+  ThenInsertInformation,
+  ThenLogMessage,
+  ThenLookupUser,
+  ThenLookupUsers,
   ThenRecordEvent,
   ThenReplaceInformation,
   ThenThrowError,
@@ -43,7 +57,7 @@ import {Context} from "@cody-engine/cody/hooks/context";
 import {withErrorCheck} from "@cody-engine/cody/hooks/utils/error-handling";
 import {getVOFromDataReference} from "@cody-engine/cody/hooks/utils/value-object/get-vo-from-data-reference";
 import {voRegistryId} from "@cody-engine/cody/hooks/utils/value-object/vo-registry-id";
-import {makeFilter} from "@cody-engine/cody/hooks/utils/query/make-query-resolver";
+import {makeFilter, makePartialSelect} from "@cody-engine/cody/hooks/utils/query/make-query-resolver";
 import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";
 import {validateResolverRules} from "@cody-engine/cody/hooks/rule-engine/validate-resolver-rules";
 import {LOGGER_SERVICE_NAME} from "@app/shared/utils/logger/Logger";
@@ -336,6 +350,16 @@ const convertThen = (node: Node, ctx: Context, then: ThenType, rule: Rule, lines
       return convertThenLookupUser(node, ctx, then as ThenLookupUser, rule, lines, indent, evalSync);
     case isFindInformation(then):
       return convertThenFind(node, ctx, then as ThenFindInformation, rule, lines, indent, evalSync);
+    case isFindPartialInformation(then):
+      return convertThenFindPartial(node, ctx, then as ThenFindPartialInformation, rule, lines, indent, evalSync);
+    case isFindOneInformation(then):
+      return convertThenFindOne(node, ctx, then as ThenFindOneInformation, rule, lines, indent, evalSync);
+    case isFindInformationById(then):
+      return convertThenFindById(node, ctx, then as ThenFindInformationById, rule, lines,indent, evalSync);
+    case isFindOnePartialInformation(then):
+      return convertThenFindOnePartial(node, ctx, then as ThenFindOnePartialInformation, rule, lines, indent, evalSync);
+    case isFindPartialInformationById(then):
+      return convertThenFindPartialById(node, ctx, then as ThenFindPartialInformationById, rule, lines, indent, evalSync);
     case isCountInformation(then):
       return convertThenCount(node, ctx, then as ThenCountInformation, rule, lines, indent, evalSync);
     case isInsertInformation(then):
@@ -508,7 +532,7 @@ const convertThenCallService = (node: Node, ctx: Context, then: ThenCallService,
 const convertThenLookupUsers = (node: Node, ctx: Context, then: ThenLookupUsers, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
   if(evalSync) {
     return {
-      cody: `Lookup users rules can only be used in async components like query resolvers, policies, and command handlers. Please check rule configuration of ${node.getName()}`,
+      cody: `Lookup users rules can only be used in async components like query resolvers, automations, services, and command handlers. Please check rule configuration of ${node.getName()}`,
       type: CodyResponseType.Error
     }
   }
@@ -538,7 +562,7 @@ const convertThenLookupUsers = (node: Node, ctx: Context, then: ThenLookupUsers,
 const convertThenLookupUser = (node: Node, ctx: Context, then: ThenLookupUser, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
   if(evalSync) {
     return {
-      cody: `Lookup user rules can only be used in async components like query resolvers, policies, and command handlers. Please check rule configuration of ${node.getName()}`,
+      cody: `Lookup user rules can only be used in async components like query resolvers, automations, services and command handlers. Please check rule configuration of ${node.getName()}`,
       type: CodyResponseType.Error
     }
   }
@@ -555,7 +579,7 @@ const convertThenLookupUser = (node: Node, ctx: Context, then: ThenLookupUser, r
 const convertThenFind = (node: Node, ctx: Context, then: ThenFindInformation, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
   if(evalSync) {
     return {
-      cody: `Find information rules can only be used in query resolvers. Please check rule configuration of ${node.getName()}`,
+      cody: `Information find rules can only be used in asynchronous contexts like query resolvers, automations, services or projections. Please check rule configuration of ${node.getName()}`,
       type: CodyResponseType.Error
     }
   }
@@ -586,10 +610,134 @@ const convertThenFind = (node: Node, ctx: Context, then: ThenFindInformation, ru
   return true;
 }
 
+const convertThenFindPartial = (node: Node, ctx: Context, then: ThenFindPartialInformation, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
+  if(evalSync) {
+    return {
+      cody: `Information find rules can only be used in asynchronous contexts like query resolvers, automations, services or projections. Please check rule configuration of ${node.getName()}`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  const vo = withErrorCheck(getVOFromDataReference, [then.findPartial.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  const variable = then.findPartial.variable || 'information';
+
+  lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].findPartial('${registryId}',`);
+
+  makePartialSelect(then.findPartial.select, lines, indent, ',');
+
+  makeFilter(then.findPartial.filter, lines, indent + '  ');
+  if(typeof then.findPartial.skip !== 'undefined') {
+    lines.push(`${indent}  , ${then.findPartial.skip}`);
+  } else {
+    lines.push(`${indent}  , undefined`);
+  }
+  if(typeof then.findPartial.limit !== 'undefined') {
+    lines.push(`${indent}  , ${then.findPartial.limit}`);
+  } else {
+    lines.push(`${indent}  , undefined`);
+  }
+  if(then.findPartial.orderBy) {
+    lines.push(`${indent}  , ${JSON.stringify(then.findPartial.orderBy)}`);
+  }
+
+  lines.push(`${indent});`);
+
+  return true;
+}
+
+
+const convertThenFindOne = (node: Node, ctx: Context, then: ThenFindOneInformation, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
+  if(evalSync) {
+    return {
+      cody: `Information find rules can only be used in asynchronous contexts like query resolvers, automations, services or projections. Please check rule configuration of ${node.getName()}`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  const vo = withErrorCheck(getVOFromDataReference, [then.findOne.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  const variable = then.findOne.variable || 'information';
+
+  lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].findOne('${registryId}',`);
+
+
+  makeFilter(then.findOne.filter, lines, indent + '  ');
+
+  lines.push(`${indent});`);
+
+  return true;
+}
+const convertThenFindById = (node: Node, ctx: Context, then: ThenFindInformationById, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
+  if(evalSync) {
+    return {
+      cody: `Information find rules can only be used in asynchronous contexts like query resolvers, automations, services or projections. Please check rule configuration of ${node.getName()}`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  const vo = withErrorCheck(getVOFromDataReference, [then.findById.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  const variable = then.findById.variable || 'information';
+
+  lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].findById('${registryId}', '${then.findById.id}');`);
+
+  return true;
+}
+const convertThenFindOnePartial = (node: Node, ctx: Context, then: ThenFindOnePartialInformation, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
+  if(evalSync) {
+    return {
+      cody: `Information find rules can only be used in asynchronous contexts like query resolvers, automations, services or projections. Please check rule configuration of ${node.getName()}`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  const vo = withErrorCheck(getVOFromDataReference, [then.findOnePartial.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  const variable = then.findOnePartial.variable || 'information';
+
+  lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].findOnePartial('${registryId}',`);
+
+  makePartialSelect(then.findOnePartial.select, lines, indent, ',');
+
+  makeFilter(then.findOnePartial.filter, lines, indent + '  ');
+
+  lines.push(`${indent});`);
+
+  return true;
+}
+const convertThenFindPartialById = (node: Node, ctx: Context, then: ThenFindPartialInformationById, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
+  if(evalSync) {
+    return {
+      cody: `Information find rules can only be used in asynchronous contexts like query resolvers, automations, services or projections. Please check rule configuration of ${node.getName()}`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  const vo = withErrorCheck(getVOFromDataReference, [then.findPartialById.information, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  const variable = then.findPartialById.variable || 'information';
+
+  lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].findPartialById('${registryId}',`);
+
+  lines.push(`'${then.findPartialById.id}',`)
+
+  makePartialSelect(then.findPartialById.select, lines, indent);
+
+  lines.push(`${indent});`);
+
+  return true;
+}
+
 const convertThenCount = (node: Node, ctx: Context, then: ThenCountInformation, rule: Rule, lines: string[], indent = '', evalSync = false ): boolean | CodyResponse => {
   if(evalSync) {
     return {
-      cody: `Count information rules can only be used in query resolvers. Please check rule configuration of ${node.getName()}`,
+      cody: `Count information rules can only be used in asynchronous contexts like query resolvers, automations, services or projections. Please check rule configuration of ${node.getName()}`,
       type: CodyResponseType.Error
     }
   }

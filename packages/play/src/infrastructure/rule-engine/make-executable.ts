@@ -5,10 +5,16 @@ import {
   isDeleteInformation,
   isExecuteRules,
   isFindInformation,
+  isFindInformationById,
+  isFindOneInformation,
+  isFindOnePartialInformation,
+  isFindPartialInformation,
+  isFindPartialInformationById,
   isForEach,
   isIfConditionRule,
   isIfNotConditionRule,
-  isInsertInformation, isLogMessage,
+  isInsertInformation,
+  isLogMessage,
   isLookupUser,
   isLookupUsers,
   isRecordEvent,
@@ -25,6 +31,10 @@ import {
   ThenDeleteInformation,
   ThenExecuteRules,
   ThenFindInformation,
+  ThenFindInformationById,
+  ThenFindOneInformation,
+  ThenFindOnePartialInformation,
+  ThenFindPartialInformation, ThenFindPartialInformationById,
   ThenForEach,
   ThenInsertInformation,
   ThenLogMessage,
@@ -53,7 +63,7 @@ import {
   INFORMATION_SERVICE_NAME,
   InformationService
 } from "@event-engine/infrastructure/information-service/information-service";
-import {makeFilter} from "@cody-play/queries/make-filters";
+import {makeFilter, makeFiltersInPartialSelect} from "@cody-play/queries/make-filters";
 import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
 import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {Logger, LOGGER_SERVICE_NAME} from "@app/shared/utils/logger/Logger";
@@ -172,10 +182,15 @@ const execThenSync = (then: ThenType, ctx: ExecutionContext): ExecutionContext =
       return execCallServiceSync(then as ThenCallService, ctx);
     case isLookupUser(then):
     case isLookupUsers(then):
-      throw new Error(`User lookup rules can only be used in asynchronous contexts like query resolvers, policies or processors`);
+      throw new Error(`User lookup rules can only be used in asynchronous contexts like query resolvers, automations, services or projections`);
     case isFindInformation(then):
+    case isFindOneInformation(then):
+    case isFindInformationById(then):
+    case isFindPartialInformation(then):
+    case isFindOnePartialInformation(then):
+    case isFindPartialInformationById(then):
     case isCountInformation(then):
-      throw new Error(`Information find rules can only be used in asynchronous contexts like query resolvers, policies or processors`);
+      throw new Error(`Information find rules can only be used in asynchronous contexts like query resolvers, automations, services or projections`);
     case isInsertInformation(then):
     case isUpsertInformation(then):
     case isUpdateInformation(then):
@@ -213,6 +228,16 @@ const execThenAsync = async (then: ThenType, ctx: ExecutionContext): Promise<Exe
       return await execLookupUser(then as ThenLookupUser, ctx);
     case isFindInformation(then):
       return await execFindInformation(then as ThenFindInformation, ctx);
+    case isFindOneInformation(then):
+      return await execFindOneInformation(then as ThenFindOneInformation, ctx);
+    case isFindInformationById(then):
+      return await execFindInformationById(then as ThenFindInformationById, ctx);
+    case isFindPartialInformation(then):
+      return await execFindPartialInformation(then as ThenFindPartialInformation, ctx);
+    case isFindOnePartialInformation(then):
+      return await execFindOnePartialInformation(then as ThenFindOnePartialInformation, ctx);
+    case isFindPartialInformationById(then):
+      return await execFindPartialInformationById(then as ThenFindPartialInformationById, ctx);
     case isCountInformation(then):
       return await execCountInformation(then as ThenCountInformation, ctx);
     case isInsertInformation(then):
@@ -388,6 +413,97 @@ const execFindInformation = async (then: ThenFindInformation, ctx: ExecutionCont
     then.find.skip,
     then.find.limit,
     then.find.orderBy ? mapOrderBy(then.find.orderBy) : undefined
+  );
+
+  return ctx;
+}
+
+const execFindOneInformation = async (then: ThenFindOneInformation, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: find one information "${then.findOne.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const variable = then.findOne.variable || 'information';
+
+  ctx[variable] = await infoService.findOne(
+    then.findOne.information,
+    makeFilter(then.findOne.filter, ctx)
+  );
+
+  return ctx;
+}
+
+const execFindInformationById = async (then: ThenFindInformationById, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: find information by id "${then.findById.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const variable = then.findById.variable || 'information';
+
+  ctx[variable] = await infoService.findById(
+    then.findById.information,
+    then.findById.id
+  );
+
+  return ctx;
+}
+
+const execFindPartialInformation = async (then: ThenFindPartialInformation, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: find partial information "${then.findPartial.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const variable = then.findPartial.variable || 'information';
+
+  ctx[variable] = await infoService.findPartial(
+    then.findPartial.information,
+    makeFiltersInPartialSelect(then.findPartial.select, ctx),
+    makeFilter(then.findPartial.filter, ctx),
+    then.findPartial.skip,
+    then.findPartial.limit,
+    then.findPartial.orderBy ? mapOrderBy(then.findPartial.orderBy) : undefined
+  );
+
+  return ctx;
+}
+
+const execFindOnePartialInformation = async (then: ThenFindOnePartialInformation, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: find one partial information "${then.findOnePartial.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const variable = then.findOnePartial.variable || 'information';
+
+  ctx[variable] = await infoService.findPartial(
+    then.findOnePartial.information,
+    makeFiltersInPartialSelect(then.findOnePartial.select, ctx),
+    makeFilter(then.findOnePartial.filter, ctx)
+  );
+
+  return ctx;
+}
+
+const execFindPartialInformationById = async (then: ThenFindPartialInformationById, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  const infoService: InformationService = ctx[INFORMATION_SERVICE_NAME];
+
+  if(!infoService) {
+    throw new Error(`Cannot execute rule: find partial information by id "${then.findPartialById.information}". ${INFORMATION_SERVICE_NAME} not found. This is a bug. Please contact the prooph board team.`);
+  }
+
+  const variable = then.findPartialById.variable || 'information';
+
+  ctx[variable] = await infoService.findPartialById(
+    then.findPartialById.information,
+    then.findPartialById.id,
+    makeFiltersInPartialSelect(then.findPartialById.select, ctx)
   );
 
   return ctx;

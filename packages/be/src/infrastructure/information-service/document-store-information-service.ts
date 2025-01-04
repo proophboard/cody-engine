@@ -1,5 +1,5 @@
 import {InformationService} from "@event-engine/infrastructure/information-service/information-service";
-import {DocumentStore, SortOrder} from "@event-engine/infrastructure/DocumentStore";
+import {DocumentStore, isLookup, Lookup, PartialSelect, SortOrder} from "@event-engine/infrastructure/DocumentStore";
 import {
   isQueryableNotStoredValueObjectDescription,
   isQueryableStateDescription,
@@ -12,6 +12,7 @@ import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-i
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
+import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
 
 export class DocumentStoreInformationService implements InformationService {
   private ds: DocumentStore;
@@ -41,6 +42,50 @@ export class DocumentStoreInformationService implements InformationService {
     const cursor = await this.ds.findDocs<T>(collectionName, filter, skip, limit, orderBy);
 
     return asyncIteratorToArray(asyncMap(cursor, ([,doc]) => doc));
+  }
+
+  public async findById<T extends object>(informationName: string, id: string): Promise<T|null> {
+    return this.ds.getDoc<T>(this.detectCollection(informationName), id);
+  }
+
+  public async findOne<T extends object>(informationName: string, filter: Filter): Promise<T|null> {
+    const collectionName = this.detectCollection(informationName);
+
+    const cursor = await this.ds.findDocs<T>(collectionName, filter, 0, 1);
+
+    const result = await asyncIteratorToArray(asyncMap(cursor, ([,doc]) => doc));
+
+    if(result.length) {
+      return result[0];
+    } else {
+      return null;
+    }
+  }
+
+  public async findPartial<T extends object>(informationName: string, select: PartialSelect, filter: Filter, skip?: number, limit?: number, orderBy?: SortOrder): Promise<Array<T>> {
+    const collectionName = this.detectCollection(informationName);
+
+    const cursor = await this.ds.findPartialDocs<T>(collectionName, this.normalizeLookup(select), filter, skip, limit, orderBy);
+
+    return asyncIteratorToArray(asyncMap(cursor, ([,doc]) => doc));
+  }
+
+  public async findPartialById<T extends object>(informationName: string, id: string, select: PartialSelect): Promise<T|null> {
+    return this.ds.getPartialDoc<T>(this.detectCollection(informationName), id, this.normalizeLookup(select));
+  }
+
+  public async findOnePartial<T extends object>(informationName: string, select: PartialSelect, filter: Filter): Promise<T|null> {
+    const collectionName = this.detectCollection(informationName);
+
+    const cursor = await this.ds.findPartialDocs<T>(collectionName, this.normalizeLookup(select), filter, 0, 1);
+
+    const result = await asyncIteratorToArray(asyncMap(cursor, ([,doc]) => doc));
+
+    if(result.length) {
+      return result[0];
+    } else {
+      return null;
+    }
   }
 
   public async count(informationName: string, filter: Filter): Promise<number> {
@@ -131,5 +176,30 @@ export class DocumentStoreInformationService implements InformationService {
     }
 
     throw new Error(`Information "${informationName}" is neither a queryable list nor queryable information. Please check your prooph board metadata configuration of the information card`);
+  }
+
+  private normalizeLookup(select: PartialSelect): PartialSelect {
+    const allLookups: string[] = select.filter(s => isLookup(s)).map((s: any) => s.lookup);
+    const allAliases: string[] = select.filter(s => isLookup(s) && s.alias).map((s:any) => s.alias);
+
+    return select.map(s => {
+      if(isLookup(s)) {
+        let usingVar = s.using;
+
+        if(s.using) {
+          if(!allAliases.includes(s.using)) {
+            usingVar = this.detectCollection(s.using);
+          }
+        }
+
+        return {
+          ...s,
+          using: usingVar,
+          lookup: this.detectCollection(s.lookup)
+        } as Lookup;
+      }
+
+      return s;
+    })
   }
 }

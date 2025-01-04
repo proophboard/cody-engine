@@ -1,5 +1,5 @@
 import {Filter} from "@app/shared/value-object/query/filter-types";
-import {SortOrder} from "@event-engine/infrastructure/DocumentStore";
+import {PartialSelect, SortOrder} from "@event-engine/infrastructure/DocumentStore";
 
 export type RuleType = 'always' | 'condition';
 
@@ -34,15 +34,24 @@ export const isIfNotConditionRule = (rule: any): rule is IfNotConditionRule => {
   return typeof rule.if_not !== "undefined";
 }
 
-export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService | ThenExecuteRules | ThenForEach
-  | ThenFilter | ThenFindInformation | ThenCountInformation | ThenInsertInformation | ThenUpsertInformation | ThenUpdateInformation | ThenReplaceInformation | ThenDeleteInformation
-  | ThenLookupUsers | ThenLookupUser | ThenLogMessage;
+export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService
+  | ThenExecuteRules
+  | ThenForEach
+  | ThenFilter
+  | ThenFindInformation | ThenFindPartialInformation | ThenFindOneInformation | ThenFindOnePartialInformation
+  | ThenFindInformationById | ThenFindPartialInformationById
+  | ThenCountInformation
+  | ThenInsertInformation | ThenUpsertInformation | ThenUpdateInformation | ThenReplaceInformation | ThenDeleteInformation
+  | ThenLookupUsers | ThenLookupUser
+  | ThenLogMessage;
 
 export type PropMapping = {[name: string]: string | string[] | PropMapping | PropMapping[]};
 
 export interface ThenFilter {
   filter: Filter;
 }
+
+export const isFilter = (then: ThenType & {filter?: Filter}): then is ThenFilter => typeof then.filter !== 'undefined';
 
 export interface ThenForEach {
   forEach: {
@@ -105,8 +114,6 @@ export interface ThenCallService {
 
 export const isCallService = (then: any): then is ThenCallService => typeof then.call !== 'undefined';
 
-export const isFilter = (then: any): then is ThenFilter => typeof then.filter !== "undefined";
-
 export interface ThenFindInformation {
   find: {
     information: string;
@@ -119,6 +126,62 @@ export interface ThenFindInformation {
 }
 
 export const isFindInformation = (then: any): then is ThenFindInformation => typeof then.find !== "undefined";
+
+export interface ThenFindPartialInformation {
+  findPartial: {
+    information: string;
+    select: PartialSelect;
+    filter: Filter;
+    skip?: number;
+    limit?: number;
+    orderBy?: SortOrder;
+    variable?: string;
+  }
+}
+
+export const isFindPartialInformation = (then: any): then is ThenFindPartialInformation => typeof then.findPartial !== "undefined";
+
+export interface ThenFindInformationById {
+  findById: {
+    information: string;
+    id: string;
+    variable?: string;
+  }
+}
+
+export const isFindInformationById = (then: any): then is ThenFindInformationById => typeof then.findById !== "undefined";
+
+export interface ThenFindOneInformation {
+  findOne: {
+    information: string;
+    filter: Filter;
+    variable?: string;
+  }
+}
+
+export const isFindOneInformation = (then: any): then is ThenFindOneInformation => typeof then.findOne !== "undefined";
+
+export interface ThenFindPartialInformationById {
+  findPartialById: {
+    information: string;
+    id: string;
+    select: PartialSelect;
+    variable?: string;
+  }
+}
+
+export const isFindPartialInformationById = (then: any): then is ThenFindPartialInformationById => typeof then.findPartialById !== "undefined";
+
+export interface ThenFindOnePartialInformation {
+  findOnePartial: {
+    information: string;
+    select: PartialSelect;
+    filter: Filter;
+    variable?: string;
+  }
+}
+
+export const isFindOnePartialInformation = (then: any): then is ThenFindOnePartialInformation => typeof then.findOnePartial !== "undefined";
 
 export interface ThenLookupUsers {
   lookup: {
