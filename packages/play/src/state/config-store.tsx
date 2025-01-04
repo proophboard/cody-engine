@@ -254,7 +254,6 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.views = {...config.views};
         config.queries[action.name] = action.query;
         config.resolvers[action.name] = action.resolver;
-        config.views[action.query.desc.returnType] = {information: action.query.desc.returnType};
         return {...config};
       case "REMOVE_QUERY":
         config.queries = {...config.queries};
@@ -265,7 +264,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         return {...config};
       case "ADD_VIEW":
         config.views = {...config.views};
-        config.views[action.name] = {information: action.name};
+        config.views[action.name] = {information: action.information};
         return {...config};
       case "REMOVE_VIEW":
         config.views = {...config.views};

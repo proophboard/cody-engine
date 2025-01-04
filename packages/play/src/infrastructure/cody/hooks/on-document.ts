@@ -120,12 +120,13 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
         },
         resolver: voMeta.resolve || {},
       })
-    } else {
-      dispatch({
-        type: "ADD_VIEW",
-        name: voFQCN
-      })
     }
+
+    dispatch({
+      type: "ADD_VIEW",
+      name: `${serviceNames.className}.${voNames.className}`,
+      information: voFQCN
+    })
 
     if(voMeta.projection) {
       const prjName = voMeta.projection.name;
