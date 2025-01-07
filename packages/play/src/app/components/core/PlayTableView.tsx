@@ -235,9 +235,15 @@ const compileTableColumns = (
             mapping: {}
           } : cValue as PageLinkTableColumn;
 
-          gridColDef.renderCell = (rowParams) => <PageLink page={getPageDefinition(pageLinkConfig, defaultService, pages) as unknown as PageDefinition}
-                                                           params={mapProperties({...rowParams.row, ...params}, pageLinkConfig.mapping)}
-          >{rowParams.value}</PageLink>;
+          gridColDef.renderCell = (rowParams) => {
+            if(pageLinkConfig['page:expr']) {
+              pageLinkConfig.page = jexl.evalSync(pageLinkConfig['page:expr'], {...rowParams, ...params});
+            }
+
+            return <PageLink page={getPageDefinition(pageLinkConfig, defaultService, pages) as unknown as PageDefinition}
+                      params={mapProperties({...rowParams.row, ...params}, pageLinkConfig.mapping)}
+            >{rowParams.value}</PageLink>
+          };
           break;
         case "value":
           gridColDef.valueGetter = (rowParams) => {
