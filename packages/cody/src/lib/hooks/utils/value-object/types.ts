@@ -36,7 +36,6 @@ export interface RefTableColumn {
 export interface PageLinkTableColumn {
   page: string;
   mapping: Record<string, string>;
-  'page:expr'?: string;
 }
 
 export type ActionTableColumn = Omit<Action, 'position'>;
