@@ -1,6 +1,15 @@
 import {
-  AnyRule, isCountInformation, isDeleteInformation, isFindInformation,
-  isInsertInformation, isReplaceInformation, isTriggerCommand, isUpdateInformation,
+  AnyRule,
+  isCountInformation,
+  isDeleteInformation,
+  isFindInformation,
+  isFindInformationById,
+  isFindOneInformation, isFindOnePartialInformation,
+  isFindPartialInformation, isFindPartialInformationById,
+  isInsertInformation,
+  isReplaceInformation,
+  isTriggerCommand,
+  isUpdateInformation,
   isUpsertInformation
 } from "@app/shared/rule-engine/configuration";
 import {visitRulesThen} from "@cody-engine/cody/hooks/rule-engine/visit-rule-then";
@@ -24,6 +33,51 @@ export const normalizePolicyRules = (rules: AnyRule[], service: string, config: 
         find: {
           ...then.find,
           information: playGetVoRuntimeInfoFromDataReference(then.find.information, service, config.types).desc.name
+        }
+      }
+    }
+
+    if(isFindOneInformation(then)) {
+      return {
+        findOne: {
+          ...then.findOne,
+          information: playGetVoRuntimeInfoFromDataReference(then.findOne.information, service, config.types).desc.name
+        }
+      }
+    }
+
+    if(isFindInformationById(then)) {
+      return {
+        findById: {
+          ...then.findById,
+          information: playGetVoRuntimeInfoFromDataReference(then.findById.information, service, config.types).desc.name
+        }
+      }
+    }
+
+    if(isFindPartialInformation(then)) {
+      return {
+        findPartial: {
+          ...then.findPartial,
+          information: playGetVoRuntimeInfoFromDataReference(then.findPartial.information, service, config.types).desc.name
+        }
+      }
+    }
+
+    if(isFindOnePartialInformation(then)) {
+      return {
+        findOnePartial: {
+          ...then.findOnePartial,
+          information: playGetVoRuntimeInfoFromDataReference(then.findOnePartial.information, service, config.types).desc.name
+        }
+      }
+    }
+
+    if(isFindPartialInformationById(then)) {
+      return {
+        findPartialById: {
+          ...then.findPartialById,
+          information: playGetVoRuntimeInfoFromDataReference(then.findPartialById.information, service, config.types).desc.name
         }
       }
     }

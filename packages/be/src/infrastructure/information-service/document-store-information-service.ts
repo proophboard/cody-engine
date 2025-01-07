@@ -12,7 +12,6 @@ import {asyncIteratorToArray} from "@event-engine/infrastructure/helpers/async-i
 import {asyncMap} from "@event-engine/infrastructure/helpers/async-map";
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
-import {NotFoundError} from "@event-engine/messaging/error/not-found-error";
 
 export class DocumentStoreInformationService implements InformationService {
   private ds: DocumentStore;
@@ -179,7 +178,6 @@ export class DocumentStoreInformationService implements InformationService {
   }
 
   private normalizeLookup(select: PartialSelect): PartialSelect {
-    const allLookups: string[] = select.filter(s => isLookup(s)).map((s: any) => s.lookup);
     const allAliases: string[] = select.filter(s => isLookup(s) && s.alias).map((s:any) => s.alias);
 
     return select.map(s => {
