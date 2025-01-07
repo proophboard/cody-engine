@@ -446,7 +446,7 @@ const execFindInformationById = async (then: ThenFindInformationById, ctx: Execu
 
   ctx[variable] = await infoService.findById(
     then.findById.information,
-    then.findById.id
+    jexl.evalSync(then.findById.id, ctx)
   );
 
   return ctx;
@@ -502,7 +502,7 @@ const execFindPartialInformationById = async (then: ThenFindPartialInformationBy
 
   ctx[variable] = await infoService.findPartialById(
     then.findPartialById.information,
-    then.findPartialById.id,
+    jexl.evalSync(then.findPartialById.id, ctx),
     makeFiltersInPartialSelect(then.findPartialById.select, ctx)
   );
 

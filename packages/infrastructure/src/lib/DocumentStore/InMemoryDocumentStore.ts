@@ -151,7 +151,15 @@ export class InMemoryDocumentStore implements DocumentStore {
   }
 
   public async getPartialDoc<D extends object>(collectionName: string, docId: string, partialSelect: PartialSelect): Promise<D | null> {
-    throw new Error(`@TODO: implement getPartialDoc`);
+    const result = await asyncIteratorToArray(
+      await this.findPartialDocs<D>(collectionName, partialSelect, new DocIdFilter(docId), undefined, 1, undefined)
+    );
+
+    if(result.length === 0) {
+      return null;
+    }
+
+    return result[0][1];
   }
 
   public async getDocAndVersion<D extends object>(collectionName: string, docId: string): Promise<{doc: D, version: number} | null> {

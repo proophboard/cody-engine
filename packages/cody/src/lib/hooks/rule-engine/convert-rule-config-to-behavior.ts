@@ -683,7 +683,7 @@ const convertThenFindById = (node: Node, ctx: Context, then: ThenFindInformation
 
   const variable = then.findById.variable || 'information';
 
-  lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].findById('${registryId}', '${then.findById.id}');`);
+  lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].findById('${registryId}', ${wrapExpression(then.findById.id, evalSync)});`);
 
   return true;
 }
@@ -725,7 +725,7 @@ const convertThenFindPartialById = (node: Node, ctx: Context, then: ThenFindPart
 
   lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].findPartialById('${registryId}',`);
 
-  lines.push(`'${then.findPartialById.id}',`)
+  lines.push(`${wrapExpression(then.findPartialById.id, evalSync)},`)
 
   makePartialSelect(then.findPartialById.select, lines, indent);
 
