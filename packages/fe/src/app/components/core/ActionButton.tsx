@@ -100,21 +100,21 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
       return makeButton(action.button, { component: 'a', href: action.href });
     } else if (action.pageLink) {
       const paramsMapping: Record<string, any> = {};
+      const pageLink = typeof action.pageLink === "string" ? {page: action.pageLink, mapping: undefined} : action.pageLink;
 
-      if (typeof action.pageLink === 'object' && action.pageLink.mapping) {
-        for (const mappingKey in action.pageLink.mapping) {
+      if (typeof pageLink === 'object' && pageLink.mapping) {
+        for (const mappingKey in pageLink.mapping) {
           paramsMapping[mappingKey] = jexl.evalSync(
-            action.pageLink.mapping[mappingKey],
+            pageLink.mapping[mappingKey],
             jexlCtx
           );
         }
       }
 
-      const CompiledPageLink = (
-        <PageLink
+      return makeButton(action.button, { component: () => <PageLink
           page={
             getPageDefinition(
-              action.pageLink as PageLinkTableColumn,
+              pageLink as PageLinkTableColumn,
               defaultService,
               config.pages
             ) as unknown as PageDefinition
@@ -124,10 +124,7 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
           {action.button.icon && !action.button.label
             ? action.button.icon
             : action.button.label}
-        </PageLink>
-      );
-
-      return makeButton(action.button, { component: CompiledPageLink });
+        </PageLink> });
     }
   }
 
