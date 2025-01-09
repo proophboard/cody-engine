@@ -11,6 +11,7 @@ import {registerStringExtensions} from "@app/shared/jexl/string-extension/regist
 import {registerObjectExtension} from "@app/shared/jexl/object-extension/register";
 import {registerTypeCastExtensions} from "@app/shared/jexl/type-cast/register";
 import {registerMathExtension} from "@app/shared/jexl/math-extension/register";
+import {merge as deepMerge} from "lodash";
 
 let configuredJexl: Jexl;
 
@@ -19,6 +20,7 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl = new jexl.Jexl() as Jexl;
     configuredJexl.addFunction('count', count);
     configuredJexl.addFunction('merge', merge);
+    configuredJexl.addFunction('deepMerge', deepMerge);
     configuredJexl.addFunction('uuid', generateUuuid);
     configuredJexl.addFunction('isRole', isRole);
     configuredJexl.addFunction('userAttr', getAttribute);
@@ -28,6 +30,7 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addTransform('attr', getAttribute);
     configuredJexl.addTransform('count', count);
     configuredJexl.addTransform('merge', merge);
+    configuredJexl.addTransform('deepMerge', deepMerge);
     configuredJexl.addTransform('typeof', isTypeof);
 
     configuredJexl.addTransform('default', getValOrDefault)
