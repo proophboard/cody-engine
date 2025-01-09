@@ -50,6 +50,7 @@ export const playLoadDependencies = async (message: Message, type: PlayMessageTy
 
     switch (dep.type) {
       case "query":
+        let msgCopy = {...message};
         if(dep.options?.query) {
           const payload: Record<string, any> = {};
 
@@ -57,10 +58,10 @@ export const playLoadDependencies = async (message: Message, type: PlayMessageTy
             payload[prop] = await jexl.eval(dep.options.query[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
           }
 
-          message = {...message, payload};
+          msgCopy = {...msgCopy, payload};
         }
 
-        loadedDependencies[depName] = await loadQueryDependency(dependencyKey, message, dep.options, config.queries, config);
+        loadedDependencies[depName] = await loadQueryDependency(dependencyKey, msgCopy, dep.options, config.queries, config);
         break;
       case "service":
         loadedDependencies[depName] = loadServiceDependency(dependencyKey, message, dep.options);
