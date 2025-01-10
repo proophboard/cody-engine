@@ -28,9 +28,17 @@ const setValueToPath = <T extends object>(obj: T, path: string, value: any): T =
   return set(obj, path, value);
 }
 
-const unsetPath = <T extends object>(obj: T, path: string): T => {
+const unsetPath = <T extends object>(obj: T, path: string | string[]): T => {
   obj = cloneDeep(obj);
-  unset(obj, path);
+
+  if(!Array.isArray(path)) {
+    path = [path];
+  }
+
+  path.forEach(p => {
+    unset(obj, p);
+  })
+
   return obj;
 }
 
