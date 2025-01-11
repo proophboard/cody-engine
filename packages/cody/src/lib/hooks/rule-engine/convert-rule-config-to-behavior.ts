@@ -150,7 +150,7 @@ export const convertRuleConfigToQueryResolverRules = (vo: Node, ctx: Context, ru
 
   for (const rule of rules) {
     lines.push("");
-    const res = convertRule(vo, ctx, rule, lines, indent);
+    const res = convertRule(vo, ctx, rule, lines, indent, false, true);
     if(isCodyError(res)) {
       return res;
     }
@@ -261,12 +261,12 @@ export const convertRuleConfigToTableColumnValueGetterRules = (vo: Node, ctx: Co
   return lines.join("\n");
 }
 
-const convertRule = (node: Node, ctx: Context, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+const convertRule = (node: Node, ctx: Context, rule: Rule, lines: string[], indent = '', evalSync = false, isResolveRule = false): boolean | CodyResponse => {
   switch (rule.rule) {
     case "always":
       return convertAlwaysRule(node, ctx, rule, lines, indent, evalSync);
     case "condition":
-      return convertConditionRule(node, ctx, rule as ConditionRule, lines, indent, evalSync);
+      return convertConditionRule(node, ctx, rule as ConditionRule, lines, indent, evalSync, isResolveRule);
     default:
       return {
         cody: `I don't know how to handle a rule of type "${rule.rule}".`,
@@ -280,7 +280,7 @@ const convertAlwaysRule = (node: Node, ctx: Context, rule: AlwaysRule, lines: st
   return convertThen(node, ctx, rule.then, rule, lines, indent, evalSync);
 }
 
-const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lines: string[], indent = '', evalSync = false, returnInformationOnStop = false): boolean | CodyResponse => {
   let ifCondition: string, expr: string;
 
   if(isIfConditionRule(rule)) {
@@ -306,7 +306,11 @@ const convertConditionRule = (node: Node, ctx: Context, rule: ConditionRule, lin
   }
 
   if(rule.stop) {
-    lines.push(`${indent}  return;`)
+    if(returnInformationOnStop) {
+      lines.push(`${indent} return ctx['information'];`)
+    } else {
+      lines.push(`${indent}  return;`)
+    }
   }
 
   lines.push(`${indent}}`);
