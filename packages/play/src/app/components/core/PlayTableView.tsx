@@ -53,6 +53,7 @@ import {User} from "@app/shared/types/core/user/user";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 import ColumnAction from "@frontend/app/components/core/table/ColumnAction";
+import ColumnActionsMenu from "@frontend/app/components/core/table/ColumnActionsMenu";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc) && !isQueryableNotStoredStateListDescription(informationInfo.desc)) {
@@ -224,9 +225,7 @@ const compileTableColumns = (
           const actionConfigs = cValue as ActionTableColumn[];
 
           gridColDef.renderCell = (rowParams) => <div style={{display: "flex"}}>
-            {actionConfigs.map((c, index) => <div>
-              <ColumnAction action={c} row={rowParams.row} defaultService={defaultService} key={'action_column_'+index} />
-            </div>)}
+            <ColumnActionsMenu actions={actionConfigs} row={rowParams.row} defaultService={defaultService} />
           </div>
           break;
         case "pageLink":
