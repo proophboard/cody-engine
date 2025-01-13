@@ -65,7 +65,7 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
   const variant = props.variant || uiButtonConfig['variant'] || 'contained';
   const color = props.buttonColor || uiButtonConfig['color'] || 'primary';
   const style = props.style || uiButtonConfig['style'] || undefined;
-  const icon = props.startIcon || uiConfigIcon;
+  const icon = props.startIcon === false ? undefined : props.startIcon || uiConfigIcon;
   const label = props.label || uiButtonConfig['label'] || undefined;
 
   let disabled = false;
