@@ -7,7 +7,7 @@ import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 
 export interface ButtonProps {
   label?: string;
-  startIcon?: React.ReactNode | undefined;
+  startIcon?: React.ReactNode | false | undefined;
   endIcon?: React.ReactNode | undefined;
   buttonColor?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | undefined;
   style?: SxProps;
