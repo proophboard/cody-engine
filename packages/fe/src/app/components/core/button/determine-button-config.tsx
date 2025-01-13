@@ -70,8 +70,8 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
 
   let disabled = false;
 
-  if(props.disabled) {
-    disabled = true;
+  if(typeof props.disabled !== "undefined") {
+    disabled = props.disabled;
   } else if (uiButtonConfig['disabled']) {
     const btnCDisabled = uiButtonConfig['disabled'];
 
@@ -86,8 +86,8 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
 
   let hidden = false;
 
-  if(props.hidden) {
-    hidden = true;
+  if(typeof props.hidden !== "undefined") {
+    hidden = props.hidden;
   } else if (uiButtonConfig['hidden']) {
     const btnCHidden = uiButtonConfig['hidden'];
 
