@@ -10,12 +10,26 @@ export const normalizeDependencies = (deps: DependencyRegistry | undefined, defa
   for (const depsKey in deps) {
     const dep = deps[depsKey];
 
-    if(dep.type === "query" && depsKey.split(".").length === 1) {
-      delete deps[depsKey];
+    if(Array.isArray(dep)) {
+      if(dep.length > 0) {
+        const firstDep = dep[0];
 
-      const newKey = `${defaultService}.${depsKey}`;
+        if(firstDep.type === "query"  && depsKey.split(".").length === 1) {
+          delete deps[depsKey];
 
-      deps[newKey] = dep;
+          const newKey = `${defaultService}.${depsKey}`;
+
+          deps[newKey] = dep;
+        }
+      }
+    } else {
+      if(dep.type === "query" && depsKey.split(".").length === 1) {
+        delete deps[depsKey];
+
+        const newKey = `${defaultService}.${depsKey}`;
+
+        deps[newKey] = dep;
+      }
     }
   }
 

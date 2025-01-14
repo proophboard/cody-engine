@@ -20,7 +20,7 @@ export interface Dependency {
   if?: string,
 }
 
-export type DependencyRegistry = {[dependencyName: string]: Dependency}
+export type DependencyRegistry = {[dependencyName: string]: Dependency | Dependency[]}
 
 export interface AggregateDescription extends ProophBoardDescription {
   name: string;

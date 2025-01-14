@@ -32,61 +32,68 @@ export const playLoadDependencies = async (message: Message, type: PlayMessageTy
   const loadedDependencies: Record<string, any> = {};
 
   for (const dependencyKey in dependencies) {
-    const dep = dependencies[dependencyKey];
-    const depName = dep.alias || dependencyKey;
+    let depOrDepArr = dependencies[dependencyKey];
 
-    if(dep.if) {
-      const ctx: any = {meta: message.meta, name: message.name};
-
-      ctx[type] = message.payload;
-
-      if(! await jexl.eval(dep.if, ctx)) {
-        continue;
-      }
+    if(!Array.isArray(depOrDepArr)) {
+      depOrDepArr = [depOrDepArr];
     }
 
-    const messageDep: Record<string, object> = {};
-    messageDep[type] = message.payload;
+    for(const dep of depOrDepArr) {
+      const depName = dep.alias || dependencyKey;
 
-    switch (dep.type) {
-      case "query":
-        let msgCopy = {...message};
-        if(dep.options?.query) {
-          const payload: Record<string, any> = {};
+      if(dep.if) {
+        const ctx: any = {meta: message.meta, name: message.name};
 
-          for (const prop in dep.options.query) {
-            payload[prop] = await jexl.eval(dep.options.query[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
+        ctx[type] = message.payload;
+
+        if(! await jexl.eval(dep.if, ctx)) {
+          continue;
+        }
+      }
+
+      const messageDep: Record<string, object> = {};
+      messageDep[type] = message.payload;
+
+      switch (dep.type) {
+        case "query":
+          let msgCopy = {...message};
+          if(dep.options?.query) {
+            const payload: Record<string, any> = {};
+
+            for (const prop in dep.options.query) {
+              payload[prop] = await jexl.eval(dep.options.query[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
+            }
+
+            msgCopy = {...msgCopy, payload};
           }
 
-          msgCopy = {...msgCopy, payload};
-        }
+          loadedDependencies[depName] = await loadQueryDependency(dependencyKey, msgCopy, dep.options, config.queries, config);
+          break;
+        case "service":
+          loadedDependencies[depName] = loadServiceDependency(dependencyKey, message, dep.options);
+          break;
+        case "events":
+          if(!dep.options?.match) {
+            throw new Error(`Missing "match" option in events dependency: ${depName}`);
+          }
 
-        loadedDependencies[depName] = await loadQueryDependency(dependencyKey, msgCopy, dep.options, config.queries, config);
-        break;
-      case "service":
-        loadedDependencies[depName] = loadServiceDependency(dependencyKey, message, dep.options);
-        break;
-      case "events":
-        if(!dep.options?.match) {
-          throw new Error(`Missing "match" option in events dependency: ${depName}`);
-        }
+          const {match} = dep.options;
 
-        const {match} = dep.options;
+          if(typeof match !== "object") {
+            throw new Error(`Type mismatch for dependency "${depName}". Events dependency option "match" has to be a Record<string, any>`);
+          }
 
-        if(typeof match !== "object") {
-          throw new Error(`Type mismatch for dependency "${depName}". Events dependency option "match" has to be a Record<string, any>`);
-        }
+          const compiledMatch: EventMatcher = {};
+          for (const prop in match) {
+            compiledMatch[prop] = await jexl.eval(match[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
+          }
 
-        const compiledMatch: EventMatcher = {};
-        for (const prop in match) {
-          compiledMatch[prop] = await jexl.eval(match[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
-        }
-
-        loadedDependencies[depName] = await loadEventsDependency(depName, {...dep.options, match: compiledMatch});
-        console.log(`[CodyPlay] Loaded events dependency "${depName}" with options: `, {...dep.options, match: compiledMatch}, "Result: ", loadedDependencies[depName]);
-        break;
-      default:
-        throw new Error(`Unknown dependency type detected for "${message.name}". Supported dependency types are: "query", "service", and "events". But the configured type is "${dep.type}"`);
+          loadedDependencies[depName] = await loadEventsDependency(depName, {...dep.options, match: compiledMatch});
+          console.log(`[CodyPlay] Loaded events dependency "${depName}" with options: `, {...dep.options, match: compiledMatch}, "Result: ", loadedDependencies[depName]);
+          break;
+        default:
+          throw new Error(`Unknown dependency type detected for "${message.name}". Supported dependency types are: "query", "service", and "events". But the configured type is "${dep.type}"`);
+      }
     }
   }
 

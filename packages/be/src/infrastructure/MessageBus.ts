@@ -24,42 +24,52 @@ export class MessageBus {
     }
 
     for (const dependencyKey in dependencies) {
-      const dep = dependencies[dependencyKey];
-      const depName = dep.alias || dependencyKey;
+      let depOrDepArr = dependencies[dependencyKey];
 
-      if(dep.if) {
-        const ctx: any = {meta: message.meta, name: message.name};
-
-        ctx[type] = message.payload;
-
-        if(! await jexl.eval(dep.if, ctx)) {
-          continue;
-        }
+      if(!Array.isArray(depOrDepArr)) {
+        depOrDepArr = [depOrDepArr];
       }
 
-      switch (dep.type) {
-        case "query":
-          const options = cloneDeepJSON(dep.options || {});
-          if(options.query) {
-            const payload: Record<string, any> = {};
+      for(const dep of depOrDepArr) {
+        const depName = dep.alias || dependencyKey;
 
-            const messageDep: Record<string, object> = {};
-            messageDep[type] = message.payload;
+        if (dep.if) {
+          const ctx: any = {meta: message.meta, name: message.name};
 
-            for (const prop in options.query) {
-              payload[prop] = await jexl.eval(options.query[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
+          ctx[type] = message.payload;
+
+          if (!await jexl.eval(dep.if, ctx)) {
+            continue;
+          }
+        }
+
+        switch (dep.type) {
+          case "query":
+            const options = cloneDeepJSON(dep.options || {});
+            if (options.query) {
+              const payload: Record<string, any> = {};
+
+              const messageDep: Record<string, object> = {};
+              messageDep[type] = message.payload;
+
+              for (const prop in options.query) {
+                payload[prop] = await jexl.eval(options.query[prop], {
+                  ...loadedDependencies, ...messageDep,
+                  meta: message.meta
+                });
+              }
+
+              options.query = payload;
             }
 
-            options.query = payload;
-          }
-
-          loadedDependencies[depName] = await this.loadQueryDependency(dependencyKey, message, options);
-          break;
-        case "service":
-          loadedDependencies[depName] = this.loadServiceDependency(dependencyKey, message, dep.options);
-          break;
-        default:
-          throw new Error(`Unknown dependency type detected for "${message.name}". Supported dependency types are: "query", "service". But the configured type is "${dep.type}"`);
+            loadedDependencies[depName] = await this.loadQueryDependency(dependencyKey, message, options);
+            break;
+          case "service":
+            loadedDependencies[depName] = this.loadServiceDependency(dependencyKey, message, dep.options);
+            break;
+          default:
+            throw new Error(`Unknown dependency type detected for "${message.name}". Supported dependency types are: "query", "service". But the configured type is "${dep.type}"`);
+        }
       }
     }
 
