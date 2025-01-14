@@ -4,6 +4,7 @@ import {AnyRule, PropMapping} from "@app/shared/rule-engine/configuration";
 
 export interface Action {
   type: "command" | "link" | "rules";
+  description?: string;
   position: "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
   button: ButtonConfig;
 }
