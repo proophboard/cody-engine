@@ -1,5 +1,5 @@
 import {Jexl} from "@event-engine/infrastructure/jexl/jexl";
-import {cloneDeep, get, set, unset} from "lodash";
+import {cloneDeep, get, set, unset, pick} from "lodash";
 
 export const registerObjectExtension = (jexl: Jexl) => {
   jexl.addTransform('get', getValueFromPath);
@@ -7,6 +7,7 @@ export const registerObjectExtension = (jexl: Jexl) => {
   jexl.addTransform('unset', unsetPath);
   jexl.addTransform('keys', (obj: object) => Object.keys(obj));
   jexl.addTransform('values', (obj: object) => Object.values(obj));
+  jexl.addTransform('pick', (obj: object, props: string[]) => pick(obj, props));
 }
 
 const getValueFromPath = (obj: object | Array<unknown>, path: string, notSetValue?: any) => {
