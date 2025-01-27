@@ -48,7 +48,7 @@ const getConfiguredJexl = (): Jexl => {
   return configuredJexl;
 }
 
-const count = (val: any) => {
+const count = (val: any): number => {
   if(Array.isArray(val)) {
     return val.length;
   }
@@ -62,7 +62,7 @@ const count = (val: any) => {
   }
 
   if(typeof val === "number") {
-    return val;
+    return count(''+val);
   }
 
   return val ? 1 : 0;
