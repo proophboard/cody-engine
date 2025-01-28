@@ -18,6 +18,7 @@ import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model
 import {asyncIterableToArray} from "@app/shared/utils/async-iterable-to-array";
 import {normalizeEventMetadataMatcher} from "@app/shared/utils/normalize-event-metadata-matcher";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
+import {execMappingAsync} from "@cody-play/infrastructure/rule-engine/make-executable";
 
 export type PlayMessageType = 'command' | 'event' | 'query';
 
@@ -85,7 +86,7 @@ export const playLoadDependencies = async (message: Message, type: PlayMessageTy
 
           const compiledMatch: EventMatcher = {};
           for (const prop in match) {
-            compiledMatch[prop] = await jexl.eval(match[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
+            compiledMatch[prop] = await execMappingAsync(match[prop], {...loadedDependencies, ...messageDep, meta: message.meta});
           }
 
           loadedDependencies[depName] = await loadEventsDependency(depName, {...dep.options, match: compiledMatch});
