@@ -29,9 +29,7 @@ export const makeValueObject = <T>(
 
   // Lazy compile the validate function to save dev server ramp up time
   const prepareValidator = () => {
-    if(schema.type === "object" || schema.type === "array") {
-      schema = resolveRefs(cloneSchema(schema), definitions);
-    }
+    schema = resolveRefs(cloneSchema(schema), definitions);
 
     if(schema.$id) {
       ajv.removeSchema(schema.$id);
