@@ -7,5 +7,12 @@
       }
     ]
   ],
-  "plugins": []
+  "env": {
+    "development": {
+      "plugins": ["react-refresh/babel"]
+    },
+    "production": {
+      "plugins": []
+    }
+  }
 }

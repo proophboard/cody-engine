@@ -8,6 +8,7 @@ module.exports = composePlugins(withNx(), withReact(), (config) => {
   config.devServer = {
     ...config.devServer,
     port: 4200,
+    hot: true,
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
