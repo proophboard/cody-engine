@@ -1,9 +1,12 @@
 import {
   AggregateMeta,
   AppendToListener,
-  checkMatchObject, EventMatcher,
+  checkMatchObject,
+  EventMatcher,
   EventStore,
-  MatchObject, MatchOperator, StreamType
+  MatchObject,
+  MatchOperator,
+  StreamType
 } from "@event-engine/infrastructure/EventStore";
 import {DB} from "@event-engine/infrastructure/Postgres/DB";
 import {Event, EventMeta} from "@event-engine/messaging/event";
@@ -48,32 +51,32 @@ export class PostgresEventStore implements EventStore {
 
     await this.db.query(`
         CREATE TABLE ${streamName} (
-                                       no BIGSERIAL,
-                                       uuid UUID NOT NULL,
-                                       name VARCHAR(100) NOT NULL,
-                                       payload JSON NOT NULL,
-                                       meta JSONB NOT NULL,
-                                       created_at TIMESTAMPTZ NOT NULL,
-                                       PRIMARY KEY (no),
-                                       ${constraints}
-                                           UNIQUE (uuid)
-        );
+          no BIGSERIAL,
+          uuid UUID NOT NULL,
+          name VARCHAR(100) NOT NULL,
+          payload JSON NOT NULL,
+          meta JSONB NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL,
+          PRIMARY KEY (no),
+          ${constraints}
+          UNIQUE (uuid)
+      );
     `);
 
     if(isWriteModelStream) {
       await this.db.query(`
-          CREATE UNIQUE INDEX ON ${streamName}
-              (
-              (meta->>'${AggregateMeta.TYPE}'), (meta->>'${AggregateMeta.ID}'), (meta->>'${AggregateMeta.VERSION}')
-              );
-      `);
+      CREATE UNIQUE INDEX ON ${streamName}
+      (
+        (meta->>'${AggregateMeta.TYPE}'), (meta->>'${AggregateMeta.ID}'), (meta->>'${AggregateMeta.VERSION}')
+      );
+    `);
 
       await this.db.query(`
-          CREATE INDEX ON ${streamName}
-              (
-              (meta->>'${AggregateMeta.TYPE}'), (meta->>'${AggregateMeta.ID}'), no
-              );
-      `);
+      CREATE INDEX ON ${streamName}
+      (
+        (meta->>'${AggregateMeta.TYPE}'), (meta->>'${AggregateMeta.ID}'), no
+      );
+    `);
     }
 
     return true;
@@ -81,7 +84,7 @@ export class PostgresEventStore implements EventStore {
 
   async deleteStream(streamName: string): Promise<boolean> {
     await this.db.query(`
-        DROP TABLE IF EXISTS ${streamName}
+      DROP TABLE IF EXISTS ${streamName}
     `);
 
     return true;
@@ -89,14 +92,14 @@ export class PostgresEventStore implements EventStore {
 
   async hasStream(streamName: string): Promise<boolean> {
     const result = await this.db.query(`
-        SELECT EXISTS (
-            SELECT FROM
-                information_schema.tables
-            WHERE
-                table_schema LIKE 'public' AND
-                table_type LIKE 'BASE TABLE' AND
-                table_name = $1
-        );
+    SELECT EXISTS (
+    SELECT FROM 
+        information_schema.tables 
+    WHERE 
+        table_schema LIKE 'public' AND 
+        table_type LIKE 'BASE TABLE' AND
+        table_name = $1
+    );
     `, [streamName]);
 
     return result.rows[0].exists;
@@ -137,8 +140,13 @@ export class PostgresEventStore implements EventStore {
     for(const prop in eventMatcher) {
       const [matchWhere, value] = this.matchObjectToWhereClause(prop, valuePos, eventMatcher[prop]);
       where += matchWhere + ' AND ';
-      bindings.push(value);
-      valuePos++;
+      if(Array.isArray(value)) {
+        bindings.push(...value);
+        valuePos += value.length;
+      } else {
+        bindings.push(value);
+        valuePos++;
+      }
     }
 
     const query = `DELETE FROM ${streamName} WHERE ${where};`;
@@ -193,7 +201,7 @@ export class PostgresEventStore implements EventStore {
 
     if(fromEventId) {
       const fromEventResult = await this.db.query(`
-          SELECT no FROM ${streamName} WHERE uuid = $1;
+        SELECT no FROM ${streamName} WHERE uuid = $1;
       `, [fromEventId]);
 
       if(fromEventResult.rowCount === 1) {
@@ -208,8 +216,13 @@ export class PostgresEventStore implements EventStore {
       for(const prop in eventMatcher) {
         const [matchWhere, value] = this.matchObjectToWhereClause(prop, valuePos, eventMatcher[prop]);
         where += matchWhere + ' AND ';
-        bindings.push(value);
-        valuePos++;
+        if(Array.isArray(value)) {
+          bindings.push(...value);
+          valuePos += value.length;
+        } else {
+          bindings.push(value);
+          valuePos++;
+        }
       }
       where += fromEventNo? `no > ${fromEventNo}` : '1=1';
     }
@@ -264,21 +277,41 @@ export class PostgresEventStore implements EventStore {
   private matchObjectToWhereClause(prop: string, valuePos: number, matcher: MatchObject | string): [string, any] {
     matcher = checkMatchObject(prop, matcher);
 
-    if(prop === '$eventId') {
-      return [`uuid = $${valuePos}`, matcher.val];
+    if(Array.isArray(matcher.val) && matcher.op !== MatchOperator.EQ) {
+      throw new Error("[EventStore] A list of values is only allowed in combination with an equal match operator!");
+    }
+
+    if(["uuid", "name", "createdAt"].includes(matcher.evtProp as string)) {
+      if(Array.isArray(matcher.val)) {
+        return [`${matcher.evtProp} IN ($${matcher.val.map((v, i) => valuePos + i).join(', $')})`, matcher.val];
+      } else {
+        return [`${matcher.evtProp} ${this.toPgOperator(matcher.op)} $${valuePos}`, matcher.val];
+      }
     }
 
     switch (matcher.op) {
       case MatchOperator.EQ:
-        return [`meta->'${prop}' = $${valuePos}`, JSON.stringify(matcher.val)];
+        if(Array.isArray(matcher.val)) {
+          return [`${matcher.evtProp}->>'${prop}' IN ($${matcher.val.map((v, i) => valuePos + i).join(', $')})`, matcher.val];
+        }
+      // eslint-disable-next-line no-fallthrough
+      default:
+        return [`jsonb(${matcher.evtProp}->'${prop}') ${this.toPgOperator(matcher.op)} $${valuePos}::jsonb`, JSON.stringify(matcher.val)];
+    }
+  }
+
+  private toPgOperator(o: MatchOperator): string {
+    switch (o) {
+      case MatchOperator.EQ:
+        return "=";
       case MatchOperator.GT:
-        return [`meta->'${prop}' > $${valuePos}`, JSON.stringify(matcher.val)];
+        return ">";
       case MatchOperator.GTE:
-        return [`meta->'${prop}' >= $${valuePos}`, JSON.stringify(matcher.val)];
+        return ">=";
       case MatchOperator.LT:
-        return [`meta->'${prop}' < $${valuePos}`, JSON.stringify(matcher.val)];
+        return "<";
       case MatchOperator.LTE:
-        return [`meta->'${prop}' <= $${valuePos}`, JSON.stringify(matcher.val)];
+        return "<=";
     }
   }
 }
