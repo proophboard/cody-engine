@@ -1,6 +1,6 @@
 import {JSONSchema7} from "json-schema";
 import {ajv} from "@event-engine/messaging/configuredAjv";
-import {ValidationError} from "ajv";
+import {ValidateFunction, ValidationError} from "ajv";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
@@ -21,21 +21,31 @@ export const makeValueObject = <T>(
   init?: (data: Partial<T>) => T
 ): ((data: T) => T) => {
 
+  let validate: ValidateFunction<T>;
+
   if(!init) {
     init = (d): T => d as T;
   }
 
-  if(schema.type === "object" || schema.type === "array") {
-    schema = resolveRefs(cloneSchema(schema), definitions);
-  }
+  // Lazy compile the validate function to save dev server ramp up time
+  const prepareValidator = () => {
+    if(schema.type === "object" || schema.type === "array") {
+      schema = resolveRefs(cloneSchema(schema), definitions);
+    }
 
-  if(schema.$id) {
-    ajv.removeSchema(schema.$id);
+    if(schema.$id) {
+      ajv.removeSchema(schema.$id);
+    }
+    validate = ajv.compile(schema);
   }
-  const validate = ajv.compile(schema);
 
   const validator = (payload: T): T => {
     payload = init!(payload);
+
+    if(!validate) {
+      prepareValidator();
+    }
+
     if (!validate(payload)) {
       if (validate.errors) {
         throw new ValidationError(validate.errors.map(e => addInstanceNameToError(e, name)));

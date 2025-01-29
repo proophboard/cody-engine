@@ -1,7 +1,7 @@
 import { Message, Payload, Meta } from './message';
 import {JSONSchema7} from "json-schema";
 import {ajv} from "@event-engine/messaging/configuredAjv";
-import {ValidationError} from "ajv";
+import {ValidateFunction, ValidationError} from "ajv";
 import {cloneSchema, resolveRefs} from "@event-engine/messaging/resolve-refs";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {addInstanceNameToError} from "@event-engine/messaging/add-instance-name-to-error";
@@ -34,12 +34,24 @@ export const makeEvent = <P extends Payload, M extends EventMeta = any>(
   isPublic?: boolean,
   version = 'v1'
 ): EventFactory<P,M> => {
-  schema = resolveRefs(cloneSchema(schema), definitions);
-  if(schema.$id) {
-    ajv.removeSchema(schema.$id);
+
+  let validate: ValidateFunction<P>;
+
+  // Lazy compile the validate function to save dev server ramp up time
+  const prepareValidator = () => {
+    schema = resolveRefs(cloneSchema(schema), definitions);
+    if(schema.$id) {
+      ajv.removeSchema(schema.$id);
+    }
+    validate = ajv.compile(schema);
   }
-  const validate = ajv.compile(schema);
+
+
   const validator = (payload: unknown): P => {
+    if(!validate) {
+      prepareValidator();
+    }
+
     if (!validate(payload)) {
       if (validate.errors) {
         throw new ValidationError(validate.errors.map(e => addInstanceNameToError(e, name)));
