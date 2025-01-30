@@ -12,11 +12,12 @@ import {PageLinkTableColumn} from "@cody-play/infrastructure/cody/vo/play-vo-met
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
-import {execMappingSync, makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {useEnv} from "@frontend/hooks/use-env";
 import {commands} from "@frontend/app/components/commands";
 import {useParams} from "react-router-dom";
 import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row-jexl-context";
+import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
+import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 
 interface OwnProps {
   action: Action;

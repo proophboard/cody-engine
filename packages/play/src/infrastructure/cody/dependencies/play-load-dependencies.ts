@@ -18,7 +18,7 @@ import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model
 import {asyncIterableToArray} from "@app/shared/utils/async-iterable-to-array";
 import {normalizeEventMetadataMatcher} from "@app/shared/utils/normalize-event-metadata-matcher";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
-import {execMappingAsync} from "@cody-play/infrastructure/rule-engine/make-executable";
+import {execMappingAsync} from "@app/shared/rule-engine/exec-mapping";
 
 export type PlayMessageType = 'command' | 'event' | 'query';
 

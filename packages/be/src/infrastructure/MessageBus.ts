@@ -7,12 +7,12 @@ import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageB
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";
 import {EventMatcher} from "@event-engine/infrastructure/EventStore";
-import {execMappingAsync} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {Event} from "@event-engine/messaging/event";
 import {normalizeEventMetadataMatcher} from "@app/shared/utils/normalize-event-metadata-matcher";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 import {asyncIterableToArray} from "@app/shared/utils/async-iterable-to-array";
 import {getConfiguredEventStore} from "@server/infrastructure/configuredEventStore";
+import {execMappingAsync} from "@app/shared/rule-engine/exec-mapping";
 
 const cloneDeepJSON = <T>(val: T): T => {
   return JSON.parse(JSON.stringify(val));

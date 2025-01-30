@@ -9,13 +9,13 @@ import {useParams} from "react-router-dom";
 import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
-import {execMappingSync} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {useApiQuery} from "@frontend/queries/use-api-query";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import StaticHtmlWidget from "@frontend/app/components/core/form/widgets/html/StaticHtmlWidget";
 import {CircularProgress} from "@mui/material";
 import {WidgetProps} from "@rjsf/utils";
 import {JSONSchemaWithId} from "@frontend/app/components/core/form/widgets/json-schema/json-schema-with-id";
+import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 
 
 interface OwnProps {

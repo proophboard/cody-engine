@@ -1,4 +1,4 @@
-import {execMappingAsync, execMappingSync} from "@cody-play/infrastructure/rule-engine/make-executable";
+import {execMappingAsync, execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 
 const source = {propA: "a", propB: "b"};
 
