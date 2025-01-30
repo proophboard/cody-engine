@@ -12,7 +12,7 @@ import Form from "@rjsf/mui";
 import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
 import {v4} from "uuid";
 import Grid2 from "@mui/material/Unstable_Grid2";
-import {Alert, AlertTitle, Container} from "@mui/material";
+import {Alert, AlertTitle, Container, useTheme} from "@mui/material";
 import AxiosResponseViewer from "@frontend/app/components/core/AxiosResponseViewer";
 import {AxiosError, AxiosResponse} from "axios";
 import {commandTitle} from "@frontend/app/components/core/CommandButton";
@@ -56,6 +56,7 @@ let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let isInitialized = false;
 
 const CommandForm = (props: CommandFormProps, ref: any) => {
+  const theme = useTheme();
   const formRef: any = useRef();
   const {t} = useTranslation();
   const [formData, setFormData] = useState<{[prop: string]: any}>(props.formData || {});
@@ -201,7 +202,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
 
   return (
     <div>
-      <Grid2 container={true} spacing={3}>
+      <Grid2 container={true} spacing={3} sx={theme.commandForm.styleOverrides}>
         <Grid2 md={12}>
           {!mutation.isSuccess && !mutation.isError && <Form
             schema={schema}

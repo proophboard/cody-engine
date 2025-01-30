@@ -4,12 +4,18 @@ import overwriteTheme from "@frontend/extensions/app/layout/theme";
 
 declare module '@mui/material/styles' {
   interface Theme {
+    commandForm: {
+      "styleOverrides": SxProps;
+    }
     stateView: {
       "styleOverrides": SxProps;
     }
   }
   // allow configuration using `createTheme`
   interface ThemeOptions {
+    commandForm?: {
+      "styleOverrides": SxProps;
+    }
     stateView?: {
       "styleOverrides": SxProps;
     }
