@@ -76,5 +76,22 @@ describe('InMemoryDocumentStore', () => {
     expect(ids).toStrictEqual([TEST_DOC_ID, TEST_DOC2_ID]);
     expect(docs).toStrictEqual([TEST_DOC, TEST_DOC2]);
   });
-});
 
+  it('adds sequence and provides next val', async () => {
+    await ds.addSequenceIfNotExists('testseq');
+
+    const firstVal = await ds.getNextSequenceValue('testseq');
+    const secondVal = await ds.getNextSequenceValue('testseq');
+
+    expect([firstVal, secondVal]).toStrictEqual([1,2]);
+  })
+
+  it('starts sequence at another position and uses custom increment', async () => {
+    await ds.addSequenceIfNotExists('customseq', 10, 20);
+
+    const firstVal = await ds.getNextSequenceValue('customseq');
+    const secondVal = await ds.getNextSequenceValue('customseq');
+
+    expect([firstVal, secondVal]).toStrictEqual([10, 30]);
+  })
+});

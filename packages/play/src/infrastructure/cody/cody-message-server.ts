@@ -6,7 +6,11 @@ import {checkQuestion, handleReply, Reply, test} from "@proophboard/cody-server/
 import {ElementEdited} from "@proophboard/cody-server/lib/src/http/elementEdited";
 import {Action, CodyPlayConfig, enhanceConfigWithDefaults} from "@cody-play/state/config-store";
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
-import {Documents, InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
+import {
+  Documents,
+  InMemoryDocumentStore,
+  Sequences
+} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
 import {InMemoryEventStore, InMemoryStreamStore} from "@event-engine/infrastructure/EventStore/InMemoryEventStore";
 import {v4} from "uuid";
 import {Record} from "mdi-material-ui";
@@ -32,6 +36,7 @@ export interface Playshot {
   playData: {
     streams: InMemoryStreamStore;
     documents: Documents;
+    sequences?: Sequences;
   }
 }
 
@@ -133,7 +138,7 @@ export class CodyMessageServer {
       playConfig: this.config,
       playData: {
         streams: await this.es.exportStreams(),
-        documents: await this.ds.exportDocuments()
+        ...await this.ds.exportBackup()
       }
     }
 
@@ -245,7 +250,10 @@ export class CodyMessageServer {
     });
 
     await this.es.importStreams(playshot.playData.streams || {});
-    await this.ds.importDocuments(playshot.playData.documents || {});
+    await this.ds.importBackup({
+      documents: playshot.playData.documents || {},
+      sequences: playshot.playData.sequences || {}
+    });
 
     await saveToLocalStorage(enhanceConfigWithDefaults(playshot.playConfig), this.ds, this.es, playshot.boardId);
 

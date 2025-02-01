@@ -48,7 +48,7 @@ const Database = (props: DatabaseProps) => {
 
   const database = {
     eventStore: es.syncExportStreams(),
-    documentStore: ds.syncExportDocuments(),
+    documentStore: ds.syncExportBackup(),
   };
   const databaseStr = JSON.stringify(database, null, 2);
 
@@ -74,7 +74,10 @@ const Database = (props: DatabaseProps) => {
     setProjections(getProjections(config, infoService));
   }, [config.types]);
 
-  const validateDatabase = (editorVal: string): {eventStore: Record<string, any>, documentStore: Record<string, any>} | undefined => {
+  const validateDatabase = (editorVal: string): {eventStore: Record<string, any>, documentStore: {
+    documents: Record<string, any>,
+    sequences: Record<string, any>
+    }} | undefined => {
 
     try {
       const newDatabase = JSON.parse(editorVal);
@@ -88,7 +91,7 @@ const Database = (props: DatabaseProps) => {
 
   const handleDatabaseChanged = (editorVal: string | undefined) => {
     if(!editorVal) {
-      editorVal = '{"eventStore": {}, "documentStore": {}}';
+      editorVal = '{"eventStore": {}, "documentStore": {"documents": {}, "sequences": {}}}';
     }
 
     setUpdatedDatabaseStr(editorVal);
@@ -145,6 +148,7 @@ const Database = (props: DatabaseProps) => {
         window.setTimeout(() => {
           setSelectedProjection('');
           setIsRunningProjection(false);
+          props.onSaveDisabled(false);
         }, 3000);
       })().catch((e: any) => {throw e})
     }
@@ -156,7 +160,7 @@ const Database = (props: DatabaseProps) => {
       const boardId = currentBoardId();
 
       if(newDatabase && boardId) {
-        await ds.importDocuments(newDatabase.documentStore);
+        await ds.importBackup(newDatabase.documentStore);
         await es.importStreams(newDatabase.eventStore);
         await saveDataToLocalStorage(ds, es, boardId);
         props.onSaveDisabled(true);

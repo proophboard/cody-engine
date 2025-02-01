@@ -13,9 +13,16 @@ export const getConfiguredPlayDocumentStore = (): InMemoryDocumentStore => {
     const savedDocsStr = localStorage.getItem(DOCUMENT_STORE_LOCAL_STORAGE_KEY + currentBoardId());
 
     if(savedDocsStr) {
-      const docs = JSON.parse(savedDocsStr);
-      console.log(`[PlayDocumentStore] Importing documents from local storage: `, docs);
-      store.importDocuments(docs).catch(e => {
+      let docs = JSON.parse(savedDocsStr);
+      if(!docs['documents']) {
+        docs = {
+          documents: docs,
+          sequences: {}
+        }
+      }
+
+      console.log(`[PlayDocumentStore] Importing backup from local storage: `, docs);
+      store.importBackup(docs).catch(e => {
         throw e
       });
     }

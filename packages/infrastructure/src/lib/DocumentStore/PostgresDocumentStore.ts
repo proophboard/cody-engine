@@ -102,6 +102,26 @@ export class PostgresDocumentStore implements DocumentStore {
     });
   }
 
+  public async addSequenceIfNotExists(name: string, start = 1, incrementBy = 1 ): Promise<void> {
+    const [query, bindings] = this.queryBuilder.makeAddSequenceIfNotExistsQuery(name, start, incrementBy);
+
+    await this.db.query(query, bindings);
+  }
+
+  public async dropSequence(name: string): Promise<void> {
+    const [query, bindings] = this.queryBuilder.makeDropSequenceQuery(name);
+
+    await this.db.query(query, bindings);
+  }
+
+  public async getNextSequenceValue(name: string): Promise<number> {
+    const [query, bindings] = this.queryBuilder.makeGetNextSequenceValQuery(name);
+
+    const result = await this.db.query(query, bindings);
+
+    return Number(result.rows[0]);
+  }
+
   async addDoc(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): Promise<void> {
     const [queryString, bindings] = this.queryBuilder.makeAddDocQuery(collectionName, docId, doc, metadata, version);
 

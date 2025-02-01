@@ -25,9 +25,12 @@ import {AndFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AndFi
 import {asyncFilter} from "@event-engine/infrastructure/helpers/async-filter";
 
 export type Documents = {[collectionName: string]: {[docId: string]: {doc: object, version: number}}};
+export type Sequences = {[sequenceName: string]: {nextVal: number, incrementBy: number}};
+export type Backup = {documents: Documents, sequences: Sequences};
 
 export class InMemoryDocumentStore implements DocumentStore {
   private documents: Documents = {};
+  private sequences: Sequences = {};
   private persistOnDisk: boolean;
   private readonly storageFile: string;
   private readonly filterProcessor: InMemoryFilterProcessor;
@@ -41,11 +44,13 @@ export class InMemoryDocumentStore implements DocumentStore {
 
     if(this.persistOnDisk) {
       if(! this.fs.existsSync(this.storageFile)) {
-        this.fs.writeFileSync(this.storageFile, JSON.stringify({documents: this.documents}));
+        this.fs.writeFileSync(this.storageFile, JSON.stringify({documents: this.documents, sequences: this.sequences}));
       }
 
       // eslint-disable-next-line @typescript-eslint/no-var-requires
-      this.documents = this.migrateDocs(require(this.storageFile).documents);
+      const stored = require(this.storageFile);
+      this.documents = this.migrateDocs(stored.documents);
+      this.sequences = stored.sequences || {};
     }
   }
 
@@ -75,6 +80,40 @@ export class InMemoryDocumentStore implements DocumentStore {
   }
 
   public async dropCollectionIndex(collectionName: string, index: Index): Promise<void> {
+  }
+
+  public async addSequenceIfNotExists(name: string, start = 1, incrementBy = 1): Promise<void> {
+    if(this.sequences.hasOwnProperty(name)) {
+      return;
+    }
+
+    this.sequences[name] = {
+      nextVal: start,
+      incrementBy
+    }
+
+    this.persistOnDiskIfEnabled();
+  }
+
+  public async dropSequence(name: string): Promise<void> {
+    delete this.sequences[name];
+
+    this.persistOnDiskIfEnabled();
+  }
+
+  public async getNextSequenceValue(name: string): Promise<number> {
+    if(!this.sequences.hasOwnProperty(name)) {
+      await this.addSequenceIfNotExists(name);
+
+      return 1;
+    }
+
+    const currentVal = this.sequences[name].nextVal;
+
+    this.sequences[name].nextVal += this.sequences[name].incrementBy;
+    this.persistOnDiskIfEnabled();
+
+    return currentVal;
   }
 
   public async addDoc(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): Promise<void> {
@@ -392,16 +431,23 @@ export class InMemoryDocumentStore implements DocumentStore {
     this.persistOnDiskIfEnabled();
   }
 
-  public async importDocuments(documents: Documents): Promise<void> {
-    this.documents = this.migrateDocs(documents);
+  public async importBackup(backup: Backup): Promise<void> {
+    this.documents = this.migrateDocs(backup.documents);
+    this.sequences = backup.sequences;
   }
 
-  public async exportDocuments(): Promise<Documents> {
-    return this.documents;
+  public async exportBackup(): Promise<Backup> {
+    return {
+      documents: this.documents,
+      sequences: this.sequences
+    };
   }
 
-  public syncExportDocuments(): Documents {
-    return this.documents;
+  public syncExportBackup(): Backup {
+    return {
+      documents: this.documents,
+      sequences: this.sequences
+    };
   }
 
   private selectFieldsFromDoc (partialSelect: Array<string|AliasFieldNameMapping>, doc: any): any {
@@ -505,7 +551,10 @@ export class InMemoryDocumentStore implements DocumentStore {
 
   private persistOnDiskIfEnabled() {
     if(this.persistOnDisk) {
-      this.fs.writeFileSync(this.storageFile, JSON.stringify({documents: this.documents}, null, 2));
+      this.fs.writeFileSync(this.storageFile, JSON.stringify({
+        documents: this.documents,
+        sequences: this.sequences
+      }, null, 2));
     }
   }
 

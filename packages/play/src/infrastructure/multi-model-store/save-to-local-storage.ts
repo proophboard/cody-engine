@@ -11,6 +11,6 @@ export const saveToLocalStorage = async (config: CodyPlayConfig, ds: InMemoryDoc
 }
 
 export const saveDataToLocalStorage = async (ds: InMemoryDocumentStore, es: InMemoryEventStore, boardId: string) => {
-  localStorage.setItem(DOCUMENT_STORE_LOCAL_STORAGE_KEY + boardId, JSON.stringify(await ds.exportDocuments()));
+  localStorage.setItem(DOCUMENT_STORE_LOCAL_STORAGE_KEY + boardId, JSON.stringify(await ds.exportBackup()));
   localStorage.setItem(EVENT_STORE_LOCAL_STORAGE_KEY + boardId, JSON.stringify(await es.exportStreams()));
 }

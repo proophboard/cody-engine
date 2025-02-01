@@ -1,5 +1,6 @@
 import {Filter} from "./DocumentStore/Filter";
 import {Index} from "@event-engine/infrastructure/DocumentStore/Index";
+import {SequenceProvider} from "@event-engine/infrastructure/sequence-provider/sequence-provider";
 
 export type Sort = 'asc' | 'desc';
 export type FieldName = string;
@@ -21,7 +22,7 @@ export interface Lookup {
 }
 
 export const isAliasFieldNameMapping = (partialSelectItem: unknown): partialSelectItem is AliasFieldNameMapping => {
-  return typeof partialSelectItem === "object" && !isLookup(partialSelectItem);
+  return partialSelectItem === "object" && !isLookup(partialSelectItem);
 }
 
 export const isLookup = (partialSelectItem: unknown): partialSelectItem is Lookup => {
@@ -34,7 +35,7 @@ export interface SortOrderItem {
 }
 export type SortOrder = Array<SortOrderItem>;
 
-export interface DocumentStore {
+export interface DocumentStore extends SequenceProvider {
   addCollection: (collectionName: string, index?: Index) => Promise<void>;
   hasCollection: (collectionName: string) => Promise<boolean>;
   dropCollection: (collectionName: string) => Promise<void>;
@@ -42,6 +43,9 @@ export interface DocumentStore {
   addCollectionIndex: (collectionName: string, index: Index) => Promise<void>;
   hasCollectionIndex: (collectionName: string, index: Index) => Promise<boolean>;
   dropCollectionIndex: (collectionName: string, index: Index) => Promise<void>;
+
+  addSequenceIfNotExists: (name: string, start?: number, incrementBy?: number) => Promise<void>;
+  dropSequence: (name: string) => Promise<void>;
 
   addDoc: (collectionName: string, docId: string, doc: object, metadata?: object, version?: number) => Promise<void>;
   updateDoc: (collectionName: string, docId: string, docOrSubset: object, metadata?: object, version?: number) => Promise<void>;

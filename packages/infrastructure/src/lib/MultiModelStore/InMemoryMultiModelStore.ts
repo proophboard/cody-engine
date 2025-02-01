@@ -31,7 +31,7 @@ export class InMemoryMultiModelStore implements MultiModelStore {
     session.commit();
 
     const currentStreams = await this.eventStore.exportStreams();
-    const currentDocuments = await this.documentStore.exportDocuments();
+    const currentBackup = await this.documentStore.exportBackup();
 
     this.eventStore.disableDiskStorage();
     this.documentStore.disableDiskStorage();
@@ -127,7 +127,7 @@ export class InMemoryMultiModelStore implements MultiModelStore {
       this.eventStore.flush();
     } catch (e) {
       await this.eventStore.importStreams(currentStreams);
-      await this.documentStore.importDocuments(currentDocuments);
+      await this.documentStore.importBackup(currentBackup);
       this.eventStore.enableDiskStorage();
       this.documentStore.enableDiskStorage();
       throw e;

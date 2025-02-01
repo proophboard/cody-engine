@@ -202,7 +202,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
 
   return (
     <div>
-      <Grid2 container={true} spacing={3} sx={theme.commandForm.styleOverrides}>
+      <Grid2 container={true} spacing={3} sx={theme.commandForm?.styleOverrides}>
         <Grid2 md={12}>
           {!mutation.isSuccess && !mutation.isError && <Form
             schema={schema}

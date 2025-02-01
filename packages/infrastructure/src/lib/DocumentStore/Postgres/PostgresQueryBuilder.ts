@@ -362,6 +362,32 @@ export class PostgresQueryBuilder {
     return [queryString, []];
   }
 
+  public makeAddSequenceIfNotExistsQuery(name: string, start = 1, incrementBy = 1): PostgresQuery {
+    const queryString = `
+      CREATE SEQUENCE IF NOT EXISTS $1
+      START $2
+      INCREMENT BY $3      
+    `;
+
+    return [queryString, [this.seqName(name), start, incrementBy]];
+  }
+
+  public makeDropSequenceQuery(name: string): PostgresQuery {
+    const queryString = `
+      DROP SEQUENCE $1
+    `;
+
+    return [queryString, [this.seqName(name)]];
+  }
+
+  public makeGetNextSequenceValQuery(name: string): PostgresQuery {
+    const queryString = `
+      SELECT nextval($1)
+    `;
+
+    return [queryString, [this.seqName(name)]];
+  }
+
   public makeDropCollectionMetadataColumnQuery(collectionName: string, index: MetadataFieldIndex): PostgresQuery {
     const queryString = `
       ALTER TABLE ${this.tableName(collectionName)}
@@ -468,5 +494,9 @@ export class PostgresQueryBuilder {
 
   private tableName(collectionName: string): string {
     return collectionName.toLowerCase();
+  }
+
+  private seqName(sequenceName: string): string {
+    return `seq_${sequenceName.toLowerCase()}`;
   }
 }

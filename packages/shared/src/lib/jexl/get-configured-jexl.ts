@@ -12,6 +12,7 @@ import {registerObjectExtension} from "@app/shared/jexl/object-extension/registe
 import {registerTypeCastExtensions} from "@app/shared/jexl/type-cast/register";
 import {registerMathExtension} from "@app/shared/jexl/math-extension/register";
 import {merge as deepMerge} from "lodash";
+import {registerSequenceExtension} from "@app/shared/jexl/sequence-extension/register";
 
 let configuredJexl: Jexl;
 
@@ -41,6 +42,7 @@ const getConfiguredJexl = (): Jexl => {
     registerArrayExtensions(configuredJexl);
     registerObjectExtension(configuredJexl);
     registerDateTimeExtensions(configuredJexl);
+    registerSequenceExtension(configuredJexl);
 
     configuredJexl = extendJexlConfiguration(configuredJexl);
   }
