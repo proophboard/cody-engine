@@ -1,6 +1,7 @@
 import {InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
 import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
 import {NoOpFilesystem} from "@event-engine/infrastructure/helpers/no-op-file-system";
+import {setupSequenceProvider} from "@app/shared/jexl/sequence-extension/register";
 
 let store: InMemoryDocumentStore;
 
@@ -25,6 +26,8 @@ export const getConfiguredPlayDocumentStore = (): InMemoryDocumentStore => {
       store.importBackup(docs).catch(e => {
         throw e
       });
+
+      setupSequenceProvider(store);
     }
   }
 
