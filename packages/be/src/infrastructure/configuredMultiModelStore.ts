@@ -9,7 +9,6 @@ import {InMemoryEventStore} from "@event-engine/infrastructure/EventStore/InMemo
 import {InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
 import {InMemoryMultiModelStore} from "@event-engine/infrastructure/MultiModelStore/InMemoryMultiModelStore";
 import {env} from "@server/environments/environment.current";
-import {setupSequenceProvider} from "@app/shared/jexl/sequence-extension/register";
 
 let store: MultiModelStore;
 
@@ -17,8 +16,6 @@ export const getConfiguredMultiModelStore = () => {
   if(!store) {
     const es = getConfiguredEventStore();
     const ds = getConfiguredDocumentStore();
-
-    setupSequenceProvider(ds);
 
     if(env.eventStore.adapter === "postgres" && env.documentStore.adapter === "postgres") {
       if(!(es instanceof PostgresEventStore)) {

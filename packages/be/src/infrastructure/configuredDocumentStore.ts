@@ -4,6 +4,7 @@ import {getConfiguredDB} from "@server/infrastructure/configuredDB";
 import {InMemoryDocumentStore} from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
 import {env} from "@server/environments/environment.current";
 import {NodeFilesystem} from "@event-engine/infrastructure/helpers/node-file-system";
+import {setupSequenceProvider} from "@app/shared/jexl/sequence-extension/register";
 
 let store: DocumentStore;
 
@@ -23,6 +24,8 @@ export const getConfiguredDocumentStore = (): DocumentStore => {
       default:
         store = new InMemoryDocumentStore(new NodeFilesystem());
     }
+
+    setupSequenceProvider(store);
   }
 
   return store;
