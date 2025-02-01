@@ -364,20 +364,20 @@ export class PostgresQueryBuilder {
 
   public makeAddSequenceIfNotExistsQuery(name: string, start = 1, incrementBy = 1): PostgresQuery {
     const queryString = `
-      CREATE SEQUENCE IF NOT EXISTS $1
-      START $2
-      INCREMENT BY $3      
+      CREATE SEQUENCE IF NOT EXISTS ${this.seqName(name)}
+      START ${parseInt(start.toString())}
+      INCREMENT BY ${parseInt(incrementBy.toString())}     
     `;
 
-    return [queryString, [this.seqName(name), start, incrementBy]];
+    return [queryString, []];
   }
 
   public makeDropSequenceQuery(name: string): PostgresQuery {
     const queryString = `
-      DROP SEQUENCE $1
+      DROP SEQUENCE ${this.seqName(name)}
     `;
 
-    return [queryString, [this.seqName(name)]];
+    return [queryString, []];
   }
 
   public makeGetNextSequenceValQuery(name: string): PostgresQuery {
@@ -497,6 +497,6 @@ export class PostgresQueryBuilder {
   }
 
   private seqName(sequenceName: string): string {
-    return `seq_${sequenceName.toLowerCase()}`;
+    return `${sequenceName.toLowerCase()}`;
   }
 }
