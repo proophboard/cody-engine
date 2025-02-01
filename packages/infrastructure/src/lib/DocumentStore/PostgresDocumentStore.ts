@@ -119,7 +119,7 @@ export class PostgresDocumentStore implements DocumentStore {
 
     const result = await this.db.query(query, bindings);
 
-    return Number(result.rows[0]);
+    return parseInt(result.rows[0]);
   }
 
   async addDoc(collectionName: string, docId: string, doc: object, metadata?: object, version?: number): Promise<void> {
