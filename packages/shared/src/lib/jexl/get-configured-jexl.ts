@@ -114,7 +114,7 @@ const isRole = (user: User, role: UserRole | UserRole[], disableActiveRoleCheck?
   return false;
 }
 
-const getAttribute = (user: User, attrName: string, notSetValue: any = null): any => {
+const getAttribute = (user: User, attrName: string, notSetValue?: any): any => {
   if(!user.attributes) {
     return notSetValue;
   }
