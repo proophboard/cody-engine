@@ -50,8 +50,8 @@ const filter = (arr: Array<unknown>, expr: string, ctx: object, jexl: Jexl): Arr
 
   const filtered: Array<unknown> = [];
 
-  arr.forEach(item => {
-    const itemCtx = {...ctx, item, _: item};
+  arr.forEach((item, index) => {
+    const itemCtx = {...ctx, item, _: item, index};
 
     if(jexl.evalSync(expr, itemCtx)) {
       filtered.push(item);
@@ -70,8 +70,8 @@ const map = (arr: Array<unknown>, expr: string, ctx: object, jexl: Jexl): Array<
     throw new Error(`First argument of jexl map() needs to be an array. ${typeof arr} given.`);
   }
 
-  return arr.map(item => {
-    return jexl.evalSync(expr, {...ctx, item, _: item});
+  return arr.map((item, index) => {
+    return jexl.evalSync(expr, {...ctx, item, _: item, index});
   })
 }
 
