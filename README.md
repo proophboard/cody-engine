@@ -69,7 +69,7 @@ Here are the steps to switch from prototype mode to "production-stack" mode.
 
 ### Switch Cody Engine mode
 
-The `.env` file sets `NODE_ENV=localdocker` so that `packages/be/src/environments/environment.localdocker.ts` configuration is used.
+The `.env` file sets `CODY_ENV=localdocker` so that `packages/be/src/environments/environment.localdocker.ts` configuration is used.
 This switches the backend to `production-stack` mode.
 
 For the frontend you need to switch the mode by hand in `packages/fe/src/environments/environment.ts`:
