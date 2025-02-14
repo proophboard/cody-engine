@@ -30,7 +30,7 @@ export const registerDateTimeExtensions = (jexl: Jexl) => {
   jexl.addTransform('timezoneOffset', d => (new Date(d)).getTimezoneOffset());
   jexl.addTransform('timestamp', d => (new Date(d)).getTime());
   jexl.addTransform('addMilliseconds', (d, ms: number) => (new Date(d)).getTime() + (ms))
-  jexl.addTransform('subMilliseconds', (d, ms: number) => (new Date(d)).getTime() + (ms))
+  jexl.addTransform('subMilliseconds', (d, ms: number) => (new Date(d)).getTime() - (ms))
   jexl.addTransform('addSeconds', (d, seconds: number) => (new Date(d)).getTime() + (seconds * 1000))
   jexl.addTransform('subSeconds', (d, seconds: number) => (new Date(d)).getTime() - (seconds * 1000))
   jexl.addTransform('addMinutes', (d, minutes: number) => (new Date(d)).getTime() + (minutes * 60 * 1000))
