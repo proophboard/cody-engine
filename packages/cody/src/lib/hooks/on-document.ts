@@ -40,6 +40,9 @@ import {getSourcesOfType, isCodyError, mergeWithSimilarNodes} from "@proophboard
 import {convertProjectionConfigCaseToRules} from "@app/shared/rule-engine/projection-config";
 import {onPolicy} from "@cody-engine/cody/hooks/on-policy";
 import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
+import {
+  selectVoForProjectionGeneration
+} from "@cody-engine/cody/hooks/utils/value-object/select-vo-for-projection-generation";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
   try {
@@ -237,7 +240,14 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
     if(voMeta.projection) {
       const prjName = voMeta.projection.name;
 
-      const events = getSourcesOfType(mergeWithSimilarNodes(vo, ctx.syncedNodes), NodeType.event, true);
+      const events = getSourcesOfType(
+        mergeWithSimilarNodes(
+          selectVoForProjectionGeneration(vo),
+          ctx.syncedNodes
+        ),
+        NodeType.event,
+        true
+      );
 
       if(isCodyError(events)) {
         return {
