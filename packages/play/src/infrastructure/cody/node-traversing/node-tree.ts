@@ -13,6 +13,7 @@ import {isStateDescription} from "@event-engine/descriptions/descriptions";
 import {playVoMetadata} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 import {PlayInformationRegistry} from "@cody-play/state/types";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {playCommandMetadata} from "@cody-play/infrastructure/cody/command/play-command-metadata";
 
 type Success = Node;
 type Error = CodyResponse;
@@ -159,9 +160,11 @@ export const playGetTargetsOfType = (node: Node, expectedType: NodeType, ignoreO
 
 export const playFindAggregateState = (commandEventOrAggregate: Node, ctx: ElementEditedContext, types: PlayInformationRegistry): Success | Error => {
   let events = List<Node>();
+  let isAggregateMode = false;
 
   if(commandEventOrAggregate.getType() === NodeType.aggregate) {
     const eventsOrError = playGetTargetsOfType(commandEventOrAggregate, NodeType.event);
+    isAggregateMode = true;
 
     if(playIsCodyError(eventsOrError)) {
       return eventsOrError;
@@ -169,6 +172,21 @@ export const playFindAggregateState = (commandEventOrAggregate: Node, ctx: Eleme
 
     events = eventsOrError;
   } else if (commandEventOrAggregate.getType() === NodeType.command) {
+    const cmdMeta = playCommandMetadata(commandEventOrAggregate, ctx);
+
+    if(playIsCodyError(cmdMeta)) {
+      return cmdMeta;
+    }
+
+    if(!cmdMeta.aggregateCommand) {
+      return {
+        cody: `Can't find aggregate state. Command "${commandEventOrAggregate.getName()}" is no aggregate command.`,
+        type: CodyResponseType.Error
+      }
+    }
+
+    isAggregateMode = true;
+
     const cmdAggregate = playGetSingleTarget(commandEventOrAggregate, NodeType.aggregate);
 
     if(playIsCodyError(cmdAggregate)) {
@@ -181,6 +199,7 @@ export const playFindAggregateState = (commandEventOrAggregate: Node, ctx: Eleme
       events = cmdEventsOrError;
     } else {
       const syncedAggregate = playGetNodeFromSyncedNodes(cmdAggregate, ctx.syncedNodes);
+      isAggregateMode = true;
 
       if(playIsCodyError(syncedAggregate)) {
         return syncedAggregate;
@@ -190,6 +209,34 @@ export const playFindAggregateState = (commandEventOrAggregate: Node, ctx: Eleme
     }
   } else if (commandEventOrAggregate.getType() === NodeType.event) {
     events = events.push(commandEventOrAggregate);
+
+    const evtCmd = playGetSingleSource(commandEventOrAggregate, NodeType.command);
+
+    if(playIsCodyError(evtCmd)) {
+      return evtCmd;
+    }
+
+    const evtCmdMeta = playCommandMetadata(evtCmd, ctx);
+
+    if(playIsCodyError(evtCmdMeta)) {
+      return evtCmdMeta;
+    }
+
+    if(!evtCmdMeta.aggregateCommand) {
+      return {
+        cody: `Can't find aggregate state. Command "${evtCmd.getName()}" is no aggregate command.`,
+        type: CodyResponseType.Error
+      }
+    }
+
+    isAggregateMode = true;
+  }
+
+  if(!isAggregateMode) {
+    return {
+      cody: `Can't find aggregate state. The command is not configured as aggregate command and no aggregate card is used.`,
+      type: CodyResponseType.Error
+    }
   }
 
   for (const event of events) {
