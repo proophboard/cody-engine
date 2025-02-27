@@ -5,10 +5,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {getVoMetadata} from "./utils/value-object/get-vo-metadata";
 import {flushChanges} from "nx/src/generators/tree";
 import {formatFiles, generateFiles} from "@nx/devkit";
-import {
-  namespaceNames,
-  valueObjectNamespaceFromFQCN
-} from "./utils/value-object/namespace";
+import {namespaceNames, valueObjectNamespaceFromFQCN} from "./utils/value-object/namespace";
 import {voPath} from "./utils/value-object/vo-path";
 import {
   detectDescriptionType,
@@ -22,7 +19,9 @@ import {
 import {detectService} from "./utils/detect-service";
 import {updateProophBoardInfo} from "./utils/prooph-board-info";
 import {toJSON} from "./utils/to-json";
-import {convertRuleConfigToValueObjectInitializeRules} from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
+import {
+  convertRuleConfigToValueObjectInitializeRules
+} from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
 import {register, registerQuery, registerQueryResolver, registerValueObjectDefinition} from "./utils/registry";
 import {listChangesForCodyResponse} from "./utils/fs-tree";
 import {makeQueryResolver} from "./utils/query/make-query-resolver";
@@ -240,9 +239,12 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
     if(voMeta.projection) {
       const prjName = voMeta.projection.name;
 
-      const events = getSourcesOfType(
+      // Support indirect event connections: event -> state -> list projection
+      const prjVo = selectVoForProjectionGeneration(vo);
+
+      let events = getSourcesOfType(
         mergeWithSimilarNodes(
-          selectVoForProjectionGeneration(vo),
+          prjVo,
           ctx.syncedNodes
         ),
         NodeType.event,
@@ -253,6 +255,24 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
         return {
           cody: `I cannot set up the projection for ${vo.getName()}. The document card has no events connected.`,
           type: CodyResponseType.Error
+        }
+      }
+
+      if(prjVo.getId() !== vo.getId()) {
+        // Some events might be connected indirectly while others are directly connected to the projection card
+        const additionalEvents = getSourcesOfType(
+          mergeWithSimilarNodes(
+            vo,
+            ctx.syncedNodes
+          ),
+          NodeType.event,
+          true,
+          false,
+          true
+        )
+
+        if(!isCodyError(additionalEvents)) {
+          events = events.push(...additionalEvents);
         }
       }
 
