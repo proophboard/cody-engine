@@ -35,13 +35,9 @@ import {JSONSchema7} from "json-schema-to-ts";
 import {requireUncachedTypes} from "@cody-engine/cody/hooks/utils/value-object/require-uncached-types";
 import {Rule} from "@app/shared/rule-engine/configuration";
 import {List} from "immutable";
-import {getSourcesOfType, isCodyError, mergeWithSimilarNodes} from "@proophboard/cody-utils";
 import {convertProjectionConfigCaseToRules} from "@app/shared/rule-engine/projection-config";
 import {onPolicy} from "@cody-engine/cody/hooks/on-policy";
 import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
-import {
-  selectVoForProjectionGeneration
-} from "@cody-engine/cody/hooks/utils/value-object/select-vo-for-projection-generation";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
   try {
@@ -239,49 +235,12 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
     if(voMeta.projection) {
       const prjName = voMeta.projection.name;
 
-      // Support indirect event connections: event -> state -> list projection
-      const prjVo = selectVoForProjectionGeneration(vo);
-
-      let events = getSourcesOfType(
-        mergeWithSimilarNodes(
-          prjVo,
-          ctx.syncedNodes
-        ),
-        NodeType.event,
-        true
-      );
-
-      if(isCodyError(events)) {
-        return {
-          cody: `I cannot set up the projection for ${vo.getName()}. The document card has no events connected.`,
-          type: CodyResponseType.Error
-        }
-      }
-
-      if(prjVo.getId() !== vo.getId()) {
-        // Some events might be connected indirectly while others are directly connected to the projection card
-        const additionalEvents = getSourcesOfType(
-          mergeWithSimilarNodes(
-            vo,
-            ctx.syncedNodes
-          ),
-          NodeType.event,
-          true,
-          false,
-          true
-        )
-
-        if(!isCodyError(additionalEvents)) {
-          events = events.push(...additionalEvents);
-        }
-      }
-
       for (const prjCase of voMeta.projection.cases) {
-        const matchingEvent = events.filter(evt => names(evt.getName()).className === names(prjCase.when).className).first();
+        const matchingEvent = ctx.syncedNodes.filter(evt =>evt.getType() === NodeType.event && names(evt.getName()).className === names(prjCase.when).className).first();
 
         if(!matchingEvent) {
           return {
-            cody: `Cannot install projection case for event ${prjCase.when}. The event is unknown. Did you forget to connect the event to the documentation card?`,
+            cody: `Cannot install projection case for event ${prjCase.when}. The event is unknown. Did you forget to pass the event to Cody?`,
             type: CodyResponseType.Error
           }
         }
