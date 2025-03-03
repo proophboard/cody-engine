@@ -55,15 +55,62 @@ export class PostgresMultiModelStore implements MultiModelStore {
       queries.push(this.eventStore.makeDeleteFromQuery(task.streamName, task.eventMatcher));
     })
 
+    session.getInsertDocumentTasks().forEach(task => queries.push(this.queryBuilder.makeAddDocQuery(
+      task.collectionName,
+      task.docId,
+      task.doc,
+      task.metadata,
+      task.version
+    )))
+
     session.getUpsertDocumentTasks().forEach(task => queries.push(this.queryBuilder.makeUpsertDocQuery(
       task.collectionName,
       task.docId,
-      task.doc
+      task.doc,
+      task.metadata,
+      task.version
+    )));
+
+    session.getUpdateDocumentTasks().forEach(task => queries.push(this.queryBuilder.makeUpdateDocQuery(
+      task.collectionName,
+      task.docId,
+      task.doc,
+      task.metadata,
+      task.version
+    )));
+
+    session.getUpdateManyDocumentsTasks().forEach(task => queries.push(this.queryBuilder.makeUpdateManyQuery(
+      task.collectionName,
+      task.filter,
+      task.docOrSubset,
+      task.metadata,
+      task.version
+    )));
+
+    session.getReplaceDocumentTasks().forEach(task => queries.push(this.queryBuilder.makeReplaceDocQuery(
+      task.collectionName,
+      task.docId,
+      task.doc,
+      task.metadata,
+      task.version
+    )));
+
+    session.getReplaceManyDocumentsTasks().forEach(task => queries.push(this.queryBuilder.makeReplaceManyQuery(
+      task.collectionName,
+      task.filter,
+      task.doc,
+      task.metadata,
+      task.version
     )));
 
     session.getDeleteDocumentTasks().forEach(task => queries.push(this.queryBuilder.makeDeleteDocQuery(
       task.collectionName,
       task.docId)));
+
+    session.getDeleteManyDocumentsTasks().forEach(task => queries.push(this.queryBuilder.makeDeleteManyQuery(
+      task.collectionName,
+      task.filter
+    )));
 
     await this.db.transaction(function* (): Generator<Query, void, QueryResult> {
       for (const query of queries) {
