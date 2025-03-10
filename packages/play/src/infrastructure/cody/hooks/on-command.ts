@@ -22,6 +22,7 @@ import {alwaysRecordEvent} from "@cody-engine/cody/hooks/utils/aggregate/always-
 import {normalizeThenRecordEventRules} from "@cody-play/infrastructure/rule-engine/normalize-then-record-event-rules";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
+import {normalizePolicyRules} from "@cody-play/infrastructure/rule-engine/normalize-policy-rules";
 
 export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -71,7 +72,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
       dispatch({
         type: "ADD_COMMAND_HANDLER",
         command: cmdFQCN,
-        businessRules: normalizeThenRecordEventRules(service, rules),
+        businessRules: normalizePolicyRules(normalizeThenRecordEventRules(service, rules), service, config),
       });
 
       return {

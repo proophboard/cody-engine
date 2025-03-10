@@ -20,6 +20,7 @@ import {isStateDescription} from "@event-engine/descriptions/descriptions";
 import {playVoFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {playUpdateProophBoardInfo} from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
 import {normalizeThenRecordEventRules} from "@cody-play/infrastructure/rule-engine/normalize-then-record-event-rules";
+import {normalizePolicyRules} from "@cody-play/infrastructure/rule-engine/normalize-policy-rules";
 
 export const onAggregate = async (aggregate: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -57,7 +58,7 @@ export const onAggregate = async (aggregate: Node, dispatch: PlayConfigDispatch,
     const commandName = `${serviceNames.className}.${commandNames.className}`;
     const stateFQCN = playwithErrorCheck(playVoFQCN, [aggregateState, aggregateStateMeta, ctx]);
     const pbInfo = playwithErrorCheck(playUpdateProophBoardInfo, [aggregate, ctx, config.aggregates[aggregateName]])
-    rules = normalizeThenRecordEventRules(aggregateName, rules);
+    rules = normalizePolicyRules(normalizeThenRecordEventRules(aggregateName, rules), service, config);
 
     dispatch({
       type: "ADD_AGGREGATE",

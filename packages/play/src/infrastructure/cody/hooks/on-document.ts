@@ -143,6 +143,10 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
           }
         }
 
+        if(prjCase.given) {
+          prjCase.given = normalizePolicyRules(prjCase.given, service, config);
+        }
+
         dispatch({
           type: "ADD_EVENT_POLICY",
           name: prjName,
