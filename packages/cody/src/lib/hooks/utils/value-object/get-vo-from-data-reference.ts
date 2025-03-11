@@ -21,12 +21,7 @@ export const getVOFromDataReference = (data: string, refNode: Node, ctx: Context
       return service;
     }
 
-    const serviceClassName = names(service).className;
-    const firstPart = names(parts[0]).className;
-
-    if(firstPart !== serviceClassName) {
-      parts.unshift(serviceClassName);
-    }
+    parts.unshift(service);
   }
 
   data = parts.map(p => names(p).className).join(".");
