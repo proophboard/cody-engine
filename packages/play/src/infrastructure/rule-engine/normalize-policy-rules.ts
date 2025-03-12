@@ -16,6 +16,7 @@ import {visitRulesThen} from "@cody-engine/cody/hooks/rule-engine/visit-rule-the
 import {playGetVoRuntimeInfoFromDataReference} from "@cody-play/state/play-get-vo-runtime-info-from-data-reference";
 import {normalizeCommandName} from "@cody-play/infrastructure/rule-engine/normalize-command-name";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
+import {normalizePartialSelect} from "@cody-play/infrastructure/rule-engine/normalize-partial-select";
 
 export const normalizePolicyRules = (rules: AnyRule[], service: string, config: CodyPlayConfig): AnyRule[] => {
   return visitRulesThen(rules, then => {
@@ -59,7 +60,8 @@ export const normalizePolicyRules = (rules: AnyRule[], service: string, config: 
       return {
         findPartial: {
           ...then.findPartial,
-          information: playGetVoRuntimeInfoFromDataReference(then.findPartial.information, service, config.types).desc.name
+          information: playGetVoRuntimeInfoFromDataReference(then.findPartial.information, service, config.types).desc.name,
+          select: normalizePartialSelect(then.findPartial.select, service, config)
         }
       }
     }
@@ -68,7 +70,8 @@ export const normalizePolicyRules = (rules: AnyRule[], service: string, config: 
       return {
         findOnePartial: {
           ...then.findOnePartial,
-          information: playGetVoRuntimeInfoFromDataReference(then.findOnePartial.information, service, config.types).desc.name
+          information: playGetVoRuntimeInfoFromDataReference(then.findOnePartial.information, service, config.types).desc.name,
+          select: normalizePartialSelect(then.findOnePartial.select, service, config)
         }
       }
     }
@@ -77,7 +80,8 @@ export const normalizePolicyRules = (rules: AnyRule[], service: string, config: 
       return {
         findPartialById: {
           ...then.findPartialById,
-          information: playGetVoRuntimeInfoFromDataReference(then.findPartialById.information, service, config.types).desc.name
+          information: playGetVoRuntimeInfoFromDataReference(then.findPartialById.information, service, config.types).desc.name,
+          select: normalizePartialSelect(then.findPartialById.select, service, config)
         }
       }
     }
