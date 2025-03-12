@@ -32,6 +32,7 @@ import ObjectFieldTemplate from "@frontend/app/components/core/form/templates/Ob
 import {translateSchema} from "@frontend/util/schema/translate-schema";
 import {useTranslation} from "react-i18next";
 import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
+import {useEnv} from "@frontend/hooks/use-env";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -63,6 +64,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   const [liveValidate, setLiveValidate] = useState(false);
   const [user,] = useUser();
   const [pageData,] = usePageData();
+  const env = useEnv();
   const mutation = useMutation({
     mutationKey: [props.command.desc.name],
     mutationFn: props.commandFn,
@@ -189,7 +191,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     ? translateUiSchema(props.command.uiSchema, `${props.command.desc.name}.uiSchema`, t)
     : undefined;
   const resolvedUiSchema = resolveUiSchema(props.command.schema as any, types, (s, k) => translateUiSchema(s, k, t));
-  const uiSchema = normalizeUiSchema({...resolvedUiSchema, ...mainUiSchema}, {form: formData, user, page: pageData});
+  const uiSchema = normalizeUiSchema({...resolvedUiSchema, ...mainUiSchema}, {form: formData, user, page: pageData}, env);
 
   const schema = resolveRefs(
     translateSchema(props.command.schema as JSONSchema7, `${props.command.desc.name}.schema`, t) as any,

@@ -7,7 +7,7 @@ import {
   StrictRJSFSchema,
   WidgetProps,
 } from '@rjsf/utils';
-import {MenuItem, TextField, TextFieldProps} from "@mui/material";
+import {Autocomplete, MenuItem, TextField, TextFieldProps} from "@mui/material";
 import {types} from "@app/shared/types";
 import {
   isQueryableListDescription, isQueryableNotStoredStateListDescription,
@@ -188,7 +188,7 @@ export default function PlayDataSelectWidget<
   const emptyValue = multiple ? [] : '';
   const isEmpty = typeof value === 'undefined' || (multiple && value.length < 1) || (!multiple && value === emptyValue);
 
-  const _onChange = ({ target: { value } }: ChangeEvent<{ value: string }>) => {
+  const _onChange = (value: string | string[] | null) => {
     if(parsedOptions.updateForm && formContext) {
       const selectedOption = selectOptions.find(opt => opt.value === value);
 
@@ -215,6 +215,37 @@ export default function PlayDataSelectWidget<
 
   return (
     <>
+      {options.autocomplete ?
+        <Autocomplete
+          id={id}
+          // value={isEmpty ? emptyValue : value}
+          value={selectOptions.find(opt => opt.value === value) ?? null}
+          disabled={disabled || readonly}
+          multiple={multiple}
+          getOptionDisabled={o => o.readonly}
+          renderOption={(props: any, option) => {
+            const { key, ...optionProps } = props;
+            return (
+              <MenuItem key={key} {...optionProps} sx={option.label === '- Empty -'? {color: theme => theme.palette.text.disabled} : {}}>
+                {option.label}
+              </MenuItem>
+            );
+          }}
+          renderInput={(params) => <TextField
+            name={id}
+            required={required}
+            autoFocus={autofocus}
+            placeholder={placeholder}
+            error={rawErrors.length > 0}
+            {...params}
+            label={labelValue(label, hideLabel || !label, false)} />
+          }
+          onFocus={_onFocus}
+          onBlur={_onBlur}
+          options={selectOptions}
+          onChange={(e, v) => _onChange(v? Array.isArray(v) ? v.map(v => v.value as string) : v.value as string : null)}
+        />
+        :
       <TextField
         id={id}
         name={id}
@@ -225,7 +256,7 @@ export default function PlayDataSelectWidget<
         autoFocus={autofocus}
         placeholder={placeholder}
         error={rawErrors.length > 0}
-        onChange={_onChange}
+        onChange={e => _onChange(e.target.value)}
         onBlur={_onBlur}
         onFocus={_onFocus}
         {...(textFieldProps as TextFieldProps)}
@@ -249,7 +280,7 @@ export default function PlayDataSelectWidget<
               </MenuItem>
             );
           })}
-      </TextField>
+      </TextField>}
       {AddItemCommand && <PlayCommand command={AddItemCommand} buttonProps={{variant: 'text', style: {width: "fit-content", marginLeft: 0}}}/>}
     </>
   );

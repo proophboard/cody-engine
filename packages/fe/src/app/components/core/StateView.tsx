@@ -39,6 +39,7 @@ import {useTypes} from "@frontend/hooks/use-types";
 import {useTranslation} from "react-i18next";
 import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
 import {translateSchema} from "@frontend/util/schema/translate-schema";
+import {useEnv} from "@frontend/hooks/use-env";
 
 interface OwnProps {
   state?: any;
@@ -185,6 +186,7 @@ const StateView = (props: StateViewProps) => {
   const routeParams = useParams();
   const [globalStore] = useGlobalStore();
   const {t} = useTranslation();
+  const env = useEnv();
   const jexlCtx: FormJexlContext = {
     user,
     page: pageData,
@@ -206,7 +208,7 @@ const StateView = (props: StateViewProps) => {
   const uiSchema = Object.keys(mergedUiSchema).length > 0
     ? {
       "ui:readonly": true,
-      ...normalizeUiSchema(mergedUiSchema, jexlCtx)
+      ...normalizeUiSchema(mergedUiSchema, jexlCtx, env)
     }
     : {"ui:readonly": true};
 

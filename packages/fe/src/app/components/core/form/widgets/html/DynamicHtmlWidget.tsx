@@ -16,6 +16,7 @@ import {CircularProgress} from "@mui/material";
 import {WidgetProps} from "@rjsf/utils";
 import {JSONSchemaWithId} from "@frontend/app/components/core/form/widgets/json-schema/json-schema-with-id";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
+import {useEnv} from "@frontend/hooks/use-env";
 
 
 interface OwnProps {
@@ -40,6 +41,7 @@ const DynamicHtmlWidget = (props: DynamicHtmlWidgetProps) => {
   const [user,] = useUser();
   const [pageData,] = usePageData();
   const [store,] = useGlobalStore();
+  const env = useEnv();
 
   const {desc} = getVOFromTypes(props.data, props.rootSchema);
 
@@ -65,7 +67,7 @@ const DynamicHtmlWidget = (props: DynamicHtmlWidgetProps) => {
   if(query.isSuccess) {
     jexlCtx.result = query.data;
 
-    config = normalizeUiSchema(config, jexlCtx);
+    config = normalizeUiSchema(config, jexlCtx, env);
 
     delete config.data;
     delete config.hidden;

@@ -1,9 +1,18 @@
 import {UiSchema} from "@rjsf/utils";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import jexl from "@app/shared/jexl/get-configured-jexl";
+import {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
 
-export const normalizeUiSchema = (uiSchema: UiSchema, ctx: any): UiSchema => {
+export const normalizeUiSchema = (uiSchema: UiSchema, ctx: any, env: RuntimeEnvironment): UiSchema => {
   const schema = cloneDeepJSON(uiSchema);
+
+  if(env.UI_ENV === 'play' && schema.hasOwnProperty('play:widget')) {
+    if(!schema['play:widget']) {
+      delete schema['ui:widget'];
+    } else {
+      schema['ui:widget'] = schema['play:widget'];
+    }
+  }
 
   if(schema['ui:hidden']) {
     const expr = schema['ui:hidden'];
@@ -27,7 +36,7 @@ export const normalizeUiSchema = (uiSchema: UiSchema, ctx: any): UiSchema => {
 
   for (const schemaKey in schema) {
     if(typeof schema[schemaKey] === "object") {
-      schema[schemaKey] = normalizeUiSchema(schema[schemaKey], ctx);
+      schema[schemaKey] = normalizeUiSchema(schema[schemaKey], ctx, env);
     }
   }
 
