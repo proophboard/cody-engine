@@ -1,4 +1,4 @@
-import {ApplyFunctionRegistry} from "@event-engine/infrastructure/AggregateRepository";
+import {ApplyFunctionRegistry} from "@server/infrastructure/AggregateRepository";
 
 export const eventReducerExtensions: ApplyFunctionRegistry<any> = {
 

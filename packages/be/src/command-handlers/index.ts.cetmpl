@@ -1,4 +1,4 @@
-import { CommandHandlerRegistry } from "@event-engine/infrastructure/commandHandling";
+import { CommandHandlerRegistry } from "@server/infrastructure/commandHandling";
 
 export const commandHandlers: CommandHandlerRegistry = {
 }

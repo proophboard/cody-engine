@@ -1,4 +1,4 @@
-import {AggregateRepository} from "@event-engine/infrastructure/AggregateRepository";
+import {AggregateRepository} from "@server/infrastructure/AggregateRepository";
 
 type RepositoryRegistry = {[aggregateName: string]: () => AggregateRepository<any>};
 
