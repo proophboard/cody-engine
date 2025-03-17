@@ -22,7 +22,7 @@ export interface Lookup {
 }
 
 export const isAliasFieldNameMapping = (partialSelectItem: unknown): partialSelectItem is AliasFieldNameMapping => {
-  return partialSelectItem === "object" && !isLookup(partialSelectItem);
+  return typeof partialSelectItem === "object" && !isLookup(partialSelectItem);
 }
 
 export const isLookup = (partialSelectItem: unknown): partialSelectItem is Lookup => {

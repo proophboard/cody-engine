@@ -50,6 +50,8 @@ import {ResolveConfig, ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/
 import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
 import {withErrorCheck} from "@cody-engine/cody/hooks/utils/error-handling";
 import {isAliasFieldNameMapping, isLookup, Lookup, PartialSelect} from "@event-engine/infrastructure/DocumentStore";
+import {getVOFromDataReference} from "@cody-engine/cody/hooks/utils/value-object/get-vo-from-data-reference";
+import {voRegistryId} from "@cody-engine/cody/hooks/utils/value-object/vo-registry-id";
 
 export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
   if(!voMeta.isQueryable) {
@@ -329,7 +331,7 @@ const makeFiltersFromResolveConfig = (vo: Node, resolveConfig: ResolveConfig, in
   return lines.join("\n");
 }
 
-export const makePartialSelect = (select: PartialSelect, lines: string[], indent = '', endOfLine = '') => {
+export const makePartialSelect = (select: PartialSelect, lines: string[], node: Node, ctx: Context, indent = '', endOfLine = '') => {
   lines.push(`${indent}[`);
 
   select.forEach(s => {
@@ -339,7 +341,7 @@ export const makePartialSelect = (select: PartialSelect, lines: string[], indent
     }
 
     if(isLookup(s)) {
-      makeLookup(s, lines, indent + '  ');
+      makeLookup(s, node, ctx, lines, indent + '  ');
       return;
     }
 
@@ -354,10 +356,13 @@ export const makePartialSelect = (select: PartialSelect, lines: string[], indent
   lines.push(`${indent}]${endOfLine}`)
 }
 
-export const makeLookup = (lookup: Lookup, lines: string[], indent = '') => {
+export const makeLookup = (lookup: Lookup, node: Node, ctx: Context, lines: string[], indent = '') => {
   lines.push(`${indent}{`);
 
-  lines.push(`${indent}  lookup: '${lookup.lookup}',`);
+  const vo = withErrorCheck(getVOFromDataReference, [lookup.lookup, node, ctx]);
+  const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
+
+  lines.push(`${indent}  lookup: '${registryId}',`);
 
   if(lookup.alias) {
     lines.push(`${indent}  alias: '${lookup.alias}',`);
@@ -387,7 +392,7 @@ export const makeLookup = (lookup: Lookup, lines: string[], indent = '') => {
 
   if(lookup.select) {
     lines.push(`${indent}  select:`)
-    makePartialSelect(lookup.select, lines, `${indent}    `, ',')
+    makePartialSelect(lookup.select, lines, node, ctx,  `${indent}    `, ',')
   }
 
   lines.push(`${indent}},`);

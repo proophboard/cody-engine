@@ -629,7 +629,7 @@ const convertThenFindPartial = (node: Node, ctx: Context, then: ThenFindPartialI
 
   lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].findPartial('${registryId}',`);
 
-  makePartialSelect(then.findPartial.select, lines, indent, ',');
+  makePartialSelect(then.findPartial.select, lines, node, ctx, indent, ',');
 
   makeFilter(then.findPartial.filter, lines, indent + '  ');
   if(typeof then.findPartial.skip !== 'undefined') {
@@ -706,7 +706,7 @@ const convertThenFindOnePartial = (node: Node, ctx: Context, then: ThenFindOnePa
 
   lines.push(`${indent}ctx['${variable}'] = await ctx['${INFORMATION_SERVICE_NAME}'].findOnePartial('${registryId}',`);
 
-  makePartialSelect(then.findOnePartial.select, lines, indent, ',');
+  makePartialSelect(then.findOnePartial.select, lines, node, ctx, indent, ',');
 
   makeFilter(then.findOnePartial.filter, lines, indent + '  ');
 
@@ -731,7 +731,7 @@ const convertThenFindPartialById = (node: Node, ctx: Context, then: ThenFindPart
 
   lines.push(`${wrapExpression(then.findPartialById.id, evalSync)},`)
 
-  makePartialSelect(then.findPartialById.select, lines, indent);
+  makePartialSelect(then.findPartialById.select, lines, node, ctx, indent);
 
   lines.push(`${indent});`);
 
