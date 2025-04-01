@@ -84,12 +84,15 @@ export const convertShorthandObjectToJsonSchema = (shorthand: ShorthandObject, n
 
       let itemsShorthandSchema = shorthand[schemaProperty];
 
-      if(typeof itemsShorthandSchema === "string" && itemsShorthandSchema.slice(-2) !== '[]') {
+      if(typeof itemsShorthandSchema === "string" && itemsShorthandSchema.slice(-2) !== '[]' && !itemsShorthandSchema.includes("|")) {
         itemsShorthandSchema = itemsShorthandSchema + '[]';
+
       }
 
       const arraySchema = typeof itemsShorthandSchema === "string"
-        ? convertShorthandStringToJsonSchema(itemsShorthandSchema, namespace)
+        ? itemsShorthandSchema.slice(-2) === '[]'
+          ? convertShorthandStringToJsonSchema(itemsShorthandSchema, namespace)
+          : {type: "array", items: convertShorthandStringToJsonSchema(itemsShorthandSchema, namespace)} as JSONSchema7
         : {type: "array", items: convertShorthandObjectToJsonSchema(itemsShorthandSchema)} as JSONSchema7;
 
       if(!playIsCodyError(arraySchema) && Object.keys(shorthand).includes('$title')) {
