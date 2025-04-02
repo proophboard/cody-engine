@@ -11,9 +11,8 @@ export class PlayStreamListener {
   private readonly messageBox: MessageBox;
 
   public constructor(es: InMemoryEventStore, stream: string, messageBox: MessageBox) {
-    this.queue = new InMemoryStreamListenerQueue(es, stream);
+    this.queue = new InMemoryStreamListenerQueue(es, stream, false);
     this.messageBox = messageBox;
-
 
     this.queue.attachConsumer(async (event) => {
       event = (await mapMetadataFromEventStore([event], getConfiguredPlayAuthService()))[0];

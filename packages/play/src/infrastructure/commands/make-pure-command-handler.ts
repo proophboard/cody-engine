@@ -4,14 +4,26 @@ import {PlayEventRegistry, PlaySchemaDefinitions} from "@cody-play/state/types";
 import {Command} from "@event-engine/messaging/command";
 import {Event} from "@event-engine/messaging/event";
 import {CTX_RECORDED_EVENTS_KEY, execRuleAsync} from "@cody-play/infrastructure/rule-engine/make-executable";
+import {Palette} from "@cody-play/infrastructure/utils/styles";
+import {CommandDescription} from "@event-engine/descriptions/descriptions";
 
 export const makePureCommandHandler = (
   commandHandlerRules: AnyRule[],
   eventRegistry: PlayEventRegistry,
-  schemaDefinitions: PlaySchemaDefinitions
+  schemaDefinitions: PlaySchemaDefinitions,
+  commandDescription: CommandDescription,
 ): ProcessingFunctionWithDeps => {
   return async function* (command: Command, dependencies: Record<string, any>): AsyncGenerator<Event> {
     let ctx = {command: command.payload, meta: command.meta, ...dependencies, eventRegistry, schemaDefinitions};
+
+    console.log(
+      `%c[CommandBus] Executing business rules of %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
+      commandDescription._pbLink,
+      {
+        ctx,
+        rules: commandHandlerRules
+      }
+    )
 
     for (const rule of commandHandlerRules) {
       const [result, nextRule] = await execRuleAsync(rule, ctx);

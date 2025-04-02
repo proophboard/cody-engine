@@ -47,6 +47,7 @@ import {makePureCommandHandler} from "@cody-play/infrastructure/commands/make-pu
 import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
 import {ValidationError} from "ajv";
+import {Palette} from "@cody-play/infrastructure/utils/styles";
 
 export class PlayMessageBox implements MessageBox {
   private config: CodyPlayConfig;
@@ -102,7 +103,7 @@ export class PlayMessageBox implements MessageBox {
 
   getCommandInfo(name: string): CommandRuntimeInfo {
     if(!this.isCommand(name)) {
-      throw new Error(`Unknown command "${name}" given. Cannot find a description for it.`);
+      throw new Error(`Unknown command "${name}" given. Cannot find a description for it. Check the Play Config in the Play Backend dialog for all known commands. Either it's a typo in the command name or the command is not synced from prooph board.`);
     }
 
     return this.config.commands[name] as unknown as CommandRuntimeInfo;
@@ -110,7 +111,7 @@ export class PlayMessageBox implements MessageBox {
 
   getEventInfo(name: string): EventRuntimeInfo {
     if(!this.isEvent(name)) {
-      throw new Error(`Unknown event "${name}" given. Cannot find a description for it.`);
+      throw new Error(`Unknown event "${name}" given. Cannot find a description for it. Check the Play Config in the Play Backend dialog for all known events. Either it's a typo in the event name or the event is not synced from prooph board.`);
     }
 
     return this.config.events[name] as unknown as EventRuntimeInfo;
@@ -118,7 +119,7 @@ export class PlayMessageBox implements MessageBox {
 
   getQueryInfo(name: string): QueryRuntimeInfo {
     if(!this.isQuery(name)) {
-      throw new Error(`Unknown query "${name}" given. Cannot find a description for it.`);
+      throw new Error(`Unknown query "${name}" given. Cannot find a description for it. Check the Play Config in the Play Backend dialog for all known queries. Either it's a typo in the query name or the query is not synced from prooph board.`);
     }
 
     return this.config.queries[name] as unknown as QueryRuntimeInfo;
@@ -138,7 +139,19 @@ export class PlayMessageBox implements MessageBox {
 }
 
 const dispatchEvent = async (event: Event, config: CodyPlayConfig, triggerLiveProjections?: boolean): Promise<boolean> => {
-  console.log(`[EventBus] Going to handle event: ${event.name}`);
+  const eventDesc = config.events[event.name];
+
+  if(!eventDesc) {
+    throw new Error(`Unknown event "${event.name}" given. Cannot find a description for it. Check the Play Config in the Play Backend dialog for all known events. Either it's a typo in the event name or the event is not synced from prooph board.`)
+  }
+
+  console.log(
+    `%c[EventBus] ${triggerLiveProjections ? 'checking live projections for:' : 'checking policies for:'} %c${event.name}`, Palette.cColor(Palette.stickyColors.event), Palette.cColorBold(Palette.stickyColors.event),
+    event,
+    eventDesc.desc._pbLink
+  );
+
+
 
   const policies = config.eventPolicies[event.name] || {};
   const filteredPolicies: {[policyName: string]: PlayEventPolicyDescription} = {};
@@ -154,18 +167,39 @@ const dispatchEvent = async (event: Event, config: CodyPlayConfig, triggerLivePr
   const policyNames = Object.keys(filteredPolicies);
 
   if(policyNames.length === 0) {
-    console.log(`[EventBus] No ${triggerLiveProjections? 'live projections' : 'event policies'} registered for event: ${event.name}`);
+    console.log(`%c[EventBus] No ${triggerLiveProjections? 'live projections' : 'event policies'} registered.`, Palette.cColor(Palette.common.grey));
   } else {
-    console.log(`[EventBus] Following ${triggerLiveProjections? 'live projections' : 'event policies'} are registered for event "${event.name}": ${policyNames.join(", ")}`);
+    console.log(`%c[EventBus] Registered ${triggerLiveProjections? 'live projections' : 'event policies'}: `, Palette.cColor(Palette.stickyColors.event),  policyNames);
   }
 
   let allSuccess = true;
+  const policyColor = triggerLiveProjections ? Palette.stickyColors.document : Palette.stickyColors.policy;
   for (const policy of Object.values(filteredPolicies)) {
-    console.log(`[EventBus] Going to execute policy rules of "${policy.name}"`)
+    console.log(
+      `%c[EventBus] Starting ${triggerLiveProjections? 'projection' : 'policy'} %c"${policy.name}"`, Palette.cColor(policyColor), Palette.cColorBold(policyColor),
+      policy._pbLink
+    )
     try {
+
+      console.log(
+        `%c[EventBus] Checking ${triggerLiveProjections? 'projection' : 'policy'} dependencies: `, Palette.cColor(policyColor),
+        policy.dependencies,
+        policy._pbLink
+      )
+
       const dependencies = await playLoadDependencies(event, 'event', policy.dependencies || {}, config);
 
       const ctx = {event: event.payload, meta: event.meta, eventCreatedAt: event.createdAt, ...dependencies, commandRegistry: config.commands, schemaDefinitions: config.definitions};
+
+      console.log(
+        `%c[EventBus] Executing ${triggerLiveProjections? 'projection' : 'policy'} rules %c"${policy.name}"`, Palette.cColor(policyColor), Palette.cColorBold(policyColor),
+        policy._pbLink,
+        {
+          ctx,
+          rules: policy.rules
+        }
+      )
+
       const exe = makeAsyncExecutable(policy.rules);
       const result = await exe(ctx);
 
@@ -197,7 +231,7 @@ const dispatchCommand = async (command: Command, config: CodyPlayConfig): Promis
   const rules = config.commandHandlers[command.name];
 
   if(!rules) {
-    throw new Error(`Cannot handle command "${command.name}". No business rules defined. Please connect the command to an aggregate and define business rules in the Cody Wizard`);
+    throw new Error(`Cannot handle command "${command.name}". No business rules defined. Please connect the command to an event and define business rules in the prooph board metadata sidebar. See: https://wiki.prooph-board.com/board_workspace/Rule-Engine.html#business-rules`);
   }
 
   const commandDesc = commandInfo.desc;
@@ -244,7 +278,8 @@ const dispatchCommand = async (command: Command, config: CodyPlayConfig): Promis
   const processingFunction = makeAggregateCommandHandler(
     rules,
     config.events,
-    config.definitions
+    config.definitions,
+    aggregate
   );
 
   return handleAggregateCommand(command, processingFunction, repository, commandDesc.newAggregate, dependencies);
@@ -256,7 +291,8 @@ const dispatchPureCommand = async (command: Command, commandDesc: PureCommandDes
   const processingFunction =  makePureCommandHandler(
     rules,
     config.events,
-    config.definitions
+    config.definitions,
+    commandDesc
   );
 
   const repository = isStreamCommandDescription(commandDesc)

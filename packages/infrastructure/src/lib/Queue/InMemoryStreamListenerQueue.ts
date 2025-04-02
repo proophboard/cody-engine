@@ -13,10 +13,12 @@ export class InMemoryStreamListenerQueue implements EventQueue{
     private queue: Event[] = [];
     private listener: any;
     private waitingQueueListener: WaitingQueueListener | undefined;
+    private loggingEnabled: boolean;
 
-    public constructor(eventStore: EventStore, streamName: string) {
+    public constructor(eventStore: EventStore, streamName: string, enableLogging = true) {
         this.eventStore = eventStore;
         this.streamName = streamName;
+        this.loggingEnabled = enableLogging;
     }
 
     public sourceStream(): string {
@@ -48,22 +50,33 @@ export class InMemoryStreamListenerQueue implements EventQueue{
         this.listener = (streamName: string, events: Event[]) => {
             if(streamName === this.streamName) {
                 events.forEach(evt => {
-                    console.log(`[StreamListenerQueue] Start Processing event ${evt.name} (${evt.uuid}) of stream ${streamName}`);
+                    if(this.loggingEnabled) {
+                        console.log(`[StreamListenerQueue] Start Processing event ${evt.name} (${evt.uuid}) of stream ${streamName}`);
+                    }
+
 
                     if(this.consumer) {
-                        console.log(`[StreamListenerQueue] Calling consumer with event ${evt.name} (${evt.uuid})`);
+                        if(this.loggingEnabled) {
+                            console.log(`[StreamListenerQueue] Calling consumer with event ${evt.name} (${evt.uuid})`);
+                        }
 
                         this.consumer.call(this.consumer, evt).then(success => {
                             if(!success) {
-                                console.log(`[StreamListenerQueue] Consumer returned false. Pushing event ${evt.name} (${evt.uuid}) back on queue.`);
+                                if(this.loggingEnabled) {
+                                    console.log(`[StreamListenerQueue] Consumer returned false. Pushing event ${evt.name} (${evt.uuid}) back on queue.`);
+                                }
 
                                 this.queue.push(evt);
                             }
                         }, reason => {
-                            console.error(`[StreamListenerQueue] Stream consumer ${this.streamName} failed to handle event ${evt.name} (${evt.uuid}): `, reason);
+                            if(this.loggingEnabled) {
+                                console.error(`[StreamListenerQueue] Stream consumer ${this.streamName} failed to handle event ${evt.name} (${evt.uuid}): `, reason);
+                            }
                         });
                     } else {
-                        console.log(`[StreamListenerQueue] No consumer set for event ${evt.name} (${evt.uuid}). Pushing it on waiting queue.`);
+                        if(this.loggingEnabled) {
+                            console.log(`[StreamListenerQueue] No consumer set for event ${evt.name} (${evt.uuid}). Pushing it on waiting queue.`);
+                        }
 
                         this.queue.push(evt);
                         if(this.waitingQueueListener) {

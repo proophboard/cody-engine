@@ -25,6 +25,7 @@ import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box
 import Grid2 from "@mui/material/Unstable_Grid2";
 import {Event} from "@event-engine/messaging/event";
 import {useQueryClient} from "@tanstack/react-query";
+import {Palette} from "@cody-play/infrastructure/utils/styles";
 
 interface MessageOption {
   name: string;
@@ -229,12 +230,12 @@ const getMessageOptions = (config: CodyPlayConfig): MessageOption[] => {
 const getMessageColor = (msgOption: MessageOption): string => {
   switch (msgOption.type) {
     case "command":
-      return '#26C0E7'
+      return Palette.stickyColors.command;
     case "event":
-      return '#FF9F4B';
+      return Palette.stickyColors.event;
     case "query":
     default:
-      return '#73dd8e'
+      return Palette.stickyColors.document;
   }
 }
 

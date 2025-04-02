@@ -41,6 +41,7 @@ import {validateResolverRules} from "@cody-engine/cody/hooks/rule-engine/validat
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {playLoadDependencies} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
 import {makeQueryFactory} from "@cody-play/queries/make-query-factory";
+import {Palette} from "@cody-play/infrastructure/utils/styles";
 
 type ResolvedCtx = {query: Record<string, unknown>, meta: {user: User}, information?: unknown} & Record<string, unknown>;
 
@@ -79,6 +80,15 @@ export const makeLocalApiQuery = (store: CodyPlayConfig, user: User): ApiQuery =
       validateResolverRules(resolve.rules);
 
       resolvedCtx = await (makeAsyncExecutable(resolve.rules))(rulesCtx);
+
+      console.log(
+        `%c[QueryBus] Executed resolve rules of query %c${queryName}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+        informationDesc._pbLink,
+        {
+          resolvedCtx,
+          rules: resolve.rules
+        }
+      )
     }
 
     if(isQueryableNotStoredStateDescription(informationDesc)) {
@@ -146,7 +156,14 @@ const resolveNotStoredStateQuery = async (desc: QueryableNotStoredStateDescripti
     throw new NotFoundError(`"${desc.name}" with "${desc.identifier}": "${ctx.query[desc.identifier]}" not found!`);
   }
 
-  console.log(`[CodyPlay] Performed not stored state query "${desc.name}" {${desc.identifier}: "${ctx.query[desc.identifier]}"}`, doc);
+  console.log(
+    `%c[QueryBus] Performed not stored state query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+    desc._pbLink,
+    {
+      ctx,
+      result: doc
+    }
+  )
 
   const exe = makeInformationFactory(factory);
 
@@ -160,7 +177,14 @@ const resolveNotStoredValueObjectQuery = async (desc: QueryableNotStoredValueObj
     throw new NotFoundError(`"${desc.name}" with "${ctx.query}" not found!`);
   }
 
-  console.log(`[CodyPlay] Performed not stored ValueObject query "${desc.name}" with "${ctx.query}"`, doc);
+  console.log(
+    `%c[QueryBus] Performed not stored ValueObject query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+    desc._pbLink,
+    {
+      ctx,
+      result: doc
+    }
+  )
 
   const exe = makeInformationFactory(factory);
 
@@ -178,7 +202,14 @@ const resolveStateQuery = async (desc: QueryableStateDescription, factory: AnyRu
     throw new NotFoundError(`"${desc.name}" with "${desc.identifier}": "${params[desc.identifier]}" not found!`);
   }
 
-  console.log(`[CodyPlay] Performed State query "${desc.name}" {${desc.identifier}: "${params[desc.identifier]}"}`, doc);
+  console.log(
+    `%c[QueryBus] Performed State query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+    desc._pbLink,
+    {
+      params,
+      result: doc
+    }
+  )
 
   const exe = makeInformationFactory(factory);
 
@@ -202,7 +233,14 @@ const resolveStateListQuery = async (desc: QueryableStateListDescription | Store
 
   const result = asyncIteratorToArray(asyncMap(cursor, ([, d]) => exe(d)));
 
-  console.log(`[CodyPlay] Performed StateList query "${desc.name}":`, queryPayload, result);
+  console.log(
+    `%c[QueryBus] Performed StateList query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+    desc._pbLink,
+    {
+      queryPayload,
+      result
+    }
+  )
 
   return result;
 }
@@ -230,7 +268,14 @@ const resolveSingleValueObjectQuery = async (desc: QueryableValueObjectDescripti
     throw new NotFoundError(`"${desc.name}" with "${JSON.stringify(params)}" not found!`);
   }
 
-  console.log(`[CodyPlay] Performed SingleValueObject query "${desc.name}" {${filters}"}`, result[0]);
+  console.log(
+    `%c[QueryBus] Performed SingleValueObject query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+    desc._pbLink,
+    {
+      filters,
+      result: result[0]
+    }
+  )
 
   return result[0];
 }
@@ -248,7 +293,14 @@ const resolveNotStoredListQuery = async (desc: QueryableListDescription, factory
     throw new Error(`[CodyPlay] Query resolver "information" result for ${desc.name} is not a list, but the data schema is defined as a list. Please check your prooph board query resolver rules.`)
   }
 
-  console.log(`[CodyPlay] Performed not stored List query "${desc.name}"`, ctx, result);
+  console.log(
+    `%c[QueryBus] Performed not stored List query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+    desc._pbLink,
+    {
+      ctx,
+      result
+    }
+  )
 
   return result.map(item => exe(item));
 }

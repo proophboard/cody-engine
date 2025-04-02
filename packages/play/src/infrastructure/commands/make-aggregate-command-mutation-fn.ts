@@ -77,7 +77,8 @@ export const makeAggregateCommandMutationFn = (
     const processingFunction = makeAggregateCommandHandler(
       commandHandlerRules,
       eventRegistry,
-      schemaDefinitions
+      schemaDefinitions,
+      aggregateDesc
     );
 
     try {

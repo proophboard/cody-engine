@@ -134,8 +134,6 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
       return;
     }
 
-    console.log("coordinating change", isInitialized, forceUpdate, change);
-
     let isFirstUpdate = true;
 
     if(debounceTimer) {
@@ -146,13 +144,11 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     debounceTimer = setTimeout(() => {
       if(formRef && !isFirstUpdate && !forceUpdate) {
         debounceTimer = null;
-        console.log("Set form data in debounce timer", change);
         setFormData(change);
       }
     }, 300);
 
     if(isFirstUpdate || forceUpdate) {
-      console.log("set form data as first update", forceUpdate, change);
       setFormData(change);
     }
 
@@ -199,8 +195,6 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     false,
     (s, k) => translateSchema(s, k, t)
   ) as RJSFSchema;
-
-  console.log("current form data", formData);
 
   return (
     <div>

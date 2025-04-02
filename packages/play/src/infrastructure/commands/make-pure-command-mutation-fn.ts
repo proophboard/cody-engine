@@ -54,7 +54,8 @@ export const makePureCommandMutationFn = (
     const processingFunction =  makePureCommandHandler(
       commandHandlerRules,
       eventRegistry,
-      schemaDefinitions
+      schemaDefinitions,
+      commandDesc
     );
 
     const dependencies = await playLoadDependencies(command, 'command', commandDesc.dependencies || {}, config);

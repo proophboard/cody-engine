@@ -46,6 +46,7 @@ import GlobalStore from "@frontend/app/providers/GlobalStore";
 import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
 import EnvProvider, {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
 import TypesProvider from "@frontend/app/providers/Types";
+import {playAttachDefaultStreamListeners} from "@cody-play/infrastructure/events/play-attach-default-stream-listeners";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -79,11 +80,7 @@ export function App() {
   if(!messageBoxRef) {
     const es = getConfiguredPlayEventStore();
     messageBoxRef = getConfiguredPlayMessageBox(config);
-    const PublicStreamListener = new PlayStreamListener(es, 'public_stream', messageBoxRef);
-    PublicStreamListener.startProcessing();
-
-    const writeModelStreamListener = new PlayStreamListener(es, 'write_model_stream', messageBoxRef);
-    writeModelStreamListener.startProcessing();
+    playAttachDefaultStreamListeners(es, messageBoxRef);
     updateConfigAndGlobalProjector(config);
   }
 
