@@ -205,7 +205,14 @@ const dispatchEvent = async (event: Event, config: CodyPlayConfig, triggerLivePr
 
       if(result['commands']) {
         for (const command of result['commands']) {
-          console.log(`[EventBus] Dispatching command "${command.name}" triggered by policy "${policy.name}"`);
+          console.log(
+            `%c[EventBus] Dispatching command %c"${command.name}" %ctriggered by policy %c"${policy.name}"`, Palette.cColor(policyColor), Palette.cColorBold(policyColor), Palette.cColor(policyColor), Palette.cColorBold(policyColor),
+            policy._pbLink,
+            {
+              command
+            }
+          )
+
           await dispatchCommand(command, config);
         }
       }
