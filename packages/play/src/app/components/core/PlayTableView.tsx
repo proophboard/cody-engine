@@ -54,6 +54,7 @@ import jexl from "@app/shared/jexl/get-configured-jexl";
 import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 import ColumnAction from "@frontend/app/components/core/table/ColumnAction";
 import ColumnActionsMenu from "@frontend/app/components/core/table/ColumnActionsMenu";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc) && !isQueryableNotStoredStateListDescription(informationInfo.desc)) {
@@ -63,6 +64,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
   const {config: {queries, types, pages, definitions}} = useContext(configStore);
   const [page,addQueryResult] = usePageData();
   const [user] = useUser();
+  const [store, setStore] = useGlobalStore();
 
   const query = useApiQuery(informationInfo.desc.query, params);
   const jexlCtx = {routeParams: params, user, page};
@@ -77,6 +79,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
   const pageSizeConfig = getTablePageSizeConfig(uiSchema);
   const density = getTableDensity(uiSchema);
   const hideToolbar = !!uiSchema.table?.hideToolbar;
+  const checkboxSelection = !!uiSchema.table?.checkboxSelection;
 
   const itemIdentifier = (isQueryableStateListDescription(informationInfo.desc) || isQueryableNotStoredStateListDescription(informationInfo.desc))? informationInfo.desc.itemIdentifier : undefined;
 
@@ -137,6 +140,12 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
           initialState={{ pagination: { paginationModel: { pageSize: pageSizeConfig.pageSize } } }}
           pageSizeOptions={pageSizeConfig.pageSizeOptions}
           density={density}
+          checkboxSelection={checkboxSelection}
+          onRowSelectionModelChange={model => {
+            const selectionDataReference = registryIdToDataReference(informationInfo.desc.name) + '/Selection';
+            store[selectionDataReference] = model;
+            setStore(store);
+          }}
         />
       )}
     </Box>

@@ -3,6 +3,7 @@ import {DataGrid, GridColDef, GridToolbar} from "@mui/x-data-grid";
 import {useEffect} from "react";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 import {usePageData} from "@frontend/hooks/use-page-data";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {Get<%= className %>} from "@app/shared/queries/<%= serviceNames.fileName %>/get-<%= fileName %>";
 import {useGet<%= className %>} from "@frontend/queries/<%= serviceNames.fileName %>/use-get-<%= fileName %>";
 import NoRowsOverlay from "@frontend/app/components/core/table/NoRowsOverlay";
@@ -11,6 +12,7 @@ import NoRowsOverlay from "@frontend/app/components/core/table/NoRowsOverlay";
 const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}) => {
   const [,addQueryResult] = usePageData();
   const query = useGet<%= className %>(params);
+  const [store, setStore] = useGlobalStore();
   <%- hooks %>
 
   useEffect(() => {
@@ -47,6 +49,11 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}) => {
           }
           pageSizeOptions={<%- toJSON(pageSizeConfig.pageSizeOptions) %>}
           density="<%= density %>"
+          checkboxSelection={<%- checkboxSelection %>}
+          onRowSelectionModelChange={model => {
+            store['<%= dataReference %>/Selection'] = model;
+            setStore(store);
+          }}
       />}
     </Box>
   );

@@ -13,6 +13,7 @@ import {useUser} from "@frontend/hooks/use-user";
 import {useParams} from "react-router-dom";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {getInitialValues} from "@frontend/util/command-form/get-initial-values";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
 <% if (buttonIcon) { %>import {<%= buttonIcon %>} from "mdi-material-ui";<% } %>
 
 interface OwnProps {
@@ -31,6 +32,7 @@ const <%= className %> = (props: <%= className %>Props) => {
   const [user,] = useUser();
   const routeParams = useParams();
   const [page,] = usePageData();
+  const [store] = useGlobalStore();
 
 <% if (!newAggregate && !uiDisableFetchState) { %>
   const query = useGet<%= stateNames.className %>(determineQueryPayload(props, <%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeInfo));
@@ -48,7 +50,7 @@ const <%= className %> = (props: <%= className %>Props) => {
     }
   };
 
-  const initialValues = props.initialValues || getInitialValues(<%= serviceNames.className %><%= className %>RuntimeInfo, {user, routeParams, page});
+  const initialValues = props.initialValues || getInitialValues(<%= serviceNames.className %><%= className %>RuntimeInfo, {user, routeParams, page, store});
 
   return <>
     <CommandButton command={<%= serviceNames.className %><%= className %>RuntimeInfo} onClick={handleOpenDialog} {...{<% if (buttonIcon) { %>startIcon: <<%= buttonIcon %> />, <% } %>...props.buttonProps}} />

@@ -76,6 +76,7 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
   const pageSizeConfig = getTablePageSizeConfig(voMeta);
   const density = getTableDensity(voMeta);
   const hideToolbar = !!voMeta?.uiSchema?.table?.hideToolbar;
+  const checkboxSelection = !!voMeta?.uiSchema?.table?.checkboxSelection;
 
   imports.push('import {useUser} from "@frontend/hooks/use-user";')
   hooks.push('const [user,] = useUser();');
@@ -91,6 +92,7 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
     columns: `${columns.join(",\n")}`,
     pageSizeConfig,
     density,
+    checkboxSelection,
     hideToolbar,
     dataReference,
     imports: imports.join(";\n"),

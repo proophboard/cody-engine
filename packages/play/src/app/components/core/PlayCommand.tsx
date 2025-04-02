@@ -18,6 +18,7 @@ import {makePureCommandMutationFn} from "@cody-play/infrastructure/commands/make
 import {useParams} from "react-router-dom";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {getInitialValues} from "@frontend/util/command-form/get-initial-values";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
 
 interface OwnProps {
   command: PlayCommandRuntimeInfo,
@@ -37,6 +38,7 @@ const PlayCommand = (props: PlayCommandProps) => {
   const [user,] = useUser();
   const routeParams = useParams();
   const [page,] = usePageData();
+  const [store] = useGlobalStore();
 
   const handleOpenDialog = () => {
     setDialogOpen(true);
@@ -68,7 +70,7 @@ const PlayCommand = (props: PlayCommandProps) => {
     incompleteCommandConfigError = `Cannot handle command. No business rules defined. Please connect the command to an aggregate and define business rules in the Cody Wizard`;
   }
 
-  const initialValues = props.initialValues || getInitialValues(props.command as unknown as CommandRuntimeInfo, {user, page, routeParams});
+  const initialValues = props.initialValues || getInitialValues(props.command as unknown as CommandRuntimeInfo, {user, page, routeParams, store});
 
   /** Aggregate Command **/
   if(isAggregateCommandDescription(commandDesc)) {
