@@ -6,7 +6,7 @@ import {User} from "@app/shared/types/core/user/user";
 import {UserRole} from "@app/shared/types/core/user/user-role";
 import {registerArrayExtensions} from "@app/shared/jexl/array-extension/register";
 import {registerDateTimeExtensions} from "@app/shared/jexl/datetime-extension/register";
-import {PageData} from "@app/shared/types/core/page-data/page-data";
+import {isQueryResult, PageData} from "@app/shared/types/core/page-data/page-data";
 import {registerStringExtensions} from "@app/shared/jexl/string-extension/register";
 import {registerObjectExtension} from "@app/shared/jexl/object-extension/register";
 import {registerTypeCastExtensions} from "@app/shared/jexl/type-cast/register";
@@ -135,11 +135,17 @@ const getPageData = (pageData: PageData | undefined, name: string, defaultValue:
     return defaultValue;
   }
 
-  if(!pageData[name].isSuccess) {
-    return defaultValue;
+  const result = pageData[name];
+
+  if(isQueryResult(result)) {
+    if(!result.isSuccess) {
+      return defaultValue;
+    }
+
+    return result.data;
   }
 
-  return pageData[name].data;
+  return result;
 }
 
 const getValOrDefault = (val: any, notSetVal: any, strict?: boolean) => {

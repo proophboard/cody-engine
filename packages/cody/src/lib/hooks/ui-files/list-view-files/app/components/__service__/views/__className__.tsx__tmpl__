@@ -51,8 +51,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}) => {
           density="<%= density %>"
           checkboxSelection={<%- checkboxSelection %>}
           onRowSelectionModelChange={model => {
-            store['<%= dataReference %>/Selection'] = model;
-            setStore(store);
+            addQueryResult('<%= dataReference %>/Selection', model);
           }}
       />}
     </Box>

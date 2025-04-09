@@ -143,8 +143,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
           checkboxSelection={checkboxSelection}
           onRowSelectionModelChange={model => {
             const selectionDataReference = registryIdToDataReference(informationInfo.desc.name) + '/Selection';
-            store[selectionDataReference] = model;
-            setStore(store);
+            addQueryResult(selectionDataReference, model);
           }}
         />
       )}
