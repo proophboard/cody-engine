@@ -105,9 +105,9 @@ const CommandButton = (props: CommandButtonProps) => {
       sx={{ ...style }}
       color={color}
       startIcon={
-        props.startIcon ? props.startIcon : newAggregate ? <Plus /> : undefined
+        props.startIcon ? props.startIcon : icon ? icon : newAggregate ? <Plus /> : undefined
       }
-      children={props.label ? props.label : commandTitle(props.command, t)}
+      children={props.label || label || commandTitle(props.command, t)}
       onClick={props.onClick}
       disabled={disabled}
     />
