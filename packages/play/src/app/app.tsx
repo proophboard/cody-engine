@@ -28,7 +28,6 @@ import {
 import {PlayPageRegistry} from "@cody-play/state/types";
 import CodyMessageServerInjection from "@cody-play/app/components/core/CodyMessageServer";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
-import {PlayStreamListener} from "@cody-play/infrastructure/multi-model-store/make-stream-listener";
 import PlayToggleColorMode from "@cody-play/app/layout/PlayToggleColorMode";
 import PendingChanges from "@cody-play/infrastructure/multi-model-store/PendingChanges";
 import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";

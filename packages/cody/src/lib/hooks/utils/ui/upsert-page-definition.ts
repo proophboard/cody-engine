@@ -18,7 +18,7 @@ import {
 import {convertRuleConfigToDynamicBreadcrumbValueGetterRules} from "@cody-engine/cody/hooks/rule-engine/convert-rule-config-to-behavior";
 import {getNodesOfTypeNearby} from "../node-tree";
 import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference";
-import {isDynamicBreadcrumb, UiMetadata, ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
+import {CommandComponent, isDynamicBreadcrumb, UiMetadata, ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 import {normalizePageCommands} from "@cody-play/infrastructure/rule-engine/normalize-page-commands";
 import {normalizePageViewComponents} from "@cody-play/infrastructure/rule-engine/normalize-page-view-components";
 
@@ -207,7 +207,7 @@ const convertToRoleCheck = (roles: List<Node>): string => {
 }
 
 const getCommandNames = (commands: List<Node>, ctx: Context, existingPageDefinition?: PageDefinition): string[] | CodyResponse => {
-  const commandNames: string[] = existingPageDefinition?.commands || [];
+  const commandNames: string[] = existingPageDefinition?.commands.map(c => typeof c === "string" ? c : c.command) || [];
 
   for (const command of commands) {
     const service = detectService(command, ctx);

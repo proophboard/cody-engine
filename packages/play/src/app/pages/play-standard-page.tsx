@@ -4,7 +4,7 @@ import CommandBar from "@frontend/app/layout/CommandBar";
 import React, {useContext, useEffect} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
-import {PlayInformationRegistry, PlayPageRegistry} from "@cody-play/state/types";
+import {PlayInformationRegistry, PlayPageRegistry, PlayViewComponentConfig} from "@cody-play/state/types";
 import {
   isQueryableDescription,
   isQueryableListDescription, isQueryableNotStoredStateListDescription,
@@ -19,6 +19,11 @@ import { Alert } from "@mui/material";
 import {playIsCommandButtonHidden} from "@cody-play/infrastructure/cody/command/play-is-command-button-hidden";
 import PlayStaticView from "@cody-play/app/components/core/PlayStaticView";
 import {names} from "@event-engine/messaging/helpers";
+import PlayStateFormView from "@cody-play/app/components/core/PlayStateFormView";
+import {ViewComponentType} from "@cody-engine/cody/hooks/utils/ui/types";
+import {UiSchema} from "@rjsf/utils";
+import PlayNewStateFormView from "@cody-play/app/components/core/PlayNewStateFormView";
+import PlayConnectedCommand from "@cody-play/app/components/core/PlayConnectedCommand";
 
 interface Props {
   page: string
@@ -51,6 +56,11 @@ export const PlayStandardPage = (props: Props) => {
 
   const cmdBtns = page.commands
     .filter(commandName => {
+      if(typeof commandName !== "string") {
+        commandName = commandName.command;
+      }
+
+
       const cmd = config.commands[commandName as string];
 
       if(!cmd) {
@@ -60,13 +70,29 @@ export const PlayStandardPage = (props: Props) => {
       return !playIsCommandButtonHidden(cmd);
     })
     .map((commandName,index) => {
+
+      let uiSchemaOverride: UiSchema | undefined;
+      let forceSchema = false;
+      let connectTo: string | undefined;
+
+      if(typeof commandName !== "string") {
+        uiSchemaOverride = commandName.uiSchema;
+        forceSchema = !!commandName.forceSchema;
+        connectTo = commandName.connectTo;
+        commandName = commandName.command;
+      }
+
     const cmd = config.commands[commandName as string];
 
     if(!cmd) {
       return <Alert severity="error">{`Command "${commandName}" not found! You have to pass the command to Cody on prooph board.`}</Alert>
     }
 
-    return <PlayCommand key={commandName} command={config.commands[commandName as string]} />
+    if(connectTo) {
+      return <PlayConnectedCommand key={commandName} command={config.commands[commandName as string]} connectTo={connectTo} forceSchema={forceSchema} uiSchemaOverride={uiSchemaOverride} />
+    }
+
+    return <PlayCommand key={commandName} command={config.commands[commandName as string]} uiSchemaOverride={uiSchemaOverride} />
   });
 
   let tabs;
@@ -79,9 +105,18 @@ export const PlayStandardPage = (props: Props) => {
 
   const components = page.components.map((valueObjectName, index) => {
     let isHiddenView = false;
+    let viewType: ViewComponentType = 'auto';
+    let uiSchemaOverride: UiSchema | undefined;
+    let loadState = true;
 
     if(typeof valueObjectName !== "string") {
       isHiddenView = !!valueObjectName.hidden;
+      viewType = valueObjectName.type || 'auto';
+      uiSchemaOverride = valueObjectName.uiSchema;
+      if(typeof valueObjectName.loadState !== "undefined") {
+        loadState = valueObjectName.loadState;
+      }
+
       valueObjectName = valueObjectName.view;
     }
 
@@ -89,7 +124,7 @@ export const PlayStandardPage = (props: Props) => {
       throw new Error(`View Component for Information: "${valueObjectName}" is not registered. Did you forget to pass the corresponding Information card to Cody?`);
     }
 
-    const ViewComponent = getViewComponent(config.views[valueObjectName], config.types, isHiddenView);
+    const ViewComponent = getViewComponent(config.views[valueObjectName], config.types, isHiddenView, viewType, uiSchemaOverride, loadState);
 
     return <Grid2 key={'comp' + index} xs={12}>{ViewComponent(routeParams)}</Grid2>
   });
@@ -100,7 +135,7 @@ export const PlayStandardPage = (props: Props) => {
   </Grid2>
 }
 
-const getViewComponent = (component: React.FunctionComponent | { information: string }, types: PlayInformationRegistry, isHiddenView = false): React.FunctionComponent => {
+const getViewComponent = (component: React.FunctionComponent | PlayViewComponentConfig, types: PlayInformationRegistry, isHiddenView = false, viewType: ViewComponentType, uiSchemaOverride?: UiSchema, loadState = true): React.FunctionComponent => {
   if(typeof component === "object" && component.information) {
     const information = types[component.information];
 
@@ -110,15 +145,19 @@ const getViewComponent = (component: React.FunctionComponent | { information: st
 
     if(isQueryableStateListDescription(information.desc) || isQueryableListDescription(information.desc) || isQueryableNotStoredStateListDescription(information.desc)) {
       return (params: any) => {
-        return PlayTableView(params, information, isHiddenView);
+        return PlayTableView(params, information, isHiddenView, uiSchemaOverride);
       };
-    } else if (isQueryableDescription(information.desc)) {
+    } else if (isQueryableDescription(information.desc) && loadState) {
       return (params: any) => {
-        return PlayStateView(params, information, isHiddenView);
+        return viewType === 'form'
+          ? PlayStateFormView(params, information, isHiddenView, uiSchemaOverride)
+          : PlayStateView(params, information, isHiddenView, uiSchemaOverride);
       }
     } else {
       return (params: any) => {
-        return PlayStaticView(params, information, isHiddenView);
+        return viewType === 'form'
+          ? PlayNewStateFormView(params, information, isHiddenView, uiSchemaOverride)
+          : PlayStaticView(params, information, isHiddenView, uiSchemaOverride);
       }
     }
   }

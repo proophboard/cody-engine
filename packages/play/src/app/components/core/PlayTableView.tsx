@@ -55,8 +55,9 @@ import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 import ColumnAction from "@frontend/app/components/core/table/ColumnAction";
 import ColumnActionsMenu from "@frontend/app/components/core/table/ColumnActionsMenu";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
+import {merge} from "lodash/fp";
 
-const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false) => {
+const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc) && !isQueryableNotStoredStateListDescription(informationInfo.desc)) {
     throw new Error(`Play table view can only be used to show queriable state list information, but "${informationInfo.desc.name}" is not of this information type. ${CONTACT_PB_TEAM}`)
   }
@@ -69,7 +70,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
   const query = useApiQuery(informationInfo.desc.query, params);
   const jexlCtx = {routeParams: params, user, page};
 
-  const uiSchema: UiSchema & TableUiSchema = informationInfo.uiSchema || {};
+  const uiSchema: UiSchema & TableUiSchema = merge(informationInfo.uiSchema || {}, uiSchemaOverride || {});
 
   // Normalize table uiSchema
   if(uiSchema['ui:table']) {

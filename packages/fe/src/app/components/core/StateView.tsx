@@ -32,7 +32,7 @@ import {usePageData} from "@frontend/hooks/use-page-data";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import {useParams} from "react-router-dom";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
-import {merge} from "lodash";
+import {merge} from "lodash/fp";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {useTypes} from "@frontend/hooks/use-types";

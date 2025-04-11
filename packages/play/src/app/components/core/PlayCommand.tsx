@@ -19,6 +19,7 @@ import {useParams} from "react-router-dom";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {getInitialValues} from "@frontend/util/command-form/get-initial-values";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
+import {merge} from "lodash/fp";
 
 interface OwnProps {
   command: PlayCommandRuntimeInfo,
@@ -26,6 +27,7 @@ interface OwnProps {
   initialValues?: {[prop: string]: unknown},
   onDialogOpen?: () => void;
   onDialogClose?: () => void;
+  uiSchemaOverride?: UiSchema;
 }
 
 type PlayCommandProps = OwnProps;
@@ -53,8 +55,11 @@ const PlayCommand = (props: PlayCommandProps) => {
     }
   };
 
+  const uiSchema = merge(props.command.uiSchema, props.uiSchemaOverride);
+
   const runtimeInfo: CommandRuntimeInfo = {
     ...props.command,
+    uiSchema,
     factory: makeCommandFactory(props.command, definitions),
   }
 
@@ -150,7 +155,7 @@ const PlayCommand = (props: PlayCommandProps) => {
 
 export default PlayCommand;
 
-const getButtonIcon = (uiSchema: UiSchema | undefined): React.ReactNode | undefined => {
+export const getButtonIcon = (uiSchema: UiSchema | undefined): React.ReactNode | undefined => {
   if(uiSchema && uiSchema['ui:button'] && uiSchema['ui:button']['icon']) {
     return <MdiIcon icon={uiSchema['ui:button']['icon']} />
   }

@@ -1,13 +1,17 @@
 import {Rule} from "@app/shared/rule-engine/configuration";
-import {SxProps} from "@mui/material";
 import {DynamicSidebar, Tab, TopLevelGroup} from "@frontend/app/pages/page-definitions";
+import {UiSchema} from "@rjsf/utils";
 
 export interface DynamicBreadcrumbMetadata {
   data: string;
   label: Rule[] | string;
 }
 
-export type ViewComponent = string | { view: string, hidden?: boolean, props?: Record<string, unknown>}
+export type ViewComponentType = 'auto' | 'state' | 'form' | 'table';
+
+export type ViewComponent = string | { view: string, hidden?: boolean, props?: Record<string, unknown>, uiSchema?: UiSchema, type?: ViewComponentType, loadState?: boolean}
+
+export type CommandComponent = string | {command: string, uiSchema?: UiSchema, connectTo?: string, forceSchema?: boolean}
 
 export interface UiMetadata {
   route?: string;
@@ -16,7 +20,7 @@ export interface UiMetadata {
   breadcrumb?: string | DynamicBreadcrumbMetadata;
   'breadcrumb:t'?: string;
   tab?: Tab;
-  commands?: string[];
+  commands?: CommandComponent[];
   views?: ViewComponent[];
 }
 

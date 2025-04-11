@@ -17,7 +17,7 @@ import {AnyRule} from "@app/shared/rule-engine/configuration";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
 import {UiSchema} from "@rjsf/utils";
-import {DynamicBreadcrumbMetadata} from "@cody-engine/cody/hooks/utils/ui/types";
+import {DynamicBreadcrumbMetadata, ViewComponentType} from "@cody-engine/cody/hooks/utils/ui/types";
 import {ResolveConfig, TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {ThemeOptions} from "@mui/material";
 import {Persona} from "@app/shared/extensions/personas";
@@ -33,8 +33,10 @@ export interface PlaySubLevelPage extends PlayPageDefinition {
 
 export type PlayPageRegistry = {[pageName: string]: PlayPageDefinition};
 
+export type PlayViewComponentConfig = { information: string };
+
 export type PlayViewRegistry = {
-  [valueObjectName: string]: React.FunctionComponent<any> | { information: string };
+  [valueObjectName: string]: React.FunctionComponent<any> | PlayViewComponentConfig;
 };
 
 export interface PlayInitAction {

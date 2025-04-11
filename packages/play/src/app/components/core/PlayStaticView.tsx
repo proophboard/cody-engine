@@ -8,8 +8,10 @@ import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidg
 import {useUser} from "@frontend/hooks/use-user";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
+import {UiSchema} from "@rjsf/utils";
+import {merge} from "lodash/fp";
 
-const PlayStaticView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false) => {
+const PlayStaticView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema) => {
   const {config: {definitions}} = useContext(configStore);
   const [page] = usePageData();
   const [user] = useUser();
@@ -19,7 +21,7 @@ const PlayStaticView = (params: any, informationInfo: PlayInformationRuntimeInfo
 
   let isHidden = hiddenView;
 
-  const uiSchema = {...informationInfo.uiSchema} || {};
+  const uiSchema = merge({...informationInfo.uiSchema} || {}, uiSchemaOverride || {});
 
   if(!hiddenView && typeof uiSchema['ui:hidden'] !== "undefined") {
     if(typeof uiSchema['ui:hidden'] === "string") {

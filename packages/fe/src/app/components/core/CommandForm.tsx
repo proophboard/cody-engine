@@ -70,6 +70,8 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     mutationFn: props.commandFn,
   });
 
+  const {desc} = props.command;
+
   useImperativeHandle(ref, () => ({
     submit: (): void => {
       setLiveValidate(true);
@@ -178,8 +180,6 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
       }
     }, 100);
   }
-
-  const {desc} = props.command;
 
   const userWidgets = props.widgets || {};
 

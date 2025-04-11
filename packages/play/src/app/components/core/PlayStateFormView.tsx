@@ -1,8 +1,10 @@
+import * as React from 'react';
 import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
-import StateView from "@frontend/app/components/core/StateView";
-import {makeInformationFactory} from "@cody-play/infrastructure/information/make-information-factory";
-import {useContext, useEffect} from "react";
+import {useContext, useEffect, useMemo} from "react";
 import {configStore} from "@cody-play/state/config-store";
+import {usePageData} from "@frontend/hooks/use-page-data";
+import {useUser} from "@frontend/hooks/use-user";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {useApiQuery} from "@frontend/queries/use-api-query";
 import {
   isQueryableNotStoredValueObjectDescription,
@@ -10,17 +12,18 @@ import {
   isQueryableValueObjectDescription,
   QueryableStateDescription
 } from "@event-engine/descriptions/descriptions";
-import {Alert, CircularProgress} from "@mui/material";
-import {usePageData} from "@frontend/hooks/use-page-data";
-import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
-import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidget";
-import {useUser} from "@frontend/hooks/use-user";
 import jexl from "@app/shared/jexl/get-configured-jexl";
-import {useGlobalStore} from "@frontend/hooks/use-global-store";
+import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
+import {Alert, CircularProgress} from "@mui/material";
+import {makeInformationFactory} from "@cody-play/infrastructure/information/make-information-factory";
+import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidget";
+import FormView from "@frontend/app/components/core/FormView";
 import {UiSchema} from "@rjsf/utils";
 import {merge} from "lodash/fp";
+import {getInitialValuesFromUiSchema} from "@frontend/util/command-form/get-initial-values";
+import {JSONSchema7} from "json-schema";
 
-const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema) => {
+const PlayStateFormView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema) => {
   const {config: {definitions}} = useContext(configStore);
   const [page, addQueryResult] = usePageData();
   const desc = informationInfo.desc;
@@ -52,22 +55,26 @@ const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo,
     return <Alert severity="error" >Unable to render view. Referenced Information "{informationInfo.desc.name}" is not queryable and cannot be loaded from the database. You have to define a query schema and resolve configuration in the Cody Wizard.</Alert>
   }
 
+  const initialValues = getInitialValuesFromUiSchema(uiSchema, informationInfo.schema as unknown as JSONSchema7, jexlCtx);
+  const state = query.isSuccess ? merge(initialValues, query.data) : initialValues;
+
   if(isHidden) {
     return <></>
   }
 
   return <>
     {query.isLoading && <CircularProgress />}
-    {query.isSuccess && <StateView
-        state={query.data}
-        description={{...informationInfo, uiSchema, factory: makeInformationFactory(informationInfo.factory)}}
-        definitions={definitions}
-        widgets={{
-          DataSelect: PlayDataSelectWidget
-        }}
-      />
+    {query.isSuccess && <FormView
+      state={state}
+      description={{...informationInfo, uiSchema, factory: makeInformationFactory(informationInfo.factory)}}
+      definitions={definitions}
+      widgets={{
+        DataSelect: PlayDataSelectWidget
+      }}
+      onSubmitted={() => query.refetch()}
+    />
     }
   </>
-}
+};
 
-export default PlayStateView;
+export default PlayStateFormView;

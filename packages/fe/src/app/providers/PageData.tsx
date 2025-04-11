@@ -1,6 +1,7 @@
 import {AddQueryResultOrData, PageData} from "@app/shared/types/core/page-data/page-data";
 import React, {PropsWithChildren, useState} from "react";
 import {UseQueryResult} from "@tanstack/react-query";
+import {AddPageFormReference, PageFormReference, PageFormRegistry} from "@app/shared/types/core/page-form/page-form";
 
 const EmptyPageData: PageData = {};
 
@@ -17,6 +18,8 @@ export const PageDataContext = React.createContext({
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   addQueryResult: (name: string, result: UseQueryResult | unknown) => {},
   // eslint-disable-next-line @typescript-eslint/no-empty-function
+  addPageForm: (name: string, form: PageFormReference) => {},
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   reset: () => {}
 });
 
@@ -32,12 +35,19 @@ const PageDataProvider = (props: PageDataProviderProps) => {
     setPageData(newPageData);
   }
 
+  const addPageForm: AddPageFormReference = (name: string, form: PageFormReference) => {
+    const newPageData = {...currentPageData};
+    newPageData[name] = form;
+    currentPageData[name] = form;
+    setPageData(newPageData);
+  }
+
   const reset = () => {
     setPageData(EmptyPageData);
     currentPageData = {};
   }
 
-  return <PageDataContext.Provider value={{pageData, addQueryResult, reset}}>
+  return <PageDataContext.Provider value={{pageData, addQueryResult, addPageForm, reset}}>
     {props.children}
   </PageDataContext.Provider>
 }

@@ -1,7 +1,7 @@
 import {QueryClient} from "@tanstack/react-query";
 import {SvgIcon, SxProps} from "@mui/material";
 import {ProophBoardDescription} from "@event-engine/descriptions/descriptions";
-import {ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
+import {CommandComponent, ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 
 export type UnsubscribeBreadcrumbListener = () => void;
 export type BreadcrumbFn = (params: Record<string, string>, queryClient: QueryClient, onLabelChanged: (label: string) => void) => UnsubscribeBreadcrumbListener;
@@ -13,7 +13,7 @@ export interface PageDefinition {
   breadcrumb?: BreadcrumbFn;
   'breadcrumb:t'?: string;
   components: ViewComponent[];
-  commands: string[];
+  commands: CommandComponent[];
   tab?: Omit<Tab, "route">;
   service?: string;
 }

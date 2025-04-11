@@ -5,6 +5,8 @@ import CommandBar from "@frontend/app/layout/CommandBar";
 import {loadCommandComponent} from "@frontend/util/components/load-command-components";
 import {loadViewComponent} from "@frontend/util/components/load-view-components";
 import {PageRegistry, pages} from "@frontend/app/pages/index";
+import {useContext, useEffect} from "react";
+import {PageDataContext} from "@frontend/app/providers/PageData";
 
 interface Props {
   page: PageDefinition
@@ -21,6 +23,13 @@ const findTabGroup = (groupName: string, pages: PageRegistry, routeParams: Reado
 
 export const StandardPage = (props: Props) => {
   const routeParams = useParams();
+  const {reset} = useContext(PageDataContext);
+
+  useEffect(() => {
+    return () => {
+      reset();
+    }
+  }, []);
 
   const cmdBtns = props.page.commands.map((commandName,index) => {
     const Command = loadCommandComponent(commandName);

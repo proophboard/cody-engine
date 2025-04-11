@@ -20,7 +20,7 @@ import {
 } from "@cody-play/infrastructure/cody/node-traversing/node-tree";
 import {playVoMetadata} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 import {playVoFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
-import {ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
+import {CommandComponent, ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 import {normalizePageCommands} from "@cody-play/infrastructure/rule-engine/normalize-page-commands";
 import {normalizePageViewComponents} from "@cody-play/infrastructure/rule-engine/normalize-page-view-components";
 
@@ -60,7 +60,7 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
 
     const existingPage = config.pages[pageName];
     const mergedComponents: ViewComponent[] = [];
-    const mergedCommands: string[] = [];
+    const mergedCommands: CommandComponent[] = [];
 
     // Keep BC, PB adds views & commands to all new UI config now
     if(existingPage && typeof meta.views ==="undefined") {

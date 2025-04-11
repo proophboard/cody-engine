@@ -1,5 +1,5 @@
 import {createTheme as createMuiTheme, SxProps, ThemeOptions} from "@mui/material";
-import {merge} from "lodash";
+import {merge} from "lodash/fp";
 import overwriteTheme from "@frontend/extensions/app/layout/theme";
 
 declare module '@mui/material/styles' {

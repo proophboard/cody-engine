@@ -1,6 +1,9 @@
 import {CommandRuntimeInfo} from "@event-engine/messaging/command";
 import {PropMapping} from "@app/shared/rule-engine/configuration";
 import jexl from "@app/shared/jexl/get-configured-jexl";
+import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
+import {UiSchema} from "@rjsf/utils";
+import {JSONSchema7} from "json-schema";
 
 type ExecutionContext = any;
 
@@ -66,10 +69,12 @@ const execMappingSync = (mapping: string | string[] | PropMapping | PropMapping[
   return propMap;
 }
 
-export const getInitialValues = (commandInfo:  CommandRuntimeInfo, ctx: any): {[prop: string]: unknown} => {
-  let values: {[prop: string]: any} = {};
+export const getInitialValues = (commandOrStateInfo:  CommandRuntimeInfo | ValueObjectRuntimeInfo, ctx: any): {[prop: string]: unknown} => {
+  return getInitialValuesFromUiSchema(commandOrStateInfo.uiSchema || {}, commandOrStateInfo.schema as unknown as JSONSchema7, ctx);
+}
 
-  const uiSchema = commandInfo.uiSchema;
+export const getInitialValuesFromUiSchema = (uiSchema: UiSchema, schema: JSONSchema7, ctx: any): {[prop: string]: unknown} => {
+  let values: {[prop: string]: any} = {};
 
   if(!uiSchema || !uiSchema['ui:form'] || typeof uiSchema['ui:form'] !== "object") {
     return values;
@@ -94,8 +99,8 @@ export const getInitialValues = (commandInfo:  CommandRuntimeInfo, ctx: any): {[
     throw new Error(`ui:form.data:expr did not return an object. Expr: "${uiForm['data:expr']}" | returned data: ${JSON.stringify(values)}`);
   }
 
-  if(commandInfo.schema.type === "object") {
-    const schemaProps = commandInfo.schema.properties || {};
+  if(schema.type === "object") {
+    const schemaProps = schema.properties || {};
     const schemaPropKeys = Object.keys(schemaProps);
 
     const filteredValues: {[prop: string]: any} = {};

@@ -2,7 +2,12 @@ import React from "react";
 import {WithCommandButtonProps} from "@frontend/app/components/core/CommandButton";
 import {commands as commandComponents} from "@frontend/app/components/commands";
 import {commands as overwriteCommandComponents} from "@frontend/extensions/app/components/commands";
-export const loadCommandComponent = (commandName: string): React.FunctionComponent<any & WithCommandButtonProps> => {
+import {CommandComponent} from "@cody-engine/cody/hooks/utils/ui/types";
+export const loadCommandComponent = (commandName: CommandComponent): React.FunctionComponent<any & WithCommandButtonProps> => {
+  if(typeof commandName !== "string") {
+    commandName = commandName.command;
+  }
+
   if(overwriteCommandComponents[commandName]) {
 
     return overwriteCommandComponents[commandName];
