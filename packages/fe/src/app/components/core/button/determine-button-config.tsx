@@ -4,11 +4,13 @@ import {UiSchema} from "@rjsf/utils";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import * as React from "react";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
+import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row-jexl-context";
 
 export interface ButtonProps {
   label?: string;
-  startIcon?: React.ReactNode | false | undefined;
-  endIcon?: React.ReactNode | undefined;
+  startIcon?: React.ReactNode | false | string | undefined;
+  endIcon?: React.ReactNode | string | undefined;
+  icon?: React.ReactNode | false | string | undefined;
   buttonColor?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | undefined;
   style?: SxProps;
   disabled?: boolean;
@@ -35,7 +37,11 @@ export interface ButtonConfig {
   'endIcon:expr'?: string,
 }
 
-export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, jexlCtx: FormJexlContext): ButtonConfig => {
+const makeIcon = (icon: React.ReactNode | string | undefined): React.ReactNode | undefined => {
+  return typeof icon === "string" ? <MdiIcon icon={icon} /> : icon;
+}
+
+export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, jexlCtx: FormJexlContext | TableRowJexlContext): ButtonConfig => {
   const uiButtonConfig = uiSchema['ui:button'] || {};
 
   let uiConfigIcon;
@@ -65,7 +71,7 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
   const variant = props.variant || uiButtonConfig['variant'] || 'contained';
   const color = props.buttonColor || uiButtonConfig['color'] || 'primary';
   const style = props.style || uiButtonConfig['style'] || undefined;
-  const icon = props.startIcon === false ? undefined : props.startIcon || uiConfigIcon;
+  const icon = props.startIcon === false ? undefined : props.startIcon || props.icon || uiConfigIcon;
   const label = props.label || uiButtonConfig['label'] || undefined;
 
   let disabled = false;
@@ -106,8 +112,8 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
     style,
     disabled,
     hidden,
-    icon,
+    icon: makeIcon(icon),
     label,
-    endIcon
+    endIcon: makeIcon(endIcon)
   }
 }

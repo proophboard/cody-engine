@@ -1,20 +1,20 @@
 import * as React from 'react';
 import {Action, isCommandAction, isLinkAction, isRulesAction} from "@frontend/app/components/core/form/types/action";
-import {MouseEvent, useContext} from "react";
+import {MouseEvent, PropsWithChildren, useContext} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import {Alert, Button, IconButton} from '@mui/material';
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
-import {ButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
+import {ButtonConfig, determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
 import {getPageDefinition} from "@cody-play/infrastructure/ui-table/utils";
 import {PageDefinition} from "@frontend/app/pages/page-definitions";
-import PageLink from "@frontend/app/components/core/PageLink";
+import PageLink, {generatePageLink} from "@frontend/app/components/core/PageLink";
 import {PageLinkTableColumn} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {useEnv} from "@frontend/hooks/use-env";
 import {commands} from "@frontend/app/components/commands";
-import {useParams} from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
 import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row-jexl-context";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
@@ -65,6 +65,7 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
   const { config } = useContext(configStore);
   const [, setGlobalStore] = useGlobalStore();
   const params = useParams();
+  const buttonProps = determineButtonConfig(action.button, {}, jexlCtx);
 
   if (isCommandAction(action)) {
     let initialValues;
@@ -82,7 +83,7 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
         );
       }
 
-      return <PlayCommand command={command} buttonProps={action.button} initialValues={initialValues} onDialogClose={onDialogClose} />;
+      return <PlayCommand command={command} buttonProps={buttonProps} initialValues={initialValues} onDialogClose={onDialogClose} />;
     }
 
     const CmdComponent = commands[action.command];
@@ -93,7 +94,7 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
       );
     }
 
-    return <CmdComponent buttonProps={action.button} {...params} initialValues={initialValues} onDialogClose={onDialogClose} />;
+    return <CmdComponent buttonProps={buttonProps} {...params} initialValues={initialValues} onDialogClose={onDialogClose} />;
   }
 
   if (isLinkAction(action)) {
@@ -112,25 +113,21 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
         }
       }
 
-      return makeButton(action.button, { component: () => <PageLink
-          page={
-            getPageDefinition(
-              pageLink as PageLinkTableColumn,
-              defaultService,
-              config.pages
-            ) as unknown as PageDefinition
-          }
-          params={{ ...jexlCtx.routeParams, ...paramsMapping }}
-        >
-          {action.button.icon && !action.button.label
-            ? action.button.icon
-            : action.button.label}
-        </PageLink> });
+      const path = generatePageLink(
+        getPageDefinition(
+          pageLink as PageLinkTableColumn,
+          defaultService,
+          config.pages
+        ) as unknown as PageDefinition,
+        { ...jexlCtx.routeParams, ...paramsMapping }
+      );
+
+      return makeButton(buttonProps, { component: Link, to: path })
     }
   }
 
   if (isRulesAction(action)) {
-    return makeButton(action.button, {
+    return makeButton(buttonProps, {
       onClick: (event: MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();

@@ -228,7 +228,7 @@ const compileTableColumns = (
         case "action":
           const actionConfig = cValue as ActionTableColumn;
 
-          gridColDef.renderCell = (rowParams) => <ColumnAction  action={actionConfig} row={rowParams.row} defaultService={defaultService} />;
+          gridColDef.renderCell = (rowParams) => <ColumnAction action={actionConfig} row={rowParams.row} defaultService={defaultService} />;
           break;
         case "actions":
           const actionConfigs = cValue as ActionTableColumn[];
