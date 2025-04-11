@@ -33,6 +33,7 @@ import {
   handleStreamCommand
 } from "@server/infrastructure/commandHandling";
 import {ValidationError} from "ajv";
+import {Palette} from "@cody-play/infrastructure/utils/styles";
 
 export const makePureCommandMutationFn = (
   commandInfo: PlayCommandRuntimeInfo,
@@ -57,6 +58,15 @@ export const makePureCommandMutationFn = (
       schemaDefinitions,
       commandDesc
     );
+
+    console.log(
+      `%c[CommandBus] Checking dependencies of %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
+      commandDesc._pbLink,
+      {
+        command,
+        dependencies: commandDesc.dependencies || {}
+      }
+    )
 
     const dependencies = await playLoadDependencies(command, 'command', commandDesc.dependencies || {}, config);
 

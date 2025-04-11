@@ -111,12 +111,14 @@ const FormView = (props: FormViewProps) => {
     addPageForm(registryIdToDataReference(props.description.desc.name) + '/Form', {
       getData: () => formRef.current?.state.formData || {},
       useSchema: (newSchema) => {
-        setSchema(resolveRefs(
-          translateSchema(newSchema as any, `${props.description.desc.name}.schema`, t),
-          props.definitions || definitions,
-          false,
-          (s, k) => translateSchema(s, k, t)
-        ) as RJSFSchema)
+        setSchema(
+          resolveRefs(
+            translateSchema(newSchema as any, `${props.description.desc.name}.schema`, t),
+            props.definitions || definitions,
+            false,
+            (s, k) => translateSchema(s, k, t)
+          ) as RJSFSchema
+        );
       },
       validate: () => {
         if(formRef.current) {

@@ -36,6 +36,7 @@ import {
 import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";
 import {CommandMutationFunction} from "@cody-play/infrastructure/commands/command-mutation-function";
 import {PLAY_WRITE_MODEL_STREAM} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
+import {Palette} from "@cody-play/infrastructure/utils/styles";
 
 export const makeAggregateCommandMutationFn = (
   commandInfo: PlayCommandRuntimeInfo,
@@ -64,6 +65,15 @@ export const makeAggregateCommandMutationFn = (
     if(commandDesc.deleteHistory) {
       command = setMessageMetadata(command, META_KEY_DELETE_HISTORY, true);
     }
+
+    console.log(
+      `%c[CommandBus] Checking dependencies of %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
+      commandDesc._pbLink,
+      {
+        command,
+        dependencies: commandDesc.dependencies || {}
+      }
+    )
 
     const dependencies = await playLoadDependencies(command, 'command', commandDesc.dependencies || {}, config);
 
