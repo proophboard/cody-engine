@@ -51,10 +51,9 @@ const determineTabConfig = (tab: Tab, user: User, page: PageData): TabConfig => 
 const renderTabs = (tabs: Tab[], user: User, page: PageData, theme: Theme, t: TFunction) => {
   const tabComponents = tabs.map(tab => {
     const config = determineTabConfig(tab, user, page);
-    return <Button
+    return config.hidden ? <></> : <Button
       sx={{...makeButtonSx(theme), width: 'auto', minWidth: '150px', justifyContent: 'center', ...config.style} as SxProps}
       disabled={config.disabled}
-      hidden={config.hidden}
       startIcon={tab.icon? <MdiIcon icon={tab.icon} /> : undefined}
       children={tab['label:t'] ? t(tab['label:t']) : tab.label}
       key={tab.route}
