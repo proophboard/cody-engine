@@ -36,7 +36,8 @@ const TopBar = (props: TopBarProps) => {
     <AppBar position="fixed" color="default" sx={{
       boxShadow: "none",
       backgroundColor: (theme) => theme.palette.primary.main,
-      height: "64px"
+      height: "64px",
+      zIndex: theme.zIndex.drawer + 1
     }}>
       <Toolbar>
         <Box component={"div"} sx={{minWidth: {lg: "300px"}}}>

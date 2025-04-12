@@ -48,6 +48,7 @@ import TypesProvider from "@frontend/app/providers/Types";
 import {playAttachDefaultStreamListeners} from "@cody-play/infrastructure/events/play-attach-default-stream-listeners";
 import {getPageType, PageDefinition} from "@frontend/app/pages/page-definitions";
 import PlayDialogPage from "@cody-play/app/pages/PlayDialogPage";
+import PlayRightDrawerPage from "@cody-play/app/pages/PlayRightDrawerPage";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -89,11 +90,23 @@ export function App() {
     const routeObjects: RouteObject[] = Object.keys(pages).map(pName => {
       const p = pages[pName];
       const pType = getPageType(p as unknown as PageDefinition);
+      let element: JSX.Element = <></>;
+
+      switch (pType) {
+        case "dialog":
+          element = <PlayDialogPage  page={pName} key={p.route} />;
+          break;
+        case "drawer":
+          element = <PlayRightDrawerPage page={pName} key={p.route} />;
+          break;
+        default:
+          element = <PlayStandardPage page={pName} key={p.route}/>;
+      }
 
       return {
         path: p.route,
         handle: {page: p},
-        element: pType === "dialog" ? <PlayDialogPage  page={pName} key={p.route} /> : <PlayStandardPage page={pName} key={p.route}/>,
+        element,
         errorElement: <ErrorBoundary />
       }
     });

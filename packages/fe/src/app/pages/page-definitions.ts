@@ -9,7 +9,7 @@ import {names} from "@event-engine/messaging/helpers";
 
 export type UnsubscribeBreadcrumbListener = () => void;
 export type BreadcrumbFn = (params: Record<string, string>, queryClient: QueryClient, onLabelChanged: (label: string) => void) => UnsubscribeBreadcrumbListener;
-export type PageType = 'standard' | 'dialog';
+export type PageType = 'standard' | 'dialog' | 'drawer';
 
 export interface PageDefinition {
   name: string;

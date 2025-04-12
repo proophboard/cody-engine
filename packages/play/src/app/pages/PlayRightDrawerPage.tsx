@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {Box, DialogActions, DialogTitle, Drawer, IconButton, Toolbar, useTheme} from "@mui/material";
 import {useNavigate, useParams} from "react-router-dom";
 import {usePageMatch} from "@frontend/util/hook/use-page-match";
 import {useContext, useEffect} from "react";
@@ -8,17 +9,19 @@ import {names} from "@event-engine/messaging/helpers";
 import {getMainPage, getPageTitle, PageDefinition} from "@frontend/app/pages/page-definitions";
 import {PageRegistry} from "@frontend/app/pages";
 import {getCommandButtons, PlayStandardPage} from "@cody-play/app/pages/PlayStandardPage";
-import {Dialog, DialogActions, DialogContent, DialogTitle, IconButton, useTheme} from "@mui/material";
-import {Close} from "mdi-material-ui";
 import {generatePageLink} from "@frontend/app/components/core/PageLink";
+import {Close} from "mdi-material-ui";
 
 interface OwnProps {
   page: string;
 }
 
-type PlayDialogPageProps = OwnProps;
+type PlayRightDrawerPageProps = OwnProps;
 
-const PlayDialogPage = (props: PlayDialogPageProps) => {
+const drawerWidth = 400;
+
+
+const PlayRightDrawerPage = (props: PlayRightDrawerPageProps) => {
   const theme = useTheme();
   const routeParams = useParams();
   const pageMatch = usePageMatch();
@@ -43,27 +46,34 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
   };
 
   return <>
-      <PlayStandardPage page={mainPage.name} />
-      <Dialog open={true} fullWidth={true} maxWidth={'lg'} onClose={handleClose} sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}>
-        <DialogTitle>
-          {getPageTitle(page as unknown as PageDefinition)}
-          <IconButton sx={{
-            position: 'absolute',
-            right: theme.spacing(1),
-            top: theme.spacing(0.5),
-            color: theme.palette.grey[500],
-          }} onClick={handleClose}>
-            <Close />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <PlayStandardPage page={page.name} mode="dialog" />
-        </DialogContent>
-        {cmdBtns.length && <DialogActions>
-          {cmdBtns}
-        </DialogActions>}
-      </Dialog>
-    </>
+    <PlayStandardPage page={mainPage.name} drawerWidth={drawerWidth} />
+    <Drawer anchor="right"
+            open={true}
+            onClose={handleClose}
+            variant="persistent"
+            sx={{
+              width: drawerWidth,
+              [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', overflowX: "hidden" },
+            }}
+    >
+      <Toolbar />
+      <DialogTitle sx={{paddingBottom: "29px"}}>
+        {getPageTitle(page as unknown as PageDefinition)}
+        <IconButton sx={{
+          position: 'absolute',
+          right: theme.spacing(1),
+          top: parseInt(theme.spacing(2)) + 64 + 'px',
+          color: theme.palette.grey[500],
+        }} onClick={handleClose}>
+          <Close />
+        </IconButton>
+      </DialogTitle>
+      <PlayStandardPage page={page.name} mode="dialog" />
+      {cmdBtns.length && <DialogActions sx={{marginTop: theme.spacing(2)}}>
+        {cmdBtns}
+      </DialogActions>}
+    </Drawer>
+  </>
 };
 
-export default PlayDialogPage;
+export default PlayRightDrawerPage;

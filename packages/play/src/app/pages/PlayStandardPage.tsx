@@ -33,6 +33,7 @@ import PlayConnectedCommand from "@cody-play/app/components/core/PlayConnectedCo
 interface Props {
   page: string;
   mode?: 'standard' | 'dialog';
+  drawerWidth?: number;
 }
 
 const findTabGroup = (groupName: string, pages: PlayPageRegistry, routeParams: Readonly<Record<string, string>>): Tab[] => {
