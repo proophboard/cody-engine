@@ -1,5 +1,5 @@
 import {Rule} from "@app/shared/rule-engine/configuration";
-import {DynamicSidebar, Tab, TopLevelGroup} from "@frontend/app/pages/page-definitions";
+import {DynamicSidebar, PageType, Tab, TopLevelGroup} from "@frontend/app/pages/page-definitions";
 import {UiSchema} from "@rjsf/utils";
 
 export interface DynamicBreadcrumbMetadata {
@@ -22,6 +22,9 @@ export interface UiMetadata {
   tab?: Tab;
   commands?: CommandComponent[];
   views?: ViewComponent[];
+  type?: PageType;
+  mainPage?: string;
+  title?: string;
 }
 
 export type RawUiMetadata = UiMetadata & {

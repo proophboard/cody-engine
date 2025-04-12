@@ -1,16 +1,21 @@
 import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {camelCaseToTitle} from "@frontend/util/string";
+import {UiSchema} from "@rjsf/utils";
 
-export const informationTitle = (info: PlayInformationRuntimeInfo): string => {
+export const informationTitle = (info: PlayInformationRuntimeInfo, uiSchema?: UiSchema): string => {
   let uiTitle;
 
-  if(info.uiSchema) {
-    if(info.uiSchema['ui:title']) {
-      uiTitle = info.uiSchema['ui:title'];
+  if(!uiSchema) {
+    uiSchema = info.uiSchema;
+  }
+
+  if(uiSchema) {
+    if(uiSchema['ui:title']) {
+      uiTitle = uiSchema['ui:title'];
     }
 
-    if(!uiTitle && info.uiSchema['ui:options'] && info.uiSchema['ui:options'].title) {
-      uiTitle = info.uiSchema['ui:options'].title;
+    if(!uiTitle && uiSchema['ui:options'] && uiSchema['ui:options'].title) {
+      uiTitle = uiSchema['ui:options'].title;
     }
   }
 

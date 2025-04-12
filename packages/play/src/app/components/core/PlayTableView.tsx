@@ -57,6 +57,22 @@ import ColumnActionsMenu from "@frontend/app/components/core/table/ColumnActions
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {merge} from "lodash/fp";
 
+const showTitle = (uiSchema?: UiSchema): boolean => {
+  if(!uiSchema) {
+    return true;
+  }
+
+  if(typeof uiSchema['ui:title'] === "boolean") {
+    return uiSchema['ui:title'];
+  }
+
+  if(uiSchema['ui:options'] && typeof uiSchema['ui:options']['title'] === "boolean") {
+    return uiSchema['ui:options']['title'];
+  }
+
+  return true;
+}
+
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc) && !isQueryableNotStoredStateListDescription(informationInfo.desc)) {
     throw new Error(`Play table view can only be used to show queriable state list information, but "${informationInfo.desc.name}" is not of this information type. ${CONTACT_PB_TEAM}`)
@@ -119,14 +135,14 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
 
   return (
     <Box component="div">
-      <Typography
+      {showTitle(uiSchema) && <Typography
         variant="h3"
         className="sidebar-anchor"
-        sx={{ padding: (theme) => theme.spacing(4), paddingLeft: 0 }}
+        sx={{padding: (theme) => theme.spacing(4), paddingLeft: 0}}
         id={"component-" + names(informationInfo.desc.name).fileName}
       >
-        {informationTitle(informationInfo)}
-      </Typography>
+        {informationTitle(informationInfo, uiSchema)}
+      </Typography>}
       {query.isLoading && <CircularProgress />}
       {query.isSuccess && (
         <DataGrid

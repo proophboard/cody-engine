@@ -2,12 +2,20 @@ import {QueryClient} from "@tanstack/react-query";
 import {SvgIcon, SxProps} from "@mui/material";
 import {ProophBoardDescription} from "@event-engine/descriptions/descriptions";
 import {CommandComponent, ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
+import {camelCaseToTitle} from "@frontend/util/string";
+import {PageRegistry} from "@frontend/app/pages/index";
+import {camelCase} from "lodash";
+import {names} from "@event-engine/messaging/helpers";
 
 export type UnsubscribeBreadcrumbListener = () => void;
 export type BreadcrumbFn = (params: Record<string, string>, queryClient: QueryClient, onLabelChanged: (label: string) => void) => UnsubscribeBreadcrumbListener;
+export type PageType = 'standard' | 'dialog';
 
 export interface PageDefinition {
   name: string;
+  title?: string;
+  type?: PageType;
+  mainPage?: string;
   topLevel: boolean;
   route: string;
   breadcrumb?: BreadcrumbFn;
@@ -82,4 +90,36 @@ export type SubLevelPageWithProophBoardDescription = SubLevelPage & ProophBoardD
 
 export const isSubLevelPage = (page: PageDefinition): page is SubLevelPage => {
   return !page.topLevel;
+}
+
+export const getPageTitle = (page: PageDefinition): string => {
+  return page.title || camelCaseToTitle(page.name.split(".").pop() as string);
+}
+
+export const getPageType = (page: PageDefinition): PageType => {
+  return page.type || 'standard';
+}
+
+export const getPageFQCN = (pageName: string, defaultService: string) => {
+  const parts = pageName.split(".");
+
+  if(parts.length === 1) {
+    parts.unshift(defaultService);
+  }
+
+  return parts.map(p => names(p).className).join(".");
+}
+
+export const getMainPage = (page: PageDefinition, pages: PageRegistry, defaultService: string): PageDefinition => {
+  if(!page.mainPage) {
+    throw new Error(`No main page defined for dialog: "${page.name}". Please configure a "mainPage" in the page configuration on prooph board`);
+  }
+
+  const mainPageName = getPageFQCN(page.mainPage, page.service || defaultService);
+
+  if(!pages[mainPageName]) {
+    throw new Error(`Main page "${mainPageName}" of dialog "${page.name}" cannot be found in the registry. Did you forget to pass the page configuration from prooph board to Cody?`);
+  }
+
+  return pages[mainPageName];
 }

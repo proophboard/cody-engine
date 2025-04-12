@@ -2,9 +2,14 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import {generatePath, useParams} from "react-router-dom";
 import CommandBar from "@frontend/app/layout/CommandBar";
 import React, {useContext, useEffect} from "react";
-import {configStore} from "@cody-play/state/config-store";
+import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
-import {PlayInformationRegistry, PlayPageRegistry, PlayViewComponentConfig} from "@cody-play/state/types";
+import {
+  PlayInformationRegistry,
+  PlayPageDefinition,
+  PlayPageRegistry,
+  PlayViewComponentConfig
+} from "@cody-play/state/types";
 import {
   isQueryableDescription,
   isQueryableListDescription, isQueryableNotStoredStateListDescription,
@@ -26,7 +31,8 @@ import PlayNewStateFormView from "@cody-play/app/components/core/PlayNewStateFor
 import PlayConnectedCommand from "@cody-play/app/components/core/PlayConnectedCommand";
 
 interface Props {
-  page: string
+  page: string;
+  mode?: 'standard' | 'dialog';
 }
 
 const findTabGroup = (groupName: string, pages: PlayPageRegistry, routeParams: Readonly<Record<string, string>>): Tab[] => {
@@ -54,46 +60,8 @@ export const PlayStandardPage = (props: Props) => {
 
   const page = config.pages[props.page];
 
-  const cmdBtns = page.commands
-    .filter(commandName => {
-      if(typeof commandName !== "string") {
-        commandName = commandName.command;
-      }
-
-
-      const cmd = config.commands[commandName as string];
-
-      if(!cmd) {
-        return true; // Fallthrough to map to Alert message
-      }
-
-      return !playIsCommandButtonHidden(cmd);
-    })
-    .map((commandName,index) => {
-
-      let uiSchemaOverride: UiSchema | undefined;
-      let forceSchema = false;
-      let connectTo: string | undefined;
-
-      if(typeof commandName !== "string") {
-        uiSchemaOverride = commandName.uiSchema;
-        forceSchema = !!commandName.forceSchema;
-        connectTo = commandName.connectTo;
-        commandName = commandName.command;
-      }
-
-    const cmd = config.commands[commandName as string];
-
-    if(!cmd) {
-      return <Alert severity="error">{`Command "${commandName}" not found! You have to pass the command to Cody on prooph board.`}</Alert>
-    }
-
-    if(connectTo) {
-      return <PlayConnectedCommand key={commandName} command={config.commands[commandName as string]} connectTo={connectTo} forceSchema={forceSchema} uiSchemaOverride={uiSchemaOverride} />
-    }
-
-    return <PlayCommand key={commandName} command={config.commands[commandName as string]} uiSchemaOverride={uiSchemaOverride} />
-  });
+  // Cmd Buttons are handled in the dialog component if mode is "dialog"
+  const cmdBtns = props.mode === "dialog" ? [] : getCommandButtons(page, config);
 
   let tabs;
 
@@ -133,6 +101,49 @@ export const PlayStandardPage = (props: Props) => {
     {commandBar}
     {components}
   </Grid2>
+}
+
+export const getCommandButtons = (page: PlayPageDefinition, config: CodyPlayConfig): JSX.Element[] => {
+  return page.commands
+    .filter(commandName => {
+      if(typeof commandName !== "string") {
+        commandName = commandName.command;
+      }
+
+
+      const cmd = config.commands[commandName as string];
+
+      if(!cmd) {
+        return true; // Fallthrough to map to Alert message
+      }
+
+      return !playIsCommandButtonHidden(cmd);
+    })
+    .map((commandName,index) => {
+
+      let uiSchemaOverride: UiSchema | undefined;
+      let forceSchema = false;
+      let connectTo: string | undefined;
+
+      if(typeof commandName !== "string") {
+        uiSchemaOverride = commandName.uiSchema;
+        forceSchema = !!commandName.forceSchema;
+        connectTo = commandName.connectTo;
+        commandName = commandName.command;
+      }
+
+      const cmd = config.commands[commandName as string];
+
+      if(!cmd) {
+        return <Alert severity="error">{`Command "${commandName}" not found! You have to pass the command to Cody on prooph board.`}</Alert>
+      }
+
+      if(connectTo) {
+        return <PlayConnectedCommand key={commandName} command={config.commands[commandName as string]} connectTo={connectTo} forceSchema={forceSchema} uiSchemaOverride={uiSchemaOverride} />
+      }
+
+      return <PlayCommand key={commandName} command={config.commands[commandName as string]} uiSchemaOverride={uiSchemaOverride} />
+    });
 }
 
 const getViewComponent = (component: React.FunctionComponent | PlayViewComponentConfig, types: PlayInformationRegistry, isHiddenView = false, viewType: ViewComponentType, uiSchemaOverride?: UiSchema, loadState = true): React.FunctionComponent => {

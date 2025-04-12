@@ -1,6 +1,6 @@
 import {QueryClientProvider} from "@tanstack/react-query";
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import {PlayStandardPage} from "@cody-play/app/pages/play-standard-page";
+import {PlayStandardPage} from "@cody-play/app/pages/PlayStandardPage";
 import {
   createBrowserRouter,
   RouteObject,
@@ -46,6 +46,8 @@ import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/confi
 import EnvProvider, {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
 import TypesProvider from "@frontend/app/providers/Types";
 import {playAttachDefaultStreamListeners} from "@cody-play/infrastructure/events/play-attach-default-stream-listeners";
+import {getPageType, PageDefinition} from "@frontend/app/pages/page-definitions";
+import PlayDialogPage from "@cody-play/app/pages/PlayDialogPage";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -86,11 +88,12 @@ export function App() {
   const makeRouter = (pages: PlayPageRegistry, makeInitialRouter = false) => {
     const routeObjects: RouteObject[] = Object.keys(pages).map(pName => {
       const p = pages[pName];
+      const pType = getPageType(p as unknown as PageDefinition);
 
       return {
         path: p.route,
         handle: {page: p},
-        element: <PlayStandardPage page={pName} key={p.route}/>,
+        element: pType === "dialog" ? <PlayDialogPage  page={pName} key={p.route} /> : <PlayStandardPage page={pName} key={p.route}/>,
         errorElement: <ErrorBoundary />
       }
     });

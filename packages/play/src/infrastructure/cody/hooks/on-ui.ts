@@ -97,6 +97,9 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       },
       breadcrumb: meta.breadcrumb,
       tab: meta.tab,
+      type: meta.type,
+      mainPage: meta.mainPage,
+      title: meta.title,
     } as PlayTopLevelPage) : ({
       name: pageName,
       service: serviceNames.className,
@@ -107,6 +110,9 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
       topLevel: false,
       breadcrumb: meta.breadcrumb,
       tab: meta.tab,
+      type: meta.type,
+      mainPage: meta.mainPage,
+      title: meta.title,
     } as PlaySubLevelPage);
 
     dispatch({

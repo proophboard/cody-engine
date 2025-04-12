@@ -63,6 +63,10 @@ export const normalizeUiMetadata = (meta: RawUiMetadata): UiMetadata => {
     }
   }
 
+  if(!meta.type) {
+    meta.type = 'standard';
+  }
+
   return meta;
 }
 
