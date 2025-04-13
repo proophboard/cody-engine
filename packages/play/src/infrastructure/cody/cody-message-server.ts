@@ -213,7 +213,7 @@ export class CodyMessageServer {
     return checkQuestion(await onNode(makeNodeRecord(payload.node), this.dispatch, {
       ...payload.context,
       syncedNodes: this.syncedNodes,
-      service: names(this.config.appName).className
+      service: names(this.config.defaultService).className
     }, this.config));
   }
 

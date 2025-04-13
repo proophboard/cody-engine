@@ -18,18 +18,25 @@ type AppSettingsProps = OwnProps;
 const AppSettings = (props: AppSettingsProps) => {
   const {config, dispatch} = useContext(configStore);
   const [appName, setAppName] = useState('');
+  const [defaultService, setDefaultService] = useState('');
   const [themeOptions, setThemeOptions] = useState(JSON.stringify({}, null, 2));
   const [invalidThemeOptions, setInvalidThemeOptions] = useState(false);
   const {setPendingChanges} = useContext(PendingChangesContext);
 
   useEffect(() => {
     setAppName(config.appName);
+    setDefaultService(config.defaultService);
     setThemeOptions(JSON.stringify(config.theme, null, 2));
     props.onSaveDisabled(true);
-  }, [config.appName, config.theme]);
+  }, [config.appName, config.defaultService, config.theme]);
 
   const handleNameChanged = (newName: string) => {
     setAppName(newName);
+    props.onSaveDisabled(false);
+  }
+
+  const handleDefaultServiceChanged = (newDefaultService: string) => {
+    setDefaultService(newDefaultService);
     props.onSaveDisabled(false);
   }
 
@@ -71,6 +78,18 @@ const AppSettings = (props: AppSettingsProps) => {
       }
     }
 
+    if(defaultService !== config.defaultService) {
+      dispatch({
+        type: "RENAME_DEFAULT_SERVICE",
+        name: defaultService
+      })
+
+      if(boardId) {
+        saveConfigToLocalStorage({...config, defaultService}, boardId);
+        setPendingChanges(true);
+      }
+    }
+
     if(themeOptions !== JSON.stringify(config.theme)) {
       try {
         const updatedTheme = JSON.parse(themeOptions);
@@ -81,7 +100,7 @@ const AppSettings = (props: AppSettingsProps) => {
         })
 
         if(boardId) {
-          saveConfigToLocalStorage({...config, appName, theme: updatedTheme}, boardId);
+          saveConfigToLocalStorage({...config, appName, defaultService, theme: updatedTheme}, boardId);
           setPendingChanges(true);
         }
       } catch (e) {
@@ -113,10 +132,20 @@ const AppSettings = (props: AppSettingsProps) => {
         onChange={(e: any) => handleNameChanged(e.target.value)}
       />
     </div>
+    <div>
+      <TextField
+        id="default-service"
+        label="Default Service"
+        defaultValue="App"
+        variant="standard"
+        value={defaultService}
+        onChange={(e: any) => handleDefaultServiceChanged(e.target.value)}
+      />
+    </div>
     <div style={{marginTop: "30px", marginLeft: "10px", marginRight: "10px"}}>
       <FormLabel>Theme</FormLabel>
       {invalidThemeOptions &&
-          <Alert variant="standard" severity="error">Invalid theme options. Please check your input!</Alert>}
+        <Alert variant="standard" severity="error">Invalid theme options. Please check your input!</Alert>}
       <div style={{border: '1px solid #eee'}}>
         <Editor height="200px"
                 language="json"
@@ -141,7 +170,7 @@ const AppSettings = (props: AppSettingsProps) => {
       </div>
       <Box sx={{display: 'flex'}}>
         <small>See <a href="https://mui.com/material-ui/customization/theming/#theme-configuration-variables"
-                       target="material_ui">Material UI docs</a> for options</small>
+                      target="material_ui">Material UI docs</a> for options</small>
       </Box>
     </div>
   </Box>

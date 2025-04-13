@@ -49,6 +49,11 @@ export interface PlayRenameApp {
   name: string,
 }
 
+export interface PlayRenameDefaultService {
+  type: 'RENAME_DEFAULT_SERVICE',
+  name: string,
+}
+
 export interface PlayChangeTheme {
   type: 'CHANGE_THEME',
   theme: ThemeOptions,

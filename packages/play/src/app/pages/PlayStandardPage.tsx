@@ -51,7 +51,7 @@ export const PlayStandardPage = (props: Props) => {
   const pageMatch = usePageMatch();
   const {config} = useContext(configStore);
   const {reset} = useContext(PageDataContext);
-  const defaultService = names(config.appName).className;
+  const defaultService = names(config.defaultService).className;
 
   useEffect(() => {
     return () => {

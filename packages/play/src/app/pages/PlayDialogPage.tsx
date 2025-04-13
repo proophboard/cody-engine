@@ -24,7 +24,7 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
   const pageMatch = usePageMatch();
   const {config} = useContext(configStore);
   const {reset} = useContext(PageDataContext);
-  const defaultService = names(config.appName).className;
+  const defaultService = names(config.defaultService).className;
   const navigate = useNavigate();
 
   useEffect(() => {

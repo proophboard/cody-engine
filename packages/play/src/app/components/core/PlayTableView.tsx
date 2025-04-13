@@ -184,7 +184,7 @@ const compileTableColumns = (
 ): GridColDef[] => {
   const {config} = useContext(configStore);
   const schema = information.schema;
-  const defaultService = names(config.appName).className;
+  const defaultService = names(config.defaultService).className;
 
   if (!isListSchema(schema) && !isInlineItemsArraySchema(schema)) {
     throw new Error(`Cannot render table. Schema of "${information.desc.name}" is not a list.`);
