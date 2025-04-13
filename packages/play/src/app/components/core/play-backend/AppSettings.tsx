@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {Alert, Box, Button, DialogContent, FormLabel, TextField, useTheme} from "@mui/material";
+import {Alert, Box, Button, DialogContent, FormLabel, MenuItem, TextField, useTheme} from "@mui/material";
 import {useContext, useEffect, useState} from "react";
-import {configStore} from "@cody-play/state/config-store";
+import {configStore, LayoutType} from "@cody-play/state/config-store";
 import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
 import {saveConfigToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-config-to-local-storage";
 import Editor from "@monaco-editor/react";
@@ -19,6 +19,7 @@ const AppSettings = (props: AppSettingsProps) => {
   const {config, dispatch} = useContext(configStore);
   const [appName, setAppName] = useState('');
   const [defaultService, setDefaultService] = useState('');
+  const [layout, setLayout] = useState<LayoutType>('prototype');
   const [themeOptions, setThemeOptions] = useState(JSON.stringify({}, null, 2));
   const [invalidThemeOptions, setInvalidThemeOptions] = useState(false);
   const {setPendingChanges} = useContext(PendingChangesContext);
@@ -26,9 +27,10 @@ const AppSettings = (props: AppSettingsProps) => {
   useEffect(() => {
     setAppName(config.appName);
     setDefaultService(config.defaultService);
+    setLayout(config.layout);
     setThemeOptions(JSON.stringify(config.theme, null, 2));
     props.onSaveDisabled(true);
-  }, [config.appName, config.defaultService, config.theme]);
+  }, [config.appName, config.defaultService, config.layout, config.theme]);
 
   const handleNameChanged = (newName: string) => {
     setAppName(newName);
@@ -37,6 +39,11 @@ const AppSettings = (props: AppSettingsProps) => {
 
   const handleDefaultServiceChanged = (newDefaultService: string) => {
     setDefaultService(newDefaultService);
+    props.onSaveDisabled(false);
+  }
+
+  const handleLayoutChanged = (newLayout: LayoutType) => {
+    setLayout(newLayout);
     props.onSaveDisabled(false);
   }
 
@@ -90,6 +97,18 @@ const AppSettings = (props: AppSettingsProps) => {
       }
     }
 
+    if(layout !== config.layout) {
+      dispatch({
+        type: "CHANGE_LAYOUT",
+        layout
+      })
+
+      if(boardId) {
+        saveConfigToLocalStorage({...config, layout}, boardId);
+        setPendingChanges(true);
+      }
+    }
+
     if(themeOptions !== JSON.stringify(config.theme)) {
       try {
         const updatedTheme = JSON.parse(themeOptions);
@@ -100,7 +119,7 @@ const AppSettings = (props: AppSettingsProps) => {
         })
 
         if(boardId) {
-          saveConfigToLocalStorage({...config, appName, defaultService, theme: updatedTheme}, boardId);
+          saveConfigToLocalStorage({...config, appName, defaultService, layout, theme: updatedTheme}, boardId);
           setPendingChanges(true);
         }
       } catch (e) {
@@ -130,6 +149,7 @@ const AppSettings = (props: AppSettingsProps) => {
         variant="standard"
         value={appName}
         onChange={(e: any) => handleNameChanged(e.target.value)}
+        fullWidth={true}
       />
     </div>
     <div>
@@ -140,7 +160,23 @@ const AppSettings = (props: AppSettingsProps) => {
         variant="standard"
         value={defaultService}
         onChange={(e: any) => handleDefaultServiceChanged(e.target.value)}
+        fullWidth={true}
       />
+    </div>
+    <div>
+      <TextField
+        id="layout"
+        label="Layout"
+        defaultValue="prototype"
+        variant="standard"
+        value={layout}
+        select={true}
+        onChange={(e: any) => handleLayoutChanged(e.target.value)}
+        fullWidth={true}
+      >
+        <MenuItem value="prototype" key="prototype">Prototype</MenuItem>
+        <MenuItem value="task-based-ui" key="task-based-ui">Task-Based UI</MenuItem>
+      </TextField>
     </div>
     <div style={{marginTop: "30px", marginLeft: "10px", marginRight: "10px"}}>
       <FormLabel>Theme</FormLabel>

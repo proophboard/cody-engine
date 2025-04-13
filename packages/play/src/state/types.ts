@@ -1,6 +1,6 @@
 import {DynamicSidebar, PageDefinition, TopLevelGroup, TopLevelPage} from "@frontend/app/pages/page-definitions";
 import React from "react";
-import {CodyPlayConfig} from "@cody-play/state/config-store";
+import {CodyPlayConfig, LayoutType} from "@cody-play/state/config-store";
 import {
   AggregateCommandDescription,
   AggregateDescription,
@@ -52,6 +52,11 @@ export interface PlayRenameApp {
 export interface PlayRenameDefaultService {
   type: 'RENAME_DEFAULT_SERVICE',
   name: string,
+}
+
+export interface ChangeLayout {
+  type: 'CHANGE_LAYOUT',
+  layout: LayoutType
 }
 
 export interface PlayChangeTheme {

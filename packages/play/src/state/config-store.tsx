@@ -1,5 +1,6 @@
 
 import {
+  ChangeLayout,
   PlayAddAggregateAction,
   PlayAddAggregateEventAction,
   PlayAddCommandAction, PlayAddCommandHandlerAction,
@@ -44,9 +45,12 @@ import {
   playDefinitionIdFromFQCN,
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
+export type LayoutType = 'prototype' | 'task-based-ui';
+
 export interface CodyPlayConfig {
   appName: string,
   defaultService: string,
+  layout: LayoutType,
   theme: ThemeOptions,
   personas: Persona[],
   pages: PlayPageRegistry,
@@ -66,6 +70,7 @@ export interface CodyPlayConfig {
 const initialPlayConfig: CodyPlayConfig = {
   appName: 'Cody Play',
   defaultService: 'App',
+  layout: 'prototype',
   theme: {},
   personas: [
     {
@@ -154,7 +159,7 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction | PlayRenameApp | PlayRenameDefaultService | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayUpdatePersona| PlayAddPageAction | PlayRemovePageAction
+type Action = PlayInitAction | PlayRenameApp | PlayRenameDefaultService | ChangeLayout | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayUpdatePersona| PlayAddPageAction | PlayRemovePageAction
   | PlayAddCommandAction | PlayRemoveCommandAction | PlayAddCommandHandlerAction | PlayRemoveCommandHandlerAction | PlayAddTypeAction | PlayRemoveTypeAction
   | PlayAddQueryAction | PlayRemoveQueryAction | PlayAddViewAction | PlayRemoveViewAction | PlayAddAggregateAction | PlayRemoveAggregateAction
   | PlayAddAggregateEventAction | PlayRemoveAggregateEventAction | PlayAddPureEventAction | PlayRemovePureEventAction | PlayAddEventPolicyAction | PlayRemoveEventPolicyAction;
@@ -186,6 +191,8 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         return {...config, appName: action.name};
       case "RENAME_DEFAULT_SERVICE":
         return {...config, defaultService: action.name};
+      case "CHANGE_LAYOUT":
+        return {...config, layout: action.layout};
       case "CHANGE_THEME":
         return {...config, theme: action.theme};
       case "SET_PERSONAS":
