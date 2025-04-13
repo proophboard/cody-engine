@@ -98,7 +98,7 @@ export const PlayStandardPage = (props: Props) => {
     return <Grid2 key={'comp' + index} xs={12}>{ViewComponent(routeParams)}</Grid2>
   });
 
-  return <Grid2 container={true} spacing={3}>
+  return <Grid2 container={true} spacing={3} sx={props.drawerWidth ? {marginRight: props.drawerWidth + 'px'} : {}}>
     {commandBar}
     {components}
   </Grid2>

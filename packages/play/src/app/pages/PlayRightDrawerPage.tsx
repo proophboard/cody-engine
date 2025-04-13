@@ -18,7 +18,7 @@ interface OwnProps {
 
 type PlayRightDrawerPageProps = OwnProps;
 
-const drawerWidth = 400;
+const drawerWidth = 500;
 
 
 const PlayRightDrawerPage = (props: PlayRightDrawerPageProps) => {
