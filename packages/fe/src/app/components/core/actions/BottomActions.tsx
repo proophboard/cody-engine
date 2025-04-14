@@ -3,11 +3,13 @@ import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jex
 import {Action, parseActionsFromUiOptions} from "@frontend/app/components/core/form/types/action";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import ActionButton from "@frontend/app/components/core/ActionButton";
+import {SxProps} from "@mui/material";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
   defaultService: string;
   jexlCtx: FormJexlContext;
+  sx?: SxProps;
 }
 
 type BottomActionsProps = OwnProps;
@@ -23,7 +25,7 @@ const BottomActions = (props: BottomActionsProps) => {
    return <></>
  }
 
- return <Grid2 container>
+ return <Grid2 container sx={props.sx}>
    <Grid2 xs
           display="flex"
           direction="column"

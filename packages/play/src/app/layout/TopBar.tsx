@@ -10,6 +10,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen"
 import AppSettingsModal from "@cody-play/app/layout/AppSettingsModal";
 import {configStore} from "@cody-play/state/config-store";
+import SaveData from "@cody-play/app/components/core/SaveData";
 
 
 interface OwnProps {
@@ -43,8 +44,9 @@ const TopBar = (props: TopBarProps) => {
         <Box component={"div"} sx={{minWidth: {lg: "300px"}}}>
           <Typography variant={"h3"} sx={{color: (theme) => theme.palette.primary.contrastText}}>{config.appName}</Typography>
         </Box>
-        <PlayBreadcrumbs />
+        {config.layout === 'prototype' && <PlayBreadcrumbs/>}
         <Box component={"div"} sx={{flexGrow: 1}}/>
+        <SaveData />
         <IconButton aria-label="Light mode" onClick={toggleColorMode}>
           {mode === 'light' && <LightModeIcon sx={{ color: 'white' }}/> }
           {mode === 'dark' && <DarkModeIcon sx={{ color: 'black' }}/> }

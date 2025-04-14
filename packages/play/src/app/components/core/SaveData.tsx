@@ -22,6 +22,7 @@ import {configStore} from "@cody-play/state/config-store";
 import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
 import {PendingChangesContext} from "@cody-play/infrastructure/multi-model-store/PendingChanges";
 import {savePlayshot} from "@cody-play/app/components/core/CodyMessageServer";
+import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 
 interface OwnProps {
 
@@ -42,6 +43,7 @@ const SaveData = (props: SaveDataProps) => {
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [playshotName, setPlayshotName] = useState('');
   const inputRef = useRef<HTMLInputElement>();
+  const {mode} = useContext(ColorModeContext);
 
   const openDialog = () => {
     setSaveDialogOpen(true);
@@ -101,17 +103,14 @@ const SaveData = (props: SaveDataProps) => {
   }
 
   return <>
-      <Box sx={{position: "fixed", bottom: "20px", right: "40px", }}>
-        {pendingChanges && <Typography variant="subtitle2" sx={{display: "inline-block"}} color="primary">You have unsaved changes!&nbsp;&nbsp;&nbsp;</Typography>}
-        <IconButton size="large"
-                         color="primary"
-                         title="Save config and data"
-                         disabled={saved}
-                         onClick={openDialog}
-                         sx={{backgroundColor: theme => theme.palette.grey.A200}}>
-        {saved? <Check /> : <ZipDisk/>}
-      </IconButton>
-    </Box>
+      {pendingChanges && <Typography variant="subtitle2" sx={{display: "inline-block", color: mode === 'dark' ? 'black' : 'white'}}>You have unsaved changes!&nbsp;&nbsp;&nbsp;</Typography>}
+      <IconButton
+                       title="Save config and data"
+                       disabled={saved}
+                       sx={{color: mode === 'dark' ? 'black' : 'white'}}
+                       onClick={openDialog}>
+      {saved? <Check /> : <ZipDisk/>}
+    </IconButton>
     <Dialog open={saveDialogOpen} onClose={() => setSaveDialogOpen(false)}>
       <DialogTitle>Save Playshot</DialogTitle>
       <DialogContent>

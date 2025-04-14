@@ -6,7 +6,7 @@ import {
   RJSFSchema, UiSchema,
   Widget
 } from "@rjsf/utils";
-import {Card, CardContent, useTheme} from "@mui/material";
+import {Box, Card, CardContent, useTheme} from "@mui/material";
 import {useEffect, useRef, useState} from "react";
 import {Form} from "@rjsf/mui";
 import {widgets} from "@frontend/app/components/core/form/widgets";
@@ -211,49 +211,45 @@ const FormView = (props: FormViewProps) => {
     return <></>;
   }
 
-  return <>
-    <Card>
-      <CardContent sx={theme.commandForm?.styleOverrides}>
-        <Form
-          schema={schema}
-          validator={getRjsfValidator()}
-          children={<></>}
-          // @ts-ignore
-          ref={formRef}
-          formData={formData}
-          formContext={{data: formData, updateForm: handleUpdateFormFromContext}}
-          uiSchema={normalizedUiSchema}
-          liveValidate={liveValidate}
-          showErrorList={false}
-          onError={handleValidationError}
-          onChange={handleChange}
-          // default browser validation needs to be turned off, otherwise optional objects with required props don't work
-          noHtml5Validate={true}
-          templates={
-            {
-              ObjectFieldTemplate,
-              ...props.templates
-            }
-          }
-          widgets={
-            {
-              // LinkedRef: LinkedReferenceWidget,
-              // TextareaWidget: TextareaWidget,
-              // TextWidget: TextWidget,
-              ...widgets,
-              ...userWidgets
-            }
-          }
-          fields={{
-            ...fields,
-            ...props.fields
-          }}
-        />
-        {extraError}
-      </CardContent>
-    </Card>
-    <BottomActions uiOptions={uiOptions} defaultService={defaultService} jexlCtx={jexlCtx} />
-  </>;
+  return <Box sx={theme.commandForm?.styleOverrides}>
+    <Form
+      schema={schema}
+      validator={getRjsfValidator()}
+      children={<></>}
+      // @ts-ignore
+      ref={formRef}
+      formData={formData}
+      formContext={{data: formData, updateForm: handleUpdateFormFromContext}}
+      uiSchema={normalizedUiSchema}
+      liveValidate={liveValidate}
+      showErrorList={false}
+      onError={handleValidationError}
+      onChange={handleChange}
+      // default browser validation needs to be turned off, otherwise optional objects with required props don't work
+      noHtml5Validate={true}
+      templates={
+        {
+          ObjectFieldTemplate,
+          ...props.templates
+        }
+      }
+      widgets={
+        {
+          // LinkedRef: LinkedReferenceWidget,
+          // TextareaWidget: TextareaWidget,
+          // TextWidget: TextWidget,
+          ...widgets,
+          ...userWidgets
+        }
+      }
+      fields={{
+        ...fields,
+        ...props.fields
+      }}
+    />
+    {extraError}
+    <BottomActions sx={{padding:  `${theme.spacing(4)} 0`}} uiOptions={uiOptions} defaultService={defaultService} jexlCtx={jexlCtx} />
+  </Box>;
 };
 
 export default FormView;

@@ -48,11 +48,29 @@ const determineTabConfig = (tab: Tab, user: User, page: PageData): TabConfig => 
   }
 }
 
-const renderTabs = (tabs: Tab[], user: User, page: PageData, theme: Theme, t: TFunction) => {
+export const renderTabs = (tabs: Tab[], user: User, page: PageData, theme: Theme, t: TFunction, taskBasedUiLayout?: boolean) => {
   const tabComponents = tabs.map(tab => {
     const config = determineTabConfig(tab, user, page);
+
+    const style = taskBasedUiLayout ? {
+      ...makeButtonSx(theme),
+      ["&.active"]: {
+        borderBottom: "2px solid " + theme.palette.primary.main,
+        borderRadius: 0,
+        color: theme.palette.primary.main
+      },
+      width: 'auto',
+      justifyContent: 'center',
+      ...config.style} as SxProps
+      : {
+        ...makeButtonSx(theme),
+        width: 'auto',
+        minWidth: '150px',
+        justifyContent: 'center',
+        ...config.style} as SxProps;
+
     return config.hidden ? <></> : <Button
-      sx={{...makeButtonSx(theme), width: 'auto', minWidth: '150px', justifyContent: 'center', ...config.style} as SxProps}
+      sx={style}
       disabled={config.disabled}
       startIcon={tab.icon? <MdiIcon icon={tab.icon} /> : undefined}
       children={tab['label:t'] ? t(tab['label:t']) : tab.label}

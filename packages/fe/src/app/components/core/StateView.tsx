@@ -3,7 +3,7 @@ import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {
   ArrayFieldTemplateProps,
   Field,
-  FieldTemplateProps, getUiOptions,
+  getUiOptions,
   ObjectFieldTemplateProps,
   RJSFSchema, UiSchema,
   Widget
@@ -53,44 +53,48 @@ interface OwnProps {
 
 type StateViewProps = OwnProps;
 
-type HeadingVariant = "h2" | "h3" | "h4" | "h5";
+type HeadingVariant = "h3" | "h4" | "h5" | "h6";
 
 export const headingNestingLevel = (idSchema: string): HeadingVariant => {
   const level = idSchema.split("_").length + 1;
 
   if(level === 1) {
-    return "h2";
+    return "h3";
   }
 
-  if(level > 5) {
-    return "h5";
+  if(level === 2) {
+    return "h4";
   }
 
-  return "h"+level as HeadingVariant;
+  if(level === 3) {
+    return "h5"
+  }
+
+  return "h6";
 }
 
 export const getObjPropTitleStyle = (heading: HeadingVariant): SxProps => {
   switch (heading) {
-    case "h2":
+    case "h3":
       return {
         paddingTop: '40px',
         paddingBottom: '40px',
       };
-    case "h3":
+    case "h4":
       return {
         paddingTop: '30px',
         paddingBottom: '30px',
       };
-    case "h4":
+    case "h5":
       return {
         paddingTop: '20px',
         paddingBottom: '20px',
       };
-    case "h5":
+    case "h6":
       return {
         paddingTop: '10px',
-        paddingBottom: '10px',
-      };
+        paddingBottom: '10px'
+      }
   }
 }
 
@@ -133,7 +137,7 @@ export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplate
     <Grid2 container>
       <Grid2 xs>
         {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
-                                    className={(headingVariant === 'h2' || headingVariant === 'h3') ? 'sidebar-anchor' : ''}
+                                    className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
                                     sx={getObjPropTitleStyle(headingVariant)}>{title}{index}</Typography>}
       </Grid2>
       <TopRightActions  uiOptions={uiOptions} defaultService={props.formContext.defaultService} jexlCtx={jexlCtx} />
@@ -170,7 +174,7 @@ export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplatePr
 
   return <div>
     {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
-                                className={(headingVariant === 'h2' || headingVariant === 'h3') ? 'sidebar-anchor' : ''}
+                                className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
                                 sx={getObjPropTitleStyle(headingVariant)}>{title}</Typography>}
     {!props.items.length && <Box className={'array-element-wrapper'} key={'array_ele_wrapper_empty'}><Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Box> }
     {props.items.map((element, index) => <Box className={'array-element-wrapper'} key={'array_ele_wrapper_' + index}>{element.children}</Box>)}
@@ -239,42 +243,38 @@ const StateView = (props: StateViewProps) => {
     return <></>;
   }
 
-  return <>
-    <Card>
-      <CardContent sx={theme.stateView.styleOverrides}>
-        <Form
-          schema={schema}
-          validator={getRjsfValidator()}
-          children={<></>}
-          formData={props.state}
-          formContext={{data: props.state, information: informationRuntimeInfo, defaultService}}
-          uiSchema={uiSchema}
-          className="stateview"
-          templates={
-            {
-              ObjectFieldTemplate,
-              ArrayFieldTemplate,
-              ...props.templates
-            }
-          }
-          widgets={
-            {
-              // LinkedRef: LinkedReferenceWidget,
-              // TextareaWidget: TextareaWidget,
-              // TextWidget: TextWidget,
-              ...widgets,
-              ...userWidgets
-            }
-          }
-          fields={{
-            ...fields,
-            ...props.fields
-          }}
-        />
-      </CardContent>
-    </Card>
-    <BottomActions uiOptions={uiOptions} defaultService={defaultService} jexlCtx={jexlCtx} />
-  </>;
+  return <Box sx={theme.stateView.styleOverrides}>
+    <Form
+      schema={schema}
+      validator={getRjsfValidator()}
+      children={<></>}
+      formData={props.state}
+      formContext={{data: props.state, information: informationRuntimeInfo, defaultService}}
+      uiSchema={uiSchema}
+      className="stateview"
+      templates={
+        {
+          ObjectFieldTemplate,
+          ArrayFieldTemplate,
+          ...props.templates
+        }
+      }
+      widgets={
+        {
+          // LinkedRef: LinkedReferenceWidget,
+          // TextareaWidget: TextareaWidget,
+          // TextWidget: TextWidget,
+          ...widgets,
+          ...userWidgets
+        }
+      }
+      fields={{
+        ...fields,
+        ...props.fields
+      }}
+    />
+    <BottomActions sx={{padding:  `${theme.spacing(4)} 0`}} uiOptions={uiOptions} defaultService={defaultService} jexlCtx={jexlCtx} />
+  </Box>;
 };
 
 export default StateView;

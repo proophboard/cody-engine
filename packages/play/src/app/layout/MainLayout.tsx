@@ -45,7 +45,6 @@ const MainLayout = (props: MainLayoutProps) => {
             }}>
                 {props.children}
             </Box>
-            <SaveData />
         </Box>
     );
 };

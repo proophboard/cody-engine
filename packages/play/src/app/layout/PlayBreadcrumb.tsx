@@ -25,6 +25,7 @@ import {isDynamicBreadcrumb} from "@cody-engine/cody/hooks/utils/ui/types";
 interface OwnProps {
   page: PlayPageDefinition;
   isLast: boolean;
+  color: string;
 }
 
 type BreadcrumbProps = OwnProps;
@@ -43,12 +44,12 @@ const PlayBreadcrumb = (props: BreadcrumbProps) => {
   if(props.isLast) {
     return <Typography
       key={props.page.route}
-      sx={{color: theme.palette.primary.contrastText}}
+      sx={{color: props.color}}
       aria-current="page">{label}</Typography>
   } else {
     return <Link to={generatePath(props.page.route, params)}
                  key={props.page.route}
-                 style={{color: theme.palette.primary.contrastText, textDecoration: 'none'}}
+                 style={{color: props.color, textDecoration: 'none'}}
     >{label}</Link>
   }
 };
