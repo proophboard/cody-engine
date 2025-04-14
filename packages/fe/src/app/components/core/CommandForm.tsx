@@ -78,6 +78,9 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
       setFormData(cloneDeepJSON(formRef.current.state.formData));
       formRef.current.submit();
     },
+    getData: (): Record<string, any> => {
+      return formRef.current?.state.formData;
+    }
   }));
 
   useEffect(() => {

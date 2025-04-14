@@ -31,9 +31,9 @@ export interface ButtonProps {
 export interface ButtonConfig {
   variant: "text" | "outlined" | "contained",
   color: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
-  disabled: boolean,
+  disabled?: boolean,
   style: SxProps,
-  hidden: boolean,
+  hidden?: boolean,
   icon?: React.ReactNode,
   label?: string,
   endIcon?: React.ReactNode,
@@ -97,11 +97,11 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
   const icon = props.startIcon === false ? undefined : props.startIcon || props.icon || uiConfigIcon;
   const label = props.label || uiButtonConfig['label'] || undefined;
 
-  let disabled = false;
+  let disabled: boolean | undefined = undefined;
 
   if(typeof props.disabled !== "undefined") {
     disabled = props.disabled;
-  } else if (uiButtonConfig['disabled']) {
+  } else if (typeof uiButtonConfig['disabled'] !== "undefined") {
     const btnCDisabled = uiButtonConfig['disabled'];
 
     if(typeof btnCDisabled === "boolean") {
@@ -113,11 +113,11 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
     }
   }
 
-  let hidden = false;
+  let hidden: boolean | undefined = undefined;
 
   if(typeof props.hidden !== "undefined") {
     hidden = props.hidden;
-  } else if (uiButtonConfig['hidden']) {
+  } else if (typeof uiButtonConfig['hidden'] !== "undefined") {
     const btnCHidden = uiButtonConfig['hidden'];
 
     if(typeof btnCHidden === "boolean") {

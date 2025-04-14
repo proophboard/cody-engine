@@ -31,6 +31,8 @@ import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jex
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {getFormSuccessRedirect} from "@frontend/util/command-form/get-form-success-redirect";
 import {useTranslation} from "react-i18next";
+import {determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
+import {useEnv} from "@frontend/hooks/use-env";
 
 export interface AggregateIdentifier {
   identifier: string;
@@ -83,13 +85,14 @@ const defaultTransactionState: TransactionState = {
 }
 
 const CommandDialog = (props: CommandDialogProps) => {
+  const env = useEnv();
   const queryClient = useQueryClient();
   const theme = useTheme();
   const snackbar = useSnackbar();
   const routeParams = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const commandFormRef = useRef<{submit: () => void}>();
+  const commandFormRef = useRef<{submit: () => void, getData: () => Record<string, any>}>();
   const [transactionState, setTransactionState] = useState<TransactionState>({...defaultTransactionState});
   const [tryAgain, setTryAgain] = useState(false);
   const [user,] = useUser();
@@ -203,6 +206,15 @@ const CommandDialog = (props: CommandDialogProps) => {
     }, 10);
   }
 
+
+  const buttonProps = determineButtonConfig(props.button || {}, props.commandDialogCommand.uiSchema || {}, {
+    user,
+    page: pageData,
+    store,
+    routeParams,
+    data: commandFormRef.current?.getData() || {}
+  }, env);
+
   return (
     <Dialog open={props.open} fullWidth={true} maxWidth={'lg'} onClose={handleCancel} sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}>
       <DialogTitle>
@@ -253,14 +265,14 @@ const CommandDialog = (props: CommandDialogProps) => {
           color={'secondary'}
         />}
         {props.commandFn && <Button
-          variant={props.button?.variant || 'contained'}
-          color={props.button?.color || 'primary'}
-          startIcon={transactionState.isSubmitting ? <CircularProgress size={20}/> : props.button?.startIcon || <Send/>}
-          sx={{textTransform: 'none', margin: '5px', ...props.button?.style}}
+          variant={buttonProps.variant || 'contained'}
+          color={buttonProps.color || 'primary'}
+          startIcon={transactionState.isSubmitting ? <CircularProgress size={20}/> : buttonProps.icon || <Send/>}
+          sx={{textTransform: 'none', margin: '5px', ...buttonProps.style}}
           onClick={handleExecuteCommand}
           disabled={transactionState.isSubmitting}
         >
-          {transactionState.isError ? 'Try again' : props.button?.label || commandTitle(props.commandDialogCommand, t)}
+          {transactionState.isError ? 'Try again' : buttonProps.label || commandTitle(props.commandDialogCommand, t)}
         </Button>}
         {!props.commandFn && !props.incompleteCommandConfigError && <Alert severity="warning">Cannot process the command. It is not connected to an event that results in a state change (state = Information with identifier). Please check your prooph board configuration.</Alert>}
         {!props.commandFn && props.incompleteCommandConfigError && <Alert severity="error">{props.incompleteCommandConfigError}</Alert>}

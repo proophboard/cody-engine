@@ -200,7 +200,7 @@ const PlayConnectedCommand = (props: PlayConnectedCommandProps) => {
   return <CommandButton
     command={runtimeInfo}
     onClick={handleSubmit}
-    {...{ startIcon: getButtonIcon(runtimeInfo.uiSchema), ...props.buttonProps }}
+    {...props.buttonProps}
   />
 };
 

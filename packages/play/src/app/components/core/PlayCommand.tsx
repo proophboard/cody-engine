@@ -125,7 +125,7 @@ const PlayCommand = (props: PlayCommandProps) => {
       <CommandButton
         command={runtimeInfo}
         onClick={handleOpenDialog}
-        {...{ startIcon: getButtonIcon(runtimeInfo.uiSchema), ...props.buttonProps }}
+        {...props.buttonProps}
       />
       {((isAggregateCommandDescription(commandDesc) && commandDesc.newAggregate) || !isAggregateCommandDescription(commandDesc) ) && <CommandDialog
         open={dialogOpen}
