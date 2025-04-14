@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {PropsWithChildren, useEffect, useState} from "react";
-import {Button, Card, CardActions, CardHeader, Divider, SxProps, Theme, useTheme} from "@mui/material";
+import {Box, Button, Card, CardActions, CardHeader, Divider, SxProps, Theme, useTheme} from "@mui/material";
 import {User} from "@app/shared/types/core/user/user";
 import {PageData} from "@app/shared/types/core/page-data/page-data";
 import jexl from "@app/shared/jexl/get-configured-jexl";
@@ -111,28 +111,33 @@ const CommandBar = (props: CommandBarProps) => {
     }
   }, []);
 
-  const cardActions = <CardActions sx={{
+  const cardActions = <Box sx={{
+    padding: `${theme.spacing(1)} 0`,
+    backgroundColor: theme.palette.background.default,
     overflow: "auto",
     whiteSpace: "nowrap",
     '& button': {
       minWidth: "160px"
+    },
+    '&:not(:first-of-type)': {
+      marginLeft: theme.spacing(1)
     }
   }}>
     {props.children}
-  </CardActions>;
+  </Box>;
 
   return <>
-    <Card sx={fixed ? {
+    <Box sx={fixed ? {
       position: 'fixed',
       zIndex: 1000,
       top: '60px',
       width: 'auto',
-      right: '20px',
+      right: theme.spacing(4),
       [theme.breakpoints.down('lg')]: {
-        left: '20px'
+        left: theme.spacing(4)
       },
       [theme.breakpoints.up('lg')]: {
-        left: '320px'
+        left: 300 + parseInt(theme.spacing(4)) + "px"
       }
     } : {
       width: 'auto',
@@ -140,12 +145,12 @@ const CommandBar = (props: CommandBarProps) => {
       {!fixed && (props.tabs ? renderTabs(props.tabs, user, pageData, theme, t) : <CardHeader title="Actions"/>)}
       {!fixed && <Divider/>}
       {cardActions}
-    </Card>
-    {fixed && /* Mirror card to keep same space in the DOM */ <Card>
+    </Box>
+    {fixed && /* Mirror card to keep same space in the DOM */ <Box>
       {props.tabs? renderTabs(props.tabs, user, pageData, theme, t) : <CardHeader title="Actions"/>}
       <Divider/>
       {cardActions}
-    </Card>}
+    </Box>}
   </>
 };
 
