@@ -33,6 +33,13 @@ import PlayBreadcrumbs from "@cody-play/app/layout/PlayBreadcrumbs";
 import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {useTranslation} from "react-i18next";
+import BottomActions from "@frontend/app/components/core/actions/BottomActions";
+import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
+import {Action, isCommandAction, parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/action";
+import {useEnv} from "@frontend/hooks/use-env";
+import ActionButton from "@frontend/app/components/core/ActionButton";
+import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 
 interface Props {
   page: string;
@@ -51,6 +58,7 @@ const findTabGroup = (groupName: string, pages: PlayPageRegistry, routeParams: R
 
 
 export const PlayStandardPage = (props: Props) => {
+  const env = useEnv();
   const routeParams = useParams();
   const pageMatch = usePageMatch();
   const {config} = useContext(configStore);
@@ -60,10 +68,18 @@ export const PlayStandardPage = (props: Props) => {
   const theme = useTheme();
   const [pageData,] = usePageData();
   const {t} = useTranslation();
+  const [store] = useGlobalStore();
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
   const isLarge = useMediaQuery(theme.breakpoints.up('xl'));
+  const jexlCtx: FormJexlContext = {
+    user,
+    page: pageData,
+    routeParams,
+    store,
+    data: {}
+  }
 
 
   // @TODO: inject via config or theme
@@ -83,18 +99,31 @@ export const PlayStandardPage = (props: Props) => {
 
   const page = config.pages[props.page];
 
-  // Cmd Buttons are handled in the dialog component if mode is "dialog"
-  const cmdBtns = props.mode === "dialog" ? [] : getCommandButtons(page, config);
-
   let tabs;
+  let topBar: JSX.Element = <></>;
+  let topActions: Action[] = [];
+  let bottomActions: Action[] = [];
 
   if(page.tab) {
     tabs = findTabGroup(page.tab.group, config.pages, routeParams as Readonly<Record<string, string>>);
   }
 
-  const commandBar = config.layout === "prototype"
-    ? cmdBtns.length || tabs ? <Grid2 xs={12}><CommandBar tabs={tabs}>{cmdBtns}</CommandBar></Grid2> : <></>
-    : tabs ? <Grid2 xs={12} sx={headerGridSx}>{renderTabs(tabs, user, pageData, theme, t, true)}</Grid2> : <></>
+  // Cmd Buttons are handled in the dialog component if mode is "dialog"
+  const cmdBtns = props.mode === "dialog" ? [] : parseActionsFromPageCommands(page.commands, jexlCtx, t, env)
+    .filter(a => !a.button.hidden);
+
+  if(config.layout === "prototype") {
+    topBar = cmdBtns.length > 0 || tabs ? <Grid2 xs={12}><CommandBar tabs={tabs}>
+      {cmdBtns.map((a, index) => <ActionButton key={`${page.name}_action_${index}`} action={a} defaultService={defaultService} jexlCtx={jexlCtx} />)}
+    </CommandBar></Grid2> : <></>;
+  } else {
+    topBar = tabs ? <Grid2 xs={12} sx={headerGridSx}>{renderTabs(tabs, user, pageData, theme, t, true)}</Grid2> : <></>;
+
+    if(props.mode !== "dialog") {
+      topActions = cmdBtns.filter(c => c.position === "top-right");
+      bottomActions = cmdBtns.filter(c => c.position !== "top-right");
+    }
+  }
 
   const components = page.components.map((valueObjectName, index) => {
     let isHiddenView = false;
@@ -127,76 +156,29 @@ export const PlayStandardPage = (props: Props) => {
       && props.mode !== "dialog"
       && <>
         <Grid2 xs={12} sx={headerGridSx}><PlayBreadcrumbs /></Grid2>
-        <Grid2 xs={12} sx={headerGridSx}><Typography variant="h2">{getPageTitle(page as unknown as PageDefinition)}</Typography></Grid2>
+        <Grid2 xs sx={headerGridSx}><Typography variant="h2">{getPageTitle(page as unknown as PageDefinition)}</Typography></Grid2>
+        <TopRightActions actions={topActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />
       </>}
-    {commandBar}
+    {topBar}
     {components}
     { /*Render a placeholder to keep space for the  bottom bar */ }
-    {config.layout === 'task-based-ui' && props.mode !== 'dialog' && cmdBtns.length && <Box sx={{
+    {config.layout === 'task-based-ui' && props.mode !== 'dialog' && bottomActions.length > 0 && <Box sx={{
       width: props.drawerWidth && isLarge ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)` : `calc(100% - ${SIDEBAR_WIDTH}px)`,
-      padding: (theme) => theme.spacing(2) + " " + theme.spacing(4),
       left: SIDEBAR_WIDTH + 'px',
       bottom: 0,
-    }}>
-      <DialogActions />
-    </Box>}
-    {config.layout === 'task-based-ui' && props.mode !== 'dialog' && cmdBtns.length && <Box sx={{
+      height: '60px'
+    }} />}
+    {config.layout === 'task-based-ui' && props.mode !== 'dialog' && bottomActions.length > 0 && <Box sx={{
       position: "fixed",
       width: props.drawerWidth && isLarge ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)` : `calc(100% - ${SIDEBAR_WIDTH}px)`,
-      padding: (theme) => theme.spacing(2) + " " + theme.spacing(4),
       backgroundColor: (theme) => theme.palette.grey.A100,
       borderTop: (theme) => '1px solid ' + theme.palette.grey.A200,
       left: SIDEBAR_WIDTH + 'px',
       bottom: 0,
     }}>
-      <DialogActions>
-        {cmdBtns}
-      </DialogActions>
+      <BottomActions uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} actions={bottomActions} sx={{padding: `${theme.spacing(3)} ${theme.spacing(4)}`}} />
     </Box>}
   </Grid2>
-}
-
-export const getCommandButtons = (page: PlayPageDefinition, config: CodyPlayConfig): JSX.Element[] => {
-  return page.commands
-    .filter(commandName => {
-      if(typeof commandName !== "string") {
-        commandName = commandName.command;
-      }
-
-
-      const cmd = config.commands[commandName as string];
-
-      if(!cmd) {
-        return true; // Fallthrough to map to Alert message
-      }
-
-      return !playIsCommandButtonHidden(cmd);
-    })
-    .map((commandName,index) => {
-
-      let uiSchemaOverride: UiSchema | undefined;
-      let forceSchema = false;
-      let connectTo: string | undefined;
-
-      if(typeof commandName !== "string") {
-        uiSchemaOverride = commandName.uiSchema;
-        forceSchema = !!commandName.forceSchema;
-        connectTo = commandName.connectTo;
-        commandName = commandName.command;
-      }
-
-      const cmd = config.commands[commandName as string];
-
-      if(!cmd) {
-        return <Alert severity="error">{`Command "${commandName}" not found! You have to pass the command to Cody on prooph board.`}</Alert>
-      }
-
-      if(connectTo) {
-        return <PlayConnectedCommand key={commandName} command={config.commands[commandName as string]} connectTo={connectTo} forceSchema={forceSchema} uiSchemaOverride={uiSchemaOverride} />
-      }
-
-      return <PlayCommand key={commandName} command={config.commands[commandName as string]} uiSchemaOverride={uiSchemaOverride} />
-    });
 }
 
 const getViewComponent = (component: React.FunctionComponent | PlayViewComponentConfig, types: PlayInformationRegistry, isHiddenView = false, viewType: ViewComponentType, uiSchemaOverride?: UiSchema, loadState = true): React.FunctionComponent => {

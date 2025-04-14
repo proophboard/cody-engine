@@ -30,7 +30,7 @@ import {
   PlayUpdatePersona,
   PlayViewRegistry
 } from '@cody-play/state/types';
-import {createContext, PropsWithChildren, useEffect, useReducer} from "react";
+import {createContext, PropsWithChildren, useContext, useEffect, useReducer} from "react";
 import {injectCustomApiQuery} from "@frontend/queries/use-api-query";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
 import {useUser} from "@frontend/hooks/use-user";
@@ -44,6 +44,8 @@ import _ from "lodash";
 import {
   playDefinitionIdFromFQCN,
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {EnvContext} from "@frontend/app/providers/UseEnvironment";
+import {names} from "@event-engine/messaging/helpers";
 
 export type LayoutType = 'prototype' | 'task-based-ui';
 
@@ -180,6 +182,7 @@ let currentDispatch: any;
 
 const PlayConfigProvider = (props: PropsWithChildren) => {
   const [user, ] = useUser();
+  const {env, setEnv} = useContext(EnvContext);
   const [config, dispatch] = useReducer((config: CodyPlayConfig, action: Action): CodyPlayConfig => {
     console.log(`[PlayConfigStore] Going to apply action: `, action);
     switch (action.type) {
@@ -332,6 +335,12 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         return config;
     }
   }, defaultPlayConfig);
+
+  useEffect(() => {
+    if(env.DEFAULT_SERVICE !== names(config.defaultService).className) {
+      setEnv({...env, DEFAULT_SERVICE: names(config.defaultService).className});
+    }
+  }, [setEnv, names(config.defaultService).className !== env.DEFAULT_SERVICE]);
 
   useEffect(() => {
     console.log("[PlayConfigStore] trigger after dispatch: ", config);

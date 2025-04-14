@@ -5,6 +5,8 @@ import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jex
 import * as React from "react";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row-jexl-context";
+import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
+import {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
 
 export interface ButtonProps {
   label?: string;
@@ -16,6 +18,14 @@ export interface ButtonProps {
   disabled?: boolean;
   hidden?: boolean;
   variant?: "text" | "outlined" | "contained";
+  'variant:expr'?: string,
+  'color:expr'?: string,
+  'disabled:expr'?: string,
+  'style:expr'?: string,
+  'hidden:expr'?: string,
+  'icon:expr'?: string,
+  'label:expr'?: string,
+  'endIcon:expr'?: string,
 }
 
 export interface ButtonConfig {
@@ -41,8 +51,17 @@ const makeIcon = (icon: React.ReactNode | string | undefined): React.ReactNode |
   return typeof icon === "string" ? <MdiIcon icon={icon} /> : icon;
 }
 
-export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, jexlCtx: FormJexlContext | TableRowJexlContext): ButtonConfig => {
-  const uiButtonConfig = uiSchema['ui:button'] || {};
+export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, jexlCtx: FormJexlContext | TableRowJexlContext, env: RuntimeEnvironment): ButtonConfig => {
+  const uiButtonConfig = uiSchema['ui:button'] ? normalizeUiSchema(uiSchema['ui:button'], jexlCtx, env) : {};
+
+  // MdiIcons cannot be deep-cloned, therefor we need to remove them before passing props to normalizeUiSchema
+  let propsCopy = {...props};
+  delete propsCopy.startIcon;
+  delete propsCopy.icon;
+  delete propsCopy.endIcon;
+
+  propsCopy = normalizeUiSchema(propsCopy as unknown as UiSchema, jexlCtx, env) as ButtonProps;
+  props = {...props, ...propsCopy};
 
   let uiConfigIcon;
   let endIcon = props.endIcon;
@@ -57,6 +76,10 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
 
   if(uiButtonConfig['styleExpr']) {
     uiButtonConfig['style'] = jexl.evalSync(uiButtonConfig['styleExpr'], jexlCtx);
+  }
+
+  if(uiButtonConfig['icon:expr']) {
+    uiButtonConfig['icon'] = jexl.evalSync(uiButtonConfig['icon:expr'], jexlCtx);
   }
 
   // @TODO: Fix that uiSchema is altered

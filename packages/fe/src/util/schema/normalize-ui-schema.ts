@@ -2,6 +2,30 @@ import {UiSchema} from "@rjsf/utils";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
+import {Action, isCommandAction} from "@frontend/app/components/core/form/types/action";
+import {normalizeCommandName} from "@cody-play/infrastructure/rule-engine/normalize-command-name";
+
+export const normalizeActions = (uiSchema: UiSchema, defaultService: string): UiSchema => {
+  const schema = cloneDeepJSON(uiSchema);
+
+  for (const schemaKey in schema) {
+    if(schemaKey === "actions" && Array.isArray(schema[schemaKey])) {
+      schema[schemaKey].forEach((a: Action) => {
+        if(isCommandAction(a)) {
+          a.command = normalizeCommandName(a.command, defaultService);
+        }
+      })
+    }
+  }
+
+  for (const schemaKey in schema) {
+    if(typeof schema[schemaKey] === "object") {
+      schema[schemaKey] = normalizeActions(schema[schemaKey], defaultService);
+    }
+  }
+
+  return schema;
+}
 
 export const normalizeUiSchema = (uiSchema: UiSchema, ctx: any, env: RuntimeEnvironment): UiSchema => {
   const schema = cloneDeepJSON(uiSchema);
@@ -31,6 +55,14 @@ export const normalizeUiSchema = (uiSchema: UiSchema, ctx: any, env: RuntimeEnvi
       const orgUISchemaKey = parts.join(":");
 
       schema[orgUISchemaKey] = jexl.evalSync(schema[schemaKey], ctx);
+    }
+
+    if(schemaKey === "actions" && Array.isArray(schema[schemaKey])) {
+      schema[schemaKey].forEach((a: Action) => {
+        if(isCommandAction(a)) {
+          a.command = normalizeCommandName(a.command, env.DEFAULT_SERVICE);
+        }
+      })
     }
   }
 

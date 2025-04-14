@@ -21,7 +21,7 @@ import {
   isQueryableStateListDescription, isStoredQueryableListDescription
 } from "@event-engine/descriptions/descriptions";
 import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
-import {UiSchema} from "@rjsf/utils";
+import {getUiOptions, UiSchema} from "@rjsf/utils";
 import {
   getColumns,
   getPageDefinition,
@@ -56,6 +56,11 @@ import ColumnAction from "@frontend/app/components/core/table/ColumnAction";
 import ColumnActionsMenu from "@frontend/app/components/core/table/ColumnActionsMenu";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {merge} from "lodash/fp";
+import Grid2 from "@mui/material/Unstable_Grid2";
+import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
+import BottomActions from "@frontend/app/components/core/actions/BottomActions";
+import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
+import {useEnv} from "@frontend/hooks/use-env";
 
 const showTitle = (uiSchema?: UiSchema): boolean => {
   if(!uiSchema) {
@@ -78,15 +83,19 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
     throw new Error(`Play table view can only be used to show queriable state list information, but "${informationInfo.desc.name}" is not of this information type. ${CONTACT_PB_TEAM}`)
   }
 
-  const {config: {queries, types, pages, definitions}} = useContext(configStore);
+  const {config: {queries, types, pages, definitions, defaultService}} = useContext(configStore);
   const [page,addQueryResult] = usePageData();
   const [user] = useUser();
   const [store, setStore] = useGlobalStore();
+  const normalizedDefaultService = names(defaultService).className;
+  const env = useEnv();
 
   const query = useApiQuery(informationInfo.desc.query, params);
-  const jexlCtx = {routeParams: params, user, page};
+  const jexlCtx = {routeParams: params, user, page, store, data: query.isSuccess ? query.data : {}};
 
-  const uiSchema: UiSchema & TableUiSchema = merge(informationInfo.uiSchema || {}, uiSchemaOverride || {});
+  const uiSchema: UiSchema & TableUiSchema = normalizeUiSchema(merge(informationInfo.uiSchema || {}, uiSchemaOverride || {}), jexlCtx, env);
+  const uiOptions = getUiOptions(uiSchema);
+
 
   // Normalize table uiSchema
   if(uiSchema['ui:table']) {
@@ -135,14 +144,19 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
 
   return (
     <Box component="div">
-      {showTitle(uiSchema) && <Typography
-        variant="h3"
-        className="sidebar-anchor"
-        sx={{padding: (theme) => theme.spacing(4), paddingLeft: 0}}
-        id={"component-" + names(informationInfo.desc.name).fileName}
-      >
-        {informationTitle(informationInfo, uiSchema)}
-      </Typography>}
+      <Grid2 container={true}>
+        <Grid2 xs>
+          {showTitle(uiSchema) && <Typography
+            variant="h3"
+            className="sidebar-anchor"
+            sx={{padding: (theme) => theme.spacing(4), paddingLeft: 0}}
+            id={"component-" + names(informationInfo.desc.name).fileName}
+          >
+            {informationTitle(informationInfo, uiSchema)}
+          </Typography>}
+        </Grid2>
+        <TopRightActions uiOptions={uiOptions} defaultService={normalizedDefaultService} jexlCtx={jexlCtx} />
+      </Grid2>
       {query.isLoading && <CircularProgress />}
       {query.isSuccess && (
         <DataGrid
@@ -164,6 +178,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
           }}
         />
       )}
+      <BottomActions uiOptions={uiOptions} defaultService={normalizedDefaultService} jexlCtx={jexlCtx} />
     </Box>
   );
 };

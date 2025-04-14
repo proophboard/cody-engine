@@ -1,6 +1,7 @@
-import {Rule} from "@app/shared/rule-engine/configuration";
+import {AnyRule, Rule} from "@app/shared/rule-engine/configuration";
 import {DynamicSidebar, PageType, Tab, TopLevelGroup} from "@frontend/app/pages/page-definitions";
 import {UiSchema} from "@rjsf/utils";
+import {Action} from "@frontend/app/components/core/form/types/action";
 
 export interface DynamicBreadcrumbMetadata {
   data: string;
@@ -11,7 +12,7 @@ export type ViewComponentType = 'auto' | 'state' | 'form' | 'table';
 
 export type ViewComponent = string | { view: string, hidden?: boolean, props?: Record<string, unknown>, uiSchema?: UiSchema, type?: ViewComponentType, loadState?: boolean}
 
-export type CommandComponent = string | {command: string, uiSchema?: UiSchema, connectTo?: string, forceSchema?: boolean}
+export type CommandComponent = string | Action;
 
 export interface UiMetadata {
   route?: string;

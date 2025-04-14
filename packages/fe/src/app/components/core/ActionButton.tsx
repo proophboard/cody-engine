@@ -18,6 +18,7 @@ import {Link, useParams} from "react-router-dom";
 import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row-jexl-context";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
+import PlayConnectedCommand from "@cody-play/app/components/core/PlayConnectedCommand";
 
 interface OwnProps {
   action: Action;
@@ -65,7 +66,7 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
   const { config } = useContext(configStore);
   const [, setGlobalStore] = useGlobalStore();
   const params = useParams();
-  const buttonProps = determineButtonConfig(action.button, {}, jexlCtx);
+  const buttonProps = determineButtonConfig(action.button, {}, jexlCtx, env);
 
   if (isCommandAction(action)) {
     let initialValues;
@@ -79,11 +80,15 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
 
       if (!command) {
         return (
-          <Alert severity="error">{'Unknown command: ' + action.command}</Alert>
+          <Alert severity="error">{`Command "${action.command}" not found! You have to pass the command to Cody on prooph board.`}</Alert>
         );
       }
 
-      return <PlayCommand command={command} buttonProps={buttonProps} initialValues={initialValues} onDialogClose={onDialogClose} />;
+      if(action.connectTo) {
+        return <PlayConnectedCommand  command={command} connectTo={action.connectTo} buttonProps={buttonProps} uiSchemaOverride={action.uiSchema} forceSchema={action.forceSchema} />;
+      }
+
+      return <PlayCommand command={command} buttonProps={buttonProps} initialValues={initialValues} onDialogClose={onDialogClose} uiSchemaOverride={action.uiSchema} />;
     }
 
     const CmdComponent = commands[action.command];

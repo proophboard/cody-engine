@@ -1,10 +1,13 @@
 import {ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
+import {normalizeActions} from "@frontend/util/schema/normalize-ui-schema";
 
 export const normalizePageViewComponents = (viewComponents: ViewComponent[], defaultService: string): ViewComponent[] => {
   return viewComponents.map(vc => {
     if(typeof vc === "object") {
+      const uiSchema = vc.uiSchema ? normalizeActions(vc.uiSchema, defaultService) : undefined;
       return {
         ...vc,
+        uiSchema,
         view: normalizeName(vc.view, defaultService)
       }
     }

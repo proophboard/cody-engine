@@ -35,7 +35,7 @@ jexl.addFunction('env', () => environment);
 export function App() {
   const Layout = (props: React.PropsWithChildren) => {
     return <>
-      <EnvProvider env={{ UI_ENV: environment.production ? 'prod' : 'dev' }}>
+      <EnvProvider env={{ UI_ENV: environment.production ? 'prod' : 'dev', DEFAULT_SERVICE: environment.defaultService }}>
         <User>
           <GlobalStore>
             <PageDataProvider>

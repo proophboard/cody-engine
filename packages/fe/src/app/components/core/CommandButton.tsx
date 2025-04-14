@@ -17,6 +17,7 @@ import {TFunction} from "i18next";
 import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
 import {translateSchema} from "@frontend/util/schema/translate-schema";
 import {useTranslation} from "react-i18next";
+import {useEnv} from "@frontend/hooks/use-env";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -63,6 +64,7 @@ export const commandTitle = (cmd: CommandRuntimeInfo, t: TFunction): string => {
 };
 
 const CommandButton = (props: CommandButtonProps) => {
+  const env = useEnv();
   const { desc } = props.command;
   const [user] = useUser();
   const [page] = usePageData();
@@ -77,7 +79,7 @@ const CommandButton = (props: CommandButtonProps) => {
       routeParams,
       data: props.formData || {},
       store,
-    });
+    }, env);
   const newAggregate = isAggregateCommandDescription(desc) && desc.newAggregate;
 
   if (hidden) {

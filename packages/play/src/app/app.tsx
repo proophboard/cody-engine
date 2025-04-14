@@ -154,7 +154,7 @@ export function App() {
 
   return (
     <QueryClientProvider client={queryClient!}>
-      <EnvProvider env={{UI_ENV: "play"}}>
+      <EnvProvider env={{UI_ENV: "play", DEFAULT_SERVICE: 'App'}}>
         <User>
           <PlayConfigProvider>
             <TypesProvider types={config.types as unknown as TypeRegistry}>

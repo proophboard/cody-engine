@@ -1,8 +1,8 @@
-import React, {PropsWithChildren} from "react";
+import React, {PropsWithChildren, useEffect, useState} from "react";
 
-export type RuntimeEnvironment = {UI_ENV: 'play' | 'dev' | 'test' | 'prod'};
+export type RuntimeEnvironment = {UI_ENV: 'play' | 'dev' | 'test' | 'prod', DEFAULT_SERVICE: string};
 
-const env: RuntimeEnvironment = {UI_ENV: 'dev'};
+const env: RuntimeEnvironment = {UI_ENV: 'dev', DEFAULT_SERVICE: 'App'};
 
 interface OwnProps {
   env: RuntimeEnvironment;
@@ -10,10 +10,12 @@ interface OwnProps {
 
 type EnvProviderProps = OwnProps & PropsWithChildren;
 
-export const EnvContext = React.createContext({env});
+export const EnvContext = React.createContext({env, setEnv: (newEnv: RuntimeEnvironment) => {}});
 
 const EnvProvider = (props: EnvProviderProps) => {
-  return <EnvContext.Provider value={{env: props.env}}>
+  const [env, setEnv] = useState<RuntimeEnvironment>(props.env);
+
+  return <EnvContext.Provider value={{env, setEnv}}>
     {props.children}
   </EnvContext.Provider>
 }

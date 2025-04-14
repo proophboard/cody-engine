@@ -1,6 +1,14 @@
 import {ButtonConfig, determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {AnyRule, PropMapping} from "@app/shared/rule-engine/configuration";
+import {CommandComponent} from "@cody-engine/cody/hooks/utils/ui/types";
+import {UiSchema} from "@rjsf/utils";
+import {TFunction} from "i18next";
+import {commandTitle} from "@frontend/app/components/core/CommandButton";
+import {translateSchema} from "@frontend/util/schema/translate-schema";
+import {camelCaseToTitle} from "@frontend/util/string";
+import {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
 export interface Action {
   type: "command" | "link" | "rules";
@@ -14,7 +22,7 @@ export const isLinkAction = (action: Action): action is LinkAction => {
 }
 
 export const isCommandAction = (action: Action): action is CommandAction => {
-  return action.type === "command";
+  return (!action.type && (action as any).command) || action.type === "command";
 }
 
 export const isRulesAction = (action: Action): action is RulesAction => {
@@ -28,6 +36,9 @@ export interface LinkAction extends Action {
 
 export interface CommandAction extends Action {
   command: string;
+  uiSchema?: UiSchema,
+  connectTo?: string,
+  forceSchema?: boolean,
   data?: string | string[] | PropMapping | PropMapping[];
 }
 
@@ -39,40 +50,41 @@ export type ActionConfig = LinkAction | CommandAction | RulesAction;
 
 export type TableActionConfig = (Omit<Omit<LinkAction, 'position'>, 'button'> | Omit<Omit<CommandAction, 'position'>, 'button'> | Omit<Omit<RulesAction, 'position'>, 'button'>) & {button: Partial<ButtonConfig>};
 
-export const parseActionsFromUiOptions = (uiOptions: Record<string, any>, jexlCtx: FormJexlContext): Action[] => {
+export const parseActionsFromUiOptions = (uiOptions: Record<string, any>, jexlCtx: FormJexlContext, env: RuntimeEnvironment): Action[] => {
   const actions: Action[] = [];
 
   if(uiOptions['actions'] && Array.isArray(uiOptions['actions'])) {
     for (const action of uiOptions['actions']) {
-      if(!action.type || !["command", "link", "rules"].includes(action.type)) {
-        action.type = "link";
+      const actionCopy = cloneDeepJSON(action);
+      if(!actionCopy.type || !["command", "link", "rules"].includes(actionCopy.type)) {
+        actionCopy.type = "link";
       }
 
-      if(!action.position || !["top-right", "bottom-left", "bottom-center", "bottom-right"].includes(action.position)) {
-        action.position = "top-right";
+      if(!actionCopy.position || !["top-right", "bottom-left", "bottom-center", "bottom-right"].includes(actionCopy.position)) {
+        actionCopy.position = "top-right";
       }
 
-      if(!action.button || typeof action.button !== "object") {
-        action.button = determineButtonConfig({label: "change"}, {}, jexlCtx);
+      if(!actionCopy.button || typeof actionCopy.button !== "object") {
+        actionCopy.button = determineButtonConfig({label: "change"}, {}, jexlCtx, env);
       } else {
-        action.button = determineButtonConfig({}, {"ui:button": action.button}, jexlCtx)
+        actionCopy.button = determineButtonConfig({}, {"ui:button": actionCopy.button}, jexlCtx, env)
       }
 
-      if(action.type === "link") {
-        if(!action.href && !action.pageLink) {
-          action.href = "#";
+      if(actionCopy.type === "link") {
+        if(!actionCopy.href && !actionCopy.pageLink) {
+          actionCopy.href = "#";
         }
       }
 
-      if(action.type === "command") {
-        if(!action.command) {
-          action.command = "Unknown"
+      if(actionCopy.type === "command") {
+        if(!actionCopy.command) {
+          actionCopy.command = "Unknown"
         }
       }
 
-      if(action.type === "rules") {
-        if(!action.rules) {
-          action.rules = [];
+      if(actionCopy.type === "rules") {
+        if(!actionCopy.rules) {
+          actionCopy.rules = [];
         }
       }
 
@@ -81,4 +93,25 @@ export const parseActionsFromUiOptions = (uiOptions: Record<string, any>, jexlCt
   }
 
   return actions;
+}
+
+export const parseActionsFromPageCommands = (commands: CommandComponent[], jexlCtx: FormJexlContext, t: TFunction, env: RuntimeEnvironment): Action[] => {
+  return commands.map(c => {
+
+    if(typeof c === "string") {
+      return {
+        type: "command",
+        command: c,
+        position: "bottom-left",
+        button: determineButtonConfig({}, {}, jexlCtx, env)
+      }
+    } else {
+      return {
+        ...c,
+        type: c.type || "command",
+        button: c.button || determineButtonConfig({}, {}, jexlCtx, env),
+        position: c.position || "bottom-right",
+      }
+    }
+  })
 }

@@ -3,21 +3,25 @@ import {Action, parseActionsFromUiOptions} from "@frontend/app/components/core/f
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import ActionButton from "@frontend/app/components/core/ActionButton";
+import {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
+import {useEnv} from "@frontend/hooks/use-env";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
   defaultService: string;
   jexlCtx: FormJexlContext;
+  actions?: Action[];
 }
 
 type TopRightActionsProps = OwnProps;
 
-const getTopRightActionsFromUIOptions = (uiOptions: Record<string, any>, jexlCtx: FormJexlContext): Action[] => {
-  return parseActionsFromUiOptions(uiOptions, jexlCtx).filter(a => a.position === "top-right");
+const getTopRightActionsFromUIOptions = (uiOptions: Record<string, any>, jexlCtx: FormJexlContext, env: RuntimeEnvironment): Action[] => {
+  return parseActionsFromUiOptions(uiOptions, jexlCtx, env).filter(a => a.position === "top-right");
 }
 
 const TopRightActions = (props: TopRightActionsProps) => {
-  const actions = getTopRightActionsFromUIOptions(props.uiOptions, props.jexlCtx);
+  const env = useEnv();
+  const actions = props.actions || getTopRightActionsFromUIOptions(props.uiOptions, props.jexlCtx, env);
 
   if(!actions.length) {
     return <></>;
@@ -28,6 +32,11 @@ const TopRightActions = (props: TopRightActionsProps) => {
                 direction="column"
                 alignItems="center"
                 justifyContent="flex-end"
+                sx={{
+                  "& :not(:first-of-type)": {
+                    marginLeft: (theme) => theme.spacing(1)
+                  }
+                }}
   >{actions.map(action => <ActionButton action={action} defaultService={props.defaultService} jexlCtx={props.jexlCtx} />)}</Grid2>
 };
 
