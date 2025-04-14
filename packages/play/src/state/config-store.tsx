@@ -44,8 +44,9 @@ import _ from "lodash";
 import {
   playDefinitionIdFromFQCN,
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
-import {EnvContext} from "@frontend/app/providers/UseEnvironment";
+import {directSetEnv, EnvContext} from "@frontend/app/providers/UseEnvironment";
 import {names} from "@event-engine/messaging/helpers";
+import {PageRegistry} from "@frontend/app/pages";
 
 export type LayoutType = 'prototype' | 'task-based-ui';
 
@@ -157,6 +158,8 @@ syncTypesWithSharedRegistry(defaultPlayConfig);
 
 console.log(`[PlayConfigStore] Initializing with config: `, defaultPlayConfig);
 
+directSetEnv({UI_ENV: "play", DEFAULT_SERVICE: defaultPlayConfig.defaultService, PAGES: defaultPlayConfig.pages as unknown as PageRegistry});
+
 const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action) => void}>({config: defaultPlayConfig, dispatch: (action: Action) => {return;}});
 
 const { Provider } = configStore;
@@ -189,10 +192,12 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
       case "INIT":
         const newConfig = _.isEmpty(action.payload)? initialPlayConfig : enhanceConfigWithDefaults(action.payload);
         syncTypesWithSharedRegistry(newConfig);
+        setEnv({...env, DEFAULT_SERVICE: names(config.defaultService).className, PAGES: config.pages as unknown as PageRegistry});
         return newConfig;
       case "RENAME_APP":
         return {...config, appName: action.name};
       case "RENAME_DEFAULT_SERVICE":
+        setEnv({...env, DEFAULT_SERVICE: action.name})
         return {...config, defaultService: action.name};
       case "CHANGE_LAYOUT":
         return {...config, layout: action.layout};
@@ -226,10 +231,12 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
       case "ADD_PAGE":
         config.pages = {...config.pages};
         config.pages[action.name] = action.page;
+        setEnv({...env, PAGES: config.pages as unknown as PageRegistry});
         return {...config};
       case "REMOVE_PAGE":
         config.pages = {...config.pages};
         delete config.pages[action.name];
+        setEnv({...env, PAGES: config.pages as unknown as PageRegistry});
         return {...config};
       case "ADD_COMMAND":
         config.commands = {...config.commands};
@@ -335,12 +342,6 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         return config;
     }
   }, defaultPlayConfig);
-
-  useEffect(() => {
-    if(env.DEFAULT_SERVICE !== names(config.defaultService).className) {
-      setEnv({...env, DEFAULT_SERVICE: names(config.defaultService).className});
-    }
-  }, [setEnv, names(config.defaultService).className !== env.DEFAULT_SERVICE]);
 
   useEffect(() => {
     console.log("[PlayConfigStore] trigger after dispatch: ", config);

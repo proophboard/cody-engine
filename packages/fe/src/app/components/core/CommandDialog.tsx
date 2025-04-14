@@ -163,7 +163,7 @@ const CommandDialog = (props: CommandDialogProps) => {
       store,
       routeParams,
       data: formData
-    } as FormJexlContext);
+    } as FormJexlContext, env.DEFAULT_SERVICE, env.PAGES);
 
     if (
       (!isAggregateCommandDescription(props.commandDialogCommand.desc) ||

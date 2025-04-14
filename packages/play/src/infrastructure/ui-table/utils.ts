@@ -2,9 +2,8 @@ import {GridDensity} from "@mui/x-data-grid";
 import {isObjectSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-object-schema";
 import {camelCaseToTitle} from "@frontend/util/string";
 import {names} from "@event-engine/messaging/helpers";
-import {PlayInformationRuntimeInfo, PlayPageDefinition, PlayPageRegistry} from "@cody-play/state/types";
+import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {
-  PageLinkTableColumn,
   StringOrTableColumnUiSchema,
   TableColumnUiSchema,
   TableUiSchema
@@ -71,26 +70,4 @@ const deriveColumnsFromSchema = (information: PlayInformationRuntimeInfo, itemSc
   }
 
   return columns;
-}
-
-export const getPageDefinition = (linkedPage: PageLinkTableColumn, defaultService: string, pages: PlayPageRegistry): PlayPageDefinition => {
-  const parts = linkedPage.page.split(".");
-  let service: string, pageName: string;
-
-  if(parts.length === 2) {
-    [service, pageName] = parts;
-  } else {
-    service = defaultService;
-    pageName = linkedPage.page;
-  }
-
-  const pageFullName = names(service).className + '.' + names(pageName).className;
-
-  const page = pages[pageFullName];
-
-  if(!page) {
-    throw new Error(`Cannot find page "${pageFullName}". Did you forget to pass it to Cody?`);
-  }
-
-  return page;
 }

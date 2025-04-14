@@ -26,6 +26,7 @@ import {AxiosError, AxiosResponse} from "axios";
 import AxiosResponseViewer from "@frontend/app/components/core/AxiosResponseViewer";
 import {getFormSuccessRedirect} from "@frontend/util/command-form/get-form-success-redirect";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
+import {useEnv} from "@frontend/hooks/use-env";
 
 interface OwnProps {
   command: PlayCommandRuntimeInfo,
@@ -38,6 +39,7 @@ interface OwnProps {
 type PlayConnectedCommandProps = OwnProps;
 
 const PlayConnectedCommand = (props: PlayConnectedCommandProps) => {
+  const env = useEnv();
   const {config} = useContext(configStore);
   const [user,] = useUser();
   const routeParams = useParams();
@@ -175,7 +177,7 @@ const PlayConnectedCommand = (props: PlayConnectedCommandProps) => {
         store,
         routeParams,
         data: form.getData()
-      } as FormJexlContext);
+      } as FormJexlContext, env.DEFAULT_SERVICE, env.PAGES);
 
       if (
         (!isAggregateCommandDescription(runtimeInfo.desc) ||

@@ -5,10 +5,7 @@ import {configStore} from "@cody-play/state/config-store";
 import {Alert, Button, IconButton} from '@mui/material';
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
 import {ButtonConfig, determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
-import {getPageDefinition} from "@cody-play/infrastructure/ui-table/utils";
-import {PageDefinition} from "@frontend/app/pages/page-definitions";
-import PageLink, {generatePageLink} from "@frontend/app/components/core/PageLink";
-import {PageLinkTableColumn} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
+import {generatePageLink, getPageDefinition} from "@frontend/app/components/core/PageLink";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
@@ -120,10 +117,10 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
 
       const path = generatePageLink(
         getPageDefinition(
-          pageLink as PageLinkTableColumn,
+          pageLink.page,
           defaultService,
-          config.pages
-        ) as unknown as PageDefinition,
+          env.PAGES
+        ),
         { ...jexlCtx.routeParams, ...paramsMapping }
       );
 

@@ -22,8 +22,10 @@ export const getBottomActions = (uiOptions: Record<string, any>, jexlCtx: FormJe
   return parseActionsFromUiOptions(uiOptions, jexlCtx, env).filter(a => ["bottom-left", "bottom-center", "bottom-right"].includes(a.position));
 }
 
+let keyVersion = 0;
+
 const BottomActions = (props: BottomActionsProps) => {
-  const env = useEnv();
+ const env = useEnv();
  const actions = props.actions || getBottomActions(props.uiOptions, props.jexlCtx, env);
 
  const leftActions = actions.filter(a => a.position === "bottom-left");
@@ -33,6 +35,8 @@ const BottomActions = (props: BottomActionsProps) => {
  if(!actions.length) {
    return <></>
  }
+
+ keyVersion++;
 
  return <Grid2 container sx={props.sx}>
    {leftActions.length > 0 && <Grid2 xs
@@ -46,7 +50,7 @@ const BottomActions = (props: BottomActionsProps) => {
              }
            }}
    >
-     {leftActions.map(action => <ActionButton action={action} defaultService={props.defaultService}
+     {leftActions.map((action, index) => <ActionButton key={`left_action_${keyVersion}_${index}`} action={action} defaultService={props.defaultService}
                                                            jexlCtx={props.jexlCtx}/>)}
    </Grid2>}
    {centerActions.length > 0 && <Grid2 xs
@@ -60,7 +64,7 @@ const BottomActions = (props: BottomActionsProps) => {
              }
            }}
    >
-     {centerActions.map(action => <ActionButton action={action} defaultService={props.defaultService}
+     {centerActions.map((action, index) => <ActionButton key={`center_action_${keyVersion}_${index}`} action={action} defaultService={props.defaultService}
                                                 jexlCtx={props.jexlCtx}/>)}
    </Grid2>}
    {rightActions.length > 0 && <Grid2 xs
@@ -74,7 +78,7 @@ const BottomActions = (props: BottomActionsProps) => {
              }
            }}
    >
-     {rightActions.map(action => <ActionButton action={action} defaultService={props.defaultService}
+     {rightActions.map((action, index) => <ActionButton key={`right_action_${keyVersion}_${index}`} action={action} defaultService={props.defaultService}
                                                jexlCtx={props.jexlCtx}/>)}
    </Grid2>}
  </Grid2>

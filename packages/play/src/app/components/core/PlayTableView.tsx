@@ -5,7 +5,7 @@ import { triggerSideBarAnchorsRendered } from '@frontend/util/sidebar/trigger-si
 import NoRowsOverlay from '@frontend/app/components/core/table/NoRowsOverlay';
 import { dataValueGetter } from '@frontend/util/table/data-value-getter';
 import { determineQueryPayload } from '@app/shared/utils/determine-query-payload';
-import PageLink from '@frontend/app/components/core/PageLink';
+import PageLink, {getPageDefinition} from '@frontend/app/components/core/PageLink';
 import { mapProperties } from '@app/shared/utils/map-properties';
 import { stringify } from '@app/shared/utils/stringify';
 import {useApiQuery} from "@frontend/queries/use-api-query";
@@ -24,7 +24,6 @@ import {CONTACT_PB_TEAM} from "@cody-play/infrastructure/error/message";
 import {getUiOptions, UiSchema} from "@rjsf/utils";
 import {
   getColumns,
-  getPageDefinition,
   getTableDensity,
   getTablePageSizeConfig
 } from "@cody-play/infrastructure/ui-table/utils";
@@ -61,6 +60,7 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {useEnv} from "@frontend/hooks/use-env";
+import {PageRegistry} from "@frontend/app/pages";
 
 const showTitle = (uiSchema?: UiSchema): boolean => {
   if(!uiSchema) {
@@ -279,7 +279,7 @@ const compileTableColumns = (
               pageLinkConfig.page = jexl.evalSync(pageLinkConfig['page:expr'], {...params, ...rowParams});
             }
 
-            return <PageLink page={getPageDefinition(pageLinkConfig, defaultService, pages) as unknown as PageDefinition}
+            return <PageLink page={getPageDefinition(pageLinkConfig.page, defaultService, pages as unknown as PageRegistry)}
                       params={mapProperties({...params, ...rowParams.row}, pageLinkConfig.mapping)}
             >{rowParams.value}</PageLink>
           };
