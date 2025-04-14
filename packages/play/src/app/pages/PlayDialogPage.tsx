@@ -84,7 +84,7 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
                        alignItems="center"
                        justifyContent="flex-end">
                 <IconButton sx={{
-                    marginRight: `-${theme.spacing(6)}`,
+                    marginRight: `-${theme.spacing(2)}`,
                     color: theme.palette.grey[500],
                   }} onClick={handleClose}>
                 <Close />
@@ -96,7 +96,7 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
         <DialogContent>
           <PlayStandardPage page={page.name} mode="dialog" />
         </DialogContent>
-        {bottomActions.length && <BottomActions actions={bottomActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />}
+        {bottomActions.length && <BottomActions sx={{padding: theme.spacing(3)}} actions={bottomActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />}
       </Dialog>
     </>
 };

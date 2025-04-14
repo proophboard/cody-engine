@@ -263,6 +263,7 @@ const CommandDialog = (props: CommandDialogProps) => {
           children={transactionState.isSubmitted ? 'Close' : 'Cancel'}
           onClick={handleCancel}
           color={'secondary'}
+          sx={{marginRight: 'auto'}}
         />}
         {props.commandFn && <Button
           variant={buttonProps.variant || 'contained'}
