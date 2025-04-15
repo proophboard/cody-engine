@@ -49,6 +49,7 @@ import {playAttachDefaultStreamListeners} from "@cody-play/infrastructure/events
 import {getPageType, PageDefinition} from "@frontend/app/pages/page-definitions";
 import PlayDialogPage from "@cody-play/app/pages/PlayDialogPage";
 import PlayRightDrawerPage from "@cody-play/app/pages/PlayRightDrawerPage";
+import {useMediaQuery} from "@mui/material";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -76,7 +77,6 @@ export function App() {
   };
 
   const {config} = useContext(configStore);
-
   document.title = config.appName;
 
   if(!messageBoxRef) {

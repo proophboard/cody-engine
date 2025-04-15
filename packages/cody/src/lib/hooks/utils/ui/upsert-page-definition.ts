@@ -21,6 +21,7 @@ import {getVOFromDataReference} from "../value-object/get-vo-from-data-reference
 import {CommandComponent, isDynamicBreadcrumb, UiMetadata, ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 import {normalizePageCommands} from "@cody-play/infrastructure/rule-engine/normalize-page-commands";
 import {normalizePageViewComponents} from "@cody-play/infrastructure/rule-engine/normalize-page-view-components";
+import {isCommandAction} from "@frontend/app/components/core/form/types/action";
 
 export const upsertTopLevelPage = async (
   ui: Node,
@@ -207,7 +208,7 @@ const convertToRoleCheck = (roles: List<Node>): string => {
 }
 
 const getCommandNames = (commands: List<Node>, ctx: Context, existingPageDefinition?: PageDefinition): string[] | CodyResponse => {
-  const commandNames: string[] = existingPageDefinition?.commands.map(c => typeof c === "string" ? c : c.command) || [];
+  const commandNames: string[] = existingPageDefinition?.commands.map(c => typeof c === "string" ? c : isCommandAction(c)? c.command : '') || [];
 
   for (const command of commands) {
     const service = detectService(command, ctx);

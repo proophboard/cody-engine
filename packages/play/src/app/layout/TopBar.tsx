@@ -41,6 +41,9 @@ const TopBar = (props: TopBarProps) => {
       zIndex: theme.zIndex.drawer + 1
     }}>
       <Toolbar>
+        {!sideBarPersistent && config.layout === 'task-based-ui' && <IconButton onClick={() => props.onOpenSidebar(!props.sidebarOpen)} sx={{color: mode === 'dark' ? 'black' : 'white', marginRight: (theme) => theme.spacing(2)}}>
+          {props.sidebarOpen? <MenuOpenIcon /> : <MenuIcon />}
+        </IconButton>}
         <Box component={"div"} sx={{minWidth: {lg: "300px"}}}>
           <Typography variant={"h3"} sx={{color: (theme) => theme.palette.primary.contrastText}}>{config.appName}</Typography>
         </Box>
@@ -54,7 +57,7 @@ const TopBar = (props: TopBarProps) => {
         <IconButton aria-label="App Settings" onClick={openSettingsModal} sx={{color: mode === 'dark' ? 'black' : 'white'}}>
           <SettingsSuggestIcon />
         </IconButton>
-        {!sideBarPersistent && <IconButton onClick={() => props.onOpenSidebar(!props.sidebarOpen)} sx={{color: mode === 'dark' ? 'black' : 'white'}}>
+        {!sideBarPersistent && config.layout === 'prototype' && <IconButton onClick={() => props.onOpenSidebar(!props.sidebarOpen)} sx={{color: mode === 'dark' ? 'black' : 'white'}}>
           {props.sidebarOpen? <MenuOpenIcon /> : <MenuIcon />}
         </IconButton>}
       </Toolbar>

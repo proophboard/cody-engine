@@ -10,7 +10,15 @@ export interface DynamicBreadcrumbMetadata {
 
 export type ViewComponentType = 'auto' | 'state' | 'form' | 'table';
 
-export type ViewComponent = string | { view: string, hidden?: boolean, props?: Record<string, unknown>, uiSchema?: UiSchema, type?: ViewComponentType, loadState?: boolean}
+export type ViewComponent = string | {
+  view: string,
+  hidden?: boolean,
+  'hidden:expr'?: string,
+  props?: Record<string, unknown>,
+  uiSchema?: UiSchema,
+  type?: ViewComponentType,
+  loadState?: boolean
+}
 
 export type CommandComponent = string | Action;
 

@@ -40,6 +40,7 @@ import {Action, isCommandAction, parseActionsFromPageCommands} from "@frontend/a
 import {useEnv} from "@frontend/hooks/use-env";
 import ActionButton from "@frontend/app/components/core/ActionButton";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 
 interface Props {
   page: string;
@@ -132,8 +133,9 @@ export const PlayStandardPage = (props: Props) => {
     let loadState = true;
     let props: Record<string, any> | undefined;
 
+
     if(typeof valueObjectName !== "string") {
-      isHiddenView = !!valueObjectName.hidden;
+      isHiddenView =  typeof valueObjectName['hidden:expr'] === "string" ? jexl.evalSync(valueObjectName['hidden:expr'], jexlCtx) : !!valueObjectName.hidden;
       viewType = valueObjectName.type || 'auto';
       uiSchemaOverride = valueObjectName.uiSchema;
       if(typeof valueObjectName.loadState !== "undefined") {
