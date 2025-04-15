@@ -19,7 +19,7 @@ import {commandTitle} from "@frontend/app/components/core/CommandButton";
 import {IChangeEvent} from "@rjsf/core";
 import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
-import {cloneSchema, resolveRefs, resolveUiSchema} from "@event-engine/messaging/resolve-refs";
+import {resolveRefs, resolveUiSchema} from "@event-engine/messaging/resolve-refs";
 import {useUser} from "@frontend/hooks/use-user";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {types} from "@app/shared/types";
@@ -33,6 +33,9 @@ import {translateSchema} from "@frontend/util/schema/translate-schema";
 import {useTranslation} from "react-i18next";
 import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
 import {useEnv} from "@frontend/hooks/use-env";
+import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
+
+export type FormModeType = 'pageForm' | 'pageView' | 'dialogForm' | 'dialogView';
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -49,6 +52,7 @@ interface OwnProps {
   widgets?: {[name: string]: Widget};
   fields?: {[name: string]: Field};
   tryAgain?: boolean;
+  mode?: FormModeType;
 }
 
 type CommandFormProps = OwnProps;
@@ -210,7 +214,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
             ref={formRef}
             onSubmit={handleSubmit}
             formData={formData}
-            formContext={{data: formData, updateForm: handleUpdateFormFromContext}}
+            formContext={{data: formData, updateForm: handleUpdateFormFromContext, mode: props.mode}}
             uiSchema={uiSchema}
             liveValidate={liveValidate}
             showErrorList={false}
@@ -221,6 +225,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
             noHtml5Validate={true}
             templates={{
               ObjectFieldTemplate,
+              ArrayFieldTemplate,
               ...props.templates,
             }}
             widgets={

@@ -36,6 +36,7 @@ import {IChangeEvent} from "@rjsf/core";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {Logger} from "@frontend/util/Logger";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
+import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
 
 interface OwnProps {
   state?: any;
@@ -219,7 +220,7 @@ const FormView = (props: FormViewProps) => {
       // @ts-ignore
       ref={formRef}
       formData={formData}
-      formContext={{data: formData, updateForm: handleUpdateFormFromContext}}
+      formContext={{data: formData, updateForm: handleUpdateFormFromContext, defaultService, mode: "pageForm"}}
       uiSchema={normalizedUiSchema}
       liveValidate={liveValidate}
       showErrorList={false}
@@ -230,6 +231,7 @@ const FormView = (props: FormViewProps) => {
       templates={
         {
           ObjectFieldTemplate,
+          ArrayFieldTemplate,
           ...props.templates
         }
       }

@@ -130,6 +130,7 @@ export const PlayStandardPage = (props: Props) => {
     let viewType: ViewComponentType = 'auto';
     let uiSchemaOverride: UiSchema | undefined;
     let loadState = true;
+    let props: Record<string, any> | undefined;
 
     if(typeof valueObjectName !== "string") {
       isHiddenView = !!valueObjectName.hidden;
@@ -138,6 +139,7 @@ export const PlayStandardPage = (props: Props) => {
       if(typeof valueObjectName.loadState !== "undefined") {
         loadState = valueObjectName.loadState;
       }
+      props = valueObjectName.props;
 
       valueObjectName = valueObjectName.view;
     }
@@ -148,7 +150,9 @@ export const PlayStandardPage = (props: Props) => {
 
     const ViewComponent = getViewComponent(config.views[valueObjectName], config.types, isHiddenView, viewType, uiSchemaOverride, loadState);
 
-    return <Grid2 key={'comp' + index} xs={12}>{ViewComponent(routeParams)}</Grid2>
+    const containerProps = {xs: 12, ...(props?.container || {})};
+
+    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(routeParams)}</Grid2>
   });
 
   return <Grid2 container={true} spacing={3} sx={props.drawerWidth && isLarge ? {marginRight: props.drawerWidth + 'px'} : {}}>

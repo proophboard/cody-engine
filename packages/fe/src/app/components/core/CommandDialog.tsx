@@ -7,11 +7,11 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  SxProps,
+  SxProps, Typography,
   useTheme
 } from "@mui/material";
 import {CommandRuntimeInfo} from "@event-engine/messaging/command";
-import {Field, Widget} from "@rjsf/utils";
+import {Field, getUiOptions, Widget} from "@rjsf/utils";
 import {useRef, useState} from "react";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {UseMutateAsyncFunction, useQueryClient} from "@tanstack/react-query";
@@ -33,6 +33,10 @@ import {getFormSuccessRedirect} from "@frontend/util/command-form/get-form-succe
 import {useTranslation} from "react-i18next";
 import {determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
 import {useEnv} from "@frontend/hooks/use-env";
+import Grid2 from "@mui/material/Unstable_Grid2";
+import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
+import {getObjPropTitleStyle} from "@frontend/app/components/core/form/templates/ObjectFieldTemplate";
+import commandForm from "@frontend/app/components/core/CommandForm";
 
 export interface AggregateIdentifier {
   identifier: string;
@@ -100,6 +104,7 @@ const CommandDialog = (props: CommandDialogProps) => {
   const [store] = useGlobalStore();
   const {t} = useTranslation();
 
+
   const filteredRouteParams: Record<string, string> = {};
 
   if(routeParams) {
@@ -112,6 +117,8 @@ const CommandDialog = (props: CommandDialogProps) => {
   }
 
   const formData: {[prop: string]: any} = {...filteredRouteParams, ...props.initialValues};
+
+  const jexlCtx: FormJexlContext = {user, page: pageData, routeParams, data: commandFormRef.current ? commandFormRef.current.getData() : formData, store};
 
   if(props.aggregateIdentifier) {
     formData[props.aggregateIdentifier.identifier] = props.aggregateIdentifier.value;
@@ -206,6 +213,8 @@ const CommandDialog = (props: CommandDialogProps) => {
     }, 10);
   }
 
+  const title = commandTitle(props.commandDialogCommand, t);
+  const uiOptions = getUiOptions(props.commandDialogCommand.uiSchema);
 
   const buttonProps = determineButtonConfig(props.button || {}, props.commandDialogCommand.uiSchema || {}, {
     user,
@@ -217,19 +226,27 @@ const CommandDialog = (props: CommandDialogProps) => {
 
   return (
     <Dialog open={props.open} fullWidth={true} maxWidth={'lg'} onClose={handleCancel} sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}>
-      <DialogTitle>
-        <IconButton sx={{
-          position: 'absolute',
-          right: theme.spacing(1),
-          top: theme.spacing(0.5),
-          color: theme.palette.grey[500],
-        }} onClick={handleCancel}>
-          <Close />
-        </IconButton>
+      <DialogTitle sx={{
+        overflow: "hidden",
+        scrollbarGutter: "stable both-edges"
+      }}>
+        <Grid2 container>
+          <Grid2 xs sx={{padding: theme.spacing(2)}}>
+            {title && <Typography variant={"h3"}>{title}</Typography>}
+          </Grid2>
+          <TopRightActions uiOptions={uiOptions} defaultService={env.DEFAULT_SERVICE} jexlCtx={jexlCtx} additionalRightButtons={[
+            <IconButton onClick={handleCancel} sx={{color: theme.palette.grey[500]}}>
+              <Close />
+            </IconButton>
+          ]} />
+        </Grid2>
       </DialogTitle>
-      <DialogContent sx={{ padding: '24px 24px' }}>
+      <DialogContent sx={{
+        scrollbarGutter: "stable both-edges"
+      }}>
         {props.slots?.beforeForm}
         <CommandForm
+          mode="dialogForm"
           command={props.commandDialogCommand}
           commandFn={props.commandFn}
           definitions={props.definitions || definitions}
@@ -257,7 +274,7 @@ const CommandDialog = (props: CommandDialogProps) => {
         />
         {props.slots?.afterForm}
       </DialogContent>
-      <DialogActions>
+      <DialogActions sx={{padding: `${theme.spacing(2)} ${theme.spacing(4)}`, overflow: "hidden", scrollbarGutter: "stable both-edges"}}>
         {transactionState.isValidationError && <Alert severity="error">Validation failed! Please check your inputs.</Alert>}
         {props.commandFn && <Button
           children={transactionState.isSubmitted ? 'Close' : 'Cancel'}

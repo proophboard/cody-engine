@@ -1,10 +1,8 @@
 import * as React from 'react';
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {
-  ArrayFieldTemplateProps,
   Field,
   getUiOptions,
-  ObjectFieldTemplateProps,
   RJSFSchema, UiSchema,
   Widget
 } from "@rjsf/utils";
@@ -21,15 +19,11 @@ import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {getRjsfValidator} from "@frontend/util/rjsf-validator";
 import {DeepReadonly} from "json-schema-to-ts/lib/types/type-utils/readonly";
 import {JSONSchema7} from "json-schema";
-import {names} from "@event-engine/messaging/helpers";
 import {playFQCNFromDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
-import Grid2, {Grid2Props} from "@mui/material/Unstable_Grid2";
 import {
-  getContainerGridConfig,
-  getElementGridConfig
+  default as ObjectFieldTemplate
 } from "@frontend/app/components/core/form/templates/ObjectFieldTemplate";
 import {usePageData} from "@frontend/hooks/use-page-data";
-import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import {useParams} from "react-router-dom";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {merge} from "lodash/fp";
@@ -40,6 +34,8 @@ import {useTranslation} from "react-i18next";
 import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
 import {translateSchema} from "@frontend/util/schema/translate-schema";
 import {useEnv} from "@frontend/hooks/use-env";
+import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
+import {FormModeType} from "@frontend/app/components/core/CommandForm";
 
 interface OwnProps {
   state?: any;
@@ -49,138 +45,10 @@ interface OwnProps {
   templates?: {[name: string]: React.FunctionComponent<any>};
   definitions?: {[id: string]: DeepReadonly<JSONSchema7>};
   hidden?: boolean;
+  mode?: FormModeType;
 }
 
 type StateViewProps = OwnProps;
-
-type HeadingVariant = "h3" | "h4" | "h5" | "h6";
-
-export const headingNestingLevel = (idSchema: string): HeadingVariant => {
-  const level = idSchema.split("_").length + 1;
-
-  if(level === 1) {
-    return "h3";
-  }
-
-  if(level === 2) {
-    return "h4";
-  }
-
-  if(level === 3) {
-    return "h5"
-  }
-
-  return "h6";
-}
-
-export const getObjPropTitleStyle = (heading: HeadingVariant): SxProps => {
-  switch (heading) {
-    case "h3":
-      return {
-        paddingTop: '40px',
-        paddingBottom: '40px',
-      };
-    case "h4":
-      return {
-        paddingTop: '30px',
-        paddingBottom: '30px',
-      };
-    case "h5":
-      return {
-        paddingTop: '20px',
-        paddingBottom: '20px',
-      };
-    case "h6":
-      return {
-        paddingTop: '10px',
-        paddingBottom: '10px'
-      }
-  }
-}
-
-export const ObjectFieldTemplate = (props: PropsWithChildren<ObjectFieldTemplateProps>) => {
-  const [user,] = useUser();
-  const [pageData,] = usePageData();
-  const routeParams = useParams();
-  const [store] = useGlobalStore();
-  const {t} = useTranslation();
-
-  const jexlCtx: FormJexlContext = {user, page: pageData, routeParams, data: props.formContext.data, store};
-
-  const headingVariant = headingNestingLevel(props.idSchema.$id);
-
-  const title = props.uiSchema? props.uiSchema['ui:title'] : props.title;
-
-  if(props.uiSchema && props.uiSchema['ui:widget'] && props.uiSchema['ui:widget'] === 'hidden') {
-    return <></>
-  }
-
-  let index = '';
-  const match = props.idSchema.$id.match(/_(?<index>[\d]+)$/);
-
-  if(match) {
-    index = ' ' + (Number(match.groups!['index']) + 1);
-  }
-
-  let idPrefix = 'component_' + names(props.title).fileName + '_';
-
-  if(props.schema.$id) {
-    const fqcn = playFQCNFromDefinitionId(props.schema.$id);
-
-    idPrefix = 'component_' + names(fqcn).fileName + '_';
-  }
-
-  const uiOptions = getUiOptions(props.uiSchema);
-  const gridConfig = getContainerGridConfig(uiOptions);
-
-  return <div>
-    <Grid2 container>
-      <Grid2 xs>
-        {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
-                                    className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
-                                    sx={getObjPropTitleStyle(headingVariant)}>{title}{index}</Typography>}
-      </Grid2>
-      <TopRightActions  uiOptions={uiOptions} defaultService={props.formContext.defaultService} jexlCtx={jexlCtx} />
-    </Grid2>
-    {props.description}
-    <Grid2 container={true} {...gridConfig as Grid2Props}>
-      {props.properties.map(
-        element =>
-          element.hidden ? (
-              element.content
-            ) :
-            <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema) as Grid2Props}>{element.content}</Grid2>)
-      }
-    </Grid2>
-  </div>
-}
-
-export const ArrayFieldTemplate = (props: PropsWithChildren<ArrayFieldTemplateProps>) => {
-  const headingVariant = headingNestingLevel(props.idSchema.$id);
-
-  if(props.uiSchema && props.uiSchema['ui:widget'] && props.uiSchema['ui:widget'] === 'hidden') {
-    return <></>
-  }
-
-  let idPrefix = 'component_' + names(props.title).fileName + '_';
-
-  const title = props.uiSchema? props.uiSchema['ui:title'] : props.title;
-
-  if(props.schema.$id) {
-    const fqcn = playFQCNFromDefinitionId(props.schema.$id);
-
-    idPrefix = 'component_' + names(fqcn).fileName + '_';
-  }
-
-  return <div>
-    {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
-                                className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
-                                sx={getObjPropTitleStyle(headingVariant)}>{title}</Typography>}
-    {!props.items.length && <Box className={'array-element-wrapper'} key={'array_ele_wrapper_empty'}><Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Box> }
-    {props.items.map((element, index) => <Box className={'array-element-wrapper'} key={'array_ele_wrapper_' + index}>{element.children}</Box>)}
-  </div>
-    ;
-}
 
 const StateView = (props: StateViewProps) => {
   const theme = useTheme();
@@ -249,7 +117,7 @@ const StateView = (props: StateViewProps) => {
       validator={getRjsfValidator()}
       children={<></>}
       formData={props.state}
-      formContext={{data: props.state, information: informationRuntimeInfo, defaultService}}
+      formContext={{data: props.state, information: informationRuntimeInfo, defaultService, mode: props.mode || "pageView"}}
       uiSchema={uiSchema}
       className="stateview"
       templates={

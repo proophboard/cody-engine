@@ -3,10 +3,9 @@ import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jex
 import {Action, parseActionsFromUiOptions} from "@frontend/app/components/core/form/types/action";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import ActionButton from "@frontend/app/components/core/ActionButton";
-import {ButtonGroup, SxProps} from "@mui/material";
+import {SxProps} from "@mui/material";
 import {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
 import {useEnv} from "@frontend/hooks/use-env";
-import theme from "@frontend/extensions/app/layout/theme";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -14,6 +13,9 @@ interface OwnProps {
   jexlCtx: FormJexlContext;
   sx?: SxProps;
   actions?: Action[];
+  additionalLeftButtons?: JSX.Element[],
+  additionalCenterButtons?: JSX.Element[],
+  additionalRightButtons?: JSX.Element[],
 }
 
 type BottomActionsProps = OwnProps;
@@ -29,17 +31,20 @@ const BottomActions = (props: BottomActionsProps) => {
  const actions = props.actions || getBottomActions(props.uiOptions, props.jexlCtx, env);
 
  const leftActions = actions.filter(a => a.position === "bottom-left");
+ const additionalLeftButtons = props.additionalLeftButtons || [];
  const centerActions = actions.filter(a => a.position === "bottom-center");
+ const additionalCenterButtons = props.additionalCenterButtons || [];
  const rightActions = actions.filter(a => a.position === "bottom-right");
+ const additionalRightButtons = props.additionalRightButtons || [];
 
- if(!actions.length) {
+ if(!actions.length && !additionalLeftButtons.length && !additionalCenterButtons.length && !additionalRightButtons.length) {
    return <></>
  }
 
  keyVersion++;
 
  return <Grid2 container sx={props.sx}>
-   {leftActions.length > 0 && <Grid2 xs
+   {(leftActions.length > 0 || additionalLeftButtons.length > 0) && <Grid2 xs
            display="flex"
            direction="column"
            alignItems="center"
@@ -52,8 +57,9 @@ const BottomActions = (props: BottomActionsProps) => {
    >
      {leftActions.map((action, index) => <ActionButton key={`left_action_${keyVersion}_${index}`} action={action} defaultService={props.defaultService}
                                                            jexlCtx={props.jexlCtx}/>)}
+     {props.additionalLeftButtons}
    </Grid2>}
-   {centerActions.length > 0 && <Grid2 xs
+   {(centerActions.length > 0 || additionalCenterButtons.length > 0) && <Grid2 xs
            display="flex"
            direction="column"
            alignItems="center"
@@ -66,8 +72,10 @@ const BottomActions = (props: BottomActionsProps) => {
    >
      {centerActions.map((action, index) => <ActionButton key={`center_action_${keyVersion}_${index}`} action={action} defaultService={props.defaultService}
                                                 jexlCtx={props.jexlCtx}/>)}
+     {props.additionalCenterButtons}
    </Grid2>}
-   {rightActions.length > 0 && <Grid2 xs
+   {(rightActions.length > 0 || additionalRightButtons.length > 0) && <Grid2
+           xs
            display="flex"
            direction="column"
            alignItems="center"
@@ -80,6 +88,7 @@ const BottomActions = (props: BottomActionsProps) => {
    >
      {rightActions.map((action, index) => <ActionButton key={`right_action_${keyVersion}_${index}`} action={action} defaultService={props.defaultService}
                                                jexlCtx={props.jexlCtx}/>)}
+     {props.additionalRightButtons}
    </Grid2>}
  </Grid2>
 };

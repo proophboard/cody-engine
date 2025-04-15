@@ -42,6 +42,9 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
           },
           "form.stateview .MuiInput-underline.Mui-disabled:before": {
             borderBottom: "1px solid #eee",
+          },
+          "form.stateview .MuiFormLabel-asterisk": {
+            display: "none",
           }
         }
       },

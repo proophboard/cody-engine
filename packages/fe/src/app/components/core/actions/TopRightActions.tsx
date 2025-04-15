@@ -11,6 +11,7 @@ interface OwnProps {
   defaultService: string;
   jexlCtx: FormJexlContext;
   actions?: Action[];
+  additionalRightButtons?: JSX.Element[];
 }
 
 type TopRightActionsProps = OwnProps;
@@ -23,7 +24,9 @@ const TopRightActions = (props: TopRightActionsProps) => {
   const env = useEnv();
   const actions = props.actions || getTopRightActionsFromUIOptions(props.uiOptions, props.jexlCtx, env);
 
-  if(!actions.length) {
+  const additionalRightButtons = props.additionalRightButtons || [];
+
+  if(!actions.length && !additionalRightButtons.length) {
     return <></>;
   }
 
@@ -37,7 +40,10 @@ const TopRightActions = (props: TopRightActionsProps) => {
                     marginLeft: (theme) => theme.spacing(1)
                   }
                 }}
-  >{actions.map(action => <ActionButton action={action} defaultService={props.defaultService} jexlCtx={props.jexlCtx} />)}</Grid2>
+  >
+    {actions.map(action => <ActionButton action={action} defaultService={props.defaultService} jexlCtx={props.jexlCtx} />)}
+    {props.additionalRightButtons}
+  </Grid2>
 };
 
 export default TopRightActions;
