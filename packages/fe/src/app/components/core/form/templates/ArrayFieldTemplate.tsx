@@ -111,7 +111,7 @@ export const ArrayFieldTemplate = <
           className={'array-element-wrapper'}
           key={'array_ele_wrapper_' + index}
           {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}
-        >{isWriteMode(mode) ? (() => {console.log(element); return true})() ? <ArrayFieldItemTemplate {...element} /> : <></> : element.children }</Box>)}
+        >{isWriteMode(mode) ?  <ArrayFieldItemTemplate {...element} /> : element.children }</Box>)}
       </Grid2>
       {isPageMode(mode) && isWriteMode(mode) && nestingLevel === 1 && props.canAdd && <Grid2 container justifyContent='flex-end'>
         <Grid2>

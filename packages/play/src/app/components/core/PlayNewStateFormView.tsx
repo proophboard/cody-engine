@@ -14,7 +14,7 @@ import {merge} from "lodash/fp";
 import {getInitialValuesFromUiSchema} from "@frontend/util/command-form/get-initial-values";
 import {JSONSchema7} from "json-schema";
 
-const PlayNewStateFormView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema) => {
+const PlayNewStateFormView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
   const {config: {definitions}} = useContext(configStore);
   const [page, addQueryResult] = usePageData();
   const desc = informationInfo.desc;
@@ -42,7 +42,7 @@ const PlayNewStateFormView = (params: any, informationInfo: PlayInformationRunti
     return <></>
   }
 
-  const state = getInitialValuesFromUiSchema(uiSchema, informationInfo.schema as unknown as JSONSchema7, jexlCtx);
+  const state = injectedInitialValues || getInitialValuesFromUiSchema(uiSchema, informationInfo.schema as unknown as JSONSchema7, jexlCtx);
 
   return <>
     <FormView

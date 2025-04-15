@@ -20,7 +20,7 @@ import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {UiSchema} from "@rjsf/utils";
 import {merge} from "lodash/fp";
 
-const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema) => {
+const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
   const {config: {definitions}} = useContext(configStore);
   const [page, addQueryResult] = usePageData();
   const desc = informationInfo.desc;

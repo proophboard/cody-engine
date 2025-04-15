@@ -44,50 +44,50 @@ export const makePureCommandMutationFn = (
   config: CodyPlayConfig
 ): CommandMutationFunction => {
   return async (commandPayload: Payload): Promise<AxiosResponse> => {
-    const command = (makeCommandFactory(commandInfo, schemaDefinitions))(commandPayload, {user});
-
-    const commandDesc = commandInfo.desc;
-
-    if(isAggregateCommandDescription(commandDesc)) {
-      throw new Error('Wrong command handling for given command. This is a bug. ' + CONTACT_PB_TEAM);
-    }
-
-    const processingFunction =  makePureCommandHandler(
-      commandHandlerRules,
-      eventRegistry,
-      schemaDefinitions,
-      commandDesc
-    );
-
-    console.log(
-      `%c[CommandBus] Checking dependencies of %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
-      commandDesc._pbLink,
-      {
-        command,
-        dependencies: commandDesc.dependencies || {}
-      }
-    )
-
-    const dependencies = await playLoadDependencies(command, 'command', commandDesc.dependencies || {}, config);
-
-    const repository = isStreamCommandDescription(commandDesc)
-      ? new StreamEventsRepository(
-        getConfiguredPlayMultiModelStore(),
-        commandDesc.streamName || PLAY_WRITE_MODEL_STREAM,
-        playInformationServiceFactory(),
-        getConfiguredPlayMessageBox(config),
-        commandDesc.publicStream || PLAY_PUBLIC_STREAM
-      )
-      : new PureFactsRepository(
-        getConfiguredPlayMultiModelStore(),
-        (commandDesc as PureCommandDescription).streamName || PLAY_WRITE_MODEL_STREAM,
-        playInformationServiceFactory(),
-        getConfiguredPlayMessageBox(config),
-        (commandDesc as PureCommandDescription).publicStream || PLAY_PUBLIC_STREAM
-      );
-
     try {
       const startTime = new Date();
+
+      const command = (makeCommandFactory(commandInfo, schemaDefinitions))(commandPayload, {user});
+
+      const commandDesc = commandInfo.desc;
+
+      if(isAggregateCommandDescription(commandDesc)) {
+        throw new Error('Wrong command handling for given command. This is a bug. ' + CONTACT_PB_TEAM);
+      }
+
+      const processingFunction =  makePureCommandHandler(
+        commandHandlerRules,
+        eventRegistry,
+        schemaDefinitions,
+        commandDesc
+      );
+
+      console.log(
+        `%c[CommandBus] Checking dependencies of %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
+        commandDesc._pbLink,
+        {
+          command,
+          dependencies: commandDesc.dependencies || {}
+        }
+      )
+
+      const dependencies = await playLoadDependencies(command, 'command', commandDesc.dependencies || {}, config);
+
+      const repository = isStreamCommandDescription(commandDesc)
+        ? new StreamEventsRepository(
+          getConfiguredPlayMultiModelStore(),
+          commandDesc.streamName || PLAY_WRITE_MODEL_STREAM,
+          playInformationServiceFactory(),
+          getConfiguredPlayMessageBox(config),
+          commandDesc.publicStream || PLAY_PUBLIC_STREAM
+        )
+        : new PureFactsRepository(
+          getConfiguredPlayMultiModelStore(),
+          (commandDesc as PureCommandDescription).streamName || PLAY_WRITE_MODEL_STREAM,
+          playInformationServiceFactory(),
+          getConfiguredPlayMessageBox(config),
+          (commandDesc as PureCommandDescription).publicStream || PLAY_PUBLIC_STREAM
+        );
 
       const result = isStreamCommandDescription(commandDesc)
         ? await handleStreamCommand(

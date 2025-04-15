@@ -23,7 +23,7 @@ import {merge} from "lodash/fp";
 import {getInitialValuesFromUiSchema} from "@frontend/util/command-form/get-initial-values";
 import {JSONSchema7} from "json-schema";
 
-const PlayStateFormView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema) => {
+const PlayStateFormView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
   const {config: {definitions}} = useContext(configStore);
   const [page, addQueryResult] = usePageData();
   const desc = informationInfo.desc;
@@ -55,7 +55,7 @@ const PlayStateFormView = (params: any, informationInfo: PlayInformationRuntimeI
     return <Alert severity="error" >Unable to render view. Referenced Information "{informationInfo.desc.name}" is not queryable and cannot be loaded from the database. You have to define a query schema and resolve configuration in the Cody Wizard.</Alert>
   }
 
-  const initialValues = getInitialValuesFromUiSchema(uiSchema, informationInfo.schema as unknown as JSONSchema7, jexlCtx);
+  const initialValues = injectedInitialValues || getInitialValuesFromUiSchema(uiSchema, informationInfo.schema as unknown as JSONSchema7, jexlCtx);
   const state = query.isSuccess ? merge(initialValues, query.data) : initialValues;
 
   if(isHidden) {

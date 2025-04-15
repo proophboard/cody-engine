@@ -82,33 +82,11 @@ const FormView = (props: FormViewProps) => {
 
   const {desc} = props.description;
 
-  useEffect(() => {
-    isInitialized = true;
+  const extraErrorId = () => {
+    return desc.name + '.Form.ExtraError'.replaceAll('.', '_');
+  }
 
-    setSchema(resolveRefs(
-      translateSchema(props.description.schema as any, `${props.description.desc.name}.schema`, t),
-      props.definitions || definitions,
-      false,
-      (s, k) => translateSchema(s, k, t)
-    ) as RJSFSchema);
-
-    const resolvedUiSchema = resolveUiSchema(
-      props.description.schema as any,
-      types,
-      (s, k) => translateUiSchema(s, k, t)
-    );
-
-    const mainUiSchema = props.description.uiSchema
-      ? translateUiSchema(props.description.uiSchema, `${props.description.desc.name}.uiSchema`, t)
-      : undefined;
-    const mergedUiSchema: UiSchema = merge(resolvedUiSchema, mainUiSchema) as UiSchema;
-    setUiSchema(mergedUiSchema);
-
-    const initialFormData = props.state || {};
-
-    console.log("Set form data", initialFormData);
-    setFormData({...initialFormData});
-
+  const refreshPageForm = () => {
     addPageForm(registryIdToDataReference(props.description.desc.name) + '/Form', {
       getData: () => formRef.current?.state.formData || {},
       useSchema: (newSchema) => {
@@ -137,11 +115,51 @@ const FormView = (props: FormViewProps) => {
       },
       displayError: errorComponent => setExtraError(errorComponent)
     })
+  }
+
+  useEffect(() => {
+    isInitialized = true;
+
+    setSchema(resolveRefs(
+      translateSchema(props.description.schema as any, `${props.description.desc.name}.schema`, t),
+      props.definitions || definitions,
+      false,
+      (s, k) => translateSchema(s, k, t)
+    ) as RJSFSchema);
+
+    const resolvedUiSchema = resolveUiSchema(
+      props.description.schema as any,
+      types,
+      (s, k) => translateUiSchema(s, k, t)
+    );
+
+    const mainUiSchema = props.description.uiSchema
+      ? translateUiSchema(props.description.uiSchema, `${props.description.desc.name}.uiSchema`, t)
+      : undefined;
+    const mergedUiSchema: UiSchema = merge(resolvedUiSchema, mainUiSchema) as UiSchema;
+    setUiSchema(mergedUiSchema);
+
+    const initialFormData = props.state || {};
+
+    console.log("Set form data", initialFormData);
+    setFormData({...initialFormData});
+
+    refreshPageForm();
 
     return () => {
       isInitialized = false;
     }
   }, [desc.name]);
+
+  useEffect(() => {
+    if(extraError) {
+      const ele = document.getElementById(extraErrorId());
+
+      if(ele) {
+        ele.scrollIntoView({behavior: "smooth"})
+      }
+    }
+  }, [extraError]);
 
   const normalizedUiSchema = normalizeUiSchema(uiSchema, jexlCtx, env);
 
@@ -173,6 +191,7 @@ const FormView = (props: FormViewProps) => {
       if(formRef && !isFirstUpdate && !forceUpdate) {
         debounceTimer = null;
         setFormData(change);
+        refreshPageForm();
 
         if(props.onChange) {
           props.onChange(change);
@@ -182,6 +201,7 @@ const FormView = (props: FormViewProps) => {
 
     if(isFirstUpdate || forceUpdate) {
       setFormData(change);
+      refreshPageForm();
 
       if(props.onChange) {
         props.onChange(change);
@@ -249,7 +269,7 @@ const FormView = (props: FormViewProps) => {
         ...props.fields
       }}
     />
-    {extraError}
+    {extraError && <Box sx={{paddingTop: `${theme.spacing(4)}`}} id={extraErrorId()}>{extraError}</Box>}
     <BottomActions sx={{padding:  `${theme.spacing(4)} 0`}} uiOptions={uiOptions} defaultService={defaultService} jexlCtx={jexlCtx} />
   </Box>;
 };

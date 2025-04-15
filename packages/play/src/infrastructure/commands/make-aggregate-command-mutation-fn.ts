@@ -50,49 +50,49 @@ export const makeAggregateCommandMutationFn = (
   config: CodyPlayConfig
 ): CommandMutationFunction => {
   return async (commandPayload: Payload): Promise<AxiosResponse> => {
-    let command = (makeCommandFactory(commandInfo, schemaDefinitions))(commandPayload, {user});
-
-    const commandDesc = commandInfo.desc;
-
-    if(!isAggregateCommandDescription(commandDesc)) {
-      throw new Error('Wrong command handling for given command. This is a bug. ' + CONTACT_PB_TEAM);
-    }
-
-    if(commandDesc.deleteState) {
-      command = setMessageMetadata(command, META_KEY_DELETE_STATE, true);
-    }
-
-    if(commandDesc.deleteHistory) {
-      command = setMessageMetadata(command, META_KEY_DELETE_HISTORY, true);
-    }
-
-    console.log(
-      `%c[CommandBus] Checking dependencies of %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
-      commandDesc._pbLink,
-      {
-        command,
-        dependencies: commandDesc.dependencies || {}
-      }
-    )
-
-    const dependencies = await playLoadDependencies(command, 'command', commandDesc.dependencies || {}, config);
-
-    const repository = makeAggregateRepository(
-      aggregateDesc,
-      eventReducers,
-      stateInfo,
-      config
-    );
-
-    const processingFunction = makeAggregateCommandHandler(
-      commandHandlerRules,
-      eventRegistry,
-      schemaDefinitions,
-      aggregateDesc
-    );
-
     try {
       const startTime = new Date();
+
+      let command = (makeCommandFactory(commandInfo, schemaDefinitions))(commandPayload, {user});
+
+      const commandDesc = commandInfo.desc;
+
+      if(!isAggregateCommandDescription(commandDesc)) {
+        throw new Error('Wrong command handling for given command. This is a bug. ' + CONTACT_PB_TEAM);
+      }
+
+      if(commandDesc.deleteState) {
+        command = setMessageMetadata(command, META_KEY_DELETE_STATE, true);
+      }
+
+      if(commandDesc.deleteHistory) {
+        command = setMessageMetadata(command, META_KEY_DELETE_HISTORY, true);
+      }
+
+      console.log(
+        `%c[CommandBus] Checking dependencies of %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
+        commandDesc._pbLink,
+        {
+          command,
+          dependencies: commandDesc.dependencies || {}
+        }
+      )
+
+      const dependencies = await playLoadDependencies(command, 'command', commandDesc.dependencies || {}, config);
+
+      const repository = makeAggregateRepository(
+        aggregateDesc,
+        eventReducers,
+        stateInfo,
+        config
+      );
+
+      const processingFunction = makeAggregateCommandHandler(
+        commandHandlerRules,
+        eventRegistry,
+        schemaDefinitions,
+        aggregateDesc
+      );
 
       const result = await handleAggregateCommand(command, processingFunction, repository, commandDesc.newAggregate, dependencies);
 

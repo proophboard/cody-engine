@@ -11,7 +11,7 @@ import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {UiSchema} from "@rjsf/utils";
 import {merge} from "lodash/fp";
 
-const PlayStaticView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema) => {
+const PlayStaticView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
   const {config: {definitions}} = useContext(configStore);
   const [page] = usePageData();
   const [user] = useUser();
@@ -38,7 +38,7 @@ const PlayStaticView = (params: any, informationInfo: PlayInformationRuntimeInfo
 
   const exec = makeInformationFactory(informationInfo.factory);
 
-  const result = exec({});
+  const result = injectedInitialValues || exec({});
 
   return <StateView
     state={result}

@@ -1,4 +1,4 @@
-import {AnyRule, Rule} from "@app/shared/rule-engine/configuration";
+import {AnyRule, PropMapping, Rule} from "@app/shared/rule-engine/configuration";
 import {DynamicSidebar, PageType, Tab, TopLevelGroup} from "@frontend/app/pages/page-definitions";
 import {UiSchema} from "@rjsf/utils";
 import {Action} from "@frontend/app/components/core/form/types/action";
@@ -17,7 +17,8 @@ export type ViewComponent = string | {
   props?: Record<string, unknown>,
   uiSchema?: UiSchema,
   type?: ViewComponentType,
-  loadState?: boolean
+  loadState?: boolean,
+  data?: string | string[] | PropMapping | PropMapping[];
 }
 
 export type CommandComponent = string | Action;

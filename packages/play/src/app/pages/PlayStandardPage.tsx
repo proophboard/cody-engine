@@ -41,6 +41,7 @@ import {useEnv} from "@frontend/hooks/use-env";
 import ActionButton from "@frontend/app/components/core/ActionButton";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import jexl from "@app/shared/jexl/get-configured-jexl";
+import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 
 interface Props {
   page: string;
@@ -132,6 +133,7 @@ export const PlayStandardPage = (props: Props) => {
     let uiSchemaOverride: UiSchema | undefined;
     let loadState = true;
     let props: Record<string, any> | undefined;
+    let initialValues: Record<string, any> | undefined;
 
 
     if(typeof valueObjectName !== "string") {
@@ -142,6 +144,9 @@ export const PlayStandardPage = (props: Props) => {
         loadState = valueObjectName.loadState;
       }
       props = valueObjectName.props;
+      if(valueObjectName.data) {
+        initialValues = execMappingSync(valueObjectName.data, jexlCtx);
+      }
 
       valueObjectName = valueObjectName.view;
     }
@@ -150,7 +155,7 @@ export const PlayStandardPage = (props: Props) => {
       throw new Error(`View Component for Information: "${valueObjectName}" is not registered. Did you forget to pass the corresponding Information card to Cody?`);
     }
 
-    const ViewComponent = getViewComponent(config.views[valueObjectName], config.types, isHiddenView, viewType, uiSchemaOverride, loadState);
+    const ViewComponent = getViewComponent(config.views[valueObjectName], config.types, isHiddenView, viewType, uiSchemaOverride, loadState, initialValues);
 
     const containerProps = {xs: 12, ...(props?.container || {})};
 
@@ -187,7 +192,7 @@ export const PlayStandardPage = (props: Props) => {
   </Grid2>
 }
 
-const getViewComponent = (component: React.FunctionComponent | PlayViewComponentConfig, types: PlayInformationRegistry, isHiddenView = false, viewType: ViewComponentType, uiSchemaOverride?: UiSchema, loadState = true): React.FunctionComponent => {
+const getViewComponent = (component: React.FunctionComponent | PlayViewComponentConfig, types: PlayInformationRegistry, isHiddenView = false, viewType: ViewComponentType, uiSchemaOverride?: UiSchema, loadState = true, injectedInitialValues?: any): React.FunctionComponent => {
   if(typeof component === "object" && component.information) {
     const information = types[component.information];
 
@@ -197,19 +202,19 @@ const getViewComponent = (component: React.FunctionComponent | PlayViewComponent
 
     if(isQueryableStateListDescription(information.desc) || isQueryableListDescription(information.desc) || isQueryableNotStoredStateListDescription(information.desc)) {
       return (params: any) => {
-        return PlayTableView(params, information, isHiddenView, uiSchemaOverride);
+        return PlayTableView(params, information, isHiddenView, uiSchemaOverride, injectedInitialValues);
       };
     } else if (isQueryableDescription(information.desc) && loadState) {
       return (params: any) => {
         return viewType === 'form'
-          ? PlayStateFormView(params, information, isHiddenView, uiSchemaOverride)
-          : PlayStateView(params, information, isHiddenView, uiSchemaOverride);
+          ? PlayStateFormView(params, information, isHiddenView, uiSchemaOverride, injectedInitialValues)
+          : PlayStateView(params, information, isHiddenView, uiSchemaOverride, injectedInitialValues);
       }
     } else {
       return (params: any) => {
         return viewType === 'form'
-          ? PlayNewStateFormView(params, information, isHiddenView, uiSchemaOverride)
-          : PlayStaticView(params, information, isHiddenView, uiSchemaOverride);
+          ? PlayNewStateFormView(params, information, isHiddenView, uiSchemaOverride, injectedInitialValues)
+          : PlayStaticView(params, information, isHiddenView, uiSchemaOverride, injectedInitialValues);
       }
     }
   }
