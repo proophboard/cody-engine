@@ -180,12 +180,17 @@ export const PlayStandardPage = (props: Props) => {
 
     const ViewComponent = getViewComponent(config.views[valueObjectName], config.types, isHiddenView, viewType, uiSchemaOverride, loadState, initialValues);
 
-    const containerProps = {xs: 12, ...(props?.container || {})};
+    const containerProps = {xs: 12, className: "CodyView-root", ...(props?.container || {})};
 
     return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(routeParams)}</Grid2>
   });
 
-  const defaultContainerProps = {container: true, spacing: 3, sx: props.drawerWidth && isLarge ? {marginRight: props.drawerWidth + 'px'} : {}};
+  const defaultContainerProps = {
+    container: true,
+    spacing: 3,
+    sx: props.drawerWidth && isLarge ? {marginRight: props.drawerWidth + 'px'} : {},
+    className: "CodyStandardPage-root"
+  };
 
   console.log({...defaultContainerProps, ...page.props?.container, sx: {...defaultContainerProps.sx, ...page.props?.container?.sx}});
 
@@ -194,7 +199,7 @@ export const PlayStandardPage = (props: Props) => {
       && props.mode !== "dialog"
       && <>
         <Grid2 xs={12} sx={headerGridSx}><PlayBreadcrumbs /></Grid2>
-        <Grid2 xs sx={headerGridSx}><Typography variant="h2">{getPageTitle(page as unknown as PageDefinition)}</Typography></Grid2>
+        <Grid2 xs sx={headerGridSx}><Typography variant="h2" className="CodyPageTitle-root">{getPageTitle(page as unknown as PageDefinition)}</Typography></Grid2>
         <TopRightActions actions={topActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />
       </>}
     {topBar}
