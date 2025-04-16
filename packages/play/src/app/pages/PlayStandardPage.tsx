@@ -199,7 +199,8 @@ export const PlayStandardPage = (props: Props) => {
       && props.mode !== "dialog"
       && <>
         <Grid2 xs={12} sx={headerGridSx}><PlayBreadcrumbs /></Grid2>
-        <Grid2 xs sx={headerGridSx}><Typography variant="h2" className="CodyPageTitle-root">{getPageTitle(page as unknown as PageDefinition)}</Typography></Grid2>
+        <Grid2 xs sx={headerGridSx}>
+          <Typography variant="h2" className="CodyPageTitle-root" sx={{paddingLeft: 0}}>{getPageTitle(page as unknown as PageDefinition)}</Typography></Grid2>
         <TopRightActions actions={topActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />
       </>}
     {topBar}
