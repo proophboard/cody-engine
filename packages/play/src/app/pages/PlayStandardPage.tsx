@@ -101,6 +101,10 @@ export const PlayStandardPage = (props: Props) => {
 
   const page = config.pages[props.page];
 
+  if(!page.name) {
+    page.name = props.page;
+  }
+
   let tabs;
   let topBar: JSX.Element = <></>;
   let topActions: Action[] = [];

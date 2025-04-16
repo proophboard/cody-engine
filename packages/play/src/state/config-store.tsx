@@ -136,9 +136,11 @@ const syncTypesWithSharedRegistry = (config: CodyPlayConfig): void => {
 }
 
 export const enhanceConfigWithDefaults = (config: CodyPlayConfig): CodyPlayConfig => {
+  const defaultService = config.defaultService || config.appName || initialPlayConfig.defaultService;
   return {
     ...initialPlayConfig,
     ...config,
+    defaultService,
     pages: {
       ...config.pages,
       Dashboard: initialPlayConfig.pages.Dashboard,

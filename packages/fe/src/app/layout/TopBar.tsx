@@ -38,7 +38,7 @@ const TopBar = (props: TopBarProps) => {
     }}>
       <Toolbar>
         <Box component={"div"} sx={{minWidth: {lg: "300px"}}}>
-          <Typography variant={"h3"} sx={{color: (theme) => theme.palette.primary.contrastText}}>{environment.appName}</Typography>
+          <Typography variant={sideBarPersistent ? "h3" : "h4" } sx={{color: (theme) => theme.palette.primary.contrastText}}>{environment.appName}</Typography>
         </Box>
         <Breadcrumbs />
         <Box component={"div"} sx={{flexGrow: 1}}/>
