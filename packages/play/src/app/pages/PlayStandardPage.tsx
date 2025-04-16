@@ -190,6 +190,7 @@ export const PlayStandardPage = (props: Props) => {
       borderTop: (theme) => '1px solid ' + theme.palette.grey.A200,
       left: SIDEBAR_WIDTH + 'px',
       bottom: 0,
+      zIndex: theme.zIndex.appBar,
     }}>
       <BottomActions uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} actions={bottomActions} sx={{padding: `${theme.spacing(3)} ${theme.spacing(4)}`}} />
     </Box>}
