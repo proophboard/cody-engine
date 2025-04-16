@@ -42,6 +42,7 @@ import ActionButton from "@frontend/app/components/core/ActionButton";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
 interface Props {
   page: string;
@@ -99,10 +100,18 @@ export const PlayStandardPage = (props: Props) => {
     }
   }, []);
 
-  const page = config.pages[props.page];
+  const page = {...config.pages[props.page]};
 
   if(!page.name) {
     page.name = props.page;
+  }
+
+  if(page['title:expr']) {
+    page.title = jexl.evalSync(page['title:expr'], jexlCtx);
+  }
+
+  if(page['props:expr']) {
+    page.props = execMappingSync(page['props:expr'], jexlCtx);
   }
 
   let tabs;
@@ -141,15 +150,25 @@ export const PlayStandardPage = (props: Props) => {
 
 
     if(typeof valueObjectName !== "string") {
-      isHiddenView =  typeof valueObjectName['hidden:expr'] === "string" ? jexl.evalSync(valueObjectName['hidden:expr'], jexlCtx) : !!valueObjectName.hidden;
       viewType = valueObjectName.type || 'auto';
       uiSchemaOverride = valueObjectName.uiSchema;
       if(typeof valueObjectName.loadState !== "undefined") {
         loadState = valueObjectName.loadState;
       }
       props = valueObjectName.props;
+
       if(valueObjectName.data) {
         initialValues = execMappingSync(valueObjectName.data, jexlCtx);
+      }
+
+      if(valueObjectName['props:expr']) {
+        props = execMappingSync(valueObjectName['props:expr'], {...jexlCtx, data: initialValues});
+      }
+
+      isHiddenView =  typeof valueObjectName['hidden:expr'] === "string" ? jexl.evalSync(valueObjectName['hidden:expr'], {...jexlCtx, data: initialValues}) : !!valueObjectName.hidden;
+
+      if(valueObjectName['type:expr']) {
+        viewType = jexl.evalSync(valueObjectName['type:expr'], {...jexlCtx, data: initialValues});
       }
 
       valueObjectName = valueObjectName.view;
@@ -166,7 +185,11 @@ export const PlayStandardPage = (props: Props) => {
     return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(routeParams)}</Grid2>
   });
 
-  return <Grid2 container={true} spacing={3} sx={props.drawerWidth && isLarge ? {marginRight: props.drawerWidth + 'px'} : {}}>
+  const defaultContainerProps = {container: true, spacing: 3, sx: props.drawerWidth && isLarge ? {marginRight: props.drawerWidth + 'px'} : {}};
+
+  console.log({...defaultContainerProps, ...page.props?.container, sx: {...defaultContainerProps.sx, ...page.props?.container?.sx}});
+
+  return <Grid2 {...{...defaultContainerProps, ...page.props?.container, sx: {...defaultContainerProps.sx, ...page.props?.container?.sx}}}>
     {config.layout === 'task-based-ui'
       && props.mode !== "dialog"
       && <>

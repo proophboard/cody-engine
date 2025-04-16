@@ -6,6 +6,7 @@ import {camelCaseToTitle} from "@frontend/util/string";
 import {PageRegistry} from "@frontend/app/pages/index";
 import {camelCase} from "lodash";
 import {names} from "@event-engine/messaging/helpers";
+import {PropMapping} from "@app/shared/rule-engine/configuration";
 
 export type UnsubscribeBreadcrumbListener = () => void;
 export type BreadcrumbFn = (params: Record<string, string>, queryClient: QueryClient, onLabelChanged: (label: string) => void) => UnsubscribeBreadcrumbListener;
@@ -14,6 +15,7 @@ export type PageType = 'standard' | 'dialog' | 'drawer';
 export interface PageDefinition {
   name: string;
   title?: string;
+  'title:expr'?: string;
   type?: PageType;
   mainPage?: string;
   topLevel: boolean;
@@ -24,6 +26,8 @@ export interface PageDefinition {
   commands: CommandComponent[];
   tab?: Omit<Tab, "route">;
   service?: string;
+  props?: Record<string, any>,
+  'props:expr'?: PropMapping,
 }
 
 export interface DynamicSidebar {

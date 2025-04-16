@@ -15,8 +15,10 @@ export type ViewComponent = string | {
   hidden?: boolean,
   'hidden:expr'?: string,
   props?: Record<string, unknown>,
+  'props:expr'?: PropMapping,
   uiSchema?: UiSchema,
   type?: ViewComponentType,
+  'type:expr'?: string,
   loadState?: boolean,
   data?: string | string[] | PropMapping | PropMapping[];
 }
@@ -35,6 +37,9 @@ export interface UiMetadata {
   type?: PageType;
   mainPage?: string;
   title?: string;
+  'title:expr'?: string;
+  props?: Record<string, any>;
+  'props:expr'?: string | string[] | PropMapping | PropMapping[];
 }
 
 export type RawUiMetadata = UiMetadata & {

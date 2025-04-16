@@ -8,7 +8,13 @@ import {playAllowedRoles} from "@cody-play/infrastructure/role/play-allowed-role
 import {playConvertToRoleCheck} from "@cody-play/infrastructure/role/play-convert-to-role-check";
 import {normalizeUiMetadata} from "@cody-engine/cody/hooks/utils/ui/normalize-ui-metadata";
 
-export type PlayUiMetadata = UiMetadata & {sidebar?: {label: string, icon: string, invisible: string, dynamic?: {data: string, label?: string, icon?: string, hidden?: string}}};
+export type PlayUiMetadata = UiMetadata & {
+  sidebar?: {
+    label: string,
+    icon: string,
+    invisible: string,
+    dynamic?: {data: string, label?: string, icon?: string, hidden?: string}}
+};
 
 export const playUiMetadata = (ui: Node, ctx: ElementEditedContext): PlayUiMetadata | CodyResponse => {
   const meta = playParseJsonMetadata(ui) as RawUiMetadata;
