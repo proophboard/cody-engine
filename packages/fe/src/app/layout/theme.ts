@@ -49,14 +49,29 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
         }
       },
       typography: {
+        h1: {
+          fontSize: '1.7rem',
+          fontWeight: 400,
+        },
+        h2: {
+          fontSize: '1.25rem',
+          fontWeight: 500,
+        },
         h3: {
-          fontSize: '2rem'
+          fontSize: '1.15rem',
+          fontWeight: 500,
         },
         h4: {
-          fontSize: '1.5rem'
+          fontSize: '1.1rem',
+          fontWeight: 500,
         },
         h5: {
-          fontSize: '1.3rem'
+          fontSize: '1.05rem',
+          fontWeight: 500,
+        },
+        h6: {
+          fontSize: '1rem',
+          fontWeight: 500,
         }
       },
       components: {

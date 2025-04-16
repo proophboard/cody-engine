@@ -147,7 +147,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
       <Grid2 container={true}>
         <Grid2 xs>
           {showTitle(uiSchema) && <Typography
-            variant="h3"
+            variant="h2"
             className="sidebar-anchor"
             sx={{padding: (theme) => theme.spacing(4), paddingLeft: 0}}
             id={"component-" + names(informationInfo.desc.name).fileName}

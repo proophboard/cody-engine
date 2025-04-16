@@ -92,7 +92,7 @@ export const PlayStandardPage = (props: Props) => {
     SIDEBAR_WIDTH = 0;
   }
 
-  const headerGridSx: SxProps = {paddingTop: 0, paddingBottom: 0};
+  const headerGridSx: SxProps = {};
 
   useEffect(() => {
     return () => {
@@ -200,7 +200,7 @@ export const PlayStandardPage = (props: Props) => {
       && <>
         <Grid2 xs={12} sx={headerGridSx}><PlayBreadcrumbs /></Grid2>
         <Grid2 xs sx={headerGridSx}>
-          <Typography variant="h2" className="CodyPageTitle-root" sx={{paddingLeft: 0}}>{getPageTitle(page as unknown as PageDefinition)}</Typography></Grid2>
+          <Typography variant="h1" className="CodyPageTitle-root">{getPageTitle(page as unknown as PageDefinition)}</Typography></Grid2>
         <TopRightActions actions={topActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />
       </>}
     {topBar}

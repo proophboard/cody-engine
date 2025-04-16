@@ -53,7 +53,7 @@ export const getNestingLevel = (idSchema: string): number => {
 }
 
 export const headingNestingLevel = (idSchema: string): HeadingVariant => {
-  const level = getNestingLevel(idSchema) + 1;
+  const level = getNestingLevel(idSchema);
 
   if(level === 1) {
     return "h2";
@@ -76,22 +76,23 @@ export const headingNestingLevel = (idSchema: string): HeadingVariant => {
 
 export const getObjPropTitleStyle = (heading: HeadingVariant, theme: Theme, mode: FormModeType): SxProps => {
   switch (heading) {
-    case "h3":
+    case "h2":
       return {
         padding: theme.spacing(4),
         paddingLeft: isDialogMode(mode) ? theme.spacing(2) : 0,
         paddingRight: isDialogMode(mode) ? theme.spacing(2) : 0
       };
-    case "h4":
+    case "h3":
       return {
         padding: theme.spacing(3),
         paddingLeft: 0
       };
-    case "h5":
+    case "h4":
       return {
         padding: theme.spacing(2),
         paddingLeft: 0
       };
+    case "h5":
     case "h6":
       return {
         padding: theme.spacing(1),
