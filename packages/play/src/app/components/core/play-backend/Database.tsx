@@ -7,8 +7,8 @@ import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-mo
 import {useContext, useEffect, useState} from "react";
 import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
 import {saveDataToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-to-local-storage";
-import {Alert, Box, Button, CircularProgress, FormLabel, MenuItem, TextField} from "@mui/material";
-import Editor from "@monaco-editor/react";
+import {Alert, Box, Button, CircularProgress, FormLabel, MenuItem, TextField, useTheme} from "@mui/material";
+import Editor, {Monaco} from "@monaco-editor/react";
 import {DeleteForever, Send} from "mdi-material-ui";
 import {editor} from "monaco-editor";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
@@ -52,6 +52,7 @@ const Database = (props: DatabaseProps) => {
   };
   const databaseStr = JSON.stringify(database, null, 2);
 
+  const theme = useTheme();
   const [updatedDatabaseStr, setUpdatedDatabaseStr] = useState(databaseStr);
   const [invalidDatabase, setInvalidDatabase] = useState(false);
   const [republishEventId, setRepublishEventId] = useState('');
@@ -63,6 +64,7 @@ const Database = (props: DatabaseProps) => {
   const [projections, setProjections] = useState<ProjectionRegistry>({});
   const [selectedProjection, setSelectedProjection] = useState<string>('');
   const [isRunningProjection, setIsRunningProjection] = useState(false);
+  const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
 
   useEffect(() => {
     setUpdatedDatabaseStr(databaseStr);
@@ -73,6 +75,12 @@ const Database = (props: DatabaseProps) => {
     const infoService = new DocumentStoreInformationService(ds, config.types as unknown as TypeRegistry);
     setProjections(getProjections(config, infoService));
   }, [config.types]);
+
+  useEffect(() => {
+    window.setTimeout(() => {
+      setEditorTheme(theme.palette.mode === 'dark' ? 'vs-dark' : 'vs');
+    },10);
+  }, [theme.palette.mode]);
 
   const validateDatabase = (editorVal: string): {eventStore: Record<string, any>, documentStore: {
     documents: Record<string, any>,
@@ -175,13 +183,20 @@ const Database = (props: DatabaseProps) => {
 
   props.saveCallback(handleSave);
 
-  const handleEditorDidMount = (editorInstance: IStandaloneCodeEditor) => {
+  const handleEditorDidMount = (editorInstance: IStandaloneCodeEditor, monaco: Monaco) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     editorInstance.getAction('editor.foldAll').run();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     editorInstance.getAction('editor.unfold').run();
+
+    const eTheme = theme.palette.mode === 'dark' ? 'vs-dark' : 'vs';
+
+    window.setTimeout(() => {
+      setEditorTheme(eTheme);
+      monaco.editor.setTheme(eTheme);
+    }, 10);
   }
 
   return <div style={{marginTop: "30px", marginLeft: "10px", marginRight: "10px"}}>
@@ -237,6 +252,7 @@ const Database = (props: DatabaseProps) => {
               onMount={handleEditorDidMount}
               onChange={handleDatabaseChanged}
               options={{
+                theme: editorTheme,
                 tabSize: 2,
                 folding: true,
                 glyphMargin: false,

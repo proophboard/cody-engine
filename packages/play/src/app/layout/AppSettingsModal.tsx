@@ -12,16 +12,6 @@ import {
 } from "@mui/material";
 import {Close, Database as DatabaseIcon, SendCircleOutline, ZipDisk} from "mdi-material-ui";
 import {useContext, useEffect, useRef, useState} from "react";
-import {configStore} from "@cody-play/state/config-store";
-import {saveConfigToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-config-to-local-storage";
-import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
-import Editor from '@monaco-editor/react';
-import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
-import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-model-store/configured-document-store";
-import {
-  saveDataToLocalStorage,
-  saveToLocalStorage
-} from "@cody-play/infrastructure/multi-model-store/save-to-local-storage";
 import AppSettings from "@cody-play/app/components/core/play-backend/AppSettings";
 import {BuildCircleOutlined, PaletteOutlined} from "@mui/icons-material";
 import PlayConfig from "@cody-play/app/components/core/play-backend/PlayConfig";

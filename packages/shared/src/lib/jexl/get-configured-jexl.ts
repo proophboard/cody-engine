@@ -26,6 +26,7 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addFunction('isRole', isRole);
     configuredJexl.addFunction('userAttr', getAttribute);
     configuredJexl.addFunction('pageData', getPageData);
+    configuredJexl.addTransform('call', (func, ...args) => typeof func === 'function' ? func.call(func, ...args) : undefined );
     configuredJexl.addTransform('data', getPageData);
     configuredJexl.addTransform('role', isRole);
     configuredJexl.addTransform('attr', getAttribute);

@@ -1,6 +1,9 @@
-import {createTheme as createMuiTheme, SxProps, ThemeOptions} from "@mui/material";
+import {createTheme as createMuiTheme, PaletteOptions, SxProps, Theme, ThemeOptions} from "@mui/material";
 import {merge} from "lodash/fp";
 import overwriteTheme from "@frontend/extensions/app/layout/theme";
+import {COLOR_MODE} from "@frontend/app/providers/ToggleColorMode";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 
 declare module '@mui/material/styles' {
   interface Theme {
@@ -13,6 +16,9 @@ declare module '@mui/material/styles' {
   }
   // allow configuration using `createTheme`
   interface ThemeOptions {
+    darkPalette?: PaletteOptions,
+    lightPalette?: PaletteOptions,
+    vars?: Record<string, any>,
     commandForm?: {
       "styleOverrides": SxProps;
     }
@@ -22,7 +28,41 @@ declare module '@mui/material/styles' {
   }
 }
 
+const normalizeThemeOptions = (themeOptions: ThemeOptions & {[key: string]: any} | string, ctx: {vars: Record<string, any>, theme: Theme}): ThemeOptions | string => {
+  if(typeof themeOptions === "object") {
+    for (const option in themeOptions) {
+      themeOptions[option] = normalizeThemeOptions(themeOptions[option], ctx);
+    }
+  } else if (typeof themeOptions === "string") {
+    const parts = themeOptions.split('$>');
+
+    if(parts.length >= 2) {
+      parts.shift();
+      return jexl.evalSync(parts.join("$>"), ctx);
+    }
+  }
+  return themeOptions;
+}
+
+const defaultMuiTheme = createMuiTheme({});
+
 export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiTheme> => {
+  options = cloneDeepJSON(options);
+
+  const vars = options.vars || {};
+  const mode: COLOR_MODE = options.palette?.mode || 'light';
+  const modePalette = normalizeThemeOptions({palette: {...options[`${mode}Palette`], mode}}, {vars, theme: defaultMuiTheme}) as ThemeOptions;
+
+  delete options.darkPalette;
+  delete options.lightPalette;
+  delete options.vars;
+
+  const muiThemeWithModePalette = createMuiTheme(modePalette);
+
+  options.palette = merge(modePalette.palette, {...options.palette, mode}) as PaletteOptions;
+
+  options = normalizeThemeOptions(options, {vars, theme: muiThemeWithModePalette}) as ThemeOptions;
+
   const defaultTheme = createMuiTheme(options);
 
   options = merge(

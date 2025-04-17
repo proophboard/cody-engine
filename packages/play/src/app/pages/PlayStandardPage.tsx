@@ -192,8 +192,6 @@ export const PlayStandardPage = (props: Props) => {
     className: "CodyStandardPage-root"
   };
 
-  console.log({...defaultContainerProps, ...page.props?.container, sx: {...defaultContainerProps.sx, ...page.props?.container?.sx}});
-
   return <Grid2 {...{...defaultContainerProps, ...page.props?.container, sx: {...defaultContainerProps.sx, ...page.props?.container?.sx}}}>
     {config.layout === 'task-based-ui'
       && props.mode !== "dialog"

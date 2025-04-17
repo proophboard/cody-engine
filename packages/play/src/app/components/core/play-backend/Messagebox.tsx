@@ -10,7 +10,7 @@ import {
   ListItemIcon,
   ListItemText,
   MenuItem,
-  TextField
+  TextField, useTheme
 } from "@mui/material";
 import {StickyNote2} from "@mui/icons-material";
 import Editor from "@monaco-editor/react";
@@ -40,6 +40,7 @@ interface OwnProps {
 type MessageboxProps = OwnProps;
 
 const Messagebox = (props: MessageboxProps) => {
+  const theme = useTheme();
   const {config} = useContext(configStore);
   const [messageOptions, setMessageOptions] = useState<MessageOption[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<MessageOption|null>(null);
@@ -48,6 +49,7 @@ const Messagebox = (props: MessageboxProps) => {
   const [messageContextStr, setMessageContextStr] = useState<string>('');
   const [result, setResult] = useState<object | undefined>();
   const [invalidMessageContext, setInvalidMessageContext] = useState(false);
+  const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
   const [user,] = useUser();
   const queryClient = useQueryClient();
 
@@ -74,6 +76,12 @@ const Messagebox = (props: MessageboxProps) => {
   useEffect(() => {
     deriveMessageContextFromSelectedOption();
   }, [selectedMessage]);
+
+  useEffect(() => {
+    window.setTimeout(() => {
+      setEditorTheme(theme.palette.mode === 'dark' ? 'vs-dark' : 'vs');
+    },10);
+  }, [theme.palette.mode]);
 
   const handleMessageContextChanged = (editorVal: string | undefined) => {
     if(!editorVal) {
@@ -158,7 +166,9 @@ const Messagebox = (props: MessageboxProps) => {
                   language="json"
                   value={messageContextStr}
                   onChange={handleMessageContextChanged}
+                  onMount={(editor, monaco) => monaco.editor.setTheme(editorTheme)}
                   options={{
+                    theme: editorTheme,
                     tabSize: 2,
                     folding: true,
                     glyphMargin: false,
@@ -191,7 +201,9 @@ const Messagebox = (props: MessageboxProps) => {
           <Editor height="400px"
                   language="json"
                   value={JSON.stringify(result, null, 2)}
+                  onMount={(editor, monaco) => monaco.editor.setTheme(editorTheme)}
                   options={{
+                    theme: editorTheme,
                     tabSize: 2,
                     folding: true,
                     glyphMargin: false,

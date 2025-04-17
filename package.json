@@ -106,6 +106,7 @@
     "express-jwt": "^8.4.1",
     "i18next": "^23.16.8",
     "jexl": "^2.3.0",
+    "jsonrepair": "^3.12.0",
     "keycloak-connect": "^25.0.6",
     "keycloak-js": "^25.0.6",
     "lodash": "^4.17.21",
