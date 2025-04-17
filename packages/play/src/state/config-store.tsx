@@ -74,7 +74,11 @@ const initialPlayConfig: CodyPlayConfig = {
   appName: 'Cody Play',
   defaultService: 'App',
   layout: 'prototype',
-  theme: {},
+  theme: {
+    vars: {},
+    lightPalette: {},
+    darkPalette: {},
+  },
   personas: [
     {
       displayName: 'Anyone',

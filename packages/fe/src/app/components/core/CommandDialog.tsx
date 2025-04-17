@@ -232,7 +232,7 @@ const CommandDialog = (props: CommandDialogProps) => {
       }}>
         <Grid2 container>
           <Grid2 xs sx={{padding: theme.spacing(2)}}>
-            {title && <Typography variant={"h3"}>{title}</Typography>}
+            {title && <Typography variant={"h2"}>{title}</Typography>}
           </Grid2>
           <TopRightActions uiOptions={uiOptions} defaultService={env.DEFAULT_SERVICE} jexlCtx={jexlCtx} additionalRightButtons={[
             <IconButton onClick={handleCancel} sx={{color: theme.palette.grey[500]}}>

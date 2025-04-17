@@ -6,10 +6,12 @@ interface Props {
   children: ReactNode
 }
 
+export type COLOR_MODE = 'dark' | 'light';
+
 export const ColorModeContext = React.createContext({mode: 'light', toggleColorMode: () => {} });
 
 const ToggleColorMode = ({children}: Props) => {
-  const [mode, setMode] = React.useState<'light' | 'dark'>('light');
+  const [mode, setMode] = React.useState<COLOR_MODE>('light');
   const colorMode = {
       mode,
       toggleColorMode: () => {

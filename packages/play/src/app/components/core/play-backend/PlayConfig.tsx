@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {useContext, useEffect, useState} from "react";
 import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
-import Editor from "@monaco-editor/react";
-import {Alert, Box, FormLabel} from "@mui/material";
+import Editor, {Monaco} from "@monaco-editor/react";
+import {Alert, Box, FormLabel, useTheme} from "@mui/material";
 import {editor} from "monaco-editor";
 import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
@@ -17,15 +17,23 @@ interface OwnProps {
 type PlayConfigProps = OwnProps;
 
 const PlayConfig = (props: PlayConfigProps) => {
+  const theme = useTheme();
   const {config, dispatch} = useContext(configStore);
   const [appConfig, setAppConfig] = useState(JSON.stringify(config, null, 2));
   const [invalidConfig, setInvalidConfig] = useState(false);
   const {setPendingChanges} = useContext(PendingChangesContext);
+  const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
 
   useEffect(() => {
     setAppConfig(JSON.stringify(config, null, 2));
     props.onSaveDisabled(true);
   }, [config]);
+
+  useEffect(() => {
+    window.setTimeout(() => {
+      setEditorTheme(theme.palette.mode === 'dark' ? 'vs-dark' : 'vs');
+    },10);
+  }, [theme.palette.mode]);
 
   const validateConfig = (editorVal: string): CodyPlayConfig | undefined => {
 
@@ -74,13 +82,15 @@ const PlayConfig = (props: PlayConfigProps) => {
 
   props.saveCallback(handleSave);
 
-  const handleEditorDidMount = (editorInstance: IStandaloneCodeEditor) => {
+  const handleEditorDidMount = (editorInstance: IStandaloneCodeEditor, monaco: Monaco) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     editorInstance.getAction('editor.foldAll').run();
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     editorInstance.getAction('editor.unfold').run();
+
+    monaco.editor.setTheme(editorTheme);
   }
 
   return <div style={{marginTop: "30px", marginLeft: "10px", marginRight: "10px"}}>
@@ -94,6 +104,7 @@ const PlayConfig = (props: PlayConfigProps) => {
               onMount={handleEditorDidMount}
               onChange={handleConfigChanged}
               options={{
+                theme: editorTheme,
                 tabSize: 2,
                 folding: true,
                 glyphMargin: false,

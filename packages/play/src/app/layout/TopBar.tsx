@@ -45,7 +45,7 @@ const TopBar = (props: TopBarProps) => {
           {props.sidebarOpen? <MenuOpenIcon /> : <MenuIcon />}
         </IconButton>}
         <Box component={"div"} sx={{minWidth: {lg: "300px"}}}>
-          <Typography variant={ sideBarPersistent ? "h3" : "h4" } sx={{color: (theme) => theme.palette.primary.contrastText}}>{config.appName}</Typography>
+          <Typography variant={"h2"} sx={{color: (theme) => theme.palette.primary.contrastText, fontSize: sideBarPersistent ? "2rem" : "1.5rem"}}>{config.appName}</Typography>
         </Box>
         {config.layout === 'prototype' && <PlayBreadcrumbs/>}
         <Box component={"div"} sx={{flexGrow: 1}}/>
