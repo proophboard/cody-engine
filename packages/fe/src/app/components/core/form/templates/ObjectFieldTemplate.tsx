@@ -260,6 +260,7 @@ export default function ObjectFieldTemplate<
       isWriteMode(mode) && canExpand<T, S, F>(props.schema, props.uiSchema, props.formData) ? [
         <AddButton
           className='object-property-expand'
+          key={'object_field_' + props.idSchema.$id + '_object_property_expand'}
           onClick={props.onAddClick(props.schema)}
           disabled={props.disabled || props.readonly}
           uiSchema={props.uiSchema}

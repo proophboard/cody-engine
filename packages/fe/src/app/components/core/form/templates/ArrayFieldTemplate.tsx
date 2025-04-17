@@ -129,6 +129,7 @@ export const ArrayFieldTemplate = <
                     defaultService={props.formContext!.defaultService} jexlCtx={jexlCtx} additionalRightButtons={
       isWriteMode(mode) && props.canAdd ? [
         <AddButton
+          key={'array_field_' + props.idSchema.$id + 'add_button'}
           className='array-item-add'
           onClick={props.onAddClick}
           disabled={props.disabled || props.readonly}
