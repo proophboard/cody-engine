@@ -7,7 +7,17 @@ import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-mo
 import {useContext, useEffect, useState} from "react";
 import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
 import {saveDataToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-to-local-storage";
-import {Alert, Box, Button, CircularProgress, FormLabel, MenuItem, TextField, useTheme} from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  FormLabel,
+  IconButton,
+  MenuItem,
+  TextField,
+  useTheme
+} from "@mui/material";
 import Editor, {Monaco} from "@monaco-editor/react";
 import {DeleteForever, Send} from "mdi-material-ui";
 import {editor} from "monaco-editor";
@@ -31,6 +41,7 @@ import {
   getConfiguredPlayReadModelProjector
 } from "@cody-play/infrastructure/multi-model-store/configured-play-read-model-projector";
 import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
+import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 
 type ProjectionRegistry = Record<string, {collection: string, stream: string}>;
 
@@ -43,6 +54,8 @@ type DatabaseProps = OwnProps;
 
 const es = getConfiguredPlayEventStore();
 const ds = getConfiguredPlayDocumentStore();
+
+const DEFAULT_EDITOR_HEIGHT = 250;
 
 const Database = (props: DatabaseProps) => {
 
@@ -65,6 +78,7 @@ const Database = (props: DatabaseProps) => {
   const [selectedProjection, setSelectedProjection] = useState<string>('');
   const [isRunningProjection, setIsRunningProjection] = useState(false);
   const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
+  const [editorHeight, setEditorHeight] = useState(DEFAULT_EDITOR_HEIGHT);
 
   useEffect(() => {
     setUpdatedDatabaseStr(databaseStr);
@@ -243,10 +257,24 @@ const Database = (props: DatabaseProps) => {
       />
     </Box>
     <FormLabel>Data</FormLabel>
+    <IconButton sx={{marginLeft: "auto"}} title={'Click to expand editor. Ctrl+Click to double expand.'} color={editorHeight > DEFAULT_EDITOR_HEIGHT ? 'primary' : 'default'} onClick={e => {
+      const isExpanded = editorHeight === 450;
+      const isDoubleExpanded = editorHeight === 900;
+
+      let newHeight = 290;
+
+      if(e.ctrlKey) {
+        newHeight = isDoubleExpanded ? 450 : 900;
+      } else {
+        newHeight = isExpanded || isDoubleExpanded ? DEFAULT_EDITOR_HEIGHT : 450;
+      }
+
+      setEditorHeight(newHeight);
+    }} className={editorHeight > DEFAULT_EDITOR_HEIGHT ? 'active' : ''}><MdiIcon icon="focus-field-horizontal" /></IconButton>
     {invalidDatabase &&
         <Alert variant="standard" severity="error">Invalid Database Update. Please check your input!</Alert>}
     <div style={{border: '1px solid #eee'}}>
-      <Editor height="300px"
+      <Editor height={`${editorHeight}px`}
               language="json"
               value={updatedDatabaseStr}
               onMount={handleEditorDidMount}
