@@ -235,7 +235,7 @@ const AppSettings = (props: AppSettingsProps) => {
     <Grid2 container style={{marginTop: "30px", marginLeft: "10px", marginRight: "10px", display: "flex"}}>
       <Grid2 xs={12}>
         <FormLabel>Theme</FormLabel>
-        <IconButton sx={{marginLeft: "auto"}} color={themeEditorHeight > 200 ? 'primary' : 'default'} onClick={e => {
+        <IconButton sx={{marginLeft: "auto"}} title={'Click to expand editor. Ctrl+Click to double expand.'} color={themeEditorHeight > 200 ? 'primary' : 'default'} onClick={e => {
           const isExpanded = themeEditorHeight === 400;
           const isDoubleExpanded = themeEditorHeight === 800;
 
