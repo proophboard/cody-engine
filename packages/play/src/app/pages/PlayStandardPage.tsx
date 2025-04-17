@@ -202,6 +202,7 @@ export const PlayStandardPage = (props: Props) => {
         <TopRightActions actions={topActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />
       </>}
     {topBar}
+    <Grid2 xs={12} sx={{padding: 0}} />
     {components}
     { /*Render a placeholder to keep space for the  bottom bar */ }
     {config.layout === 'task-based-ui' && props.mode !== 'dialog' && bottomActions.length > 0 && <Box sx={{
