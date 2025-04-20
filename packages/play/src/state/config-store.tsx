@@ -47,12 +47,18 @@ import {
 import {directSetEnv, EnvContext} from "@frontend/app/providers/UseEnvironment";
 import {names} from "@event-engine/messaging/helpers";
 import {PageRegistry} from "@frontend/app/pages";
+import {ElementEditedContext} from "@cody-play/infrastructure/cody/cody-message-server";
+import {Map} from "immutable";
+import {Node} from "@proophboard/cody-types";
 
 export type LayoutType = 'prototype' | 'task-based-ui';
 
 export interface CodyPlayConfig {
   appName: string,
   defaultService: string,
+  boardId: string,
+  boardName: string,
+  lastEditor: string,
   layout: LayoutType,
   theme: ThemeOptions,
   personas: Persona[],
@@ -74,6 +80,9 @@ const initialPlayConfig: CodyPlayConfig = {
   appName: 'Cody Play',
   defaultService: 'App',
   layout: 'prototype',
+  boardId: '',
+  boardName: '',
+  lastEditor: '',
   theme: {
     vars: {},
     lightPalette: {},
@@ -156,6 +165,16 @@ export const enhanceConfigWithDefaults = (config: CodyPlayConfig): CodyPlayConfi
   }
 }
 
+export const getEditedContextFromConfig = (config: CodyPlayConfig, syncedNodes?: Map<string, Node>): ElementEditedContext => {
+  return {
+    boardId: config.boardId,
+    boardName: config.boardName,
+    userId: config.lastEditor,
+    service: config.defaultService,
+    syncedNodes: syncedNodes || Map()
+  }
+}
+
 const storedConfigStr = localStorage.getItem(CONFIG_STORE_LOCAL_STORAGE_KEY + currentBoardId());
 
 const defaultPlayConfig = storedConfigStr ? enhanceConfigWithDefaults(JSON.parse(storedConfigStr) as CodyPlayConfig) : initialPlayConfig;
@@ -170,10 +189,10 @@ const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action)
 
 const { Provider } = configStore;
 
-type Action = PlayInitAction | PlayRenameApp | PlayRenameDefaultService | ChangeLayout | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayUpdatePersona| PlayAddPageAction | PlayRemovePageAction
+type Action = {ctx: ElementEditedContext} & (PlayInitAction | PlayRenameApp | PlayRenameDefaultService | ChangeLayout | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayUpdatePersona| PlayAddPageAction | PlayRemovePageAction
   | PlayAddCommandAction | PlayRemoveCommandAction | PlayAddCommandHandlerAction | PlayRemoveCommandHandlerAction | PlayAddTypeAction | PlayRemoveTypeAction
   | PlayAddQueryAction | PlayRemoveQueryAction | PlayAddViewAction | PlayRemoveViewAction | PlayAddAggregateAction | PlayRemoveAggregateAction
-  | PlayAddAggregateEventAction | PlayRemoveAggregateEventAction | PlayAddPureEventAction | PlayRemovePureEventAction | PlayAddEventPolicyAction | PlayRemoveEventPolicyAction;
+  | PlayAddAggregateEventAction | PlayRemoveAggregateEventAction | PlayAddPureEventAction | PlayRemovePureEventAction | PlayAddEventPolicyAction | PlayRemoveEventPolicyAction);
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
 
@@ -194,11 +213,20 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
   const {env, setEnv} = useContext(EnvContext);
   const [config, dispatch] = useReducer((config: CodyPlayConfig, action: Action): CodyPlayConfig => {
     console.log(`[PlayConfigStore] Going to apply action: `, action);
+
+    // Sync ElementEditedContext with config
+    config.boardId = action.ctx.boardId;
+    config.boardName = action.ctx.boardName;
+    config.lastEditor = action.ctx.userId;
+
     switch (action.type) {
       case "INIT":
         const newConfig = _.isEmpty(action.payload)? initialPlayConfig : enhanceConfigWithDefaults(action.payload);
         syncTypesWithSharedRegistry(newConfig);
-        setEnv({...env, DEFAULT_SERVICE: names(config.defaultService).className, PAGES: config.pages as unknown as PageRegistry});
+        window.setTimeout(() => {
+          setEnv({...env, DEFAULT_SERVICE: names(config.defaultService).className, PAGES: config.pages as unknown as PageRegistry});
+        }, 50);
+
         return newConfig;
       case "RENAME_APP":
         return {...config, appName: action.name};
@@ -211,7 +239,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         return {...config, theme: action.theme};
       case "SET_PERSONAS":
         // Sync Auth Service
-        getConfiguredPlayAuthService(action.personas, currentDispatch);
+        getConfiguredPlayAuthService(getEditedContextFromConfig(config), action.personas, currentDispatch);
         return {...config, personas: action.personas};
       case "ADD_PERSONA":
         for (const existingPersona of config.personas) {
@@ -222,7 +250,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
 
         const personasWithNew =  [...config.personas, action.persona];
         // Sync Auth Service
-        getConfiguredPlayAuthService(personasWithNew, currentDispatch);
+        getConfiguredPlayAuthService(getEditedContextFromConfig(config), personasWithNew, currentDispatch);
         return {...config, personas: personasWithNew};
       case "UPDATE_PERSONA":
         const personasWithoutUpdates = config.personas.filter(p => p.userId !== action.persona.userId);
@@ -232,17 +260,22 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
 
         const updatedPersonas =  [...personasWithoutUpdates, action.persona];
         // Sync Auth Service
-        getConfiguredPlayAuthService(updatedPersonas, currentDispatch);
+        getConfiguredPlayAuthService(getEditedContextFromConfig(config), updatedPersonas, currentDispatch);
         return {...config, personas: updatedPersonas};
       case "ADD_PAGE":
         config.pages = {...config.pages};
         config.pages[action.name] = action.page;
-        setEnv({...env, PAGES: config.pages as unknown as PageRegistry});
+        window.setTimeout(() => {
+          setEnv({...env, PAGES: config.pages as unknown as PageRegistry});
+        }, 50);
+
         return {...config};
       case "REMOVE_PAGE":
         config.pages = {...config.pages};
         delete config.pages[action.name];
-        setEnv({...env, PAGES: config.pages as unknown as PageRegistry});
+        window.setTimeout(() => {
+          setEnv({...env, PAGES: config.pages as unknown as PageRegistry});
+        }, 50);
         return {...config};
       case "ADD_COMMAND":
         config.commands = {...config.commands};
@@ -355,7 +388,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
   }, [config]);
 
   useEffect(() => {
-    getConfiguredPlayAuthService(config.personas, dispatch);
+    getConfiguredPlayAuthService(getEditedContextFromConfig(config), config.personas, dispatch);
   })
 
   injectCustomApiQuery(makeLocalApiQuery(config, user));

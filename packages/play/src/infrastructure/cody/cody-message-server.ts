@@ -183,7 +183,7 @@ export class CodyMessageServer {
       case "PlayshotSaved":
         return this.handlePlayshotSaved(payload);
       case "InitPlayshot":
-        return this.initPlayshot(payload.payload);
+        return this.initPlayshot(payload.payload, payload.ctx);
       default:
         return {
           cody: `Unknown message received: ${messageName}`,
@@ -241,12 +241,13 @@ export class CodyMessageServer {
     }
   }
 
-  private async initPlayshot(playshot: Playshot): Promise<CodyResponse> {
+  private async initPlayshot(playshot: Playshot, ctx: {boardId: string, boardName: string, userId: string}): Promise<CodyResponse> {
     window.location.pathname = "/dashboard";
 
     this.dispatch({
       type: "INIT",
       payload: playshot.playConfig,
+      ctx: {...ctx, syncedNodes: this.syncedNodes, service: names(this.config.defaultService).className}
     });
 
     await this.es.importStreams(playshot.playData.streams || {});

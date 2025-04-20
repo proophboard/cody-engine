@@ -48,6 +48,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
 
     if(!meta.aggregateCommand) {
       dispatch({
+        ctx,
         type: "ADD_COMMAND",
         name: cmdFQCN,
         command: {
@@ -71,6 +72,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
       const rules = meta.rules || events.map(evt => alwaysRecordEvent(evt)).toArray();
 
       dispatch({
+        ctx,
         type: "ADD_COMMAND_HANDLER",
         command: cmdFQCN,
         businessRules: normalizePolicyRules(normalizeThenRecordEventRules(service, rules), service, config),
@@ -101,6 +103,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
     const stateFQCN = playwithErrorCheck(playVoFQCN, [aggregateState, aggregateStateMeta, ctx]);
 
     dispatch({
+      ctx,
       type: "ADD_COMMAND",
       name: cmdFQCN,
       command: {
@@ -128,6 +131,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
       const rules = meta.rules || events.map(evt => alwaysRecordEvent(evt)).toArray();
 
       dispatch({
+        ctx,
         type: "ADD_AGGREGATE",
         name: aggregateFQCN,
         command: cmdFQCN,

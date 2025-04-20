@@ -11,6 +11,8 @@ import MenuOpenIcon from "@mui/icons-material/MenuOpen"
 import AppSettingsModal from "@cody-play/app/layout/AppSettingsModal";
 import {configStore} from "@cody-play/state/config-store";
 import SaveData from "@cody-play/app/components/core/SaveData";
+import {Wrench} from "mdi-material-ui";
+import CodyGPTDrawer from "@cody-play/app/components/core/cody-gpt/CodyGPTDrawer";
 
 
 interface OwnProps {
@@ -25,12 +27,19 @@ const TopBar = (props: TopBarProps) => {
   const theme = useTheme();
   const {mode, toggleColorMode} = useContext(ColorModeContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [codyGPTOpen, setCodyGPTOpen] = useState(false);
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
 
   const openSettingsModal = () => {
     setSettingsOpen(true);
+    setCodyGPTOpen(false);
+  }
+
+  const openCodyGPT = () => {
+    setCodyGPTOpen(true);
+    setSettingsOpen(false);
   }
 
   return (
@@ -50,6 +59,7 @@ const TopBar = (props: TopBarProps) => {
         {config.layout === 'prototype' && <PlayBreadcrumbs/>}
         <Box component={"div"} sx={{flexGrow: 1}}/>
         <SaveData />
+        <IconButton><Wrench sx={{color: mode === 'dark' ? 'black' : 'white'}} onClick={openCodyGPT} /></IconButton>
         <IconButton aria-label="Light mode" onClick={toggleColorMode}>
           {mode === 'light' && <LightModeIcon sx={{ color: 'white' }}/> }
           {mode === 'dark' && <DarkModeIcon sx={{ color: 'black' }}/> }
@@ -62,6 +72,7 @@ const TopBar = (props: TopBarProps) => {
         </IconButton>}
       </Toolbar>
       <AppSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <CodyGPTDrawer open={codyGPTOpen} onClose={() => setCodyGPTOpen(false)} />
     </AppBar>
   )
 };
