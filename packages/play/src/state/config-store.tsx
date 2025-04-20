@@ -66,6 +66,7 @@ export interface CodyPlayConfig {
   defaultService: string,
   boardId: string,
   boardName: string,
+  origin: string,
   lastEditor: string,
   layout: LayoutType,
   theme: ThemeOptions,
@@ -90,6 +91,7 @@ const initialPlayConfig: CodyPlayConfig = {
   layout: 'prototype',
   boardId: '',
   boardName: '',
+  origin: 'https://app.prooph-board.com',
   lastEditor: '',
   theme: {
     vars: {},
@@ -178,7 +180,8 @@ export const getEditedContextFromConfig = (config: CodyPlayConfig, syncedNodes?:
     boardName: config.boardName,
     userId: config.lastEditor,
     service: config.defaultService,
-    syncedNodes: syncedNodes || Map()
+    syncedNodes: syncedNodes || Map(),
+    origin: config.origin,
   }
 }
 
@@ -225,6 +228,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
     config.boardId = action.ctx.boardId;
     config.boardName = action.ctx.boardName;
     config.lastEditor = action.ctx.userId;
+    config.origin = action.ctx.origin;
 
     switch (action.type) {
       case "INIT":

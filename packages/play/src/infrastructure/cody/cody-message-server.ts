@@ -61,7 +61,7 @@ const allowedOrigins = ['https://ee.local', 'http://localhost:3001', 'https://fr
 
 export type PlayConfigDispatch = (action: Action) => void;
 
-export type ElementEditedContext = {boardId: string, boardName: string, userId: string, syncedNodes: Map<string, Node>, service: string};
+export type ElementEditedContext = {boardId: string, boardName: string, userId: string, syncedNodes: Map<string, Node>, service: string, origin: string};
 
 export class CodyMessageServer {
   private pbTab: typeof window | undefined;
@@ -213,7 +213,8 @@ export class CodyMessageServer {
     return checkQuestion(await onNode(makeNodeRecord(payload.node), this.dispatch, {
       ...payload.context,
       syncedNodes: this.syncedNodes,
-      service: names(this.config.defaultService).className
+      service: names(this.config.defaultService).className,
+      origin: this.msgOrigin,
     }, this.config));
   }
 
@@ -247,7 +248,7 @@ export class CodyMessageServer {
     this.dispatch({
       type: "INIT",
       payload: playshot.playConfig,
-      ctx: {...ctx, syncedNodes: this.syncedNodes, service: names(this.config.defaultService).className}
+      ctx: {...ctx, syncedNodes: this.syncedNodes, service: names(this.config.defaultService).className, origin: this.msgOrigin}
     });
 
     await this.es.importStreams(playshot.playData.streams || {});
