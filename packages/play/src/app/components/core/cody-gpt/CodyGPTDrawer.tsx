@@ -21,6 +21,13 @@ import {useNavigate} from "react-router-dom";
 import {UsePageResult, usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
 import {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
 import {useEnv} from "@frontend/hooks/use-env";
+import {ElementEditedContext, PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
+import {CodyResponse} from "@proophboard/cody-types";
+import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {AddAPageWithName} from "@cody-play/infrastructure/cody-gpt/page-instructions/add-a-page-with-name";
+import {
+  AddATableWithDefaults
+} from "@cody-play/infrastructure/cody-gpt/information-instructions/add-a-table-with-defaults";
 
 interface OwnProps {
   open: boolean;
@@ -35,24 +42,20 @@ interface Message {
   error?: boolean;
 }
 
-interface Instruction {
-  text: string;
-  command: "ADD_PAGE" | "ADD_TABLE_VIEW_WITH_DEFAULTS";
-  subInstructions?: Instruction[]
+export interface Instruction {
+  text: string,
+  alternatives?: string[],
+  subInstructions?: Instruction[],
+  match: (input: string) => boolean,
+  execute: (input: string, dispatch: PlayConfigDispatch, config: CodyPlayConfig, navigateTo: (route: string) => void) => Promise<CodyResponse>,
 }
 
 const defaultInstructions: Instruction[] = [
-  {
-    text: "Add a page called ",
-    command: "ADD_PAGE",
-  }
+  AddAPageWithName,
 ]
 
 const onPageInstructions: Instruction[] = [
-  {
-    text: "I'd like to see a table of ",
-    command: "ADD_TABLE_VIEW_WITH_DEFAULTS",
-  }
+  AddATableWithDefaults,
 ]
 
 const suggestInstructions = (activePage: UsePageResult, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
@@ -112,7 +115,7 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
           error: true
         })
       } else {
-        executeInstruction(selectedInstruction, input);
+        executeInstruction(selectedInstruction, input).then(() => reset()).catch((e: any) => console.error(e));
       }
     } else {
       reset();
@@ -125,53 +128,21 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
     setValue(null);
   }
 
-  const executeInstruction = (instruction: Instruction, userInput: string) => {
+  const executeInstruction = async (instruction: Instruction, userInput: string) => {
     console.log(instruction, userInput);
 
-    switch (instruction.command) {
-      case "ADD_PAGE":
-        const pageName = userInput.replace(instruction.text, "").trim();
-        const newPageRoute = `/${names(pageName).fileName}`;
+    const codyResponse = await instruction.execute(userInput, dispatch, config, (route: string) => {
+      window.setTimeout(() => {
+        setNavigateTo(route);
+      }, 30);
 
-        const page:PlayTopLevelPage = {
-            name: pageName,
-            service: config.defaultService,
-            route: newPageRoute,
-            commands: [],
-            components: [],
-            topLevel: true,
-            sidebar: {
-              label: pageName,
-              icon: 'square',
-              position: 5
-            },
-            breadcrumb: pageName,
-          };
+    });
 
-        dispatch({
-          ctx: getEditedContextFromConfig(config),
-          type: "ADD_PAGE",
-          page,
-          name: pageName
-        });
-
-        addMessage({
-          text: `I've added a new empty page "${pageName}" and redirected you to it. What do you want to see on the page?`,
-          author: "cody"
-        });
-
-        reset();
-
-        setTimeout(() => {
-          setNavigateTo(newPageRoute);
-        }, 50);
-
-
-        break;
-      case "ADD_TABLE_VIEW_WITH_DEFAULTS":
-
-        break;
-    }
+    addMessage({
+      text: codyResponse.cody + (codyResponse.details ? `\n\n${codyResponse.details}` : ''),
+      author: "cody",
+      error: playIsCodyError(codyResponse)
+    });
   }
 
   return <Drawer anchor={"right"}
@@ -206,7 +177,7 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
                                            marginRight: m.author === "user" ? theme.spacing(4) : undefined,
                                            marginLeft: m.author === 'cody' ? theme.spacing(4) : undefined}}
                                          icon={m.author === 'cody' ? <AccountCowboyHat /> : <AccountVoice />}
-                                         severity={m.author === 'user' ? 'warning' : m.error ? 'error' : 'success'}>{m.text}</Alert>)}
+                                         severity={m.author === 'user' ? 'warning' : m.error ? 'error' : 'success'}><pre style={{whiteSpace: "pre-wrap"}}>{m.text}</pre></Alert>)}
       <Autocomplete<Instruction, false, false, true> renderInput={(params) => <TextField {...params}
                                                         helperText={<span>Start typing to get suggestions.</span>}
                                                         variant="outlined"
