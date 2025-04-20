@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {useContext, useEffect, useState} from "react";
-import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
+import {CodyPlayConfig, configStore, getEditedContextFromConfig} from "@cody-play/state/config-store";
 import Editor, {Monaco} from "@monaco-editor/react";
 import {Alert, Box, FormLabel, useTheme} from "@mui/material";
 import {editor} from "monaco-editor";
@@ -66,7 +66,8 @@ const PlayConfig = (props: PlayConfigProps) => {
     if(newPlayConfig) {
       dispatch({
         type: "INIT",
-        payload: newPlayConfig
+        payload: newPlayConfig,
+        ctx: getEditedContextFromConfig(newPlayConfig)
       })
     }
 

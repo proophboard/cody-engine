@@ -124,7 +124,8 @@ export const onUi = async (ui: Node, dispatch: PlayConfigDispatch, ctx: ElementE
     dispatch({
       type: "ADD_PAGE",
       page,
-      name: pageName
+      name: pageName,
+      ctx,
     })
 
     return {cody: `The UI page "${ui.getName()}" is added to the app.`}

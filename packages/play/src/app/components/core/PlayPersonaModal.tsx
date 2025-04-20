@@ -8,7 +8,7 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import {getRjsfValidator} from "@frontend/util/rjsf-validator";
 import {useContext, useEffect, useRef, useState} from "react";
 import {Persona} from "@app/shared/extensions/personas";
-import {configStore} from "@cody-play/state/config-store";
+import {configStore, getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {v4} from "uuid";
 import {IChangeEvent} from "@rjsf/core";
 import {clearAvatarColorCache} from "@frontend/app/components/core/UserAvatar";
@@ -107,7 +107,8 @@ const PlayPersonaModal = (props: PlayPersonaModalProps) => {
 
     dispatch({
       type: "SET_PERSONAS",
-      personas: [...changedPersonas]
+      personas: [...changedPersonas],
+      ctx: getEditedContextFromConfig(config)
     })
 
     const boardId = currentBoardId();

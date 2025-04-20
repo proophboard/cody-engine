@@ -126,6 +126,7 @@ const AppSettings = (props: AppSettingsProps) => {
       dispatch({
         type: "RENAME_APP",
         name: appName,
+        ctx: getEditedContextFromConfig(config)
       })
 
       if(boardId) {
@@ -137,7 +138,8 @@ const AppSettings = (props: AppSettingsProps) => {
     if(defaultService !== config.defaultService) {
       dispatch({
         type: "RENAME_DEFAULT_SERVICE",
-        name: defaultService
+        name: defaultService,
+        ctx: getEditedContextFromConfig(config)
       })
 
       if(boardId) {
@@ -149,7 +151,8 @@ const AppSettings = (props: AppSettingsProps) => {
     if(layout !== config.layout) {
       dispatch({
         type: "CHANGE_LAYOUT",
-        layout
+        layout,
+        ctx: getEditedContextFromConfig(config)
       })
 
       if(boardId) {
@@ -168,7 +171,8 @@ const AppSettings = (props: AppSettingsProps) => {
 
         dispatch({
           type: "CHANGE_THEME",
-          theme: updatedTheme
+          theme: updatedTheme,
+          ctx: getEditedContextFromConfig(config)
         })
 
         if(boardId) {

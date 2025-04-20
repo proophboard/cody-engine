@@ -61,6 +61,7 @@ export const onAggregate = async (aggregate: Node, dispatch: PlayConfigDispatch,
     rules = normalizePolicyRules(normalizeThenRecordEventRules(aggregateName, rules), service, config);
 
     dispatch({
+      ctx,
       type: "ADD_AGGREGATE",
       name: aggregateName,
       command: commandName,

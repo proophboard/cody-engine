@@ -1,7 +1,7 @@
 import {useMatches} from "react-router-dom";
 import {PlayPageDefinition} from "@cody-play/state/types";
 
-interface UsePageResult {
+export interface UsePageResult {
   id: string,
   handle: {page: PlayPageDefinition},
   data: unknown,

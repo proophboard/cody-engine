@@ -15,6 +15,8 @@ import LanguageSwitch from "@frontend/app/components/core/LanguageSwitch";
 import {NavLink} from "react-router-dom";
 import {LoginOutlined} from "@mui/icons-material";
 import UserAvatar from "@frontend/app/components/core/UserAvatar";
+import {Wrench} from "mdi-material-ui";
+import CodyGPTDrawer from "@cody-play/app/components/core/cody-gpt/CodyGPTDrawer";
 
 
 interface OwnProps {
@@ -30,12 +32,19 @@ const TopBar = (props: TopBarProps) => {
   const theme = useTheme();
   const {mode, toggleColorMode} = useContext(ColorModeContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [codyGPTOpen, setCodyGPTOpen] = useState(false);
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
 
   const openSettingsModal = () => {
     setSettingsOpen(true);
+    setCodyGPTOpen(false);
+  }
+
+  const openCodyGPT = () => {
+    setCodyGPTOpen(true);
+    setSettingsOpen(false);
   }
 
   const showLanguageSwitch = false;
@@ -57,6 +66,7 @@ const TopBar = (props: TopBarProps) => {
         {config.layout === 'prototype' && <PlayBreadcrumbs/>}
         <Box component={"div"} sx={{flexGrow: 1}}/>
         <SaveData color={theme.palette.primary.contrastText} />
+        <IconButton><Wrench sx={{color: mode === 'dark' ? 'black' : 'white'}} onClick={openCodyGPT} /></IconButton>
         <IconButton aria-label="Light mode" onClick={toggleColorMode}>
           {mode === 'light' && <LightModeIcon sx={{ color: theme.palette.primary.contrastText }}/> }
           {mode === 'dark' && <DarkModeIcon sx={{ color: theme.palette.primary.contrastText }}/> }
@@ -85,6 +95,7 @@ const TopBar = (props: TopBarProps) => {
         </IconButton>}
       </Toolbar>
       <AppSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <CodyGPTDrawer open={codyGPTOpen} onClose={() => setCodyGPTOpen(false)} />
     </AppBar>
   )
 };

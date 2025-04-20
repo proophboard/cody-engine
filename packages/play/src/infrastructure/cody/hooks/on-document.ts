@@ -62,6 +62,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
     const uiSchema = voMeta.uiSchema ? normalizeServerUiSchema(voMeta.uiSchema, names(config.defaultService).className) : undefined;
 
     dispatch({
+      ctx,
       type: "ADD_TYPE",
       name: voFQCN,
       information: {
@@ -85,6 +86,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
       itemSchema.$id = playDefinitionIdFromFQCN(itemDesc.name);
 
       dispatch({
+        ctx,
         type: "ADD_TYPE",
         name: itemDesc.name,
         information: {
@@ -108,6 +110,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
       }
 
       dispatch({
+        ctx,
         type: "ADD_QUERY",
         name: queryName,
         query: {
@@ -125,6 +128,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
     }
 
     dispatch({
+      ctx,
       type: "ADD_VIEW",
       name: `${serviceNames.className}.${voNames.className}`,
       information: voFQCN
@@ -150,6 +154,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
         }
 
         dispatch({
+          ctx,
           type: "ADD_EVENT_POLICY",
           name: prjName,
           event: evtInfo.desc.name,
