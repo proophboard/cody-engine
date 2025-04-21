@@ -28,6 +28,8 @@ import {AddAPageWithName} from "@cody-play/infrastructure/cody-gpt/page-instruct
 import {
   AddATableWithDefaults
 } from "@cody-play/infrastructure/cody-gpt/information-instructions/add-a-table-with-defaults";
+import {CodyGPTContext} from "@cody-play/infrastructure/cody-gpt/CodyGPTContext";
+import {instructions} from "@cody-play/infrastructure/cody-gpt/instructions";
 
 interface OwnProps {
   open: boolean;
@@ -46,8 +48,9 @@ export interface Instruction {
   text: string,
   alternatives?: string[],
   subInstructions?: Instruction[],
+  isActive: (context: CodyGPTContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string) => boolean,
-  execute: (input: string, dispatch: PlayConfigDispatch, config: CodyPlayConfig, navigateTo: (route: string) => void) => Promise<CodyResponse>,
+  execute: (input: string, ctx: CodyGPTContext, dispatch: PlayConfigDispatch, config: CodyPlayConfig, navigateTo: (route: string) => void) => Promise<CodyResponse>,
 }
 
 const defaultInstructions: Instruction[] = [
@@ -59,12 +62,9 @@ const onPageInstructions: Instruction[] = [
 ]
 
 const suggestInstructions = (activePage: UsePageResult, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
-  console.log("active page: ", activePage);
-  if(activePage.pathname === "/dashboard") {
-    return defaultInstructions;
-  }
+  const ctx: CodyGPTContext = {page: activePage};
 
-  return [...defaultInstructions, ...onPageInstructions];
+  return instructions.filter(i => i.isActive(ctx, config, env))
 }
 
 
@@ -129,9 +129,17 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
   }
 
   const executeInstruction = async (instruction: Instruction, userInput: string) => {
+    debugger;
     console.log(instruction, userInput);
 
-    const codyResponse = await instruction.execute(userInput, dispatch, config, (route: string) => {
+    const codyResponse = await instruction.execute(
+      userInput,
+      {
+        page: pageMatch,
+      },
+      dispatch,
+      config,
+      (route: string) => {
       window.setTimeout(() => {
         setNavigateTo(route);
       }, 30);
@@ -170,7 +178,7 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
       </Grid2>
     </DialogTitle>
     <DialogContent sx={{padding: '24px 24px'}}>
-      <Alert severity="info">Start typing to tell Cody what you want to build. Use the suggestions to provide precise instructions. It works best when using one instruction at a time. Cody will immediately apply them. When saving your work as a Playshot, your prooph board will be updated with the changes as well.</Alert>
+      <Alert severity="info">Start typing to tell Cody what you want to build. It works best when using one instruction at a time. Cody will immediately apply them. A saved Playshot will also update the connected prooph board.</Alert>
       <Divider sx={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}} />
       {messages.map((m, index) => <Alert key={`cody_gpt_msg_${index}`}
                                          sx={{marginBottom: theme.spacing(2),
@@ -186,7 +194,7 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
                                  options={suggestInstructions(pageMatch, config, env)}
                                  freeSolo={true}
                                  value={value}
-                                 autoComplete={true}
+                                 autoComplete={false}
                                  inputValue={searchStr}
                                  onChange={(e,v) => handleInstruction(v)}
                                  onInputChange={(e,v) => setSearchStr(v)}

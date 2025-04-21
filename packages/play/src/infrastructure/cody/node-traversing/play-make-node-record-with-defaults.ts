@@ -1,6 +1,4 @@
-import {Node, RawNodeRecordProps} from "@proophboard/cody-types";
-import {NodeType} from "@proophboard/cody-types/src";
-import {makeNodeRecord} from "@proophboard/cody-types/src/NodeRecord";
+import {Node, RawNodeRecordProps, makeNodeRecord, NodeType} from "@proophboard/cody-types";
 import shortUUID from "short-uuid";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {now} from "@cody-engine/cody/hooks/utils/time";
