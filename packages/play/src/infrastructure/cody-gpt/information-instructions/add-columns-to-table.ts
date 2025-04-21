@@ -77,7 +77,7 @@ export const AddColumnsToTable: Instruction = {
 
     columns.forEach(c => {
       if(!itemsSchema.properties[c.propertyName]) {
-        itemsSchema.properties[c.propertyName] = {type: "string"};
+        itemsSchema.properties[c.propertyName] = {type: "string", title: camelCaseToTitle(c.propertyName)};
         itemsSchema.required.push(c.propertyName);
       }
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
   Alert,
-  Autocomplete,
+  Autocomplete, Box,
   DialogContent,
   DialogTitle,
   Divider,
@@ -154,6 +154,13 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
     });
   }
 
+  useEffect(() => {
+    const dialogContent = document.getElementById('cody-gpt-dialog-content');
+    if(dialogContent) {
+      dialogContent.scrollTo(0, dialogContent.scrollHeight);
+    }
+  }, [messages]);
+
   return <Drawer anchor={"right"}
                  open={props.open}
                  onClose={props.onClose}
@@ -178,7 +185,7 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
         ]} />
       </Grid2>
     </DialogTitle>
-    <DialogContent sx={{padding: '24px 24px'}}>
+    <DialogContent id="cody-gpt-dialog-content" sx={{padding: '24px 24px', paddingBottom: 0}}>
       <Alert severity="info">Start typing to tell Cody what you want to build. It works best when using one instruction at a time. Cody will immediately apply them. A saved Playshot will also update the connected prooph board.</Alert>
       <Divider sx={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}} />
       {messages.map((m, index) => <Alert key={`cody_gpt_msg_${index}`}
@@ -187,21 +194,23 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
                                            marginLeft: m.author === 'cody' ? theme.spacing(4) : undefined}}
                                          icon={m.author === 'cody' ? <AccountCowboyHat /> : <AccountVoice />}
                                          severity={m.author === 'user' ? 'warning' : m.error ? 'error' : 'success'}><pre style={{whiteSpace: "pre-wrap"}}>{m.text}</pre></Alert>)}
-      <Autocomplete<Instruction, false, false, true> renderInput={(params) => <TextField {...params}
-                                                        helperText={<span>Start typing to get suggestions.</span>}
-                                                        variant="outlined"
-                                                        placeholder={'Next instruction'}
-                                                         />}
-                                 options={suggestInstructions(syncedPageMatch, config, env)}
-                                 freeSolo={true}
-                                 value={value}
-                                 autoComplete={false}
-                                 inputValue={searchStr}
-                                 onChange={(e,v) => handleInstruction(v)}
-                                 onInputChange={(e,v) => setSearchStr(v)}
-                                 getOptionLabel={o => typeof o === "string" ? o : o.text}
-      />
-
+      <Box sx={{paddingBottom: theme.spacing(12), position: "sticky", bottom: 0, backgroundColor: theme.palette.background.paper}}>
+        {messages.length > 0 && <Divider sx={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}}/>}
+        <Autocomplete<Instruction, false, false, true> renderInput={(params) => <TextField {...params}
+                                                          helperText={<span>Start typing to get suggestions.</span>}
+                                                          variant="outlined"
+                                                          placeholder={'Next instruction'}
+                                                           />}
+                                   options={suggestInstructions(syncedPageMatch, config, env)}
+                                   freeSolo={true}
+                                   value={value}
+                                   autoComplete={false}
+                                   inputValue={searchStr}
+                                   onChange={(e,v) => handleInstruction(v)}
+                                   onInputChange={(e,v) => setSearchStr(v)}
+                                   getOptionLabel={o => typeof o === "string" ? o : o.text}
+        />
+      </Box>
     </DialogContent>
   </Drawer>
 };
