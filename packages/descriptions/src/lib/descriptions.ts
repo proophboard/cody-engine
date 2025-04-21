@@ -107,6 +107,7 @@ export interface ValueObjectDescriptionFlags {
 
 export interface ValueObjectDescription extends ProophBoardDescription, ValueObjectDescriptionFlags {
   name: string;
+  projection?: string;
 }
 
 export interface QueryableDescription extends ValueObjectDescription {

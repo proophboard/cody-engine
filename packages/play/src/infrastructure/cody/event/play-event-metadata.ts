@@ -17,7 +17,7 @@ import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-norm
 import {playAddSchemaTitles} from "@cody-play/infrastructure/cody/schema/play-add-schema-titles";
 import {playFQCNFromDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
-interface EventMetaRaw {
+export interface EventMetaRaw {
   schema: any;
   service?: string;
   public?: boolean;

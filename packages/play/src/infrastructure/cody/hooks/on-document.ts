@@ -153,6 +153,8 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
           prjCase.given = normalizePolicyRules(prjCase.given, service, config);
         }
 
+        // @TODO: Store projection name in VO description and use it here instead of naming convention
+
         dispatch({
           ctx,
           type: "ADD_EVENT_POLICY",
@@ -198,6 +200,8 @@ const getInlineItemDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMeta
 const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, queryName: string, ctx: ElementEditedContext, config: CodyPlayConfig): ValueObjectDescription | StateDescription | StateListDescription | QueryableValueObjectDescription | QueryableStateDescription | QueryableStateListDescription => {
   const pbInfo = playUpdateProophBoardInfo(vo, ctx, config.types[voName]?.desc);
 
+  const projection = voMeta.projection ? voMeta.projection.name : undefined;
+
   switch (detectDescriptionType(voMeta)) {
     case "StateDescription":
       return ({
@@ -217,7 +221,7 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         isQueryable: false,
         itemIdentifier: voMeta.identifier,
         itemType: voMeta.itemType,
-
+        projection,
       } as StateListDescription);
     case "QueryableValueObjectDescription":
       return ({
@@ -228,7 +232,7 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         isQueryable: true,
         query: queryName,
         collection: voMeta.collection,
-
+        projection,
       } as QueryableValueObjectDescription);
     case "QueryableNotStoredStateDescription":
       return ({
@@ -251,7 +255,6 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         isQueryable: true,
         query: queryName,
         collection: voMeta.collection,
-
       } as QueryableStateDescription);
     case "QueryableStateListDescription":
       return ({
@@ -264,7 +267,7 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         itemType: voMeta.itemType,
         query: queryName,
         collection: voMeta.collection,
-
+        projection,
       } as QueryableStateListDescription);
     case "QueryableNotStoredStateListDescription":
       return ({
@@ -288,6 +291,7 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         query: queryName,
         collection: voMeta.collection,
         itemType: voMeta.itemType,
+        projection,
       } as StoredQueryableListDescription);
     case "QueryableListDescription":
       return ({
@@ -299,6 +303,7 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         query: queryName,
         itemType: voMeta.itemType,
         isNotStored: voMeta.isNotStored,
+        projection,
       } as QueryableListDescription);
     case "QueryableNotStoredValueObjectDescription":
       return ({
@@ -317,6 +322,7 @@ const getDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, quer
         hasIdentifier: false,
         isList: voMeta.isList,
         isQueryable: false,
+        projection,
       } as ValueObjectDescription);
   }
 }

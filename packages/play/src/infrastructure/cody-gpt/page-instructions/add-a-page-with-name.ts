@@ -13,10 +13,11 @@ export const AddAPageWithName: Instruction = {
   match: input => input.startsWith(TEXT),
   execute: async (input: string, ctx: CodyGPTContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
     const pageName = input.replace(TEXT, "").trim();
+    const pageFQCN = `${names(config.defaultService).className}.${names(pageName).className}`;
     const newPageRoute = `/${names(pageName).fileName}`;
 
     const page:PlayTopLevelPage = {
-      name: pageName,
+      name: pageFQCN,
       service: config.defaultService,
       route: newPageRoute,
       commands: [],
@@ -34,7 +35,7 @@ export const AddAPageWithName: Instruction = {
       ctx: getEditedContextFromConfig(config),
       type: "ADD_PAGE",
       page,
-      name: pageName
+      name: pageFQCN
     });
 
     navigateTo(newPageRoute);
