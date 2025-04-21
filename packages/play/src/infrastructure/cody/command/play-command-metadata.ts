@@ -16,7 +16,7 @@ import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-norm
 import {names} from "@event-engine/messaging/helpers";
 import {Rule} from "@app/shared/rule-engine/configuration";
 
-interface RawCommandMeta {
+export interface RawCommandMeta {
   schema: JSONSchema7 | ShorthandObject;
   newAggregate?: boolean;
   aggregateCommand?: boolean;

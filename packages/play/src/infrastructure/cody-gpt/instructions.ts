@@ -4,9 +4,11 @@ import {
   AddATableWithDefaults
 } from "@cody-play/infrastructure/cody-gpt/information-instructions/add-a-table-with-defaults";
 import {AddColumnsToTable} from "@cody-play/infrastructure/cody-gpt/information-instructions/add-columns-to-table";
+import {AddTableItem} from "@cody-play/infrastructure/cody-gpt/command-instructions/add-table-item";
 
 export const instructions: Instruction[] = [
   AddAPageWithName,
   AddATableWithDefaults,
   AddColumnsToTable,
+  AddTableItem,
 ]

@@ -131,7 +131,7 @@ export const AddColumnsToTable: Instruction = {
   }
 }
 
-const getTableViewVO = (page: PlayPageDefinition, config: CodyPlayConfig): PlayInformationRuntimeInfo | null => {
+export const getTableViewVO = (page: PlayPageDefinition, config: CodyPlayConfig): PlayInformationRuntimeInfo | null => {
   if(!page.components.length) {
     return null;
   }

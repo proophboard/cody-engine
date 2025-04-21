@@ -66,7 +66,7 @@ const TopBar = (props: TopBarProps) => {
         {config.layout === 'prototype' && <PlayBreadcrumbs/>}
         <Box component={"div"} sx={{flexGrow: 1}}/>
         <SaveData color={theme.palette.primary.contrastText} />
-        <IconButton><Wrench sx={{color: mode === 'dark' ? 'black' : 'white'}} onClick={openCodyGPT} /></IconButton>
+        <IconButton onClick={openCodyGPT}><Wrench sx={{ color: theme.palette.primary.contrastText }} /></IconButton>
         <IconButton aria-label="Light mode" onClick={toggleColorMode}>
           {mode === 'light' && <LightModeIcon sx={{ color: theme.palette.primary.contrastText }}/> }
           {mode === 'dark' && <DarkModeIcon sx={{ color: theme.palette.primary.contrastText }}/> }

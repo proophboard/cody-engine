@@ -80,7 +80,9 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
   const pageMatch = usePlayPageMatch();
   const navigate = useNavigate();
 
-
+  // Ensure that latest page is available for instructions
+  const configPage = config.pages[pageMatch.handle.page.name];
+  const syncedPageMatch = configPage ? {...pageMatch, handle: {page: configPage}} : pageMatch;
 
   useEffect(() => {
     if(navigateTo) {
@@ -129,13 +131,12 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
   }
 
   const executeInstruction = async (instruction: Instruction, userInput: string) => {
-    debugger;
     console.log(instruction, userInput);
 
     const codyResponse = await instruction.execute(
       userInput,
       {
-        page: pageMatch,
+        page: syncedPageMatch,
       },
       dispatch,
       config,
@@ -191,7 +192,7 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
                                                         variant="outlined"
                                                         placeholder={'Next instruction'}
                                                          />}
-                                 options={suggestInstructions(pageMatch, config, env)}
+                                 options={suggestInstructions(syncedPageMatch, config, env)}
                                  freeSolo={true}
                                  value={value}
                                  autoComplete={false}
