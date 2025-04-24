@@ -74,6 +74,8 @@ export const PlayStandardPage = (props: Props) => {
   const [pageData,] = usePageData();
   const {t} = useTranslation();
   const [store] = useGlobalStore();
+
+  const pageMode = props.mode || "standard";
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
@@ -136,13 +138,11 @@ export const PlayStandardPage = (props: Props) => {
   } else {
     topBar = tabs ? <Grid2 xs={12} sx={headerGridSx}>{renderTabs(tabs, user, pageData, theme, t, true)}</Grid2> : <></>;
 
-    if(props.mode === "standard") {
+    if(pageMode === "standard") {
       topActions = cmdBtns.filter(c => c.position === "top-right");
       bottomActions = cmdBtns.filter(c => c.position !== "top-right");
     }
   }
-
-  const pageMode = props.mode || "standard";
 
   const components = page.components.map((valueObjectName, index) => {
     let isHiddenView = false;
@@ -198,7 +198,7 @@ export const PlayStandardPage = (props: Props) => {
 
   return <Grid2 {...{...defaultContainerProps, ...page.props?.container, sx: {...defaultContainerProps.sx, ...page.props?.container?.sx}}}>
     {config.layout === 'task-based-ui'
-      && props.mode === "standard"
+      && pageMode === "standard"
       && <>
         <Grid2 xs={12} sx={headerGridSx}><PlayBreadcrumbs /></Grid2>
         <Grid2 xs sx={headerGridSx}>
@@ -209,13 +209,13 @@ export const PlayStandardPage = (props: Props) => {
     <Grid2 xs={12} sx={{padding: 0}} />
     {components}
     { /*Render a placeholder to keep space for the  bottom bar */ }
-    {config.layout === 'task-based-ui' && props.mode === 'standard' && bottomActions.length > 0 && <Box sx={{
+    {config.layout === 'task-based-ui' && pageMode === 'standard' && bottomActions.length > 0 && <Box sx={{
       width: props.drawerWidth && isLarge ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)` : `calc(100% - ${SIDEBAR_WIDTH}px)`,
       left: SIDEBAR_WIDTH + 'px',
       bottom: 0,
       height: '60px'
     }} />}
-    {config.layout === 'task-based-ui' && props.mode === 'standard' && bottomActions.length > 0 && <Box sx={{
+    {config.layout === 'task-based-ui' && pageMode === 'standard' && bottomActions.length > 0 && <Box sx={{
       position: "fixed",
       width: props.drawerWidth && isLarge ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)` : `calc(100% - ${SIDEBAR_WIDTH}px)`,
       backgroundColor: (theme) => theme.palette.grey.A100,
