@@ -174,7 +174,7 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
     <DialogTitle>
       <Grid2 container>
         <Grid2 xs sx={{padding: theme.spacing(2)}}>
-          CodyGPT
+          Vibe Cody
         </Grid2>
         <TopRightActions  uiOptions={{}} defaultService={config.defaultService} jexlCtx={{} as any} additionalRightButtons={[
           <IconButton key={'app_settings_close_btn'} sx={{
