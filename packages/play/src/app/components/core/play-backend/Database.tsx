@@ -291,6 +291,8 @@ const Database = (props: DatabaseProps) => {
                 formatOnPaste: true,
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
+                mouseWheelZoom: true,
+                fixedOverflowWidgets: true,
                 scrollbar: {
                   alwaysConsumeMouseWheel: false
                 }
