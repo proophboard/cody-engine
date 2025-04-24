@@ -274,6 +274,8 @@ const AppSettings = (props: AppSettingsProps) => {
                     formatOnPaste: true,
                     scrollBeyondLastLine: false,
                     automaticLayout: true,
+                    mouseWheelZoom: true,
+                    fixedOverflowWidgets: true,
                     scrollbar: {
                       alwaysConsumeMouseWheel: false
                     }

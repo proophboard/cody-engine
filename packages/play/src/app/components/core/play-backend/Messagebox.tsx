@@ -182,6 +182,8 @@ const Messagebox = (props: MessageboxProps) => {
                     formatOnPaste: true,
                     scrollBeyondLastLine: false,
                     automaticLayout: true,
+                    mouseWheelZoom: true,
+                    fixedOverflowWidgets: true,
                     scrollbar: {
                       alwaysConsumeMouseWheel: false
                     },
@@ -220,6 +222,8 @@ const Messagebox = (props: MessageboxProps) => {
                     scrollbar: {
                       alwaysConsumeMouseWheel: false
                     },
+                    mouseWheelZoom: true,
+                    fixedOverflowWidgets: true,
                     readOnly: true,
                     lineNumbers: "off"
                   }}

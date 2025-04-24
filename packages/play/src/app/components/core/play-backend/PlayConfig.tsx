@@ -115,6 +115,8 @@ const PlayConfig = (props: PlayConfigProps) => {
                 formatOnPaste: true,
                 scrollBeyondLastLine: false,
                 automaticLayout: true,
+                mouseWheelZoom: true,
+                fixedOverflowWidgets: true,
                 scrollbar: {
                   alwaysConsumeMouseWheel: false
                 }
