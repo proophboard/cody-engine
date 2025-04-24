@@ -38,8 +38,10 @@ import {Logger} from "@frontend/util/Logger";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
 import DescriptionFieldTemplate from "@frontend/app/components/core/form/templates/DescriptionFieldTemplate";
+import {PageMode} from "@cody-play/app/pages/PlayStandardPage";
 
 interface OwnProps {
+  pageMode: PageMode;
   state?: any;
   description: ValueObjectRuntimeInfo;
   onValidationError?: () => void;
@@ -241,7 +243,7 @@ const FormView = (props: FormViewProps) => {
       // @ts-ignore
       ref={formRef}
       formData={formData}
-      formContext={{data: formData, updateForm: handleUpdateFormFromContext, defaultService, mode: "pageForm"}}
+      formContext={{data: formData, updateForm: handleUpdateFormFromContext, defaultService, mode: props.pageMode === "dialog" ? "dialogForm" : "pageForm"}}
       uiSchema={normalizedUiSchema}
       liveValidate={liveValidate}
       showErrorList={false}

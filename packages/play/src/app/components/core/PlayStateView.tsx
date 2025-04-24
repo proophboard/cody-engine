@@ -19,8 +19,9 @@ import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {UiSchema} from "@rjsf/utils";
 import {merge} from "lodash/fp";
+import {PageMode} from "@cody-play/app/pages/PlayStandardPage";
 
-const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
+const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo, pageMode: PageMode, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
   const {config: {definitions}} = useContext(configStore);
   const [page, addQueryResult] = usePageData();
   const desc = informationInfo.desc;
@@ -59,6 +60,7 @@ const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo,
   return <>
     {query.isLoading && <CircularProgress />}
     {query.isSuccess && <StateView
+        mode={pageMode === "dialog" ? "dialogView" : "pageView"}
         state={query.data}
         description={{...informationInfo, uiSchema, factory: makeInformationFactory(informationInfo.factory)}}
         definitions={definitions}

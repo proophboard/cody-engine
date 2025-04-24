@@ -20,11 +20,11 @@ export default function DescriptionFieldTemplate<
   const nestingLevel = getNestingLevel(id);
   const objectLike = schema.properties || schema.items;
 
+  console.log(mode, id, objectLike);
+
   const sx: SxProps = objectLike
     ? isDialogMode(mode) && id === "root__description"
-      ? {
-        marginLeft: theme.spacing(2),
-      }
+      ? {}
       : {
         marginBottom: theme.spacing(2),
         marginTop:  `-${theme.spacing(1)}`,

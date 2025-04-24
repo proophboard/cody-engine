@@ -22,8 +22,9 @@ import {UiSchema} from "@rjsf/utils";
 import {merge} from "lodash/fp";
 import {getInitialValuesFromUiSchema} from "@frontend/util/command-form/get-initial-values";
 import {JSONSchema7} from "json-schema";
+import {PageMode} from "@cody-play/app/pages/PlayStandardPage";
 
-const PlayStateFormView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
+const PlayStateFormView = (params: any, informationInfo: PlayInformationRuntimeInfo, pageMode: PageMode, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
   const {config: {definitions}} = useContext(configStore);
   const [page, addQueryResult] = usePageData();
   const desc = informationInfo.desc;
@@ -65,6 +66,7 @@ const PlayStateFormView = (params: any, informationInfo: PlayInformationRuntimeI
   return <>
     {query.isLoading && <CircularProgress />}
     {query.isSuccess && <FormView
+      pageMode={pageMode}
       state={state}
       description={{...informationInfo, uiSchema, factory: makeInformationFactory(informationInfo.factory)}}
       definitions={definitions}
