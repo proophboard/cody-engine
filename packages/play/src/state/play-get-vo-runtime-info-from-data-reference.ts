@@ -2,7 +2,7 @@ import {PlayInformationRegistry, PlayInformationRuntimeInfo} from "@cody-play/st
 import {names} from "@event-engine/messaging/helpers";
 
 export const playGetVoRuntimeInfoFromDataReference = (data: string, refNodeService: string, types: PlayInformationRegistry): PlayInformationRuntimeInfo => {
-  data = data.replace(".", "/");
+  data = data.replaceAll(".", "/");
 
   if(data[0] === "/") {
     data = data.slice(1);
@@ -11,11 +11,7 @@ export const playGetVoRuntimeInfoFromDataReference = (data: string, refNodeServi
   const parts = data.split("/");
 
   if(parts.length < 3) {
-    const firstPart = names(parts[0]).className;
-
-    if(firstPart !== refNodeService) {
-      parts.unshift(refNodeService);
-    }
+    parts.unshift(refNodeService);
   }
 
   data = parts.map(p => names(p).className).join(".");
