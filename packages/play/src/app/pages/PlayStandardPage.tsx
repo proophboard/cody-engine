@@ -44,9 +44,11 @@ import jexl from "@app/shared/jexl/get-configured-jexl";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
+export type PageMode = 'standard' | 'dialog' | 'drawer';
+
 interface Props {
   page: string;
-  mode?: 'standard' | 'dialog';
+  mode?: PageMode;
   drawerWidth?: number;
 }
 
@@ -124,7 +126,7 @@ export const PlayStandardPage = (props: Props) => {
   }
 
   // Cmd Buttons are handled in the dialog component if mode is "dialog"
-  const cmdBtns = props.mode === "dialog" ? [] : parseActionsFromPageCommands(page.commands, jexlCtx, t, env)
+  const cmdBtns = props.mode === "dialog" || props.mode === "drawer" ? [] : parseActionsFromPageCommands(page.commands, jexlCtx, t, env)
     .filter(a => !a.button.hidden);
 
   if(config.layout === "prototype") {
@@ -134,11 +136,13 @@ export const PlayStandardPage = (props: Props) => {
   } else {
     topBar = tabs ? <Grid2 xs={12} sx={headerGridSx}>{renderTabs(tabs, user, pageData, theme, t, true)}</Grid2> : <></>;
 
-    if(props.mode !== "dialog") {
+    if(props.mode === "standard") {
       topActions = cmdBtns.filter(c => c.position === "top-right");
       bottomActions = cmdBtns.filter(c => c.position !== "top-right");
     }
   }
+
+  const pageMode = props.mode || "standard";
 
   const components = page.components.map((valueObjectName, index) => {
     let isHiddenView = false;
@@ -178,7 +182,7 @@ export const PlayStandardPage = (props: Props) => {
       throw new Error(`View Component for Information: "${valueObjectName}" is not registered. Did you forget to pass the corresponding Information card to Cody?`);
     }
 
-    const ViewComponent = getViewComponent(config.views[valueObjectName], config.types, isHiddenView, viewType, uiSchemaOverride, loadState, initialValues);
+    const ViewComponent = getViewComponent(config.views[valueObjectName], config.types, isHiddenView, viewType, pageMode, uiSchemaOverride, loadState, initialValues);
 
     const containerProps = {xs: 12, className: "CodyView-root", ...(props?.container || {})};
 
@@ -194,7 +198,7 @@ export const PlayStandardPage = (props: Props) => {
 
   return <Grid2 {...{...defaultContainerProps, ...page.props?.container, sx: {...defaultContainerProps.sx, ...page.props?.container?.sx}}}>
     {config.layout === 'task-based-ui'
-      && props.mode !== "dialog"
+      && props.mode === "standard"
       && <>
         <Grid2 xs={12} sx={headerGridSx}><PlayBreadcrumbs /></Grid2>
         <Grid2 xs sx={headerGridSx}>
@@ -205,13 +209,13 @@ export const PlayStandardPage = (props: Props) => {
     <Grid2 xs={12} sx={{padding: 0}} />
     {components}
     { /*Render a placeholder to keep space for the  bottom bar */ }
-    {config.layout === 'task-based-ui' && props.mode !== 'dialog' && bottomActions.length > 0 && <Box sx={{
+    {config.layout === 'task-based-ui' && props.mode === 'standard' && bottomActions.length > 0 && <Box sx={{
       width: props.drawerWidth && isLarge ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)` : `calc(100% - ${SIDEBAR_WIDTH}px)`,
       left: SIDEBAR_WIDTH + 'px',
       bottom: 0,
       height: '60px'
     }} />}
-    {config.layout === 'task-based-ui' && props.mode !== 'dialog' && bottomActions.length > 0 && <Box sx={{
+    {config.layout === 'task-based-ui' && props.mode === 'standard' && bottomActions.length > 0 && <Box sx={{
       position: "fixed",
       width: props.drawerWidth && isLarge ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)` : `calc(100% - ${SIDEBAR_WIDTH}px)`,
       backgroundColor: (theme) => theme.palette.grey.A100,
@@ -225,7 +229,7 @@ export const PlayStandardPage = (props: Props) => {
   </Grid2>
 }
 
-const getViewComponent = (component: React.FunctionComponent | PlayViewComponentConfig, types: PlayInformationRegistry, isHiddenView = false, viewType: ViewComponentType, uiSchemaOverride?: UiSchema, loadState = true, injectedInitialValues?: any): React.FunctionComponent => {
+const getViewComponent = (component: React.FunctionComponent | PlayViewComponentConfig, types: PlayInformationRegistry, isHiddenView = false, viewType: ViewComponentType, pageMode: PageMode, uiSchemaOverride?: UiSchema, loadState = true, injectedInitialValues?: any): React.FunctionComponent => {
   if(typeof component === "object" && component.information) {
     const information = types[component.information];
 
@@ -235,19 +239,19 @@ const getViewComponent = (component: React.FunctionComponent | PlayViewComponent
 
     if(isQueryableStateListDescription(information.desc) || isQueryableListDescription(information.desc) || isQueryableNotStoredStateListDescription(information.desc)) {
       return (params: any) => {
-        return PlayTableView(params, information, isHiddenView, uiSchemaOverride, injectedInitialValues);
+        return PlayTableView(params, information, pageMode, isHiddenView, uiSchemaOverride, injectedInitialValues);
       };
     } else if (isQueryableDescription(information.desc) && loadState) {
       return (params: any) => {
         return viewType === 'form'
-          ? PlayStateFormView(params, information, isHiddenView, uiSchemaOverride, injectedInitialValues)
-          : PlayStateView(params, information, isHiddenView, uiSchemaOverride, injectedInitialValues);
+          ? PlayStateFormView(params, information, pageMode, isHiddenView, uiSchemaOverride, injectedInitialValues)
+          : PlayStateView(params, information, pageMode,  isHiddenView, uiSchemaOverride, injectedInitialValues );
       }
     } else {
       return (params: any) => {
         return viewType === 'form'
-          ? PlayNewStateFormView(params, information, isHiddenView, uiSchemaOverride, injectedInitialValues)
-          : PlayStaticView(params, information, isHiddenView, uiSchemaOverride, injectedInitialValues);
+          ? PlayNewStateFormView(params, information, pageMode, isHiddenView, uiSchemaOverride, injectedInitialValues )
+          : PlayStaticView(params, information, pageMode, isHiddenView, uiSchemaOverride, injectedInitialValues );
       }
     }
   }

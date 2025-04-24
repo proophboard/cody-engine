@@ -22,9 +22,7 @@ export default function DescriptionFieldTemplate<
 
   const sx: SxProps = objectLike
     ? isDialogMode(mode) && id === "root__description"
-      ? {
-        marginLeft: theme.spacing(2),
-      }
+      ? {}
       : {
         marginBottom: theme.spacing(2),
         marginTop:  `-${theme.spacing(1)}`,

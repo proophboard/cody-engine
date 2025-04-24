@@ -36,7 +36,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
                 alignItems="center"
                 justifyContent="flex-end"
                 sx={{
-                  "& :not(:first-of-type)": {
+                  "& .MuiButton-root ~.MuiButton-root": {
                     marginLeft: (theme) => theme.spacing(1)
                   }
                 }}

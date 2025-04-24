@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Typography } from '@mui/material';
+import {Box, CircularProgress, Typography, useTheme} from '@mui/material';
 import {DataGrid, GridColDef, GridRenderCellParams, GridToolbar} from '@mui/x-data-grid';
 import {useContext, useEffect} from 'react';
 import { triggerSideBarAnchorsRendered } from '@frontend/util/sidebar/trigger-sidebar-anchors-rendered';
@@ -61,6 +61,7 @@ import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {useEnv} from "@frontend/hooks/use-env";
 import {PageRegistry} from "@frontend/app/pages";
+import {PageMode} from "@cody-play/app/pages/PlayStandardPage";
 
 const showTitle = (uiSchema?: UiSchema): boolean => {
   if(!uiSchema) {
@@ -78,11 +79,12 @@ const showTitle = (uiSchema?: UiSchema): boolean => {
   return true;
 }
 
-const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
+const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, pageMode: PageMode, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc) && !isQueryableNotStoredStateListDescription(informationInfo.desc)) {
     throw new Error(`Play table view can only be used to show queriable state list information, but "${informationInfo.desc.name}" is not of this information type. ${CONTACT_PB_TEAM}`)
   }
 
+  const theme = useTheme();
   const {config: {queries, types, pages, definitions, defaultService}} = useContext(configStore);
   const [page,addQueryResult] = usePageData();
   const [user] = useUser();
@@ -178,7 +180,7 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
           }}
         />
       )}
-      <BottomActions uiOptions={uiOptions} defaultService={normalizedDefaultService} jexlCtx={jexlCtx} />
+      <BottomActions uiOptions={uiOptions} defaultService={normalizedDefaultService} jexlCtx={jexlCtx} sx={{marginTop: theme.spacing(2)}} />
     </Box>
   );
 };

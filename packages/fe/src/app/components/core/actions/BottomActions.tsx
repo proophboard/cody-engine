@@ -50,7 +50,7 @@ const BottomActions = (props: BottomActionsProps) => {
            alignItems="center"
            justifyContent="flex-start"
            sx={{
-             "& :not(:first-of-type)": {
+             "& .MuiButton-root ~.MuiButton-root": {
                marginLeft: (theme) => theme.spacing(1)
              }
            }}
@@ -65,7 +65,7 @@ const BottomActions = (props: BottomActionsProps) => {
            alignItems="center"
            justifyContent="center"
            sx={{
-             "& :not(:first-of-type)": {
+             "& .MuiButton-root ~.MuiButton-root": {
                marginLeft: (theme) => theme.spacing(1)
              }
            }}
@@ -81,7 +81,7 @@ const BottomActions = (props: BottomActionsProps) => {
            alignItems="center"
            justifyContent="flex-end"
            sx={{
-             "& :not(:first-of-type)": {
+             "& .MuiButton-root ~.MuiButton-root": {
                marginLeft: (theme) => theme.spacing(1)
              }
            }}

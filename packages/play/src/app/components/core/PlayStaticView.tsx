@@ -10,8 +10,9 @@ import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {UiSchema} from "@rjsf/utils";
 import {merge} from "lodash/fp";
+import {PageMode} from "@cody-play/app/pages/PlayStandardPage";
 
-const PlayStaticView = (params: any, informationInfo: PlayInformationRuntimeInfo, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
+const PlayStaticView = (params: any, informationInfo: PlayInformationRuntimeInfo, pageMode: PageMode, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
   const {config: {definitions}} = useContext(configStore);
   const [page] = usePageData();
   const [user] = useUser();
@@ -41,6 +42,7 @@ const PlayStaticView = (params: any, informationInfo: PlayInformationRuntimeInfo
   const result = injectedInitialValues || exec({});
 
   return <StateView
+    mode={pageMode === "dialog" ? "dialogView" : "pageView"}
     state={result}
     description={{...informationInfo, uiSchema, factory: makeInformationFactory(informationInfo.factory)}}
     definitions={definitions}
