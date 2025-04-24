@@ -37,6 +37,7 @@ import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {Logger} from "@frontend/util/Logger";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
+import DescriptionFieldTemplate from "@frontend/app/components/core/form/templates/DescriptionFieldTemplate";
 
 interface OwnProps {
   state?: any;
@@ -252,6 +253,7 @@ const FormView = (props: FormViewProps) => {
         {
           ObjectFieldTemplate,
           ArrayFieldTemplate,
+          DescriptionFieldTemplate,
           ...props.templates
         }
       }

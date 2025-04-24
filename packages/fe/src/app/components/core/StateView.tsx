@@ -36,6 +36,7 @@ import {translateSchema} from "@frontend/util/schema/translate-schema";
 import {useEnv} from "@frontend/hooks/use-env";
 import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
 import {FormModeType} from "@frontend/app/components/core/CommandForm";
+import DescriptionFieldTemplate from "@frontend/app/components/core/form/templates/DescriptionFieldTemplate";
 
 interface OwnProps {
   state?: any;
@@ -124,6 +125,7 @@ const StateView = (props: StateViewProps) => {
         {
           ObjectFieldTemplate,
           ArrayFieldTemplate,
+          DescriptionFieldTemplate,
           ...props.templates
         }
       }

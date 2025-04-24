@@ -13,7 +13,7 @@ export interface ButtonProps {
   startIcon?: React.ReactNode | false | string | undefined;
   endIcon?: React.ReactNode | string | undefined;
   icon?: React.ReactNode | false | string | undefined;
-  buttonColor?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'warning' | undefined;
+  color?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
   style?: SxProps;
   disabled?: boolean;
   hidden?: boolean;
@@ -92,7 +92,7 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
   }
 
   const variant = props.variant || uiButtonConfig['variant'] || 'contained';
-  const color = props.buttonColor || uiButtonConfig['color'] || 'primary';
+  const color = props.color || uiButtonConfig['color'] || 'primary';
   const style = props.style || uiButtonConfig['style'] || undefined;
   const icon = props.startIcon === false ? undefined : props.startIcon || props.icon || uiConfigIcon;
   const label = props.label || uiButtonConfig['label'] || undefined;

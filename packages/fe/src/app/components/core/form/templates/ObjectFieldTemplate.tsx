@@ -171,6 +171,8 @@ export default function ObjectFieldTemplate<
   const [store] = useGlobalStore();
   const {t} = useTranslation();
 
+  console.log(props.description);
+
   const uiOptions = getUiOptions<T,S,F>(props.uiSchema);
 
   const DescriptionFieldTemplate = getTemplate<'DescriptionFieldTemplate', T, S, F>(
@@ -222,11 +224,18 @@ export default function ObjectFieldTemplate<
           {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
                                 className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
                                 sx={getObjPropTitleStyle(headingVariant, theme, mode)}>{index}{title}</Typography>}
+          {props.description && <DescriptionFieldTemplate
+            id={descriptionId<T>(props.idSchema)}
+            description={props.description}
+            schema={props.schema}
+            uiSchema={props.uiSchema}
+            registry={props.registry}
+          />}
         </Grid2>
         <TopRightActions uiOptions={uiOptions} defaultService={props.formContext!.defaultService} jexlCtx={jexlCtx}/>
       </Grid2>}
       <Grid2 xs={12} {...gridConfig as Grid2Props}>
-        {props.description && (
+        {isDialogMode(mode) && nestingLevel === 1 && props.description && (
           <DescriptionFieldTemplate
             id={descriptionId<T>(props.idSchema)}
             description={props.description}

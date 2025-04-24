@@ -34,6 +34,7 @@ import {useTranslation} from "react-i18next";
 import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
 import {useEnv} from "@frontend/hooks/use-env";
 import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
+import DescriptionFieldTemplate from "@frontend/app/components/core/form/templates/DescriptionFieldTemplate";
 
 export type FormModeType = 'pageForm' | 'pageView' | 'dialogForm' | 'dialogView';
 
@@ -226,6 +227,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
             templates={{
               ObjectFieldTemplate,
               ArrayFieldTemplate,
+              DescriptionFieldTemplate,
               ...props.templates,
             }}
             widgets={
