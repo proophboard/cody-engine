@@ -19,9 +19,9 @@ const PlayBreadcrumbs = (props: BreadcrumbsProps) => {
   const theme = useTheme();
 
   const matchingPages = usePlayMatchingPages();
-  const color = config.layout === 'task-based-ui' ? theme.palette.primary.main : theme.palette.primary.contrastText
+  const color = config.layout === 'task-based-ui' ? theme.palette.secondary.main : theme.palette.primary.contrastText
 
-  const links = matchingPages.map((matchedPage, index) => {
+  const links = matchingPages.filter(p => p.breadcrumb || p['breadcrumb:t']).map((matchedPage, index) => {
     return  <PlayBreadcrumb key={matchedPage.route} page={matchedPage} isLast={index === matchingPages.length - 1} color={color} />
   });
 
