@@ -16,6 +16,7 @@ import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import PlayConnectedCommand from "@cody-play/app/components/core/PlayConnectedCommand";
+import PlayDirectSubmitCommand from "@cody-play/app/components/core/PlayDirectSubmitCommand";
 
 interface OwnProps {
   action: Action;
@@ -83,6 +84,10 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
 
       if(action.connectTo) {
         return <PlayConnectedCommand  command={command} connectTo={action.connectTo} buttonProps={buttonProps} uiSchemaOverride={action.uiSchema} forceSchema={action.forceSchema} />;
+      }
+
+      if(action.directSubmit) {
+        return <PlayDirectSubmitCommand command={command} data={initialValues} buttonProps={buttonProps} uiSchemaOverride={action.uiSchema} />
       }
 
       return <PlayCommand command={command} buttonProps={buttonProps} initialValues={initialValues} onDialogClose={onDialogClose} uiSchemaOverride={action.uiSchema} />;
