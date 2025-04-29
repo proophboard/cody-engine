@@ -241,13 +241,15 @@ export default function ObjectFieldTemplate<
           <TopRightActions uiOptions={uiOptions} defaultService={props.formContext!.defaultService} jexlCtx={jexlCtx}/>
         </Grid2>}
         {isDialogMode(mode) && nestingLevel === 1 && props.description && (
-          <DescriptionFieldTemplate
-            id={descriptionId<T>(props.idSchema)}
-            description={props.description}
-            schema={props.schema}
-            uiSchema={props.uiSchema}
-            registry={props.registry}
-          />
+          <Grid2 xs={12} sx={{paddingLeft: theme.spacing(2)}}>
+            <DescriptionFieldTemplate
+              id={descriptionId<T>(props.idSchema)}
+              description={props.description}
+              schema={props.schema}
+              uiSchema={props.uiSchema}
+              registry={props.registry}
+            />
+          </Grid2>
         )}
         {props.properties.map(
           element =>

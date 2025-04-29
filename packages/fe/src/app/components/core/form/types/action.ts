@@ -38,6 +38,7 @@ export interface CommandAction extends Action {
   command: string;
   uiSchema?: UiSchema,
   connectTo?: string,
+  directSubmit?: boolean,
   forceSchema?: boolean,
   data?: string | string[] | PropMapping | PropMapping[];
 }
