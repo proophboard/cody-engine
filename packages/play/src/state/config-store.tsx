@@ -1,14 +1,16 @@
-
 import {
   ChangeLayout,
   PlayAddAggregateAction,
   PlayAddAggregateEventAction,
-  PlayAddCommandAction, PlayAddCommandHandlerAction,
+  PlayAddCommandAction,
+  PlayAddCommandHandlerAction,
   PlayAddEventPolicyAction,
   PlayAddPageAction,
-  PlayAddPersona, PlayAddPureEventAction,
+  PlayAddPersona,
+  PlayAddPureEventAction,
   PlayAddQueryAction,
-  PlayAddTypeAction, PlayAddViewAction,
+  PlayAddTypeAction,
+  PlayAddViewAction,
   PlayAggregateRegistry,
   PlayApplyRulesRegistry,
   PlayChangeTheme,
@@ -19,10 +21,19 @@ import {
   PlayInformationRegistry,
   PlayInitAction,
   PlayPageRegistry,
-  PlayQueryRegistry, PlayRemoveAggregateAction, PlayRemoveAggregateEventAction,
-  PlayRemoveCommandAction, PlayRemoveCommandHandlerAction, PlayRemoveEventPolicyAction,
-  PlayRemovePageAction, PlayRemovePureEventAction, PlayRemoveQueryAction, PlayRemoveTypeAction, PlayRemoveViewAction,
-  PlayRenameApp, PlayRenameDefaultService,
+  PlayQueryRegistry,
+  PlayRemoveAggregateAction,
+  PlayRemoveAggregateEventAction,
+  PlayRemoveCommandAction,
+  PlayRemoveCommandHandlerAction,
+  PlayRemoveEventPolicyAction,
+  PlayRemovePageAction,
+  PlayRemovePureEventAction,
+  PlayRemoveQueryAction,
+  PlayRemoveTypeAction,
+  PlayRemoveViewAction,
+  PlayRenameApp,
+  PlayRenameDefaultService,
   PlayResolverRegistry,
   PlaySchemaDefinitions,
   PlaySetPersonas,
@@ -41,14 +52,11 @@ import {Persona} from "@app/shared/extensions/personas";
 import {types as sharedTypes} from "@app/shared/types";
 import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
 import _ from "lodash";
-import {
-  playDefinitionIdFromFQCN,
-} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {playDefinitionIdFromFQCN,} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {directSetEnv, EnvContext} from "@frontend/app/providers/UseEnvironment";
 import {names} from "@event-engine/messaging/helpers";
 import {PageRegistry} from "@frontend/app/pages";
-
-export type LayoutType = 'prototype' | 'task-based-ui';
+import {LayoutType} from "@frontend/app/layout/layout-type";
 
 export interface CodyPlayConfig {
   appName: string,
