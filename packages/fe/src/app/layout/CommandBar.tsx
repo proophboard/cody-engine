@@ -119,8 +119,8 @@ const CommandBar = (props: CommandBarProps) => {
     '& button': {
       minWidth: "160px"
     },
-    '&:not(:first-of-type)': {
-      marginLeft: theme.spacing(1)
+    '& .MuiButton-root ~.MuiButton-root': {
+      marginLeft: (theme) => theme.spacing(1)
     }
   }}>
     {props.children}
