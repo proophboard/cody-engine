@@ -11,7 +11,6 @@ import {PageRegistry} from "@frontend/app/pages";
 import {PlayStandardPage} from "@cody-play/app/pages/PlayStandardPage";
 import {generatePageLink} from "@frontend/app/components/core/PageLink";
 import {Close} from "mdi-material-ui";
-import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/action";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {useEnv} from "@frontend/hooks/use-env";
 import {useUser} from "@frontend/hooks/use-user";
@@ -21,6 +20,7 @@ import {useTranslation} from "react-i18next";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
+import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
 
 interface OwnProps {
   page: string;

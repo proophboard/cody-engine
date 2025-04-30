@@ -3,9 +3,10 @@ import {WithCommandButtonProps} from "@frontend/app/components/core/CommandButto
 import {commands as commandComponents} from "@frontend/app/components/commands";
 import {commands as overwriteCommandComponents} from "@frontend/extensions/app/components/commands";
 import {CommandComponent} from "@cody-engine/cody/hooks/utils/ui/types";
+import {isCommandAction} from "@frontend/app/components/core/form/types/action";
 export const loadCommandComponent = (commandName: CommandComponent): React.FunctionComponent<any & WithCommandButtonProps> => {
   if(typeof commandName !== "string") {
-    commandName = commandName.command;
+    commandName = isCommandAction(commandName)? commandName.command : '';
   }
 
   if(overwriteCommandComponents[commandName]) {

@@ -4,7 +4,7 @@ import {MouseEvent, PropsWithChildren, useContext} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import {Alert, Button, IconButton} from '@mui/material';
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
-import {ButtonConfig, determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
+import {determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
 import {generatePageLink, getPageDefinition} from "@frontend/app/components/core/PageLink";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import jexl from "@app/shared/jexl/get-configured-jexl";
@@ -17,6 +17,7 @@ import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import PlayConnectedCommand from "@cody-play/app/components/core/PlayConnectedCommand";
 import PlayDirectSubmitCommand from "@cody-play/app/components/core/PlayDirectSubmitCommand";
+import {ButtonConfig} from "@frontend/app/components/core/button/button-config";
 
 interface OwnProps {
   action: Action;

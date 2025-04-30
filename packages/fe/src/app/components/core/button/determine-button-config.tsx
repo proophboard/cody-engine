@@ -6,7 +6,8 @@ import * as React from "react";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row-jexl-context";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
-import {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
+import {ButtonConfig} from "@frontend/app/components/core/button/button-config";
+import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 
 export interface ButtonProps {
   label?: string;
@@ -18,25 +19,6 @@ export interface ButtonProps {
   disabled?: boolean;
   hidden?: boolean;
   variant?: "text" | "outlined" | "contained";
-  'variant:expr'?: string,
-  'color:expr'?: string,
-  'disabled:expr'?: string,
-  'style:expr'?: string,
-  'hidden:expr'?: string,
-  'icon:expr'?: string,
-  'label:expr'?: string,
-  'endIcon:expr'?: string,
-}
-
-export interface ButtonConfig {
-  variant: "text" | "outlined" | "contained",
-  color: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
-  disabled?: boolean,
-  style: SxProps,
-  hidden?: boolean,
-  icon?: React.ReactNode,
-  label?: string,
-  endIcon?: React.ReactNode,
   'variant:expr'?: string,
   'color:expr'?: string,
   'disabled:expr'?: string,

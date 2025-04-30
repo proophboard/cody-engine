@@ -1,9 +1,9 @@
 import {UiSchema} from "@rjsf/utils";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import jexl from "@app/shared/jexl/get-configured-jexl";
-import {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
 import {Action, isCommandAction} from "@frontend/app/components/core/form/types/action";
 import {normalizeCommandName} from "@cody-play/infrastructure/rule-engine/normalize-command-name";
+import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 
 export const normalizeActions = (uiSchema: UiSchema, defaultService: string): UiSchema => {
   const schema = cloneDeepJSON(uiSchema);

@@ -1,7 +1,5 @@
-import React, {PropsWithChildren, useEffect, useState} from "react";
-import {PageRegistry} from "@frontend/app/pages";
-
-export type RuntimeEnvironment = {UI_ENV: 'play' | 'dev' | 'test' | 'prod', DEFAULT_SERVICE: string, PAGES: PageRegistry};
+import React, {PropsWithChildren, useState} from "react";
+import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 
 let env: RuntimeEnvironment = {UI_ENV: 'dev', DEFAULT_SERVICE: 'App', PAGES: {}};
 

@@ -1,11 +1,12 @@
 import * as React from 'react';
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
-import {Action, parseActionsFromUiOptions} from "@frontend/app/components/core/form/types/action";
+import {Action} from "@frontend/app/components/core/form/types/action";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import ActionButton from "@frontend/app/components/core/ActionButton";
 import {SxProps} from "@mui/material";
-import {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
 import {useEnv} from "@frontend/hooks/use-env";
+import {parseActionsFromUiOptions} from "@frontend/app/components/core/form/types/parse-actions";
+import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
