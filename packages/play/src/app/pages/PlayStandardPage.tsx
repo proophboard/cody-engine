@@ -36,13 +36,14 @@ import {useTranslation} from "react-i18next";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
-import {Action, isCommandAction, parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/action";
+import {Action, isCommandAction} from "@frontend/app/components/core/form/types/action";
 import {useEnv} from "@frontend/hooks/use-env";
 import ActionButton from "@frontend/app/components/core/ActionButton";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
 
 export type PageMode = 'standard' | 'dialog' | 'drawer';
 

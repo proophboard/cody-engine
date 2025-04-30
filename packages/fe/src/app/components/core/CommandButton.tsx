@@ -7,7 +7,6 @@ import { Plus } from 'mdi-material-ui';
 import { useUser } from '@frontend/hooks/use-user';
 import { usePageData } from '@frontend/hooks/use-page-data';
 import {
-  ButtonConfig,
   ButtonProps,
   determineButtonConfig,
 } from '@frontend/app/components/core/button/determine-button-config';
@@ -18,6 +17,7 @@ import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
 import {translateSchema} from "@frontend/util/schema/translate-schema";
 import {useTranslation} from "react-i18next";
 import {useEnv} from "@frontend/hooks/use-env";
+import {ButtonConfig} from "@frontend/app/components/core/button/button-config";
 
 interface OwnProps {
   command: CommandRuntimeInfo;

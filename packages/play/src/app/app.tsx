@@ -43,13 +43,14 @@ import {
 import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 import GlobalStore from "@frontend/app/providers/GlobalStore";
 import {getConfiguredPlayAuthService} from "@cody-play/infrastructure/auth/configured-auth-service";
-import EnvProvider, {RuntimeEnvironment} from "@frontend/app/providers/UseEnvironment";
+import EnvProvider from "@frontend/app/providers/UseEnvironment";
 import TypesProvider from "@frontend/app/providers/Types";
 import {playAttachDefaultStreamListeners} from "@cody-play/infrastructure/events/play-attach-default-stream-listeners";
 import {getPageType, PageDefinition} from "@frontend/app/pages/page-definitions";
 import PlayDialogPage from "@cody-play/app/pages/PlayDialogPage";
 import PlayRightDrawerPage from "@cody-play/app/pages/PlayRightDrawerPage";
 import {useMediaQuery} from "@mui/material";
+import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;

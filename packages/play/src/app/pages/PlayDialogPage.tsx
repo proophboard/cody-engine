@@ -11,7 +11,6 @@ import {PlayStandardPage} from "@cody-play/app/pages/PlayStandardPage";
 import {Dialog, DialogContent, DialogTitle, IconButton, useTheme} from "@mui/material";
 import {Close} from "mdi-material-ui";
 import {generatePageLink} from "@frontend/app/components/core/PageLink";
-import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/action";
 import {useEnv} from "@frontend/hooks/use-env";
 import {useUser} from "@frontend/hooks/use-user";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
@@ -21,6 +20,7 @@ import {usePageData} from "@frontend/hooks/use-page-data";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
+import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
 
 interface OwnProps {
   page: string;
