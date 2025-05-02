@@ -27,8 +27,8 @@ import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import Breadcrumbs from "@frontend/app/layout/Breadcrumbs";
 
 interface Props {
-  page: PageDefinition,
-  mode?: PageType,
+  page: PageDefinition;
+  mode?: PageType;
   drawerWidth?: number;
 }
 
