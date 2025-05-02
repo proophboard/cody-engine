@@ -13,17 +13,12 @@ import {CommandMutationFunction} from "@cody-play/infrastructure/commands/comman
 import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
 import {makeAggregateCommandMutationFn} from "@cody-play/infrastructure/commands/make-aggregate-command-mutation-fn";
 import {makePureCommandMutationFn} from "@cody-play/infrastructure/commands/make-pure-command-mutation-fn";
-import {getButtonIcon} from "@cody-play/app/components/core/PlayCommand";
-import {Alert, AlertTitle, Container} from "@mui/material";
+import {Alert} from "@mui/material";
 import {useMutation, useQueryClient} from "@tanstack/react-query";
-import {isPageFormReference} from "@app/shared/types/core/page-data/page-data";
-import {JSONSchema7} from "json-schema";
 import {UiSchema} from "@rjsf/utils";
 import {merge} from "lodash/fp";
 import {useSnackbar} from "notistack";
 import {useTranslation} from "react-i18next";
-import {AxiosError, AxiosResponse} from "axios";
-import AxiosResponseViewer from "@frontend/app/components/core/AxiosResponseViewer";
 import {getFormSuccessRedirect} from "@frontend/util/command-form/get-form-success-redirect";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {useEnv} from "@frontend/hooks/use-env";

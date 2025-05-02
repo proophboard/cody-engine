@@ -190,6 +190,7 @@ export const StandardPage = (props: Props) => {
       width: props.drawerWidth && isLarge ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)` : `calc(100% - ${SIDEBAR_WIDTH}px)`,
       left: SIDEBAR_WIDTH + 'px',
       bottom: 0,
+      marginTop: theme.spacing(2),
       height: '60px'
     }} />}
     {environment.layout === 'task-based-ui' && pageMode === 'standard' && bottomActions.length > 0 && <Box sx={{

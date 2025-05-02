@@ -18,17 +18,14 @@ import {
 import PlayTableView from "@cody-play/app/components/core/PlayTableView";
 import PlayStateView from "@cody-play/app/components/core/PlayStateView";
 import {PageDataContext} from "@frontend/app/providers/PageData";
-import {usePageMatch} from "@frontend/util/hook/use-page-match";
 import {getPageTitle, PageDefinition, Tab} from "@frontend/app/pages/page-definitions";
-import {Alert, Box, DialogActions, SxProps, Tabs, Typography, useMediaQuery, useTheme} from "@mui/material";
-import {playIsCommandButtonHidden} from "@cody-play/infrastructure/cody/command/play-is-command-button-hidden";
+import {Alert, Box, SxProps, Tabs, Typography, useMediaQuery, useTheme} from "@mui/material";
 import PlayStaticView from "@cody-play/app/components/core/PlayStaticView";
 import {names} from "@event-engine/messaging/helpers";
 import PlayStateFormView from "@cody-play/app/components/core/PlayStateFormView";
 import {ViewComponentType} from "@cody-engine/cody/hooks/utils/ui/types";
 import {UiSchema} from "@rjsf/utils";
 import PlayNewStateFormView from "@cody-play/app/components/core/PlayNewStateFormView";
-import PlayConnectedCommand from "@cody-play/app/components/core/PlayConnectedCommand";
 import PlayBreadcrumbs from "@cody-play/app/layout/PlayBreadcrumbs";
 import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
@@ -36,13 +33,12 @@ import {useTranslation} from "react-i18next";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
-import {Action, isCommandAction} from "@frontend/app/components/core/form/types/action";
+import {Action} from "@frontend/app/components/core/form/types/action";
 import {useEnv} from "@frontend/hooks/use-env";
 import ActionButton from "@frontend/app/components/core/ActionButton";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
-import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
 
 export type PageMode = 'standard' | 'dialog' | 'drawer';
@@ -213,6 +209,7 @@ export const PlayStandardPage = (props: Props) => {
       width: props.drawerWidth && isLarge ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)` : `calc(100% - ${SIDEBAR_WIDTH}px)`,
       left: SIDEBAR_WIDTH + 'px',
       bottom: 0,
+      marginTop: theme.spacing(2),
       height: '60px'
     }} />}
     {config.layout === 'task-based-ui' && pageMode === 'standard' && bottomActions.length > 0 && <Box sx={{

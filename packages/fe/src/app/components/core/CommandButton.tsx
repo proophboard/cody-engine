@@ -18,6 +18,7 @@ import {translateSchema} from "@frontend/util/schema/translate-schema";
 import {useTranslation} from "react-i18next";
 import {useEnv} from "@frontend/hooks/use-env";
 import {ButtonConfig} from "@frontend/app/components/core/button/button-config";
+import {UiSchema} from "@rjsf/utils";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -29,6 +30,10 @@ export type CommandButtonProps = OwnProps & ButtonProps & Partial<ButtonConfig>;
 
 export interface WithCommandButtonProps {
   buttonProps?: Partial<CommandButtonProps>;
+  connectTo?: string;
+  directSubmit?: boolean;
+  forceSchema?: boolean;
+  uiSchemaOverride?: UiSchema;
 }
 
 export const commandTitle = (cmd: CommandRuntimeInfo, t: TFunction): string => {

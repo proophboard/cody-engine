@@ -217,6 +217,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
           serviceNames,
           voNames,
           ns,
+          isList,
           ...queryNames
         });
       }

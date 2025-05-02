@@ -3,7 +3,7 @@ import {useState} from "react";
 import CommandButton, {WithCommandButtonProps} from '@frontend/app/components/core/CommandButton';
 import CommandDialog from "@frontend/app/components/core/CommandDialog";
 import {<%= propertyName %>} from "@frontend/commands/<%= serviceNames.fileName %>/use-<%= fileName %>";
-import {<%= serviceNames.className %><%= className %>RuntimeInfo} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= fileName %>";
+import {<%= serviceNames.className %><%= className %>RuntimeInfo as RuntimeInfo} from "@app/shared/commands/<%= serviceNames.fileName %>/<%= fileName %>";
 <% if (!newAggregate  && !uiDisableFetchState) { %>
 import {useGet<%= stateNames.className %>} from "@frontend/queries/<%= serviceNames.fileName %>/use-get-<%= stateNames.fileName %>";
 import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";
@@ -14,6 +14,9 @@ import {useParams} from "react-router-dom";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {getInitialValues} from "@frontend/util/command-form/get-initial-values";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
+import {merge} from "lodash/fp";
+import DirectCommandButton from "@frontend/app/components/core/DirectCommandButton";
+import ConnectedCommandButton from "@frontend/app/components/core/ConnectedCommandButton";
 <% if (buttonIcon) { %>import {<%= buttonIcon %>} from "mdi-material-ui";<% } %>
 
 interface OwnProps {
@@ -34,6 +37,13 @@ const <%= className %> = (props: <%= className %>Props) => {
   const [page,] = usePageData();
   const [store] = useGlobalStore();
 
+  const uiSchema = merge(RuntimeInfo.uiSchema, props.uiSchemaOverride);
+
+  const modifiedRuntimeInfo = {
+    ...RuntimeInfo,
+    uiSchema
+  }
+
 <% if (!newAggregate && !uiDisableFetchState) { %>
   const query = useGet<%= stateNames.className %>(determineQueryPayload(props, <%= serviceNames.className %>Get<%= stateNames.className %>QueryRuntimeInfo));
 <% } %>
@@ -50,14 +60,32 @@ const <%= className %> = (props: <%= className %>Props) => {
     }
   };
 
-  const initialValues = props.initialValues || getInitialValues(<%= serviceNames.className %><%= className %>RuntimeInfo, {user, routeParams, page, store});
+  const initialValues = props.initialValues || getInitialValues(modifiedRuntimeInfo, {user, routeParams, page, store});
+
+  if(props.directSubmit) {
+    return <DirectCommandButton command={modifiedRuntimeInfo}
+                                commandFn={<%= propertyName %>}
+                                data={initialValues || {}}
+                                buttonProps={props.buttonProps}
+                                />
+  }
+
+  if(props.connectTo) {
+    return <ConnectedCommandButton command={modifiedRuntimeInfo}
+                                   commandFn={<%= propertyName %>}
+                                   connectTo={props.connectTo}
+                                   forceSchema={props.forceSchema}
+                                   buttonProps={props.buttonProps}
+                                   />
+  }
+
 
   return <>
-    <CommandButton command={<%= serviceNames.className %><%= className %>RuntimeInfo} onClick={handleOpenDialog} {...{<% if (buttonIcon) { %>startIcon: <<%= buttonIcon %> />, <% } %>...props.buttonProps}} />
+    <CommandButton command={modifiedRuntimeInfo} onClick={handleOpenDialog} {...{<% if (buttonIcon) { %>startIcon: <<%= buttonIcon %> />, <% } %>...props.buttonProps}} />
     <CommandDialog
       open={dialogOpen}
       onClose={handleCloseDialog}
-      commandDialogCommand={<%= serviceNames.className %><%= className %>RuntimeInfo}
+      commandDialogCommand={modifiedRuntimeInfo}
       commandFn={<%= propertyName %>}
       initialValues={initialValues}
       <% if (!newAggregate  && !uiDisableFetchState) { %>aggregateState={query.isSuccess? query.data : {}}<% } %>

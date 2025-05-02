@@ -16,10 +16,14 @@ export const <%= propertyName %> = async (params: <%= className %>): Promise<<%=
   return Promise.reject(new QueryError(<%= className %>Desc.name));
 }
 
-export const use<%= className %> = (params: <%= className %>) => {
+export const use<%= className %> = (params: <%= className %>, disabled?: boolean) => {
   return useQuery({
     queryKey: [<%= className %>Desc.name, params],
-    queryFn: (): Promise<<%= voNames.className %>> => {
+    queryFn: async (): Promise<<%= voNames.className %>> => {
+      if(disabled) {
+        return <% if (isList) { %>[]<% } else { %>{} as unknown as <%= voNames.className %><% } %>;
+      }
+
       return <%= propertyName %>(params);
     }
   })
