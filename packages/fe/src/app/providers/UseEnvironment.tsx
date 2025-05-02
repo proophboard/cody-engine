@@ -2,8 +2,18 @@ import React, {PropsWithChildren, useState} from "react";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 
 let env: RuntimeEnvironment = {UI_ENV: 'dev', DEFAULT_SERVICE: 'App', PAGES: {}};
+let directSetEnvEnabled = false;
+
+export const enableDirectSetEnv = () => {
+  directSetEnvEnabled = true;
+}
 
 export const directSetEnv = (newEnv: RuntimeEnvironment) => {
+  if(!directSetEnvEnabled) {
+    console.warn("[Cody Engine] Set env directly is not enabled. Call has no effect.");
+    return;
+  }
+
   console.log("[Cody Engine] Set env directly: ", newEnv);
   env = newEnv;
 }

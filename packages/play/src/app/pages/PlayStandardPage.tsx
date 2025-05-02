@@ -66,7 +66,6 @@ const findTabGroup = (groupName: string, pages: PlayPageRegistry, routeParams: R
 export const PlayStandardPage = (props: Props) => {
   const env = useEnv();
   const routeParams = useParams();
-  const pageMatch = usePageMatch();
   const {config} = useContext(configStore);
   const {reset} = useContext(PageDataContext);
   const defaultService = names(config.defaultService).className;

@@ -1,5 +1,7 @@
 import { StrictMode } from 'react';
 import * as ReactDOM from 'react-dom/client';
+// It's important to do this import as one of the first!
+import directSetEnvEnabled from "@frontend/app/providers/enable-direct-set-env";
 import App from './app/app';
 import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-model-store/configured-document-store";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
@@ -10,6 +12,10 @@ document.title = 'Cody Play';
 
 (async () => {
   return new Promise<void>(resolve => {
+    if(!directSetEnvEnabled) {
+      throw new Error("[Cody Engine] Failed to enable direct set env");
+    }
+
     const ds = getConfiguredPlayDocumentStore();
     const es = getConfiguredPlayEventStore();
 

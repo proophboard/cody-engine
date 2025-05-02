@@ -1,9 +1,11 @@
 import {CodyEngineMode} from "@app/shared/types/core/cody/cody-engine-mode";
+import {LayoutType} from "@frontend/app/layout/layout-type";
 
 export const environment = {
   production: true,
   appName: 'Cody',
   mode: 'production-stack' as CodyEngineMode,
+  layout: 'prototype' as LayoutType,
   /*
    * Default Service prefix used to resolve relative command, event, and information names
    * The default service should match with the one defined in the Cody config, see: packages/cody/codyconfig.ts

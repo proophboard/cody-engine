@@ -1,6 +1,7 @@
 import React from "react";
 import {views as viewComponents} from "@frontend/app/components/views";
 import {views as overwriteViewComponents} from "@frontend/extensions/app/components/views";
+
 export const loadViewComponent = (valueObjectName: string): React.FunctionComponent<any> => {
   if(overwriteViewComponents[valueObjectName]) {
 
