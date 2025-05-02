@@ -3,6 +3,7 @@ import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 
 let env: RuntimeEnvironment = {UI_ENV: 'dev', DEFAULT_SERVICE: 'App', PAGES: {}};
 let directSetEnvEnabled = false;
+let isInitialized = false;
 
 export const enableDirectSetEnv = () => {
   directSetEnvEnabled = true;
@@ -29,9 +30,14 @@ export const EnvContext = React.createContext({env, setEnv: directSetEnv});
 const EnvProvider = (props: EnvProviderProps) => {
   const [version, setVersion] = useState(1);
 
+  if(!isInitialized) {
+    env = props.env;
+    isInitialized = true;
+  }
+
   return <EnvContext.Provider value={{env, setEnv: (newEnv: RuntimeEnvironment) => {
       console.log("[Cody Engine] Change env via context hook: ", newEnv)
-      directSetEnv(newEnv);
+      env = newEnv;
       setVersion(version + 1)
     }}}>
     {props.children}

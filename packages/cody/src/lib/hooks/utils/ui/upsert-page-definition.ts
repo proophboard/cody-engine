@@ -62,7 +62,13 @@ export const upsertTopLevelPage = async (
     return breadcrumbInfo;
   }
 
-  const [breadcrumb, imports] = breadcrumbInfo;
+  let breadcrumb: string | undefined = undefined;
+  const imports: string[] = [];
+
+  if(breadcrumbInfo) {
+    breadcrumb = breadcrumbInfo[0];
+    imports.push(...breadcrumbInfo[1]);
+  }
 
   const allowedRoles = getAllowedRoles(ui, ctx);
 
@@ -105,6 +111,12 @@ export const upsertTopLevelPage = async (
     toJSON,
     breadcrumb,
     breadcrumbT: uiMeta['breadcrumb:t'],
+    title: uiMeta.title,
+    titleExpr: uiMeta["title:expr"],
+    type: uiMeta.type,
+    mainPage: uiMeta.mainPage,
+    props: uiMeta.props,
+    propsExpr: uiMeta["props:expr"],
     imports: imports.join(";\n"),
     commandNames: normalizePageCommands(uiMeta.commands || commandNames, serviceNames.className),
     componentNames: normalizePageViewComponents(uiMeta.views || componentNames, serviceNames.className),
@@ -154,7 +166,13 @@ export const upsertSubLevelPage = async (
     return breadcrumbInfo;
   }
 
-  const [breadcrumb, breadcrumbImports] = breadcrumbInfo;
+  let breadcrumb: string | undefined = undefined;
+  const imports: string[] = [];
+
+  if(breadcrumbInfo) {
+    breadcrumb = breadcrumbInfo[0];
+    imports.push(...breadcrumbInfo[1]);
+  }
 
   const isTab = !!uiMeta.tab;
 
@@ -171,7 +189,13 @@ export const upsertSubLevelPage = async (
     toJSON,
     breadcrumb,
     breadcrumbT: uiMeta['breadcrumb:t'],
-    breadcrumbImports: breadcrumbImports.join(";\n"),
+    title: uiMeta.title,
+    titleExpr: uiMeta["title:expr"],
+    type: uiMeta.type,
+    mainPage: uiMeta.mainPage,
+    props: uiMeta.props,
+    propsExpr: uiMeta["props:expr"],
+    breadcrumbImports: imports.join(";\n"),
     commandNames: normalizePageCommands(uiMeta.commands || commandNames, serviceNames.className),
     componentNames: normalizePageViewComponents(uiMeta.views || componentNames, serviceNames.className),
   })
@@ -256,8 +280,13 @@ const getComponentNames = (viewModels: List<Node>, ctx: Context, existingPageDef
   return componentNames;
 }
 
-const getBreadcrumb = (ui: Node, uiMeta: UiMetadata, ctx: Context): [string, string[]] | CodyResponse => {
+const getBreadcrumb = (ui: Node, uiMeta: UiMetadata, ctx: Context): [string, string[]] | CodyResponse | undefined => {
   const {breadcrumb} = uiMeta;
+
+  if(!breadcrumb) {
+    return;
+  }
+
   const isDynamicLabel = isDynamicBreadcrumb(breadcrumb);
 
   if(!isDynamicLabel) {

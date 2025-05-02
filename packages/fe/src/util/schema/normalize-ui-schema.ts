@@ -11,9 +11,7 @@ export const normalizeActions = (uiSchema: UiSchema, defaultService: string): Ui
   for (const schemaKey in schema) {
     if(schemaKey === "actions" && Array.isArray(schema[schemaKey])) {
       schema[schemaKey].forEach((a: Action) => {
-        if(isCommandAction(a)) {
-          a.command = normalizeCommandName(a.command, defaultService);
-        }
+        normalizeAction(a, defaultService);
       })
     }
   }
@@ -25,6 +23,18 @@ export const normalizeActions = (uiSchema: UiSchema, defaultService: string): Ui
   }
 
   return schema;
+}
+
+export const normalizeAction = (a: Action, defaultService: string): Action => {
+  if(isCommandAction(a)) {
+    a.command = normalizeCommandName(a.command, defaultService);
+  }
+
+  if(!a.position) {
+    a.position = "bottom-right";
+  }
+
+  return a;
 }
 
 export const normalizeUiSchema = (uiSchema: UiSchema, ctx: any, env: RuntimeEnvironment): UiSchema => {

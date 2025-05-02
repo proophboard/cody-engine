@@ -2,10 +2,10 @@ import {SxProps} from "@mui/material";
 import * as React from "react";
 
 export interface ButtonConfig {
-  variant: "text" | "outlined" | "contained",
-  color: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+  variant?: "text" | "outlined" | "contained",
+  color?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
   disabled?: boolean,
-  style: SxProps,
+  style?: SxProps,
   hidden?: boolean,
   icon?: React.ReactNode,
   label?: string,
