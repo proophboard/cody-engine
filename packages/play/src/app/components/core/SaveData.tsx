@@ -25,7 +25,7 @@ import {savePlayshot} from "@cody-play/app/components/core/CodyMessageServer";
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 
 interface OwnProps {
-
+  color?: string;
 }
 
 type SaveDataProps = OwnProps;
@@ -103,11 +103,11 @@ const SaveData = (props: SaveDataProps) => {
   }
 
   return <>
-      {pendingChanges && <Typography variant="subtitle2" sx={{display: "inline-block", color: mode === 'dark' ? 'black' : 'white'}}>You have unsaved changes!&nbsp;&nbsp;&nbsp;</Typography>}
+      {pendingChanges && <Typography variant="subtitle2" sx={{display: "inline-block", color: props.color}}>You have unsaved changes!&nbsp;&nbsp;&nbsp;</Typography>}
       <IconButton
                        title="Save config and data"
                        disabled={saved}
-                       sx={{color: mode === 'dark' ? 'black' : 'white'}}
+                       sx={{color: props.color}}
                        onClick={openDialog}>
       {saved? <Check /> : <ZipDisk/>}
     </IconButton>

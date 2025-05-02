@@ -12,7 +12,7 @@ import { KeyboardArrowDownOutlined, KeyboardArrowUpOutlined, PublicOutlined } fr
 import Check from '@mui/icons-material/Check';
 import { CURRENT_LANGUAGE } from '@frontend/i18n/config';
 
-const LanguageSwitch = () => {
+const LanguageSwitch = (props: {color?: string}) => {
   const { i18n } = useTranslation();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
@@ -70,6 +70,7 @@ const LanguageSwitch = () => {
         aria-controls={open ? 'language-switch-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
+        sx={{color: props.color}}
         startIcon={<PublicOutlined />}
         endIcon={open ? <KeyboardArrowUpOutlined /> : <KeyboardArrowDownOutlined />}
         onClick={handleButtonClick}
