@@ -106,7 +106,7 @@ const PlayRightDrawerPage = (props: PlayRightDrawerPageProps) => {
         </Grid2>
       </DialogTitle>
       <DialogContent><PlayStandardPage page={page.name} mode="drawer" /></DialogContent>
-      {bottomActions.length && <BottomActions actions={bottomActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} sx={{padding: theme.spacing(3)}} />}
+      {bottomActions.length > 0 && <BottomActions actions={bottomActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} sx={{padding: theme.spacing(3)}} />}
     </Drawer>
   </>
 };

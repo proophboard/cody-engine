@@ -12,6 +12,7 @@ export const <%= className %>: SubLevelPageWithProophBoardDescription = {
   <% if (breadcrumbT) { %>'breadcrumb:t': "<%= breadcrumbT %>",<% } %>
   <% if (title) { %>title: "<%= title %>",<% } %>
   <% if (titleExpr) { %>"title:expr": "<%= titleExpr %>",<% } %>
+  <% if (type) { %>type: "<%= type %>",<% } %>
   <% if (mainPage) { %>mainPage: "<%= mainPage %>",<% } %>
   <% if (props) { %>props: <%- toJSON(props) %>,<% } %>
   <% if (propsExpr) { %>"props:expr": "<%= propsExpr %>",<% } %>

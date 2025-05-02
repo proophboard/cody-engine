@@ -16,6 +16,7 @@ export const directSetEnv = (newEnv: RuntimeEnvironment) => {
   }
 
   console.log("[Cody Engine] Set env directly: ", newEnv);
+  isInitialized = true;
   env = newEnv;
 }
 

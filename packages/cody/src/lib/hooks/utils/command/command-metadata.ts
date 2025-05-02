@@ -7,13 +7,14 @@ import {DependencyRegistry} from "@event-engine/descriptions/descriptions";
 import {Rule} from "@app/shared/rule-engine/configuration";
 import {isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {Context} from "@cody-engine/cody/hooks/context";
-import {detectService} from "@cody-engine/cody/hooks/utils/detect-service";
+import {detectService, getDefaultService} from "@cody-engine/cody/hooks/utils/detect-service";
 import {isShorthand} from "@cody-engine/cody/hooks/utils/json-schema/shorthand";
 import {withErrorCheck} from "@cody-engine/cody/hooks/utils/error-handling";
 import {jsonSchemaFromShorthand} from "@cody-engine/cody/hooks/utils/json-schema/json-schema-from-shorthand";
 import {normalizeRefs} from "@cody-engine/cody/hooks/utils/value-object/definitions";
 import {addSchemaTitles} from "@cody-engine/cody/hooks/utils/json-schema/add-schema-titles";
 import {names} from "@event-engine/messaging/helpers";
+import {normalizeServerUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 
 interface RawCommandMeta {
   schema: JSONSchema7 | ShorthandObject;
@@ -63,8 +64,11 @@ export const getCommandMetadata = (command: Node, ctx: Context): CommandMeta | C
   const streamCommand = !aggregateCommand && !!meta.streamId;
   const newAggregate = !!meta.newAggregate;
 
+  const uiSchema = meta.uiSchema ? normalizeServerUiSchema(meta.uiSchema, getDefaultService(ctx)) : undefined;
+
   return {
     ...meta,
+    uiSchema,
     schema,
     newAggregate,
     aggregateCommand,

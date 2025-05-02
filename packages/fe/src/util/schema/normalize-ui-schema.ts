@@ -5,6 +5,28 @@ import {Action, isCommandAction} from "@frontend/app/components/core/form/types/
 import {normalizeCommandName} from "@cody-play/infrastructure/rule-engine/normalize-command-name";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 
+export const normalizeServerUiSchema = (uiSchema: UiSchema, defaultService: string): UiSchema => {
+  const schema = cloneDeepJSON(uiSchema);
+
+  if(typeof schema['ui:title'] === "boolean") {
+    schema['ui:title'] = '';
+  }
+
+  if(schema.actions && Array.isArray(schema.actions)) {
+    schema.actions.forEach((a: Action) => {
+      normalizeAction(a, defaultService);
+    })
+  }
+
+  for (const schemaKey in schema) {
+    if(typeof schema[schemaKey] === "object") {
+      schema[schemaKey] = normalizeServerUiSchema(schema[schemaKey], defaultService);
+    }
+  }
+
+  return schema;
+}
+
 export const normalizeActions = (uiSchema: UiSchema, defaultService: string): UiSchema => {
   const schema = cloneDeepJSON(uiSchema);
 
@@ -69,9 +91,7 @@ export const normalizeUiSchema = (uiSchema: UiSchema, ctx: any, env: RuntimeEnvi
 
     if(schemaKey === "actions" && Array.isArray(schema[schemaKey])) {
       schema[schemaKey].forEach((a: Action) => {
-        if(isCommandAction(a)) {
-          a.command = normalizeCommandName(a.command, env.DEFAULT_SERVICE);
-        }
+        normalizeAction(a, env.DEFAULT_SERVICE);
       })
     }
   }
