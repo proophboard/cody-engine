@@ -162,7 +162,7 @@ export const StandardPage = (props: Props) => {
       injectedInitialValues: initialValues,
     };
 
-    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(routeParams, runtimeConfig)}</Grid2>
+    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent({...routeParams, hidden: isHiddenView}, runtimeConfig)}</Grid2>
   });
 
 
