@@ -24,7 +24,7 @@ import {Persona} from "@app/shared/extensions/personas";
 import {LayoutType} from "@frontend/app/layout/layout-type";
 
 /* UI */
-export type PlayPageDefinition = Omit<PageDefinition, 'breadcrumb'> & {breadcrumb: string | DynamicBreadcrumbMetadata, service: string};
+export type PlayPageDefinition = Omit<PageDefinition, 'breadcrumb'> & {breadcrumb?: string | DynamicBreadcrumbMetadata, service: string};
 
 export type PlayTopLevelPage = Omit<Omit<TopLevelPage, 'sidebar'>, 'breadcrumb'> & {sidebar: {label: string, icon: string, invisible?: string | boolean, group?: string | TopLevelGroup, position?: number, dynamic?: DynamicSidebar}} & PlayPageDefinition;
 

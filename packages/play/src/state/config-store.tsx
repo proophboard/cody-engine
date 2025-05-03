@@ -98,19 +98,18 @@ const initialPlayConfig: CodyPlayConfig = {
     }
   ],
   pages: {
-    Dashboard: ({
-      name: 'App.Dashboard',
+    Welcome: ({
+      name: 'App.Welcome',
       service: 'App',
       commands: [],
       components: ["Core.Welcome"],
       sidebar: {
-        label: "Dashboard",
+        label: "Welcome",
         icon: "ViewDashboard",
-        position: -1
+        invisible: true
       },
-      route: "/dashboard",
-      topLevel: true,
-      breadcrumb: 'Dashboard'
+      route: "/welcome",
+      topLevel: true
     } as PlayTopLevelPage),
   },
   views: {
@@ -155,7 +154,7 @@ export const enhanceConfigWithDefaults = (config: CodyPlayConfig): CodyPlayConfi
     defaultService,
     pages: {
       ...config.pages,
-      Dashboard: initialPlayConfig.pages.Dashboard,
+      Welcome: initialPlayConfig.pages.Welcome,
     },
     views: {
       ...config.views,

@@ -118,7 +118,7 @@ export function App() {
 
     routeObjects.unshift({
       path: "/",
-      loader: async () => redirect('/dashboard')
+      loader: async () => redirect('/welcome')
     })
 
     const rootRoute: RouteObject = {

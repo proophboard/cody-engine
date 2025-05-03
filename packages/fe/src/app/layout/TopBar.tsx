@@ -1,17 +1,28 @@
 import React, {useContext} from 'react';
-import {AppBar, Box, Toolbar, Typography, IconButton, useTheme, useMediaQuery, Avatar} from "@mui/material";
+import {
+  AppBar,
+  Box,
+  Toolbar,
+  Typography,
+  IconButton,
+  useTheme,
+  useMediaQuery,
+  Avatar,
+  Button
+} from "@mui/material";
 import Breadcrumbs from "@frontend/app/layout/Breadcrumbs";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
-import LoginIcon from '@mui/icons-material/Login';
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 import {environment} from "@frontend/environments/environment";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import MenuIcon from "@mui/icons-material/Menu";
 import {useUser} from "@frontend/hooks/use-user";
 import {getConfiguredKeycloak} from "@frontend/keycloak/get-configured-keycloak";
-import {LogoutOutlined} from "@mui/icons-material";
+import {KeyboardArrowDownOutlined, KeyboardArrowUpOutlined, LoginOutlined, LogoutOutlined} from "@mui/icons-material";
 import LanguageSwitch from "@frontend/app/components/core/LanguageSwitch";
+import {NavLink} from "react-router-dom";
+import UserAvatar from "@frontend/app/components/core/UserAvatar";
 
 
 interface OwnProps {
@@ -29,9 +40,23 @@ const TopBar = (props: TopBarProps) => {
     defaultMatches: true,
   });
 
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const roleDropdownOpen = anchorEl !== null;
+
   // @TODO: Remove flags when language switch and logout work for prototyping, too
   const showLanguageSwitch = environment.mode === 'production-stack';
   const showLogout = environment.mode === 'production-stack';
+
+  const handleAvatarClick = (
+    e: React.MouseEvent<HTMLButtonElement, MouseEvent>
+  ) => {
+    setAnchorEl(e.currentTarget);
+  };
+
+  const handleClose = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    setAnchorEl(null);
+  };
 
   return (
     <AppBar position="fixed" color="default" sx={{
@@ -54,21 +79,25 @@ const TopBar = (props: TopBarProps) => {
           {mode === 'dark' && <DarkModeIcon sx={{ color: theme.palette.primary.contrastText }}/> }
         </IconButton>
         <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginLeft: theme.spacing(2) }}
+          sx={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginLeft: theme.spacing(1) }}
         >
           {showLanguageSwitch && <LanguageSwitch color={theme.palette.primary.contrastText}/>}
-          {currentUser.displayName !== "Anyone" && <Avatar sx={{backgroundColor: 'primary.dark'}} title={currentUser.displayName}>
-            {`${currentUser.displayName.split(' ')[0][0]}${
-              currentUser.displayName.split(' ').length > 1
-                ? currentUser.displayName.split(' ')[1][0]
-                : ''
-            }`}
-          </Avatar>}
-          {currentUser.displayName === "Anyone" && <IconButton aria-label="Login" title="Login"><LoginIcon sx={{ color: theme.palette.primary.contrastText }} /></IconButton>}
+          {currentUser.displayName !== "Anyone" && <NavLink style={{textDecoration: "none"}} to="/welcome">
+            <UserAvatar user={currentUser} />
+          </NavLink>}
+          {currentUser.displayName === "Anyone" && <NavLink aria-label="Login"
+                                                            title="Login"
+                                                            to={'/welcome'}
+          >
+            <IconButton>
+              <LoginOutlined sx={{ color: theme.palette.primary.contrastText }} />
+            </IconButton>
+          </NavLink>}
         </Box>
         {showLogout && (
           <IconButton
             onClick={() => getConfiguredKeycloak().logout()}
+            aria-label="logout"
             sx={{color: theme.palette.primary.contrastText, marginLeft: theme.spacing(2)}}
           >
             <LogoutOutlined />

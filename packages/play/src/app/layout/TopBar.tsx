@@ -12,6 +12,9 @@ import {configStore} from "@cody-play/state/config-store";
 import SaveData from "@cody-play/app/components/core/SaveData";
 import {useUser} from "@frontend/hooks/use-user";
 import LanguageSwitch from "@frontend/app/components/core/LanguageSwitch";
+import {NavLink} from "react-router-dom";
+import {LoginOutlined} from "@mui/icons-material";
+import UserAvatar from "@frontend/app/components/core/UserAvatar";
 
 
 interface OwnProps {
@@ -62,16 +65,20 @@ const TopBar = (props: TopBarProps) => {
           <SettingsSuggestIcon />
         </IconButton>
         <Box
-          sx={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginLeft: theme.spacing(2) }}
+          sx={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginLeft: theme.spacing(1) }}
         >
           {showLanguageSwitch && <LanguageSwitch color={theme.palette.primary.contrastText}/>}
-          <Avatar sx={{ backgroundColor: 'primary.dark' }} title={currentUser.displayName}>
-            {`${currentUser.displayName.split(' ')[0][0]}${
-              currentUser.displayName.split(' ').length > 1
-                ? currentUser.displayName.split(' ')[1][0]
-                : ''
-            }`}
-          </Avatar>
+          {currentUser.displayName !== "Anyone" && <NavLink style={{textDecoration: "none"}} to="/welcome">
+            <UserAvatar user={currentUser} />
+          </NavLink>}
+          {currentUser.displayName === "Anyone" && <NavLink aria-label="Login"
+                                                            title="Login"
+                                                            to={'/welcome'}
+          >
+            <IconButton>
+              <LoginOutlined sx={{ color: theme.palette.primary.contrastText }} />
+            </IconButton>
+          </NavLink>}
         </Box>
         {!sideBarPersistent && config.layout === 'prototype' && <IconButton onClick={() => props.onOpenSidebar(!props.sidebarOpen)} sx={{color: theme.palette.primary.contrastText}}>
           {props.sidebarOpen? <MenuOpenIcon /> : <MenuIcon />}
