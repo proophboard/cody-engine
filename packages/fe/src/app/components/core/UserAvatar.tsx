@@ -2,6 +2,7 @@ import * as React from 'react';
 import {User} from "@app/shared/types/core/user/user";
 import {Avatar, Badge, SxProps} from "@mui/material";
 import {useState} from "react";
+import {isPersona} from "@app/shared/extensions/personas";
 
 interface OwnProps {
   user: User;
@@ -26,8 +27,10 @@ export const clearAvatarColorCache = (userId: string) => {
 
 const UserAvatar = (props: UserAvatarProps) => {
 
+  const color = isPersona(props.user) ? props.user.color : undefined;
+
   if(!userColors[props.user.userId]) {
-    userColors[props.user.userId] = props.color || '#'+randomColor();
+    userColors[props.user.userId] = color || '#'+randomColor();
   }
 
   return <Badge color="primary" badgeContent=" " overlap={props.badgeOverlap} invisible={!props.showBadge} anchorOrigin={{vertical: 'bottom', horizontal: 'right'}}>

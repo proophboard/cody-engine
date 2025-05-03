@@ -38,6 +38,7 @@ import {List} from "immutable";
 import {convertProjectionConfigCaseToRules} from "@app/shared/rule-engine/projection-config";
 import {onPolicy} from "@cody-engine/cody/hooks/on-policy";
 import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
+import {upsertStaticViewComponent} from "@cody-engine/cody/hooks/utils/ui/upsert-static-view-component";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
   try {
@@ -144,7 +145,6 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
     }
 
     // Register Query if VO is queryable
-
     if(voMeta.isQueryable) {
 
       withErrorCheck(ensureAllRefsAreKnown, [vo, voMeta.querySchema!]);
@@ -217,6 +217,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
           serviceNames,
           voNames,
           ns,
+          isList,
           ...queryNames
         });
       }
@@ -228,6 +229,11 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
         } else {
           await asyncWithErrorCheck(upsertStateViewComponent, [vo, voMeta, ctx, tree]);
         }
+      }
+    } else {
+      // Handle Static View
+      if(ctx.codeGeneration.fe.reactComponents && voMeta.staticView) {
+        await asyncWithErrorCheck(upsertStaticViewComponent, [vo, voMeta, ctx, tree]);
       }
     }
 

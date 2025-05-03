@@ -28,6 +28,8 @@ import {types} from "@app/shared/types";
 import EnvProvider from "@frontend/app/providers/UseEnvironment";
 import {environment} from "@frontend/environments/environment";
 import jexl from "@app/shared/jexl/get-configured-jexl";
+import DialogPage from "@frontend/app/pages/dialog-page";
+import RightDrawerPage from "@frontend/app/pages/right-drawer-page";
 
 // Register frontend-only jexl func
 jexl.addFunction('env', () => environment);
@@ -59,13 +61,13 @@ export function App() {
   const routeObjects: RouteObject[] = Object.values(pages).map((p) => ({
     path: p.route,
     handle: { page: p },
-    element: <StandardPage page={p} key={p.route} />,
+    element: p.type === "dialog" ? <DialogPage page={p} key={p.route} /> : p.type === "drawer" ? <RightDrawerPage page={p} key={p.route} /> : <StandardPage page={p} key={p.route} />,
     errorElement: <ErrorBoundary codyEngine={true} />,
   }));
 
   routeObjects.unshift({
     path: '/',
-    loader: async () => redirect('/dashboard'),
+    loader: async () => redirect('/welcome'),
   });
 
   const rootRoute: RouteObject = {

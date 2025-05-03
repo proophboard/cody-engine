@@ -9,7 +9,7 @@ import {
   useTheme
 } from "@mui/material";
 import {useContext, useEffect, useState} from "react";
-import {configStore, LayoutType} from "@cody-play/state/config-store";
+import {configStore} from "@cody-play/state/config-store";
 import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
 import {saveConfigToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-config-to-local-storage";
 import Editor from "@monaco-editor/react";
@@ -20,6 +20,7 @@ import {jsonrepair} from "jsonrepair";
 import {JexlFlavouredJSON} from "@event-engine/infrastructure/code-editor/JexlFlavouredJSON";
 import {merge} from "lodash/fp";
 import {createTheme} from "@frontend/app/layout/theme";
+import {LayoutType} from "@frontend/app/layout/layout-type";
 
 interface OwnProps {
   saveCallback: (cb: () => void) => void;

@@ -2,7 +2,7 @@ import {CodyResponse, Node} from "@proophboard/cody-types";
 import {Context} from "../../context";
 import {isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
-import {detectService} from "../detect-service";
+import {detectService, getDefaultService} from "../detect-service";
 import {definitionId, definitionIdFromFQCN, FQCNFromDefinitionId, normalizeRefs} from "./definitions";
 import {names} from "@event-engine/messaging/helpers";
 import {
@@ -21,6 +21,7 @@ import {isRefSchema, RefSchema} from "@app/shared/utils/json-schema/is-ref-schem
 import {JSONSchema7} from "json-schema-to-ts";
 import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 import {normalizeProjectionConfig} from "@app/shared/rule-engine/projection-config";
+import {normalizeServerUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 
 export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | CodyResponse => {
   const meta = parseJsonMetadata<ValueObjectMetadataRaw>(vo);
@@ -104,6 +105,8 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     isNotStored = true;
   }
 
+  const staticView = !!meta.staticView;
+
   const convertedMeta: ValueObjectMetadata = {
     schema: normalizedSchema,
     ns,
@@ -111,6 +114,7 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     isList: isListSchema(normalizedSchema) || isInlineItemsArraySchema(normalizedSchema),
     hasIdentifier,
     isQueryable,
+    staticView,
   }
 
   if(hasIdentifier) {
@@ -122,7 +126,7 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
   }
 
   if(meta.uiSchema) {
-    convertedMeta.uiSchema = meta.uiSchema;
+    convertedMeta.uiSchema = normalizeServerUiSchema(meta.uiSchema, getDefaultService(ctx));
   }
 
   if(meta.resolve) {

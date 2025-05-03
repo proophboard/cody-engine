@@ -1,6 +1,6 @@
 import {DynamicSidebar, PageDefinition, TopLevelGroup, TopLevelPage} from "@frontend/app/pages/page-definitions";
 import React from "react";
-import {CodyPlayConfig, LayoutType} from "@cody-play/state/config-store";
+import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {
   AggregateCommandDescription,
   AggregateDescription,
@@ -21,9 +21,10 @@ import {DynamicBreadcrumbMetadata, ViewComponentType} from "@cody-engine/cody/ho
 import {ResolveConfig, TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {ThemeOptions} from "@mui/material";
 import {Persona} from "@app/shared/extensions/personas";
+import {LayoutType} from "@frontend/app/layout/layout-type";
 
 /* UI */
-export type PlayPageDefinition = Omit<PageDefinition, 'breadcrumb'> & {breadcrumb: string | DynamicBreadcrumbMetadata, service: string};
+export type PlayPageDefinition = Omit<PageDefinition, 'breadcrumb'> & {breadcrumb?: string | DynamicBreadcrumbMetadata, service: string};
 
 export type PlayTopLevelPage = Omit<Omit<TopLevelPage, 'sidebar'>, 'breadcrumb'> & {sidebar: {label: string, icon: string, invisible?: string | boolean, group?: string | TopLevelGroup, position?: number, dynamic?: DynamicSidebar}} & PlayPageDefinition;
 

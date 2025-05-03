@@ -1,9 +1,11 @@
 import {CodyEngineMode} from "@app/shared/types/core/cody/cody-engine-mode";
+import {LayoutType} from "@frontend/app/layout/layout-type";
 
 export const environment = {
   production: true,
   appName: 'Cody Engine',
   mode: 'production-stack' as CodyEngineMode,
+  layout: 'prototype' as LayoutType,
   defaultService: 'App',
   keycloak: {
     baseUrl: 'https://auth.cody.local/auth',

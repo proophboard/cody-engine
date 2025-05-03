@@ -2,16 +2,16 @@ import {TopLevelPage} from "@frontend/app/pages/page-definitions";
 import {staticLabel} from "@frontend/util/breadcrumb/static-label";
 import {ViewDashboard} from "mdi-material-ui";
 
-export const Dashboard: TopLevelPage = {
-  name: "App.Dashboard",
+export const Welcome: TopLevelPage = {
+  name: "App.Welcome",
   commands: [],
   components: ["Core.Welcome"],
   sidebar: {
-    label: "Dashboard",
+    label: "Welcome",
     Icon: ViewDashboard,
-    position: -1
+    invisible: true
   },
-  route: "/dashboard",
+  route: "/welcome",
   topLevel: true,
-  breadcrumb: staticLabel('Dashboard')
+  title: " "
 }

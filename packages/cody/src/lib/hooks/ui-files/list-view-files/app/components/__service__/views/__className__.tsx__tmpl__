@@ -1,19 +1,43 @@
-import {Box, CircularProgress, Typography} from "@mui/material";
+import {Box, CircularProgress, Typography, useTheme} from "@mui/material";
 import {DataGrid, GridColDef, GridToolbar} from "@mui/x-data-grid";
+import Grid2 from "@mui/material/Unstable_Grid2";
 import {useEffect} from "react";
+import {merge} from "lodash/fp";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 import {usePageData} from "@frontend/hooks/use-page-data";
+import {useEnv} from "@frontend/hooks/use-env";
+import {useUser} from "@frontend/hooks/use-user";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
+import {ViewRuntimeConfig} from "@frontend/app/components/core/views/view-runtime-config";
 import {Get<%= className %>} from "@app/shared/queries/<%= serviceNames.fileName %>/get-<%= fileName %>";
 import {useGet<%= className %>} from "@frontend/queries/<%= serviceNames.fileName %>/use-get-<%= fileName %>";
+import {<%= serviceNames.className %><%= nsClassName %><%= className %>VORuntimeInfo as RuntimeInfo} from "@app/shared/types/<%= serviceNames.fileName %><%= nsFilename %><%= fileName %>";
 import NoRowsOverlay from "@frontend/app/components/core/table/NoRowsOverlay";
+import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
+import BottomActions from "@frontend/app/components/core/actions/BottomActions";
+import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
+import {showTitle} from "@frontend/util/schema/show-title";
+import {informationTitle} from "@frontend/util/information/titelize";
+import {getUiOptions, UiSchema} from "@rjsf/utils";
+import {TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/types";
+import {names} from "@event-engine/messaging/helpers";
 <%- imports %>
 
-const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}) => {
-  const [,addQueryResult] = usePageData();
+const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, config: ViewRuntimeConfig) => {
+  const env = useEnv();
+  const theme = useTheme();
+  const [user] = useUser();
+  const [page,addQueryResult] = usePageData();
   const query = useGet<%= className %>(params);
   const [store, setStore] = useGlobalStore();
+  const normalizedDefaultService = names(env.DEFAULT_SERVICE).className;
   <%- hooks %>
+
+  const jexlCtx = {routeParams: params, user, page, store, data: query.isSuccess ? query.data : {}};
+
+  const uiSchema: UiSchema & TableUiSchema = normalizeUiSchema(merge(RuntimeInfo.uiSchema || {}, config.uiSchemaOverride || {}), jexlCtx, env);
+  const uiOptions = getUiOptions(uiSchema);
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
@@ -33,7 +57,19 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}) => {
 
   return (
     <Box component="div">
-      <Typography variant="h3" className="sidebar-anchor" sx={{padding: (theme) => theme.spacing(4), paddingLeft: 0}} id="component-<%= serviceNames.fileName %>-<%= fileName %>"><%= name %></Typography>
+      <Grid2 container={true}>
+        <Grid2 xs>
+          {showTitle(uiSchema) && <Typography
+            variant="h2"
+            className="sidebar-anchor"
+            sx={{padding: (theme) => theme.spacing(4), paddingLeft: 0}}
+            id={"component-<%= serviceNames.fileName %>-<%= fileName %>"}
+          >
+            {informationTitle(RuntimeInfo, uiSchema)}
+          </Typography>}
+        </Grid2>
+        <TopRightActions uiOptions={uiOptions} defaultService={normalizedDefaultService} jexlCtx={jexlCtx} />
+      </Grid2>
       {query.isLoading && <CircularProgress />}
       {query.isSuccess && <DataGrid
           columns={columns}
@@ -54,6 +90,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}) => {
             addQueryResult('<%= dataReference %>/Selection', model);
           }}
       />}
+      <BottomActions uiOptions={uiOptions} defaultService={normalizedDefaultService} jexlCtx={jexlCtx} sx={{marginTop: theme.spacing(2)}} />
     </Box>
   );
 }

@@ -6,13 +6,13 @@ import {
   RJSFSchema, UiSchema,
   Widget
 } from "@rjsf/utils";
-import {Alert, Box, Button, Card, CardContent, CircularProgress, SxProps, Typography, useTheme} from "@mui/material";
-import {PropsWithChildren, useContext, useEffect} from "react";
+import {Alert, Box, useTheme} from "@mui/material";
+import {useEffect} from "react";
 import {Form} from "@rjsf/mui";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 import {widgets} from "@frontend/app/components/core/form/widgets";
 import {fields} from "@frontend/app/components/core/form/fields";
-import {cloneSchema, resolveRefs, resolveUiSchema} from "@event-engine/messaging/resolve-refs";
+import {resolveRefs, resolveUiSchema} from "@event-engine/messaging/resolve-refs";
 import definitions from "@app/shared/types/definitions";
 import {useUser} from "@frontend/hooks/use-user";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";

@@ -8,8 +8,14 @@ export const <%= className %>: SubLevelPageWithProophBoardDescription = {
   topLevel: false,
   route: "<%= route %>",
   routeParams: <%- toJSON(routeParams) %>,
-  breadcrumb: <%- breadcrumb %>,
+  <% if (breadcrumb) { %>breadcrumb: <%- breadcrumb %>,<% } %>
   <% if (breadcrumbT) { %>'breadcrumb:t': "<%= breadcrumbT %>",<% } %>
+  <% if (title) { %>title: "<%= title %>",<% } %>
+  <% if (titleExpr) { %>"title:expr": "<%= titleExpr %>",<% } %>
+  <% if (type) { %>type: "<%= type %>",<% } %>
+  <% if (mainPage) { %>mainPage: "<%= mainPage %>",<% } %>
+  <% if (props) { %>props: <%- toJSON(props) %>,<% } %>
+  <% if (propsExpr) { %>"props:expr": "<%= propsExpr %>",<% } %>
   service: "<%= serviceNames.className %>",
   <% if (isTab) { %>tab: <%- toJSON(tab) %>,<% } %>
   _pbBoardId: "<%= _pbBoardId %>",

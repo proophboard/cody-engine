@@ -33,7 +33,7 @@ import {playFindEventInfoByName} from "@cody-play/infrastructure/events/play-fin
 import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
-import {normalizeActions} from "@frontend/util/schema/normalize-ui-schema";
+import {normalizeServerUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 
 export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -59,7 +59,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
 
     const desc = getDesc(vo, voFQCN, voMeta, queryName, ctx, config);
 
-    const uiSchema = voMeta.uiSchema ? normalizeActions(voMeta.uiSchema, names(config.defaultService).className) : undefined;
+    const uiSchema = voMeta.uiSchema ? normalizeServerUiSchema(voMeta.uiSchema, names(config.defaultService).className) : undefined;
 
     dispatch({
       type: "ADD_TYPE",
@@ -79,7 +79,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
     if(isInlineItemsArraySchema(voMeta.schema)) {
       const itemDesc = getInlineItemDesc(vo, voFQCN, voMeta, desc);
       const itemSchema = voMeta.schema.items || {};
-      const itemUiSchema = normalizeActions(voMeta.uiSchema?.items || {}, names(config.defaultService).className);
+      const itemUiSchema = normalizeServerUiSchema(voMeta.uiSchema?.items || {}, names(config.defaultService).className);
 
       itemSchema.title = (voMeta.schema.title || '') + ' Item';
       itemSchema.$id = playDefinitionIdFromFQCN(itemDesc.name);

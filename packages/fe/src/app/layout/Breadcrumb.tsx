@@ -9,6 +9,7 @@ import {useTranslation} from "react-i18next";
 interface OwnProps {
   page: PageDefinition & {breadcrumb: BreadcrumbFn};
   isLast: boolean;
+  color: string;
 }
 
 type BreadcrumbProps = OwnProps;
@@ -26,12 +27,12 @@ const Breadcrumb = (props: BreadcrumbProps) => {
   if(props.isLast) {
     return <Typography
       key={props.page.route}
-      sx={{color: theme.palette.primary.contrastText}}
+      sx={{color: props.color}}
       aria-current="page">{props.page['breadcrumb:t'] ? t(props.page['breadcrumb:t']) : label}</Typography>
   } else {
     return <Link to={generatePath(props.page.route, params)}
                  key={props.page.route}
-                 style={{color: theme.palette.primary.contrastText, textDecoration: 'none'}}
+                 style={{color: props.color, textDecoration: 'none'}}
     >{props.page['breadcrumb:t'] ? t(props.page['breadcrumb:t']) : label}</Link>
   }
 };

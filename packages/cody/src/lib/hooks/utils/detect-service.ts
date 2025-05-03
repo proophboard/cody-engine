@@ -36,6 +36,10 @@ export const detectService = (node: Node, ctx: Context): string | CodyResponse =
     }
   }
 
+  return getDefaultService(ctx);
+}
+
+export const getDefaultService = (ctx: Context): string => {
   if(ctx.service) {
     return ctx.service;
   }

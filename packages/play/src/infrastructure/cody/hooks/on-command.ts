@@ -23,7 +23,7 @@ import {normalizeThenRecordEventRules} from "@cody-play/infrastructure/rule-engi
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
 import {normalizePolicyRules} from "@cody-play/infrastructure/rule-engine/normalize-policy-rules";
-import {normalizeActions} from "@frontend/util/schema/normalize-ui-schema";
+import {normalizeServerUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 
 export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -35,7 +35,7 @@ export const onCommand = async (command: Node, dispatch: PlayConfigDispatch, ctx
 
     const service = playwithErrorCheck(playService, [command, ctx]);
     const serviceNames = names(service);
-    const uiSchema = normalizeActions(meta.uiSchema || {}, names(config.defaultService).className);
+    const uiSchema = normalizeServerUiSchema(meta.uiSchema || {}, names(config.defaultService).className);
 
     const cmdFQCN = `${serviceNames.className}.${cmdNames.className}`;
     const pbInfo = playUpdateProophBoardInfo(command, ctx, config.commands[cmdFQCN]?.desc);

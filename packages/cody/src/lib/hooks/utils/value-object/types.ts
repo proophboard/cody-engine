@@ -19,6 +19,7 @@ export interface ValueObjectMetadataRaw {
   uiSchema?: UiSchema & TableUiSchema;
   projection?: ProjectionConfig;
   shorthand?: boolean;
+  staticView?: boolean;
 }
 
 export interface ResolveConfig {
@@ -88,4 +89,5 @@ export interface ValueObjectMetadata extends ValueObjectDescriptionFlags {
   queryDependencies?: DependencyRegistry;
   uiSchema?: UiSchema & TableUiSchema;
   projection?: ProjectionConfig;
+  staticView?: boolean;
 }

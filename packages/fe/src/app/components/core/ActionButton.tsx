@@ -102,7 +102,15 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
       );
     }
 
-    return <CmdComponent buttonProps={buttonProps} {...params} initialValues={initialValues} onDialogClose={onDialogClose} />;
+    return <CmdComponent buttonProps={buttonProps}
+                         {...params}
+                         initialValues={initialValues}
+                         onDialogClose={onDialogClose}
+                         uiSchemaOverride={action.uiSchema}
+                         connectTo={action.connectTo}
+                         directSubmit={action.directSubmit}
+                         forceSchema={action.forceSchema}
+    />;
   }
 
   if (isLinkAction(action)) {
