@@ -78,9 +78,6 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
   const hideToolbar = !!voMeta?.uiSchema?.table?.hideToolbar;
   const checkboxSelection = !!voMeta?.uiSchema?.table?.checkboxSelection;
 
-  imports.push('import {useUser} from "@frontend/hooks/use-user";')
-  hooks.push('const [user,] = useUser();');
-
   // @todo: handle render cell with Rule[]
   // @see: car-list.tsx
 
@@ -99,6 +96,8 @@ export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetad
     hooks: hooks.join(";\n"),
     ...voNames,
     name: (voMeta.schema as {title?: string}).title || voNames.name,
+    nsClassName: ns.className,
+    nsFilename: ns.fileName,
     toJSON,
   })
 
@@ -210,7 +209,6 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVOFQCN: 
             // Ref will use value getter before ref look up
             break;
           }
-          imports = addImport('import jexl from "@app/shared/jexl/get-configured-jexl"', imports);
           const valueGetter = prepareValueGetter(vo, cValue as Rule[], ctx, indent);
           if(isCodyError(valueGetter)) {
             return valueGetter;
@@ -220,7 +218,6 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVOFQCN: 
           hasValueGetter = true;
           break;
         case "ref":
-          imports = addImport('import jexl from "@app/shared/jexl/get-configured-jexl"', imports);
           imports = addImport('import {dataValueGetter} from "@frontend/util/table/data-value-getter"', imports);
           imports = addImport('import {determineQueryPayload} from "@app/shared/utils/determine-query-payload";', imports);
 

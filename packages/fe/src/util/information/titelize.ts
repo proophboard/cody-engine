@@ -1,8 +1,9 @@
 import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {camelCaseToTitle} from "@frontend/util/string";
 import {UiSchema} from "@rjsf/utils";
+import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 
-export const informationTitle = (info: PlayInformationRuntimeInfo, uiSchema?: UiSchema): string => {
+export const informationTitle = (info: PlayInformationRuntimeInfo | ValueObjectRuntimeInfo, uiSchema?: UiSchema): string => {
   let uiTitle;
 
   if(!uiSchema) {

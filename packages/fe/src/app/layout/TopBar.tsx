@@ -3,6 +3,7 @@ import {AppBar, Box, Toolbar, Typography, IconButton, useTheme, useMediaQuery, A
 import Breadcrumbs from "@frontend/app/layout/Breadcrumbs";
 import LightModeIcon from '@mui/icons-material/LightMode';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LoginIcon from '@mui/icons-material/Login';
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 import {environment} from "@frontend/environments/environment";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
@@ -36,7 +37,8 @@ const TopBar = (props: TopBarProps) => {
     <AppBar position="fixed" color="default" sx={{
       boxShadow: "none",
       backgroundColor: (theme) => theme.palette.primary.main,
-      height: "64px"
+      height: "64px",
+      zIndex: theme.zIndex.drawer + 1
     }}>
       <Toolbar>
         {!sideBarPersistent && environment.layout === 'task-based-ui' && <IconButton onClick={() => props.onOpenSidebar(!props.sidebarOpen)} sx={{color: theme.palette.primary.contrastText, marginRight: (theme) => theme.spacing(2)}}>
@@ -55,13 +57,14 @@ const TopBar = (props: TopBarProps) => {
           sx={{ display: 'flex', alignItems: 'center', gap: theme.spacing(1), marginLeft: theme.spacing(2) }}
         >
           {showLanguageSwitch && <LanguageSwitch color={theme.palette.primary.contrastText}/>}
-          <Avatar sx={{ backgroundColor: 'primary.dark' }} title={currentUser.displayName}>
+          {currentUser.displayName !== "Anyone" && <Avatar sx={{backgroundColor: 'primary.dark'}} title={currentUser.displayName}>
             {`${currentUser.displayName.split(' ')[0][0]}${
               currentUser.displayName.split(' ').length > 1
                 ? currentUser.displayName.split(' ')[1][0]
                 : ''
             }`}
-          </Avatar>
+          </Avatar>}
+          {currentUser.displayName === "Anyone" && <IconButton aria-label="Login" title="Login"><LoginIcon sx={{ color: theme.palette.primary.contrastText }} /></IconButton>}
         </Box>
         {showLogout && (
           <IconButton

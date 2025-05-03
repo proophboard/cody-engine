@@ -28,7 +28,6 @@ import {
   getTablePageSizeConfig
 } from "@cody-play/infrastructure/ui-table/utils";
 import {names} from "@event-engine/messaging/helpers";
-import {informationTitle} from "@cody-play/infrastructure/information/titelize";
 import {UseQueryResult} from "@tanstack/react-query";
 import {isListSchema} from "@cody-engine/cody/hooks/utils/json-schema/list-schema";
 import {camelCaseToTitle} from "@frontend/util/string";
@@ -42,7 +41,6 @@ import {
   TableColumnUiSchema,
   TableUiSchema
 } from "@cody-engine/cody/hooks/utils/value-object/types";
-import {PageDefinition} from "@frontend/app/pages/page-definitions";
 import {JSONSchema7} from "json-schema";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
@@ -62,22 +60,8 @@ import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {useEnv} from "@frontend/hooks/use-env";
 import {PageRegistry} from "@frontend/app/pages";
 import {PageMode} from "@cody-play/app/pages/PlayStandardPage";
-
-const showTitle = (uiSchema?: UiSchema): boolean => {
-  if(!uiSchema) {
-    return true;
-  }
-
-  if(typeof uiSchema['ui:title'] === "boolean") {
-    return uiSchema['ui:title'];
-  }
-
-  if(uiSchema['ui:options'] && typeof uiSchema['ui:options']['title'] === "boolean") {
-    return uiSchema['ui:options']['title'];
-  }
-
-  return true;
-}
+import {showTitle} from "@frontend/util/schema/show-title";
+import {informationTitle} from "@frontend/util/information/titelize";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, pageMode: PageMode, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc) && !isQueryableNotStoredStateListDescription(informationInfo.desc)) {
