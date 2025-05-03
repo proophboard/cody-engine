@@ -7,7 +7,6 @@ import {useEffect, useState} from "react";
 import {isPageFormReference} from "@app/shared/types/core/page-data/page-data";
 import {JSONSchema7} from "json-schema";
 import {usePageData} from "@frontend/hooks/use-page-data";
-import {addCarToFleet} from "@frontend/commands/fleet-management/use-add-car-to-fleet";
 import {Alert, AlertTitle, Container} from "@mui/material";
 import AxiosResponseViewer from "@frontend/app/components/core/AxiosResponseViewer";
 import {getFormSuccessRedirect} from "@frontend/util/command-form/get-form-success-redirect";
