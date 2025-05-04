@@ -61,7 +61,7 @@ const allowedOrigins = ['https://ee.local', 'http://localhost:3001', 'https://fr
 
 export type PlayConfigDispatch = (action: Action) => void;
 
-export type ElementEditedContext = {boardId: string, boardName: string, userId: string, syncedNodes: Map<string, Node>, service: string, origin: string};
+export type ElementEditedContext = {boardId: string, boardName: string, userId: string, syncedNodes: Map<string, Node>, service: string};
 
 export class CodyMessageServer {
   private pbTab: typeof window | undefined;
@@ -183,7 +183,7 @@ export class CodyMessageServer {
       case "PlayshotSaved":
         return this.handlePlayshotSaved(payload);
       case "InitPlayshot":
-        return this.initPlayshot(payload.payload, payload.ctx);
+        return this.initPlayshot(payload.payload);
       default:
         return {
           cody: `Unknown message received: ${messageName}`,
@@ -213,8 +213,7 @@ export class CodyMessageServer {
     return checkQuestion(await onNode(makeNodeRecord(payload.node), this.dispatch, {
       ...payload.context,
       syncedNodes: this.syncedNodes,
-      service: names(this.config.defaultService).className,
-      origin: this.msgOrigin,
+      service: names(this.config.defaultService).className
     }, this.config));
   }
 
@@ -242,13 +241,12 @@ export class CodyMessageServer {
     }
   }
 
-  private async initPlayshot(playshot: Playshot, ctx: {boardId: string, boardName: string, userId: string}): Promise<CodyResponse> {
-    window.location.pathname = "/dashboard";
+  private async initPlayshot(playshot: Playshot): Promise<CodyResponse> {
+    window.location.pathname = "/welcome";
 
     this.dispatch({
       type: "INIT",
       payload: playshot.playConfig,
-      ctx: {...ctx, syncedNodes: this.syncedNodes, service: names(this.config.defaultService).className, origin: this.msgOrigin}
     });
 
     await this.es.importStreams(playshot.playData.streams || {});
