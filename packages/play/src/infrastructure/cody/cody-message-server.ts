@@ -13,7 +13,6 @@ import {
 } from "@event-engine/infrastructure/DocumentStore/InMemoryDocumentStore";
 import {InMemoryEventStore, InMemoryStreamStore} from "@event-engine/infrastructure/EventStore/InMemoryEventStore";
 import {v4} from "uuid";
-import {Record} from "mdi-material-ui";
 import {saveToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-to-local-storage";
 import {names} from "@event-engine/messaging/helpers";
 
@@ -61,7 +60,7 @@ const allowedOrigins = ['https://ee.local', 'http://localhost:3001', 'https://fr
 
 export type PlayConfigDispatch = (action: Action) => void;
 
-export type ElementEditedContext = {boardId: string, boardName: string, userId: string, syncedNodes: Map<string, Node>, service: string};
+export type ElementEditedContext = {boardId: string, boardName: string, userId: string, syncedNodes: Map<string, Node>, service: string, origin: string};
 
 export class CodyMessageServer {
   private pbTab: typeof window | undefined;
@@ -183,7 +182,7 @@ export class CodyMessageServer {
       case "PlayshotSaved":
         return this.handlePlayshotSaved(payload);
       case "InitPlayshot":
-        return this.initPlayshot(payload.payload);
+        return this.initPlayshot(payload.payload, payload.ctx);
       default:
         return {
           cody: `Unknown message received: ${messageName}`,
@@ -213,7 +212,8 @@ export class CodyMessageServer {
     return checkQuestion(await onNode(makeNodeRecord(payload.node), this.dispatch, {
       ...payload.context,
       syncedNodes: this.syncedNodes,
-      service: names(this.config.defaultService).className
+      service: names(this.config.defaultService).className,
+      origin: this.msgOrigin
     }, this.config));
   }
 
@@ -241,12 +241,13 @@ export class CodyMessageServer {
     }
   }
 
-  private async initPlayshot(playshot: Playshot): Promise<CodyResponse> {
+  private async initPlayshot(playshot: Playshot, ctx: {boardId: string, boardName: string, userId: string}): Promise<CodyResponse> {
     window.location.pathname = "/welcome";
 
     this.dispatch({
       type: "INIT",
       payload: playshot.playConfig,
+      ctx: {...ctx, syncedNodes: this.syncedNodes, service: names(this.config.defaultService).className, origin: this.msgOrigin}
     });
 
     await this.es.importStreams(playshot.playData.streams || {});
