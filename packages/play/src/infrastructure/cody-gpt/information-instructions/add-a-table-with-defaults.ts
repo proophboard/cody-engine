@@ -14,7 +14,7 @@ const TEXT = "I'd like to see a table of ";
 
 export const AddATableWithDefaults: Instruction = {
   text: TEXT,
-  isActive: context => context.page.pathname !== '/dashboard',
+  isActive: context => context.page.pathname !== '/welcome',
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx: CodyGPTContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
     const tableName = input.replace(TEXT, '').trim();
@@ -75,7 +75,7 @@ export const AddATableWithDefaults: Instruction = {
     const pageConfig = ctx.page.handle.page;
 
     return new Promise((resolve, reject) => {
-      navigateTo('/dashboard');
+      navigateTo('/welcome');
 
       setTimeout(() => {
         dispatch({
