@@ -242,7 +242,7 @@ export class CodyMessageServer {
   }
 
   private async initPlayshot(playshot: Playshot): Promise<CodyResponse> {
-    window.location.pathname = "/dashboard";
+    window.location.pathname = "/welcome";
 
     this.dispatch({
       type: "INIT",
