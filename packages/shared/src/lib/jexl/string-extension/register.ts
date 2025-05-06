@@ -1,4 +1,5 @@
 import {Jexl} from "@event-engine/infrastructure/jexl/jexl";
+import {pad, padStart, padEnd} from "lodash";
 
 export const registerStringExtensions = (jexl: Jexl): void => {
   jexl.addFunction('upperCase', (str: string) => str.toUpperCase());
@@ -10,4 +11,7 @@ export const registerStringExtensions = (jexl: Jexl): void => {
   jexl.addTransform('trim', (str: string) => str.trim());
   jexl.addTransform('trimEnd', (str: string) => str.trimEnd());
   jexl.addTransform('trimStart', (str: string) => str.trimStart());
+  jexl.addTransform('pad', (str: string, length: number, chars: string) => pad(str, length, chars));
+  jexl.addTransform('padStart', (str: string, length: number, chars: string) => padStart(str, length, chars));
+  jexl.addTransform('padEnd', (str: string, length: number, chars: string) => padEnd(str, length, chars));
 }
