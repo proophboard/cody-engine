@@ -39,6 +39,9 @@ import {convertProjectionConfigCaseToRules} from "@app/shared/rule-engine/projec
 import {onPolicy} from "@cody-engine/cody/hooks/on-policy";
 import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
 import {upsertStaticViewComponent} from "@cody-engine/cody/hooks/utils/ui/upsert-static-view-component";
+import {nodeNameFQCN} from "@cody-engine/cody/hooks/utils/node-fqcn";
+import {getNodeFromSyncedNodesByFQCN} from "@cody-engine/cody/hooks/utils/node-tree";
+import {isCodyError} from "@proophboard/cody-utils";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
   try {
@@ -242,9 +245,11 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
       const prjName = voMeta.projection.name;
 
       for (const prjCase of voMeta.projection.cases) {
-        const matchingEvent = ctx.syncedNodes.filter(evt =>evt.getType() === NodeType.event && names(evt.getName()).className === names(prjCase.when).className).first();
+        const eventFQCN = nodeNameFQCN(prjCase.when, serviceNames.className);
 
-        if(!matchingEvent) {
+        const matchingEvent = getNodeFromSyncedNodesByFQCN(eventFQCN, NodeType.event, ctx.syncedNodes, ctx);
+
+        if(isCodyError(matchingEvent)) {
           return {
             cody: `Cannot install projection case for event ${prjCase.when}. The event is unknown. Did you forget to pass the event to Cody?`,
             type: CodyResponseType.Error
