@@ -14,11 +14,24 @@ import {registerMathExtension} from "@app/shared/jexl/math-extension/register";
 import {merge as deepMerge} from "lodash";
 import {registerSequenceExtension} from "@app/shared/jexl/sequence-extension/register";
 
+
 let configuredJexl: Jexl;
 
 const getConfiguredJexl = (): Jexl => {
   if(!configuredJexl) {
     configuredJexl = new jexl.Jexl() as Jexl;
+
+    const evalAsync = configuredJexl.eval;
+    const evalSync = configuredJexl.evalSync;
+
+    // Remove prooph board Jexl indicator before expression is passed to Jexl
+    configuredJexl.eval = (expression, context) => {
+      return evalAsync.call(configuredJexl, expression.replace(/^\$>/, ''), context);
+    }
+    configuredJexl.evalSync = (expression, context) => {
+      return evalSync.call(configuredJexl, expression.replace(/^\$>/, ''), context);
+    }
+
     configuredJexl.addFunction('count', count);
     configuredJexl.addFunction('merge', merge);
     configuredJexl.addFunction('deepMerge', deepMerge);
