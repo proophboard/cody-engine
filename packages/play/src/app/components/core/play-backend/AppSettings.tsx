@@ -42,8 +42,6 @@ const AppSettings = (props: AppSettingsProps) => {
   const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
   const {setPendingChanges} = useContext(PendingChangesContext);
 
-  const monaco = (window as any).monaco;
-
   useEffect(() => {
     setAppName(config.appName);
     setDefaultService(config.defaultService);
@@ -57,14 +55,6 @@ const AppSettings = (props: AppSettingsProps) => {
       setEditorTheme(theme.palette.mode === 'dark' ? 'vs-dark' : 'vs');
     },10);
   }, [theme.palette.mode]);
-
-  useEffect(() => {
-    if(monaco) {
-      ((globalMonaco: any) => {
-        globalMonaco.languages.setMonarchTokensProvider('json', JexlFlavouredJSON);
-      })(monaco);
-    }
-  }, [monaco]);
 
   const handleNameChanged = (newName: string) => {
     setAppName(newName);
@@ -262,7 +252,10 @@ const AppSettings = (props: AppSettingsProps) => {
                   language="json"
                   value={themeOptions}
                   onChange={handleThemeChanged}
-                  onMount={(editor, monaco) => monaco.editor.setTheme(editorTheme)}
+                  onMount={(editor, monaco) => {
+                    monaco.editor.setTheme(editorTheme);
+                    monaco.languages.setMonarchTokensProvider('json', JexlFlavouredJSON as any);
+                  }}
                   options={{
                     theme: editorTheme,
                     tabSize: 2,

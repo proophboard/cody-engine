@@ -8,6 +8,7 @@ import IStandaloneCodeEditor = editor.IStandaloneCodeEditor;
 import {currentBoardId} from "@cody-play/infrastructure/utils/current-board-id";
 import {saveConfigToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-config-to-local-storage";
 import {PendingChangesContext} from "@cody-play/infrastructure/multi-model-store/PendingChanges";
+import {JexlFlavouredJSON} from "@event-engine/infrastructure/code-editor/JexlFlavouredJSON";
 
 interface OwnProps {
   saveCallback: (cb: () => void) => void;
@@ -91,6 +92,8 @@ const PlayConfig = (props: PlayConfigProps) => {
     editorInstance.getAction('editor.unfold').run();
 
     monaco.editor.setTheme(editorTheme);
+
+    monaco.languages.setMonarchTokensProvider('json', JexlFlavouredJSON as any);
   }
 
   return <div style={{marginTop: "30px", marginLeft: "10px", marginRight: "10px"}}>

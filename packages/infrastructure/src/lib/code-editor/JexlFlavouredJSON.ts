@@ -4,11 +4,11 @@ export const JexlFlavouredJSON = {
   // Jexl functions & transforms
   keywords: [
     // general functions
-    'count', 'merge', 'deepMerge', 'uuid', 'isRole', 'userAttr', 'pageData', 'mediaQuery', 'theme',
+    'count', 'merge', 'deepMerge', 'uuid', 'isRole', 'userAttr', 'pageData', 'mediaQuery',
     // general transforms
     'data', 'role', 'attr', 'typeof', 'default', 'call',
     // string extension
-    'upperCase', 'upper', 'lowerCase', 'lower', 'split', 'trim', 'trimEnd', 'trimStart',
+    'upperCase', 'upper', 'lowerCase', 'lower', 'split', 'trim', 'trimEnd', 'trimStart', 'pad', 'padStart', 'padEnd',
     // type cast extension
     'toInt', 'toFloat', 'toStr', 'toJSON', 'fromJSON', 'toArray',
     // Math extension
@@ -16,7 +16,7 @@ export const JexlFlavouredJSON = {
     // Array extension
     'push', 'contains', 'filter', 'map', 'join', 'first', 'last', 'orderBy', 'list',
     // Obj extension
-    'get', 'set', 'unset', 'keys', 'values', 'pick',
+    'get', 'set', 'unset', 'keys', 'values', 'pick', 'omit',
     // Sequence extension
     'nextval',
     // Datetime Extension
