@@ -216,6 +216,10 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
     convertedMeta.resolve = meta.resolve;
   }
 
+  if(typeof meta.collection === "string") {
+    convertedMeta.collection = meta.collection;
+  }
+
   if(isListSchema(normalizedSchema)) {
     const refVORuntimeInfo = playResolveRef(normalizedSchema.items, normalizedSchema, vo, types);
     if(playIsCodyError(refVORuntimeInfo)) {
@@ -230,7 +234,7 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
         convertedMeta.identifier = refVORuntimeInfo.desc.identifier;
       }
 
-      if(isQueryableStateDescription(refVORuntimeInfo.desc)) {
+      if(isQueryableStateDescription(refVORuntimeInfo.desc) && !convertedMeta.collection) {
         convertedMeta.collection = refVORuntimeInfo.desc.collection;
       } else if (typeof meta.collection !== "string") {
         convertedMeta.collection = names(valueObjectNameFromFQCN(refVORuntimeInfo.desc.name)).constantName.toLowerCase() + '_collection';

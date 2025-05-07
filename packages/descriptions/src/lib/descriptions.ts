@@ -214,7 +214,7 @@ export const isStoredQueryableListDescription = (desc: ValueObjectDescriptionFla
   return desc.isList && !desc.hasIdentifier && desc.isQueryable && !desc.isNotStored;
 }
 
-export type ValueObjectDescriptionType = "ValueObjectDescription" | "StateDescription" | "StateListDescription"
+export type ValueObjectDescriptionType = "ValueObjectDescription" | "ListDescription" | "StateDescription" | "StateListDescription"
   | "QueryableValueObjectDescription" | "QueryableNotStoredValueObjectDescription"
   | "QueryableStateDescription" | "QueryableNotStoredStateDescription" | "QueryableStateListDescription"
   | "QueryableNotStoredStateListDescription" | "QueryableListDescription" | "StoredQueryableListDescription";
@@ -241,6 +241,8 @@ export const detectDescriptionType = (desc: ValueObjectDescriptionFlags): ValueO
       return "QueryableValueObjectDescription";
     case isQueryableNotStoredValueObjectDescription(desc):
       return "QueryableNotStoredValueObjectDescription";
+    case isListDescription(desc):
+      return "ListDescription";
     default:
       return "ValueObjectDescription";
   }

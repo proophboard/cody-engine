@@ -133,6 +133,10 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
     convertedMeta.resolve = meta.resolve;
   }
 
+  if(typeof meta.collection === "string") {
+    convertedMeta.collection = meta.collection;
+  }
+
   if(isListSchema(normalizedSchema)) {
     const refVORuntimeInfo = resolveRef(normalizedSchema.items, normalizedSchema, vo);
     if(isCodyError(refVORuntimeInfo)) {
@@ -147,7 +151,7 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
         convertedMeta.identifier = refVORuntimeInfo.desc.identifier;
       }
 
-      if(isQueryableStateDescription(refVORuntimeInfo.desc)) {
+      if(isQueryableStateDescription(refVORuntimeInfo.desc) && !convertedMeta.collection) {
         convertedMeta.collection = refVORuntimeInfo.desc.collection;
       }
     }

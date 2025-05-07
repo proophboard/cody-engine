@@ -27,6 +27,7 @@ import {Event} from "@event-engine/messaging/event";
 import {useQueryClient} from "@tanstack/react-query";
 import {Palette} from "@cody-play/infrastructure/utils/styles";
 import {DockMode, isDrawerMode} from "@cody-play/app/layout/AppSettingsModal";
+import {JexlFlavouredJSON} from "@event-engine/infrastructure/code-editor/JexlFlavouredJSON";
 
 interface MessageOption {
   name: string;
@@ -169,7 +170,10 @@ const Messagebox = (props: MessageboxProps) => {
                   language="json"
                   value={messageContextStr}
                   onChange={handleMessageContextChanged}
-                  onMount={(editor, monaco) => monaco.editor.setTheme(editorTheme)}
+                  onMount={(editor, monaco) => {
+                    monaco.editor.setTheme(editorTheme);
+                    monaco.languages.setMonarchTokensProvider('json', JexlFlavouredJSON as any);
+                  }}
                   options={{
                     theme: editorTheme,
                     tabSize: 2,
