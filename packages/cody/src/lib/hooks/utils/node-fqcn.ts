@@ -16,6 +16,10 @@ export const nodeNameFQCN = (nodeName: NodeName, defaultService: string): string
   return `${names(defaultService).className}.${names(nodeName).className}`;
 }
 
+export const nodeServiceFromFQCN = (fqcn: string, defaultService: string): string => {
+  return fqcn.split(".").shift() || defaultService;
+}
+
 export const nodeFQCN = (node: Node, ctx: Context): string | CodyResponse => {
   switch (node.getType()) {
     case NodeType.document:

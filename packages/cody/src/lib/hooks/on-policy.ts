@@ -24,6 +24,7 @@ import {
 import {DEFAULT_READ_MODEL_PROJECTION} from "@event-engine/infrastructure/Projection/types";
 import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
 import {normalizeCommandName} from "@cody-play/infrastructure/rule-engine/normalize-command-name";
+import {nodeFQCN, nodeServiceFromFQCN} from "@cody-engine/cody/hooks/utils/node-fqcn";
 
 export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): Promise<CodyResponse> => {
   try {
@@ -99,10 +100,17 @@ export const onPolicy: CodyHook<Context> = async (policy: Node, ctx: Context): P
       return event;
     }
 
+    const eventFQCN = withErrorCheck(nodeFQCN, [event, ctx]);
+    const eventService = nodeServiceFromFQCN(eventFQCN, serviceNames.className);
+
+    const eventFilename = eventService === serviceNames.className
+      ? names(event.getName()).fileName
+      : `${names(eventService).fileName}/${names(event.getName()).fileName}`;
+
     generateFiles(tree, __dirname + '/policy-files/be', ctx.beSrc, {
       'tmpl': '',
       'service': serviceNames.fileName,
-      'event': names(event.getName()).fileName,
+      'event': eventFilename,
       ...withErrorCheck(updateProophBoardInfo, [policy, ctx, tree]),
       serviceNames,
       dependencies,

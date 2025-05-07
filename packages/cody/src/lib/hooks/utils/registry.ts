@@ -26,6 +26,7 @@ import {getOriginalEvent} from "@cody-engine/cody/hooks/utils/event/get-original
 import {findAggregateState} from "@cody-engine/cody/hooks/utils/aggregate/find-aggregate-state";
 import {isObjectSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-object-schema";
 import {JSONSchema7} from "json-schema-to-ts";
+import {nodeServiceFromFQCN} from "@cody-engine/cody/hooks/utils/node-fqcn";
 
 const project = new Project({
   compilerOptions: {
@@ -316,17 +317,32 @@ export const registerPolicy = (service: string, policy: Node, event: Node, ctx: 
   const policyNames = names(policy.getName());
   const  serviceNames = names(service);
   const eventNames = names(event.getName());
+  const eventMeta = getEventMetadata(event, ctx);
 
-  if(!registrySource.getImportDeclaration(dec => dec.getModuleSpecifier().getLiteralValue() === `@server/policies/${serviceNames.fileName}/${eventNames.fileName}/${policyNames.fileName}`)) {
+  if(isCodyError(eventMeta)) {
+    return eventMeta;
+  }
+
+  const eventService = nodeServiceFromFQCN(eventMeta.fqcn, serviceNames.className);
+
+  const eventFilename = eventService === serviceNames.className
+    ? names(event.getName()).fileName
+    : `${names(eventService).fileName}/${names(event.getName()).fileName}`;
+
+  const eventServicePropertyName = eventService === serviceNames.className
+    ? serviceNames.propertyName
+    : names(eventService).className + '__';
+
+  if(!registrySource.getImportDeclaration(dec => dec.getModuleSpecifier().getLiteralValue() === `@server/policies/${serviceNames.fileName}/${eventFilename}/${policyNames.fileName}`)) {
 
     registrySource.addImportDeclaration({
-      defaultImport: `{${policyNames.propertyName} as ${serviceNames.propertyName}${eventNames.className}${policyNames.className}}`,
-      moduleSpecifier: `@server/policies/${serviceNames.fileName}/${eventNames.fileName}/${policyNames.fileName}`
+      defaultImport: `{${policyNames.propertyName} as ${eventServicePropertyName}${eventNames.className}${policyNames.className}}`,
+      moduleSpecifier: `@server/policies/${serviceNames.fileName}/${eventFilename}/${policyNames.fileName}`
     });
 
     registrySource.addImportDeclaration({
-      defaultImport: `{${serviceNames.className}${policyNames.className}PolicyDesc as ${serviceNames.className}${eventNames.className}${policyNames.className}PolicyDesc}`,
-      moduleSpecifier: `@server/policies/${serviceNames.fileName}/${eventNames.fileName}/${policyNames.fileName}.desc`
+      defaultImport: `{${serviceNames.className}${policyNames.className}PolicyDesc as ${eventServicePropertyName}${eventNames.className}${policyNames.className}PolicyDesc}`,
+      moduleSpecifier: `@server/policies/${serviceNames.fileName}/${eventFilename}/${policyNames.fileName}.desc`
     });
   }
 
@@ -353,6 +369,8 @@ const registerPolicyForEvent = (service: string, policyFQCN: string, policy: Nod
     return eventMeta;
   }
 
+  const eventService = nodeServiceFromFQCN(eventMeta.fqcn, serviceNames.className);
+
   const registryVar = registrySource.getVariableDeclaration('policies');
   const registryObject = registryVar!.getInitializerIfKindOrThrow(
     SyntaxKind.ObjectLiteralExpression
@@ -365,6 +383,10 @@ const registerPolicyForEvent = (service: string, policyFQCN: string, policy: Nod
     });
   }
 
+  const eventServicePropertyName = eventService === serviceNames.className
+    ? serviceNames.propertyName
+    : names(eventService).className + '__';
+
   const eventPolicesObject = registryObject.getProperty(`'${eventMeta.fqcn}'`) as PropertyAssignment;
   const eventPoliciesInitializer = eventPolicesObject.getInitializerIfKindOrThrow(
     SyntaxKind.ObjectLiteralExpression
@@ -373,7 +395,7 @@ const registerPolicyForEvent = (service: string, policyFQCN: string, policy: Nod
   if(!eventPoliciesInitializer.getProperty(`'${policyFQCN}'`)) {
     eventPoliciesInitializer.addPropertyAssignment({
       name: `'${policyFQCN}'`,
-      initializer: `{ policy: ${serviceNames.propertyName}${eventNames.className}${policyNames.className}, desc: ${serviceNames.className}${eventNames.className}${policyNames.className}PolicyDesc }`
+      initializer: `{ policy: ${eventServicePropertyName}${eventNames.className}${policyNames.className}, desc: ${eventServicePropertyName}${eventNames.className}${policyNames.className}PolicyDesc }`
     })
   }
 
