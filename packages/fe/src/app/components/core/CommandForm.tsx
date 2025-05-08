@@ -36,7 +36,7 @@ import {useEnv} from "@frontend/hooks/use-env";
 import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
 import DescriptionFieldTemplate from "@frontend/app/components/core/form/templates/DescriptionFieldTemplate";
 
-export type FormModeType = 'pageForm' | 'pageView' | 'dialogForm' | 'dialogView';
+export type FormModeType = 'pageForm' | 'pageView' | 'dialogForm' | 'commandDialogForm' | 'dialogView';
 
 interface OwnProps {
   command: CommandRuntimeInfo;

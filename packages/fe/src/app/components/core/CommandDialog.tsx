@@ -246,7 +246,7 @@ const CommandDialog = (props: CommandDialogProps) => {
       }}>
         {props.slots?.beforeForm}
         <CommandForm
-          mode="dialogForm"
+          mode="commandDialogForm"
           command={props.commandDialogCommand}
           commandFn={props.commandFn}
           definitions={props.definitions || definitions}

@@ -38,6 +38,7 @@ export const isDialogMode = (mode: FormModeType): boolean => {
   switch (mode) {
     case "dialogView":
     case "dialogForm":
+    case "commandDialogForm":
       return true;
     default:
       return false;
@@ -233,7 +234,7 @@ export default function ObjectFieldTemplate<
         <TopRightActions uiOptions={uiOptions} defaultService={props.formContext!.defaultService} jexlCtx={jexlCtx}/>
       </Grid2>}
       <Grid2 xs={12} {...gridConfig as Grid2Props}>
-        {isDialogMode(mode) && nestingLevel === 1 && <Grid2 xs={12}>
+        {isDialogMode(mode) && mode !== 'commandDialogForm' /* Cmd Title + actions is already shown in CommandDialog */ && nestingLevel === 1 && <Grid2 xs={12}>
           <Grid2 xs>
             {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
                          sx={getObjPropTitleStyle(headingVariant, theme, mode)}>{index}{title}</Typography>}
