@@ -9,6 +9,10 @@ export const showTitle = (uiSchema?: UiSchema): boolean => {
     return uiSchema['ui:title'];
   }
 
+  if(typeof uiSchema['ui:title'] === "string" && uiSchema['ui:title'] === '') {
+    return false;
+  }
+
   if(uiSchema['ui:options'] && typeof uiSchema['ui:options']['title'] === "boolean") {
     return uiSchema['ui:options']['title'];
   }
