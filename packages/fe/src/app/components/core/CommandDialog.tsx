@@ -37,6 +37,7 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import {getObjPropTitleStyle} from "@frontend/app/components/core/form/templates/ObjectFieldTemplate";
 import commandForm from "@frontend/app/components/core/CommandForm";
+import {ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 
 export interface AggregateIdentifier {
   identifier: string;
@@ -224,6 +225,11 @@ const CommandDialog = (props: CommandDialogProps) => {
     data: commandFormRef.current?.getData() || {}
   }, env);
 
+  const containerInfo: ActionContainerInfo = {
+    name: props.commandDialogCommand.desc.name,
+    type: "command"
+  }
+
   return (
     <Dialog open={props.open} fullWidth={true} maxWidth={'lg'} onClose={handleCancel} sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}>
       <DialogTitle sx={{
@@ -234,11 +240,15 @@ const CommandDialog = (props: CommandDialogProps) => {
           <Grid2 xs sx={{padding: theme.spacing(2)}}>
             {title && <Typography variant={"h2"}>{title}</Typography>}
           </Grid2>
-          <TopRightActions uiOptions={uiOptions} defaultService={env.DEFAULT_SERVICE} jexlCtx={jexlCtx} additionalRightButtons={[
-            <IconButton onClick={handleCancel} sx={{color: theme.palette.grey[500]}}>
-              <Close />
-            </IconButton>
-          ]} />
+          <TopRightActions uiOptions={uiOptions}
+                           containerInfo={containerInfo}
+                           defaultService={env.DEFAULT_SERVICE}
+                           jexlCtx={jexlCtx}
+                           additionalRightButtons={[
+                            <IconButton onClick={handleCancel} sx={{color: theme.palette.grey[500]}}>
+                              <Close />
+                            </IconButton>
+                          ]} />
         </Grid2>
       </DialogTitle>
       <DialogContent sx={{

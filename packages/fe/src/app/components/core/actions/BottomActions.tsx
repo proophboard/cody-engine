@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
-import {Action} from "@frontend/app/components/core/form/types/action";
+import {Action, ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import ActionButton from "@frontend/app/components/core/ActionButton";
 import {SxProps} from "@mui/material";
@@ -14,9 +14,10 @@ interface OwnProps {
   jexlCtx: FormJexlContext;
   sx?: SxProps;
   actions?: Action[];
-  additionalLeftButtons?: JSX.Element[],
-  additionalCenterButtons?: JSX.Element[],
-  additionalRightButtons?: JSX.Element[],
+  additionalLeftButtons?: JSX.Element[];
+  additionalCenterButtons?: JSX.Element[];
+  additionalRightButtons?: JSX.Element[];
+  containerInfo?: ActionContainerInfo;
 }
 
 type BottomActionsProps = OwnProps;

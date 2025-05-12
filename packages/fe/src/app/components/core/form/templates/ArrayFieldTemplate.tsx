@@ -62,9 +62,10 @@ export const ArrayFieldTemplate = <
   }
 
   let idPrefix = 'component_' + names(props.title).fileName + '_';
+  let fqcn = '';
 
   if(props.schema.$id) {
-    const fqcn = playFQCNFromDefinitionId(props.schema.$id);
+    fqcn = playFQCNFromDefinitionId(props.schema.$id);
 
     idPrefix = 'component_' + names(fqcn).fileName + '_';
   }
@@ -96,7 +97,11 @@ export const ArrayFieldTemplate = <
                                 className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
                                 sx={getObjPropTitleStyle(headingVariant, theme, mode)}>{title}{index}</Typography>}
         </Grid2>
-        <TopRightActions  uiOptions={uiOptions} defaultService={props.formContext!.defaultService} jexlCtx={jexlCtx} />
+        <TopRightActions  uiOptions={uiOptions}
+                          containerInfo={nestingLevel === 1 ? {name: fqcn, type: "mixed"} : undefined}
+                          defaultService={props.formContext!.defaultService}
+                          jexlCtx={jexlCtx}
+        />
       </Grid2>
       <Grid2 xs={12} {...gridConfig as Grid2Props}>
         <ArrayFieldDescriptionTemplate
@@ -125,18 +130,22 @@ export const ArrayFieldTemplate = <
         </Grid2>
       </Grid2>}
     </Grid2>
-    {(isDialogMode(mode) || nestingLevel > 1) && <BottomActions sx={{padding: nestingLevel === 1 ? `0 ${theme.spacing(2)}` : 0}} uiOptions={uiOptions}
-                    defaultService={props.formContext!.defaultService} jexlCtx={jexlCtx} additionalRightButtons={
-      isWriteMode(mode) && props.canAdd ? [
-        <AddButton
-          key={'array_field_' + props.idSchema.$id + 'add_button'}
-          className='array-item-add'
-          onClick={props.onAddClick}
-          disabled={props.disabled || props.readonly}
-          uiSchema={props.uiSchema}
-          registry={props.registry}
-        />
-      ] : undefined
+    {(isDialogMode(mode) || nestingLevel > 1) && <BottomActions
+      sx={{padding: nestingLevel === 1 ? `0 ${theme.spacing(2)}` : 0}}
+      containerInfo={nestingLevel === 1 ? {name: fqcn, type: "mixed"} : undefined}
+      uiOptions={uiOptions}
+      defaultService={props.formContext!.defaultService}
+      jexlCtx={jexlCtx} additionalRightButtons={
+        isWriteMode(mode) && props.canAdd ? [
+          <AddButton
+            key={'array_field_' + props.idSchema.$id + 'add_button'}
+            className='array-item-add'
+            onClick={props.onAddClick}
+            disabled={props.disabled || props.readonly}
+            uiSchema={props.uiSchema}
+            registry={props.registry}
+          />
+        ] : undefined
     }/>}
   </>)
 }
