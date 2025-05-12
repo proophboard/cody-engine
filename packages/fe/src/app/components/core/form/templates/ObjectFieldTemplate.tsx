@@ -203,9 +203,10 @@ export default function ObjectFieldTemplate<
   }
 
   let idPrefix = 'component_' + names(props.title).fileName + '_';
+  let fqcn = '';
 
   if(props.schema.$id) {
-    const fqcn = playFQCNFromDefinitionId(props.schema.$id);
+    fqcn = playFQCNFromDefinitionId(props.schema.$id);
 
     idPrefix = 'component_' + names(fqcn).fileName + '_';
   }
@@ -231,7 +232,10 @@ export default function ObjectFieldTemplate<
             registry={props.registry}
           />}
         </Grid2>
-        <TopRightActions uiOptions={uiOptions} defaultService={props.formContext!.defaultService} jexlCtx={jexlCtx}/>
+        <TopRightActions uiOptions={uiOptions}
+                         containerInfo={nestingLevel === 1 ? {name: fqcn, type: "mixed"} : undefined}
+                         defaultService={props.formContext!.defaultService}
+                         jexlCtx={jexlCtx}/>
       </Grid2>}
       <Grid2 xs={12} {...gridConfig as Grid2Props}>
         {isDialogMode(mode) && mode !== 'commandDialogForm' /* Cmd Title + actions is already shown in CommandDialog */ && nestingLevel === 1 && <Grid2 xs={12}>
@@ -272,18 +276,23 @@ export default function ObjectFieldTemplate<
         </Grid2>
       </Grid2>}
     </Grid2>
-    {(isDialogMode(mode) || nestingLevel > 1) && <BottomActions sx={{padding: nestingLevel === 1 ? `0 ${theme.spacing(2)}` : 0}} uiOptions={uiOptions}
-                    defaultService={props.formContext!.defaultService} jexlCtx={jexlCtx} additionalRightButtons={
-      isWriteMode(mode) && canExpand<T, S, F>(props.schema, props.uiSchema, props.formData) ? [
-        <AddButton
-          className='object-property-expand'
-          key={'object_field_' + props.idSchema.$id + '_object_property_expand'}
-          onClick={props.onAddClick(props.schema)}
-          disabled={props.disabled || props.readonly}
-          uiSchema={props.uiSchema}
-          registry={props.registry}
-        />
-      ] : undefined
+    {(isDialogMode(mode) || nestingLevel > 1) && <BottomActions
+      sx={{padding: nestingLevel === 1 ? `0 ${theme.spacing(2)}` : 0}}
+      uiOptions={uiOptions}
+      containerInfo={nestingLevel === 1 ? {name: fqcn, type: "mixed"} : undefined}
+      defaultService={props.formContext!.defaultService}
+      jexlCtx={jexlCtx}
+      additionalRightButtons={
+        isWriteMode(mode) && canExpand<T, S, F>(props.schema, props.uiSchema, props.formData) ? [
+          <AddButton
+            className='object-property-expand'
+            key={'object_field_' + props.idSchema.$id + '_object_property_expand'}
+            onClick={props.onAddClick(props.schema)}
+            disabled={props.disabled || props.readonly}
+            uiSchema={props.uiSchema}
+            registry={props.registry}
+          />
+        ] : undefined
     }/>}
   </>)
 }

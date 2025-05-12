@@ -143,7 +143,14 @@ const StateView = (props: StateViewProps) => {
         ...props.fields
       }}
     />
-    <BottomActions sx={{padding:  `${theme.spacing(4)} 0`}} uiOptions={uiOptions} defaultService={defaultService} jexlCtx={jexlCtx} />
+    <BottomActions sx={{padding:  `${theme.spacing(4)} 0`}}
+                   containerInfo={{
+                     name: infoFQCN,
+                     type: "view"
+                   }}
+                   uiOptions={uiOptions}
+                   defaultService={defaultService}
+                   jexlCtx={jexlCtx} />
   </Box>;
 };
 

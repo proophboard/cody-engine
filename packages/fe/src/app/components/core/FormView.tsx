@@ -274,7 +274,15 @@ const FormView = (props: FormViewProps) => {
       }}
     />
     {extraError && <Box sx={{paddingTop: `${theme.spacing(4)}`}} id={extraErrorId()}>{extraError}</Box>}
-    <BottomActions sx={{padding:  `${theme.spacing(4)} 0`}} uiOptions={uiOptions} defaultService={defaultService} jexlCtx={jexlCtx} />
+    <BottomActions sx={{padding:  `${theme.spacing(4)} 0`}}
+                   containerInfo={{
+                     name: infoFQCN,
+                     type: "view"
+                   }}
+                   uiOptions={uiOptions}
+                   defaultService={defaultService}
+                   jexlCtx={jexlCtx}
+    />
   </Box>;
 };
 

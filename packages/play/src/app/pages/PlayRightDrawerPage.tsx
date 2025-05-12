@@ -21,6 +21,7 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
+import {ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 
 interface OwnProps {
   page: string;
@@ -71,6 +72,11 @@ const PlayRightDrawerPage = (props: PlayRightDrawerPageProps) => {
     navigate(generatePageLink(mainPage, routeParams));
   };
 
+  const containerInfo: ActionContainerInfo = {
+    name: page.name,
+    type: "page"
+  }
+
   return <>
     <PlayStandardPage page={mainPage.name} drawerWidth={drawerWidth} />
     <Drawer anchor="right"
@@ -89,7 +95,11 @@ const PlayRightDrawerPage = (props: PlayRightDrawerPageProps) => {
             {getPageTitle(page as unknown as PageDefinition)}
           </Grid2>
           {topRightActions.length
-            ? <TopRightActions actions={topRightActions}  uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />
+            ? <TopRightActions actions={topRightActions}
+                               containerInfo={containerInfo}
+                               uiOptions={{}}
+                               defaultService={defaultService}
+                               jexlCtx={jexlCtx} />
             : <Grid2 xs
                      display="flex"
                      direction="column"
@@ -106,7 +116,12 @@ const PlayRightDrawerPage = (props: PlayRightDrawerPageProps) => {
         </Grid2>
       </DialogTitle>
       <DialogContent><PlayStandardPage page={page.name} mode="drawer" /></DialogContent>
-      {bottomActions.length > 0 && <BottomActions actions={bottomActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} sx={{padding: theme.spacing(3)}} />}
+      {bottomActions.length > 0 && <BottomActions actions={bottomActions}
+                                                  containerInfo={containerInfo}
+                                                  uiOptions={{}}
+                                                  defaultService={defaultService}
+                                                  jexlCtx={jexlCtx}
+                                                  sx={{padding: theme.spacing(3)}} />}
     </Drawer>
   </>
 };

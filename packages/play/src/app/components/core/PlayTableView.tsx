@@ -62,6 +62,7 @@ import {PageRegistry} from "@frontend/app/pages";
 import {PageMode} from "@cody-play/app/pages/PlayStandardPage";
 import {showTitle} from "@frontend/util/schema/show-title";
 import {informationTitle} from "@frontend/util/information/titelize";
+import {ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 
 const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo, pageMode: PageMode, hiddenView = false, uiSchemaOverride?: UiSchema, injectedInitialValues?: any) => {
   if(!isQueryableStateListDescription(informationInfo.desc) && !isQueryableListDescription(informationInfo.desc) && !isQueryableNotStoredStateListDescription(informationInfo.desc)) {
@@ -128,6 +129,11 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
     return <></>;
   }
 
+  const containerInfo: ActionContainerInfo = {
+    name: informationInfo.desc.name,
+    type: "view"
+  }
+
   return (
     <Box component="div">
       <Grid2 container={true}>
@@ -141,7 +147,11 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
             {informationTitle(informationInfo, uiSchema)}
           </Typography>}
         </Grid2>
-        <TopRightActions uiOptions={uiOptions} defaultService={normalizedDefaultService} jexlCtx={jexlCtx} />
+        <TopRightActions uiOptions={uiOptions}
+                         containerInfo={containerInfo}
+                         defaultService={normalizedDefaultService}
+                         jexlCtx={jexlCtx}
+        />
       </Grid2>
       {query.isLoading && <CircularProgress />}
       {query.isSuccess && (
@@ -164,7 +174,11 @@ const PlayTableView = (params: any, informationInfo: PlayInformationRuntimeInfo,
           }}
         />
       )}
-      <BottomActions uiOptions={uiOptions} defaultService={normalizedDefaultService} jexlCtx={jexlCtx} sx={{marginTop: theme.spacing(2)}} />
+      <BottomActions uiOptions={uiOptions}
+                     containerInfo={containerInfo}
+                     defaultService={normalizedDefaultService}
+                     jexlCtx={jexlCtx}
+                     sx={{marginTop: theme.spacing(2)}} />
     </Box>
   );
 };

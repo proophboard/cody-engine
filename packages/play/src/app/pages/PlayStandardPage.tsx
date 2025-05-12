@@ -33,7 +33,7 @@ import {useTranslation} from "react-i18next";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
-import {Action} from "@frontend/app/components/core/form/types/action";
+import {Action, ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 import {useEnv} from "@frontend/hooks/use-env";
 import ActionButton from "@frontend/app/components/core/ActionButton";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
@@ -192,6 +192,11 @@ export const PlayStandardPage = (props: Props) => {
     className: "CodyStandardPage-root"
   };
 
+  const containerInfo: ActionContainerInfo = {
+    name: page.name,
+    type: "page"
+  }
+
   return <Grid2 {...{...defaultContainerProps, ...page.props?.container, sx: {...defaultContainerProps.sx, ...page.props?.container?.sx}}}>
     {config.layout === 'task-based-ui'
       && pageMode === "standard"
@@ -199,7 +204,11 @@ export const PlayStandardPage = (props: Props) => {
         <Grid2 xs={12} sx={headerGridSx}><PlayBreadcrumbs /></Grid2>
         <Grid2 xs sx={headerGridSx}>
           <Typography variant="h1" className="CodyPageTitle-root">{getPageTitle(page as unknown as PageDefinition)}</Typography></Grid2>
-        <TopRightActions actions={topActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />
+        <TopRightActions actions={topActions}
+                         containerInfo={containerInfo}
+                         uiOptions={{}}
+                         defaultService={defaultService}
+                         jexlCtx={jexlCtx} />
       </>}
     {topBar}
     <Grid2 xs={12} sx={{padding: 0}} />
@@ -221,7 +230,13 @@ export const PlayStandardPage = (props: Props) => {
       bottom: 0,
       zIndex: theme.zIndex.appBar,
     }}>
-      <BottomActions uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} actions={bottomActions} sx={{padding: `${theme.spacing(3)} ${theme.spacing(4)}`}} />
+      <BottomActions uiOptions={{}}
+                     containerInfo={containerInfo}
+                     defaultService={defaultService}
+                     jexlCtx={jexlCtx}
+                     actions={bottomActions}
+                     sx={{padding: `${theme.spacing(3)} ${theme.spacing(4)}`}}
+      />
     </Box>}
   </Grid2>
 }
