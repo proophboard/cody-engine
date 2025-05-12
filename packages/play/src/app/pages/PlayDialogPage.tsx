@@ -20,6 +20,7 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
+import {ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 
 interface OwnProps {
   page: string;
@@ -66,6 +67,11 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
     navigate(generatePageLink(mainPage, routeParams));
   };
 
+  const containerInfo: ActionContainerInfo = {
+    name: page.name,
+    type: "page"
+  }
+
   return <>
       <PlayStandardPage page={mainPage.name} />
       <Dialog open={true} fullWidth={true} maxWidth={'lg'} onClose={handleClose} sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}>
@@ -75,7 +81,11 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
               {getPageTitle(page as unknown as PageDefinition)}
             </Grid2>
             {topRightActions.length
-              ? <TopRightActions actions={topRightActions}  uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />
+              ? <TopRightActions actions={topRightActions}
+                                 containerInfo={containerInfo}
+                                 uiOptions={{}}
+                                 defaultService={defaultService}
+                                 jexlCtx={jexlCtx} />
               : <Grid2 xs
                        display="flex"
                        direction="column"
@@ -94,7 +104,12 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
         <DialogContent>
           <PlayStandardPage page={page.name} mode="dialog" />
         </DialogContent>
-        {bottomActions.length > 0 && <BottomActions sx={{padding: theme.spacing(3)}} actions={bottomActions} uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />}
+        {bottomActions.length > 0 && <BottomActions sx={{padding: theme.spacing(3)}}
+                                                    actions={bottomActions}
+                                                    containerInfo={containerInfo}
+                                                    uiOptions={{}}
+                                                    defaultService={defaultService}
+                                                    jexlCtx={jexlCtx} />}
       </Dialog>
     </>
 };

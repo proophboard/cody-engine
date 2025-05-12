@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {Action} from "@frontend/app/components/core/form/types/action";
+import {Action, ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import ActionButton from "@frontend/app/components/core/ActionButton";
@@ -13,6 +13,7 @@ interface OwnProps {
   jexlCtx: FormJexlContext;
   actions?: Action[];
   additionalRightButtons?: JSX.Element[];
+  containerInfo?: ActionContainerInfo;
 }
 
 type TopRightActionsProps = OwnProps;
