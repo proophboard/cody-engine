@@ -1,8 +1,7 @@
 import * as React from 'react';
-import {User} from "@app/shared/types/core/user/user";
+import {isPersona, User} from "@app/shared/types/core/user/user";
 import {Avatar, Badge, SxProps} from "@mui/material";
 import {useState} from "react";
-import {isPersona} from "@app/shared/extensions/personas";
 
 interface OwnProps {
   user: User;
