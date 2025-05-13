@@ -23,11 +23,7 @@ import LanguageSwitch from '@frontend/app/components/core/LanguageSwitch';
 import { NavLink } from 'react-router-dom';
 import { LoginOutlined } from '@mui/icons-material';
 import UserAvatar from '@frontend/app/components/core/UserAvatar';
-import {
-  Wrench,
-  ViewDashboardEdit,
-  ViewDashboardEditOutline,
-} from 'mdi-material-ui';
+import { Wrench, ViewDashboardEdit } from 'mdi-material-ui';
 import CodyGPTDrawer from '@cody-play/app/components/core/cody-gpt/CodyGPTDrawer';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 
@@ -43,7 +39,7 @@ const TopBar = (props: TopBarProps) => {
   const [currentUser] = useUser();
   const theme = useTheme();
   const { mode, toggleColorMode } = useContext(ColorModeContext);
-  const { liveEditMode, toggleLiveEditMode } = useContext(LiveEditModeContext);
+  const { toggleLiveEditMode } = useContext(LiveEditModeContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [codyGPTOpen, setCodyGPTOpen] = useState(false);
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
@@ -104,16 +100,9 @@ const TopBar = (props: TopBarProps) => {
           title="Toggle live edit mode"
           onClick={toggleLiveEditMode}
         >
-          {!liveEditMode && (
-            <ViewDashboardEditOutline
-              sx={{ color: theme.palette.primary.contrastText }}
-            />
-          )}
-          {liveEditMode && (
-            <ViewDashboardEdit
-              sx={{ color: theme.palette.primary.contrastText }}
-            />
-          )}
+          <ViewDashboardEdit
+            sx={{ color: theme.palette.primary.contrastText }}
+          />
         </IconButton>
         <IconButton onClick={openCodyGPT}>
           <Wrench sx={{ color: theme.palette.primary.contrastText }} />
