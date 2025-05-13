@@ -49,7 +49,7 @@ import {
 import PlayDialogPage from '@cody-play/app/pages/PlayDialogPage';
 import PlayRightDrawerPage from '@cody-play/app/pages/PlayRightDrawerPage';
 import PlayToggleLiveEditMode from '@cody-play/app/layout/PlayToggleLiveEditMode';
-import { DndContext } from '@dnd-kit/core';
+import DragAndDrop from '@cody-play/app/providers/DragAndDrop';
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -69,14 +69,14 @@ export function App() {
         <GlobalStore>
           <PlayToggleColorMode>
             <PlayToggleLiveEditMode>
-              <DndContext>
+              <DragAndDrop>
                 <SnackbarProvider maxSnack={3}>
                   <MainLayout>
                     <ScrollToTop />
                     <Outlet />
                   </MainLayout>
                 </SnackbarProvider>
-              </DndContext>
+              </DragAndDrop>
             </PlayToggleLiveEditMode>
           </PlayToggleColorMode>
         </GlobalStore>

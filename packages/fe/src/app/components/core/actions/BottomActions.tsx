@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { FormJexlContext } from '@frontend/app/components/core/form/types/form-jexl-context';
 import {
   Action,
@@ -13,6 +13,7 @@ import { parseActionsFromUiOptions } from '@frontend/app/components/core/form/ty
 import { RuntimeEnvironment } from '@frontend/app/providers/runtime-environment';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 import PlayDroppable from '@cody-play/app/components/core/PlayDroppable';
+import { DragAndDropContext } from '@cody-play/app/providers/DragAndDrop';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -44,6 +45,7 @@ const BottomActions = (props: BottomActionsProps) => {
   const theme = useTheme();
   const env = useEnv();
   const { liveEditMode } = useContext(LiveEditModeContext);
+  const { dndEvent } = useContext(DragAndDropContext);
   const isDragDropEnabled =
     liveEditMode && env.UI_ENV === 'play' && props.containerInfo;
   const actions =
