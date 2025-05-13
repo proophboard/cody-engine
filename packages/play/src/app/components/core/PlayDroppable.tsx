@@ -12,7 +12,7 @@ const PlayDroppable = ({ id }: TPlayDroppable) => {
   });
   const sx = {
     width: '100%',
-    height: '2.25rem',
+    height: '3rem',
     borderWidth: '2px',
     borderStyle: 'dotted',
     borderColor: theme.palette.grey['500'],
