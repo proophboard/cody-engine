@@ -1,4 +1,8 @@
-import { createContext, ReactNode, useState } from 'react';
+import { createContext, ReactNode, useMemo, useState } from 'react';
+
+type TToggleLiveEditMode = {
+  children: ReactNode;
+};
 
 export const LiveEditModeContext = createContext({
   liveEditMode: false,
@@ -6,18 +10,17 @@ export const LiveEditModeContext = createContext({
   toggleLiveEditMode: () => {},
 });
 
-type TToggleLiveEditMode = {
-  children: ReactNode;
-};
-
 const ToggleLiveEditMode = ({ children }: TToggleLiveEditMode) => {
   const [liveEditMode, setLiveEditMode] = useState<boolean>(false);
-  const liveEditModeContextValue = {
-    liveEditMode,
-    toggleLiveEditMode: () => {
-      setLiveEditMode((prevState) => !prevState);
-    },
-  };
+  const liveEditModeContextValue = useMemo(
+    () => ({
+      liveEditMode,
+      toggleLiveEditMode: () => {
+        setLiveEditMode((prevState) => !prevState);
+      },
+    }),
+    [liveEditMode]
+  );
 
   return (
     <LiveEditModeContext.Provider value={liveEditModeContextValue}>
