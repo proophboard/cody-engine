@@ -3,10 +3,10 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { PlayStandardPage } from '@cody-play/app/pages/PlayStandardPage';
 import {
   createBrowserRouter,
-  RouteObject,
   Outlet,
-  RouterProvider,
   redirect,
+  RouteObject,
+  RouterProvider,
 } from 'react-router-dom';
 import '@fontsource/roboto/300.css';
 import '@fontsource/roboto/400.css';
@@ -21,10 +21,9 @@ import User from '@frontend/app/providers/User';
 import {
   addAfterDispatchListener,
   clearAfterDispatchListener,
-  PlayConfigProvider,
-  configStore,
   CodyPlayConfig,
-  Action,
+  configStore,
+  PlayConfigProvider,
 } from '@cody-play/state/config-store';
 import { PlayPageRegistry } from '@cody-play/state/types';
 import CodyMessageServerInjection from '@cody-play/app/components/core/CodyMessageServer';
@@ -49,9 +48,8 @@ import {
 } from '@frontend/app/pages/page-definitions';
 import PlayDialogPage from '@cody-play/app/pages/PlayDialogPage';
 import PlayRightDrawerPage from '@cody-play/app/pages/PlayRightDrawerPage';
-import { useMediaQuery } from '@mui/material';
-import { RuntimeEnvironment } from '@frontend/app/providers/runtime-environment';
 import PlayToggleLiveEditMode from '@cody-play/app/layout/PlayToggleLiveEditMode';
+import { DndContext } from '@dnd-kit/core';
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -71,12 +69,14 @@ export function App() {
         <GlobalStore>
           <PlayToggleColorMode>
             <PlayToggleLiveEditMode>
-              <SnackbarProvider maxSnack={3}>
-                <MainLayout>
-                  <ScrollToTop />
-                  <Outlet />
-                </MainLayout>
-              </SnackbarProvider>
+              <DndContext>
+                <SnackbarProvider maxSnack={3}>
+                  <MainLayout>
+                    <ScrollToTop />
+                    <Outlet />
+                  </MainLayout>
+                </SnackbarProvider>
+              </DndContext>
             </PlayToggleLiveEditMode>
           </PlayToggleColorMode>
         </GlobalStore>
