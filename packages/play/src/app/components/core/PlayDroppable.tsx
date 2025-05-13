@@ -1,30 +1,27 @@
-import { ReactNode } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { Box, useTheme } from '@mui/material';
 
 export type TPlayDroppable = {
   id: string;
-  children: ReactNode;
 };
 
-const PlayDroppable = ({ id, children }: TPlayDroppable) => {
+const PlayDroppable = ({ id }: TPlayDroppable) => {
   const theme = useTheme();
   const { isOver, setNodeRef } = useDroppable({
     id,
   });
   // TODO update styling
   const sx = {
-    borderWidth: '2px',
+    height: '2.25rem',
+    borderWidth: '3px',
     borderStyle: 'dotted',
     borderColor: theme.palette.grey['500'],
-    backgroundColor: isOver ? 'green' : 'red',
+    backgroundColor: isOver
+      ? theme.palette.grey['400']
+      : theme.palette.grey['200'],
   };
 
-  return (
-    <Box ref={setNodeRef} sx={sx}>
-      {children}
-    </Box>
-  );
+  return <Box ref={setNodeRef} sx={sx} />;
 };
 
 export default PlayDroppable;
