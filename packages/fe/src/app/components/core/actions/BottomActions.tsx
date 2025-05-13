@@ -75,6 +75,7 @@ const BottomActions = (props: BottomActionsProps) => {
       container
       sx={{ ...props.sx, gap: isDragDropEnabled ? theme.spacing(2) : null }}
     >
+      {/* TODO buttons should still be visible */}
       {isDragDropEnabled && (
         <>
           <Grid2 xs>
