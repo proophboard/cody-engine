@@ -11,6 +11,7 @@ import { parseActionsFromUiOptions } from '@frontend/app/components/core/form/ty
 import { RuntimeEnvironment } from '@frontend/app/providers/runtime-environment';
 import { useContext } from 'react';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
+import PlayDraggable from '@cody-play/app/components/core/PlayDraggable';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -37,7 +38,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
   const env = useEnv();
   const { liveEditMode } = useContext(LiveEditModeContext);
   const isDragDropEnabled =
-    liveEditMode && env.UI_ENV === 'play' && props.containerInfo;
+    liveEditMode && env.UI_ENV === 'play' && props.containerInfo !== undefined;
   const actions =
     props.actions ||
     getTopRightActionsFromUIOptions(props.uiOptions, props.jexlCtx, env);
@@ -61,12 +62,18 @@ const TopRightActions = (props: TopRightActionsProps) => {
         },
       }}
     >
-      {actions.map((action) => (
-        <ActionButton
-          action={action}
-          defaultService={props.defaultService}
-          jexlCtx={props.jexlCtx}
-        />
+      {actions.map((action, index) => (
+        <PlayDraggable
+          key={`action-button-${index}-key`}
+          id={`action-button-${index}`}
+          isDragDropEnabled={isDragDropEnabled}
+        >
+          <ActionButton
+            action={action}
+            defaultService={props.defaultService}
+            jexlCtx={props.jexlCtx}
+          />
+        </PlayDraggable>
       ))}
       {props.additionalRightButtons}
     </Grid2>
