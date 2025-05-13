@@ -1,11 +1,13 @@
 import { useDroppable } from '@dnd-kit/core';
 import { Box, useTheme } from '@mui/material';
+import { ReactNode } from 'react';
 
 export type TPlayDroppable = {
   id: string;
+  children?: ReactNode;
 };
 
-const PlayDroppable = ({ id }: TPlayDroppable) => {
+const PlayDroppable = ({ id, children = undefined }: TPlayDroppable) => {
   const theme = useTheme();
   const { isOver, setNodeRef } = useDroppable({
     id,
@@ -22,7 +24,11 @@ const PlayDroppable = ({ id }: TPlayDroppable) => {
       : theme.palette.grey['200'],
   };
 
-  return <Box ref={setNodeRef} sx={sx} />;
+  return (
+    <Box ref={setNodeRef} sx={sx}>
+      {children}
+    </Box>
+  );
 };
 
 export default PlayDroppable;
