@@ -10,7 +10,7 @@ export const LiveEditModeContext = createContext({
   toggleLiveEditMode: () => {},
 });
 
-const ToggleLiveEditMode = ({ children }: TToggleLiveEditMode) => {
+const PlayToggleLiveEditMode = ({ children }: TToggleLiveEditMode) => {
   const [liveEditMode, setLiveEditMode] = useState<boolean>(false);
   const liveEditModeContextValue = useMemo(
     () => ({
@@ -29,4 +29,4 @@ const ToggleLiveEditMode = ({ children }: TToggleLiveEditMode) => {
   );
 };
 
-export default ToggleLiveEditMode;
+export default PlayToggleLiveEditMode;
