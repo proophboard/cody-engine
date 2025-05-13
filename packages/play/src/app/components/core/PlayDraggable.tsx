@@ -7,11 +7,20 @@ type TPlayDraggable = {
   id: string;
   isDragDropEnabled: boolean;
   children: ReactNode;
+  data?: Record<string, any>;
 };
 
-const PlayDraggable = ({ id, isDragDropEnabled, children }: TPlayDraggable) => {
+const PlayDraggable = ({
+  id,
+  isDragDropEnabled,
+  data,
+  children,
+}: TPlayDraggable) => {
   const theme = useTheme();
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({ id });
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id,
+    data,
+  });
   const sx = {
     display: 'flex',
     alignItems: 'center',
