@@ -20,7 +20,10 @@ import {
 } from '@cody-play/state/config-store';
 import { playDefinitionIdFromFQCN } from '@cody-play/infrastructure/cody/schema/play-definition-id';
 import PlayDraggable from '@cody-play/app/components/core/PlayDraggable';
-import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
+import {
+  EDropzoneId,
+  POSITION_DROPZONE_MAP,
+} from '@cody-play/app/types/enums/EDropzoneId';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -86,7 +89,7 @@ const BottomActions = (props: BottomActionsProps) => {
         const actions = uiOptionsActions
           ? uiOptionsActions.map((action) => ({
               ...action,
-              position: 'bottom-right', // TODO get position depending on dropzone
+              position: POSITION_DROPZONE_MAP[id as string],
             }))
           : [];
         const information = {
