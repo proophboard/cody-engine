@@ -8,10 +8,10 @@ import {registerArrayExtensions} from "@app/shared/jexl/array-extension/register
 import {registerDateTimeExtensions} from "@app/shared/jexl/datetime-extension/register";
 import {isPageFormReference, isQueryResult, PageData} from "@app/shared/types/core/page-data/page-data";
 import {registerStringExtensions} from "@app/shared/jexl/string-extension/register";
-import {registerObjectExtension} from "@app/shared/jexl/object-extension/register";
+import {getValueFromPath, registerObjectExtension, setValueToPath} from "@app/shared/jexl/object-extension/register";
 import {registerTypeCastExtensions} from "@app/shared/jexl/type-cast/register";
 import {registerMathExtension} from "@app/shared/jexl/math-extension/register";
-import {merge as deepMerge} from "lodash";
+import {cloneDeep, merge as deepMerge} from "lodash";
 import {registerSequenceExtension} from "@app/shared/jexl/sequence-extension/register";
 
 
@@ -42,6 +42,8 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addTransform('call', (func, ...args) => typeof func === 'function' ? func.call(func, ...args) : undefined );
     configuredJexl.addTransform('data', getPageData);
     configuredJexl.addTransform('role', isRole);
+    configuredJexl.addTransform('companyRole', isCompanyRole);
+    configuredJexl.addTransform('setCompanyRole', setCompanyRole);
     configuredJexl.addTransform('attr', getAttribute);
     configuredJexl.addTransform('count', count);
     configuredJexl.addTransform('merge', merge);
@@ -126,6 +128,42 @@ const isRole = (user: User, role: UserRole | UserRole[], disableActiveRoleCheck?
   }
 
   return false;
+}
+
+const isCompanyRole = (user: User, companyId: string, role: UserRole | UserRole[]): boolean => {
+  if(!Array.isArray(role)) {
+    role = [role];
+  }
+
+  const companyRoles = getValueFromPath(getAttribute(user, 'companiesConfig', "{}"), `${companyId}.roles`, []);
+
+  for (const roleItem of role) {
+    if(companyRoles.includes(roleItem)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+const setCompanyRole = (user: User, companyId: string, role: UserRole | UserRole[]): User => {
+  if(!Array.isArray(role)) {
+    role = [role];
+  }
+
+  const companyRoles = [...getValueFromPath(getAttribute(user, 'companiesConfig', "{}"), `${companyId}.roles`, [])];
+
+  for (const roleItem of role) {
+    if(!companyRoles.includes(roleItem)) {
+      companyRoles.push(roleItem)
+    }
+  }
+
+  let attributes = cloneDeep(user.attributes || {});
+
+  attributes['companiesConfig'] = setValueToPath(attributes['companiesConfig'] || "{}", `${companyId}.roles`, companyRoles);
+
+  return {...user, attributes}
 }
 
 const getAttribute = (user: User, attrName: string, notSetValue?: any): any => {
