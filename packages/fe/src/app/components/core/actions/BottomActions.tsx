@@ -69,7 +69,7 @@ const BottomActions = (props: BottomActionsProps) => {
 
   useEffect(() => {
     if (dndEvent) {
-      const { over } = dndEvent;
+      const { over, active } = dndEvent;
       const { containerInfo } = props;
 
       if (!over || !containerInfo) {
@@ -89,7 +89,8 @@ const BottomActions = (props: BottomActionsProps) => {
           config,
           dispatch,
           containerInfo,
-          buttonPosition
+          buttonPosition,
+          active.data.current
         );
       }
     }

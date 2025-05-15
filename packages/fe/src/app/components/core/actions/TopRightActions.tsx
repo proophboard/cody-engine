@@ -60,7 +60,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
 
   useEffect(() => {
     if (dndEvent) {
-      const { over } = dndEvent;
+      const { over, active } = dndEvent;
       const { containerInfo } = props;
 
       if (!over || !containerInfo) {
@@ -77,7 +77,8 @@ const TopRightActions = (props: TopRightActionsProps) => {
           config,
           dispatch,
           containerInfo,
-          buttonPosition
+          buttonPosition,
+          active.data.current
         );
       }
     }
@@ -111,6 +112,8 @@ const TopRightActions = (props: TopRightActionsProps) => {
             key={`action-button-${index}-key`}
             id={`top-actions-action-button-${index}`}
             isDragDropEnabled={isDragDropEnabled}
+            // @ts-expect-error TS2339: Property command does not exist on type Action
+            data={{ command: action.command }}
           >
             <ActionButton
               action={action}

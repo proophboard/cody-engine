@@ -10,7 +10,8 @@ const updateTableButtonPosition = (
   config: CodyPlayConfig,
   dispatch: (a: Action) => void,
   containerInfo: ActionContainerInfo,
-  buttonPosition: string
+  buttonPosition: string,
+  additionalData?: Record<string, any>
 ) => {
   const ctx = getEditedContextFromConfig(config);
   const informationRuntimeInfo = config.types[containerInfo.name];
@@ -18,11 +19,15 @@ const updateTableButtonPosition = (
   const uiOptionsActions = uiOptions
     ? (uiOptions.actions as object[])
     : undefined;
-  // TODO update correct button if multiple buttons available
   const actions = uiOptionsActions
     ? uiOptionsActions.map((action) => ({
         ...action,
-        position: buttonPosition,
+        position:
+          // @ts-expect-error TS2339: Property command does not exist on type object
+          additionalData && additionalData.command === action.command
+            ? buttonPosition
+            : // @ts-expect-error TS2339: Property position does not exist on type object
+              action.position,
       }))
     : [];
   const information = {
