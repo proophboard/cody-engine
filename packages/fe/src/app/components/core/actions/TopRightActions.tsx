@@ -107,7 +107,6 @@ const TopRightActions = (props: TopRightActionsProps) => {
         contentPosition="right"
       >
         {actions.map((action, index) => (
-          // TODO add data
           <PlayDraggable
             key={`action-button-${index}-key`}
             id={`top-actions-action-button-${index}`}
