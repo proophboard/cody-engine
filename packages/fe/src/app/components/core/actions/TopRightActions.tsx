@@ -9,11 +9,18 @@ import ActionButton from '@frontend/app/components/core/ActionButton';
 import { useEnv } from '@frontend/hooks/use-env';
 import { parseActionsFromUiOptions } from '@frontend/app/components/core/form/types/parse-actions';
 import { RuntimeEnvironment } from '@frontend/app/providers/runtime-environment';
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 import PlayDraggable from '@cody-play/app/components/core/PlayDraggable';
 import PlayDroppable from '@cody-play/app/components/core/PlayDroppable';
-import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
+import {
+  EDropzoneId,
+  MAP_DROPZONE_POSITION_TO_DROPZONE_ID,
+  MAP_POSITION_TO_DROPZONE_ID,
+} from '@cody-play/app/types/enums/EDropzoneId';
+import updateTableButtonPosition from '@cody-play/app/utils/updateTableButtonPosition';
+import { DragAndDropContext } from '@cody-play/app/providers/DragAndDrop';
+import { configStore } from '@cody-play/state/config-store';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -41,6 +48,8 @@ const getTopRightActionsFromUIOptions = (
 const TopRightActions = (props: TopRightActionsProps) => {
   const env = useEnv();
   const { liveEditMode } = useContext(LiveEditModeContext);
+  const { dndEvent } = useContext(DragAndDropContext);
+  const { config, dispatch } = useContext(configStore);
   const isDragDropEnabled =
     liveEditMode && env.UI_ENV === 'play' && props.containerInfo !== undefined;
   const actions =
@@ -48,6 +57,31 @@ const TopRightActions = (props: TopRightActionsProps) => {
     getTopRightActionsFromUIOptions(props.uiOptions, props.jexlCtx, env);
 
   const additionalRightButtons = props.additionalRightButtons || [];
+
+  useEffect(() => {
+    if (dndEvent) {
+      const { over } = dndEvent;
+      const { containerInfo } = props;
+
+      if (!over || !containerInfo) {
+        return;
+      }
+
+      const { id } = over;
+      const dropzonePosition =
+        MAP_DROPZONE_POSITION_TO_DROPZONE_ID[id as string];
+
+      if (dropzonePosition === 'table-top' && containerInfo.type === 'view') {
+        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[id as string];
+        updateTableButtonPosition(
+          config,
+          dispatch,
+          containerInfo,
+          buttonPosition
+        );
+      }
+    }
+  }, [dndEvent]);
 
   if (!actions.length && !additionalRightButtons.length && !isDragDropEnabled) {
     return <></>;

@@ -14,17 +14,14 @@ import { RuntimeEnvironment } from '@frontend/app/providers/runtime-environment'
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 import PlayDroppable from '@cody-play/app/components/core/PlayDroppable';
 import { DragAndDropContext } from '@cody-play/app/providers/DragAndDrop';
-import {
-  configStore,
-  getEditedContextFromConfig,
-} from '@cody-play/state/config-store';
-import { playDefinitionIdFromFQCN } from '@cody-play/infrastructure/cody/schema/play-definition-id';
+import { configStore } from '@cody-play/state/config-store';
 import PlayDraggable from '@cody-play/app/components/core/PlayDraggable';
 import {
   EDropzoneId,
   MAP_DROPZONE_POSITION_TO_DROPZONE_ID,
   MAP_POSITION_TO_DROPZONE_ID,
 } from '@cody-play/app/types/enums/EDropzoneId';
+import updateTableButtonPosition from '@cody-play/app/utils/updateTableButtonPosition';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -87,41 +84,13 @@ const BottomActions = (props: BottomActionsProps) => {
         dropzonePosition === 'table-bottom' &&
         containerInfo.type === 'view'
       ) {
-        const ctx = getEditedContextFromConfig(config);
-        const informationRuntimeInfo = config.types[containerInfo.name];
-        const uiOptions = informationRuntimeInfo.uiSchema?.['ui:options'];
-        const uiOptionsActions = uiOptions
-          ? (uiOptions.actions as object[])
-          : undefined;
-        // TODO update correct button if multiple buttons available
-        const actions = uiOptionsActions
-          ? uiOptionsActions.map((action) => ({
-              ...action,
-              position: MAP_POSITION_TO_DROPZONE_ID[id as string],
-            }))
-          : [];
-        const information = {
-          ...informationRuntimeInfo,
-          uiSchema: {
-            ...informationRuntimeInfo.uiSchema,
-            'ui:options': {
-              ...uiOptions,
-              actions,
-            },
-          },
-        };
-        const definitionId = playDefinitionIdFromFQCN(containerInfo.name);
-
-        dispatch({
-          ctx,
-          type: 'ADD_TYPE',
-          name: containerInfo.name,
-          information,
-          definition: {
-            definitionId,
-            schema: config.definitions[definitionId],
-          },
-        });
+        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[id as string];
+        updateTableButtonPosition(
+          config,
+          dispatch,
+          containerInfo,
+          buttonPosition
+        );
       }
     }
   }, [dndEvent]);
