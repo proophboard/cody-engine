@@ -22,7 +22,7 @@ const PlayDraggable = ({
     data,
   });
   const sx = {
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
     gap: '0.25rem',
     borderRadius: '0.25rem',
