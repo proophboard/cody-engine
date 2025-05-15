@@ -18,12 +18,9 @@ import {
   configStore,
   getEditedContextFromConfig,
 } from '@cody-play/state/config-store';
-import { playwithErrorCheck } from '@cody-play/infrastructure/cody/error-handling/with-error-check';
-import {
-  playDefinitionId,
-  playDefinitionIdFromFQCN,
-} from '@cody-play/infrastructure/cody/schema/play-definition-id';
+import { playDefinitionIdFromFQCN } from '@cody-play/infrastructure/cody/schema/play-definition-id';
 import PlayDraggable from '@cody-play/app/components/core/PlayDraggable';
+import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -79,30 +76,41 @@ const BottomActions = (props: BottomActionsProps) => {
       }
 
       if (containerInfo.type === 'view') {
+        const { id } = over;
         const ctx = getEditedContextFromConfig(config);
         const informationRuntimeInfo = config.types[containerInfo.name];
+        const uiOptions = informationRuntimeInfo.uiSchema?.['ui:options'];
+        const uiOptionsActions = uiOptions
+          ? (uiOptions.actions as object[])
+          : undefined;
+        const actions = uiOptionsActions
+          ? uiOptionsActions.map((action) => ({
+              ...action,
+              position: 'bottom-right', // TODO get position depending on dropzone
+            }))
+          : [];
+        const information = {
+          ...informationRuntimeInfo,
+          uiSchema: {
+            ...informationRuntimeInfo.uiSchema,
+            'ui:options': {
+              ...uiOptions,
+              actions,
+            },
+          },
+        };
         const definitionId = playDefinitionIdFromFQCN(containerInfo.name);
 
-        // dispatch({
-        //   ctx,
-        //   type: 'ADD_TYPE',
-        //   name: containerInfo.name,
-        //   information: {
-        //     ...informationRuntimeInfo,
-        //     uiSchema: {
-        //       ...informationRuntimeInfo.uiSchema,
-        //       'ui:options': {
-        //         actions: [
-        //           // TODO ...informationRuntimeInfo.uiSchema?["ui:options"].actions
-        //         ],
-        //       },
-        //     },
-        //   },
-        //   definition: {
-        //     definitionId,
-        //     schema: config.definitions[definitionId],
-        //   },
-        // });
+        dispatch({
+          ctx,
+          type: 'ADD_TYPE',
+          name: containerInfo.name,
+          information,
+          definition: {
+            definitionId,
+            schema: config.definitions[definitionId],
+          },
+        });
       }
     }
   }, [dndEvent]);
@@ -140,7 +148,7 @@ const BottomActions = (props: BottomActionsProps) => {
           }}
         >
           <PlayDroppable
-            id="bottom-actions-dropzone-left"
+            id={EDropzoneId.TABLE_BOTTOM_ACTIONS_LEFT}
             isDragDropEnabled={isDragDropEnabled}
           >
             {leftActions.map((action, index) => (
@@ -176,7 +184,7 @@ const BottomActions = (props: BottomActionsProps) => {
           }}
         >
           <PlayDroppable
-            id="bottom-actions-dropzone-center"
+            id={EDropzoneId.TABLE_BOTTOM_ACTIONS_CENTER}
             isDragDropEnabled={isDragDropEnabled}
             contentPosition="center"
           >
@@ -213,7 +221,7 @@ const BottomActions = (props: BottomActionsProps) => {
           }}
         >
           <PlayDroppable
-            id="bottom-actions-dropzone-right"
+            id={EDropzoneId.TABLE_BOTTOM_ACTIONS_RIGHT}
             isDragDropEnabled={isDragDropEnabled}
             contentPosition="right"
           >

@@ -56,6 +56,7 @@ import TopRightActions from '@frontend/app/components/core/actions/TopRightActio
 import jexl from '@app/shared/jexl/get-configured-jexl';
 import { execMappingSync } from '@app/shared/rule-engine/exec-mapping';
 import { parseActionsFromPageCommands } from '@frontend/app/components/core/form/types/parse-actions';
+import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
 
 export type PageMode = 'standard' | 'dialog' | 'drawer';
 
@@ -302,7 +303,7 @@ export const PlayStandardPage = (props: Props) => {
             uiOptions={{}}
             defaultService={defaultService}
             jexlCtx={jexlCtx}
-            dropzoneId="page-top-actions-dropzone-right"
+            dropzoneId={EDropzoneId.PAGE_TOP_ACTIONS_RIGHT}
           />
         </>
       )}

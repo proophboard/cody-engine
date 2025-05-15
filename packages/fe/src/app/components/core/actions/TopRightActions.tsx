@@ -13,6 +13,7 @@ import { useContext } from 'react';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 import PlayDraggable from '@cody-play/app/components/core/PlayDraggable';
 import PlayDroppable from '@cody-play/app/components/core/PlayDroppable';
+import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -21,7 +22,7 @@ interface OwnProps {
   actions?: Action[];
   additionalRightButtons?: JSX.Element[];
   containerInfo?: ActionContainerInfo;
-  dropzoneId?: string;
+  dropzoneId?: EDropzoneId;
   showDropzone?: boolean;
 }
 
@@ -66,7 +67,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
       }}
     >
       <PlayDroppable
-        id={props.dropzoneId ?? 'top-actions-dropzone-right'}
+        id={props.dropzoneId ?? ('' as EDropzoneId)}
         isDragDropEnabled={isDragDropEnabled && !!props.showDropzone}
         contentPosition="right"
       >

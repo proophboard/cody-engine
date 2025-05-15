@@ -1,12 +1,13 @@
 import { useDroppable } from '@dnd-kit/core';
 import { Box, useTheme } from '@mui/material';
 import { ReactNode, useEffect, useState } from 'react';
+import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
 
 type TContentPosition = 'left' | 'center' | 'right';
 type TJustifyContent = 'flex-start' | 'center' | 'flex-end';
 
 export type TPlayDroppable = {
-  id: string;
+  id: EDropzoneId;
   isDragDropEnabled: boolean;
   children: ReactNode;
   contentPosition?: TContentPosition;

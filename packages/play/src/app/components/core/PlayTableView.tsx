@@ -73,6 +73,7 @@ import { PageMode } from '@cody-play/app/pages/PlayStandardPage';
 import { showTitle } from '@frontend/util/schema/show-title';
 import { informationTitle } from '@frontend/util/information/titelize';
 import { ActionContainerInfo } from '@frontend/app/components/core/form/types/action';
+import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
 
 const PlayTableView = (
   params: any,
@@ -192,7 +193,7 @@ const PlayTableView = (
           containerInfo={containerInfo}
           defaultService={normalizedDefaultService}
           jexlCtx={jexlCtx}
-          dropzoneId="table-top-actions-dropzone-right"
+          dropzoneId={EDropzoneId.TABLE_TOP_ACTIONS_RIGHT}
           showDropzone
         />
       </Grid2>
