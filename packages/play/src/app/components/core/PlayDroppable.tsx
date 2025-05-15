@@ -27,11 +27,12 @@ const PlayDroppable = ({
     useState<TJustifyContent>('flex-start');
   const sx = {
     display: 'flex',
+    flexFlow: 'wrap',
     alignItems: 'center',
     justifyContent,
     gap: theme.spacing(1),
     width: '100%',
-    height: '3.5rem',
+    minHeight: '3.5rem',
     padding: theme.spacing(0.5),
     borderWidth: '2px',
     borderStyle: 'dotted',
