@@ -29,7 +29,7 @@ const PlayDroppable = ({
     display: 'flex',
     alignItems: 'center',
     justifyContent,
-    gap: theme.spacing(2),
+    gap: theme.spacing(1),
     width: '100%',
     height: '3.5rem',
     padding: theme.spacing(0.5),
