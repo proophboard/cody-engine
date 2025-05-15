@@ -137,7 +137,7 @@ const BottomActions = (props: BottomActionsProps) => {
             {leftActions.map((action, index) => (
               <PlayDraggable
                 key={`left_action_${keyVersion}_${index}`}
-                id={`bottom-actions-left-action-button-${index}`}
+                id={`${props.containerInfo?.type}-bottom-actions-left-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
                 // @ts-expect-error TS2339: Property command does not exist on type Action
                 data={{ command: action.command }}
@@ -178,7 +178,7 @@ const BottomActions = (props: BottomActionsProps) => {
             {centerActions.map((action, index) => (
               <PlayDraggable
                 key={`center_action_${keyVersion}_${index}`}
-                id={`bottom-actions-center-action-button-${index}`}
+                id={`${props.containerInfo?.type}-bottom-actions-center-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
                 // @ts-expect-error TS2339: Property command does not exist on type Action
                 data={{ command: action.command }}
@@ -217,7 +217,7 @@ const BottomActions = (props: BottomActionsProps) => {
             {rightActions.map((action, index) => (
               <PlayDraggable
                 key={`right_action_${keyVersion}_${index}`}
-                id={`bottom-actions-right-action-button-${index}`}
+                id={`${props.containerInfo?.type}-bottom-actions-right-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
                 // @ts-expect-error TS2339: Property command does not exist on type Action
                 data={{ command: action.command }}
