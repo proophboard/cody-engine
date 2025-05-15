@@ -137,6 +137,8 @@ const BottomActions = (props: BottomActionsProps) => {
                 key={`left_action_${keyVersion}_${index}`}
                 id={`bottom-actions-left-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
+                // @ts-expect-error TS2339: Property command does not exist on type Action
+                data={{ command: action.command }}
               >
                 <ActionButton
                   action={action}
@@ -174,6 +176,8 @@ const BottomActions = (props: BottomActionsProps) => {
                 key={`center_action_${keyVersion}_${index}`}
                 id={`bottom-actions-center-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
+                // @ts-expect-error TS2339: Property command does not exist on type Action
+                data={{ command: action.command }}
               >
                 <ActionButton
                   action={action}
@@ -211,6 +215,8 @@ const BottomActions = (props: BottomActionsProps) => {
                 key={`right_action_${keyVersion}_${index}`}
                 id={`bottom-actions-right-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
+                // @ts-expect-error TS2339: Property command does not exist on type Action
+                data={{ command: action.command }}
               >
                 <ActionButton
                   action={action}
