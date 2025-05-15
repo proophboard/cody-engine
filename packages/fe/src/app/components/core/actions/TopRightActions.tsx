@@ -48,10 +48,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
 
   const additionalRightButtons = props.additionalRightButtons || [];
 
-  if (
-    (!actions.length && !additionalRightButtons.length && !isDragDropEnabled) ||
-    !props.showDropzone
-  ) {
+  if (!actions.length && !additionalRightButtons.length && !isDragDropEnabled) {
     return <></>;
   }
 
@@ -70,7 +67,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
     >
       <PlayDroppable
         id={props.dropzoneId ?? 'top-actions-dropzone-right'}
-        isDragDropEnabled={isDragDropEnabled}
+        isDragDropEnabled={isDragDropEnabled && !!props.showDropzone}
         contentPosition="right"
       >
         {actions.map((action, index) => (
