@@ -22,7 +22,8 @@ import { playDefinitionIdFromFQCN } from '@cody-play/infrastructure/cody/schema/
 import PlayDraggable from '@cody-play/app/components/core/PlayDraggable';
 import {
   EDropzoneId,
-  POSITION_DROPZONE_MAP,
+  MAP_DROPZONE_POSITION_TO_DROPZONE_ID,
+  MAP_POSITION_TO_DROPZONE_ID,
 } from '@cody-play/app/types/enums/EDropzoneId';
 
 interface OwnProps {
@@ -78,18 +79,25 @@ const BottomActions = (props: BottomActionsProps) => {
         return;
       }
 
-      if (containerInfo.type === 'view') {
-        const { id } = over;
+      const { id } = over;
+      const dropzonePosition =
+        MAP_DROPZONE_POSITION_TO_DROPZONE_ID[id as string];
+
+      if (
+        dropzonePosition === 'table-bottom' &&
+        containerInfo.type === 'view'
+      ) {
         const ctx = getEditedContextFromConfig(config);
         const informationRuntimeInfo = config.types[containerInfo.name];
         const uiOptions = informationRuntimeInfo.uiSchema?.['ui:options'];
         const uiOptionsActions = uiOptions
           ? (uiOptions.actions as object[])
           : undefined;
+        // TODO update correct button if multiple buttons available
         const actions = uiOptionsActions
           ? uiOptionsActions.map((action) => ({
               ...action,
-              position: POSITION_DROPZONE_MAP[id as string],
+              position: MAP_POSITION_TO_DROPZONE_ID[id as string],
             }))
           : [];
         const information = {
