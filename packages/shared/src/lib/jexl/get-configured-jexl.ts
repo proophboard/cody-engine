@@ -8,10 +8,10 @@ import {registerArrayExtensions} from "@app/shared/jexl/array-extension/register
 import {registerDateTimeExtensions} from "@app/shared/jexl/datetime-extension/register";
 import {isPageFormReference, isQueryResult, PageData} from "@app/shared/types/core/page-data/page-data";
 import {registerStringExtensions} from "@app/shared/jexl/string-extension/register";
-import {registerObjectExtension} from "@app/shared/jexl/object-extension/register";
+import {getValueFromPath, registerObjectExtension, setValueToPath} from "@app/shared/jexl/object-extension/register";
 import {registerTypeCastExtensions} from "@app/shared/jexl/type-cast/register";
 import {registerMathExtension} from "@app/shared/jexl/math-extension/register";
-import {cloneDeep, get, merge as deepMerge, set} from "lodash";
+import {cloneDeep, merge as deepMerge} from "lodash";
 import {registerSequenceExtension} from "@app/shared/jexl/sequence-extension/register";
 
 
@@ -135,7 +135,7 @@ const isCompanyRole = (user: User, companyId: string, role: UserRole | UserRole[
     role = [role];
   }
 
-  const companyRoles = get(getAttribute(user, 'companiesConfig', {}), `${companyId}.roles`, []);
+  const companyRoles = getValueFromPath(getAttribute(user, 'companiesConfig', "{}"), `${companyId}.roles`, []);
 
   for (const roleItem of role) {
     if(companyRoles.includes(roleItem)) {
@@ -151,7 +151,7 @@ const setCompanyRole = (user: User, companyId: string, role: UserRole | UserRole
     role = [role];
   }
 
-  const companyRoles = [...get(getAttribute(user, 'companiesConfig', {}), `${companyId}.roles`, [])];
+  const companyRoles = [...getValueFromPath(getAttribute(user, 'companiesConfig', "{}"), `${companyId}.roles`, [])];
 
   for (const roleItem of role) {
     if(!companyRoles.includes(roleItem)) {
@@ -161,7 +161,7 @@ const setCompanyRole = (user: User, companyId: string, role: UserRole | UserRole
 
   let attributes = cloneDeep(user.attributes || {});
 
-  attributes = set(attributes, `companiesConfig.${companyId}.roles`, companyRoles);
+  attributes['companiesConfig'] = setValueToPath(attributes['companiesConfig'] || "{}", `${companyId}.roles`, companyRoles);
 
   return {...user, attributes}
 }

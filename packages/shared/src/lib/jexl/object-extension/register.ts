@@ -59,7 +59,7 @@ const omitJSONSupport = <T extends object>(obj: T | string, props: string[]) => 
   return omit(obj as T, props);
 }
 
-const getValueFromPath = (obj: object | Array<unknown> | string, path: string, notSetValue?: any) => {
+export const getValueFromPath = (obj: object | Array<unknown> | string, path: string, notSetValue?: any) => {
   if(Array.isArray(obj)) {
     if(obj.length === 0) {
       return notSetValue;
@@ -81,7 +81,7 @@ const getValueFromPath = (obj: object | Array<unknown> | string, path: string, n
   return get(obj, path, notSetValue);
 }
 
-const setValueToPath = <T extends object>(obj: T | string, path: string, value: any): T | string => {
+export const setValueToPath = <T extends object>(obj: T | string, path: string, value: any): T | string => {
 
   const isString = typeof obj === "string";
 
