@@ -33,6 +33,8 @@ interface OwnProps {
   additionalCenterButtons?: JSX.Element[];
   additionalRightButtons?: JSX.Element[];
   containerInfo?: ActionContainerInfo;
+  dropzoneId?: { left: EDropzoneId; center: EDropzoneId; right: EDropzoneId };
+  showDropzone?: { left: boolean; center: boolean; right: boolean };
 }
 
 type BottomActionsProps = OwnProps;
@@ -129,8 +131,8 @@ const BottomActions = (props: BottomActionsProps) => {
           }}
         >
           <PlayDroppable
-            id={EDropzoneId.TABLE_BOTTOM_ACTIONS_LEFT}
-            isDragDropEnabled={isDragDropEnabled}
+            id={props.dropzoneId?.left ?? ('' as EDropzoneId)}
+            isDragDropEnabled={isDragDropEnabled && !!props.showDropzone?.left}
           >
             {leftActions.map((action, index) => (
               <PlayDraggable
@@ -167,8 +169,10 @@ const BottomActions = (props: BottomActionsProps) => {
           }}
         >
           <PlayDroppable
-            id={EDropzoneId.TABLE_BOTTOM_ACTIONS_CENTER}
-            isDragDropEnabled={isDragDropEnabled}
+            id={props.dropzoneId?.center ?? ('' as EDropzoneId)}
+            isDragDropEnabled={
+              isDragDropEnabled && !!props.showDropzone?.center
+            }
             contentPosition="center"
           >
             {centerActions.map((action, index) => (
@@ -206,8 +210,8 @@ const BottomActions = (props: BottomActionsProps) => {
           }}
         >
           <PlayDroppable
-            id={EDropzoneId.TABLE_BOTTOM_ACTIONS_RIGHT}
-            isDragDropEnabled={isDragDropEnabled}
+            id={props.dropzoneId?.right ?? ('' as EDropzoneId)}
+            isDragDropEnabled={isDragDropEnabled && !!props.showDropzone?.right}
             contentPosition="right"
           >
             {rightActions.map((action, index) => (

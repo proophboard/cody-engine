@@ -57,6 +57,7 @@ import jexl from '@app/shared/jexl/get-configured-jexl';
 import { execMappingSync } from '@app/shared/rule-engine/exec-mapping';
 import { parseActionsFromPageCommands } from '@frontend/app/components/core/form/types/parse-actions';
 import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
+import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 
 export type PageMode = 'standard' | 'dialog' | 'drawer';
 
@@ -86,6 +87,8 @@ export const PlayStandardPage = (props: Props) => {
   const routeParams = useParams();
   const { config } = useContext(configStore);
   const { reset } = useContext(PageDataContext);
+  const { liveEditMode } = useContext(LiveEditModeContext);
+  const isDragDropEnabled = liveEditMode && env.UI_ENV === 'play';
   const defaultService = names(config.defaultService).className;
   const [user] = useUser();
   const theme = useTheme();
@@ -304,6 +307,7 @@ export const PlayStandardPage = (props: Props) => {
             defaultService={defaultService}
             jexlCtx={jexlCtx}
             dropzoneId={EDropzoneId.PAGE_TOP_ACTIONS_RIGHT}
+            showDropzone
           />
         </>
       )}
@@ -327,33 +331,40 @@ export const PlayStandardPage = (props: Props) => {
             }}
           />
         )}
-      {config.layout === 'task-based-ui' &&
+      {((config.layout === 'task-based-ui' &&
         pageMode === 'standard' &&
-        bottomActions.length > 0 && (
-          <Box
-            sx={{
-              position: 'fixed',
-              width:
-                props.drawerWidth && isLarge
-                  ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)`
-                  : `calc(100% - ${SIDEBAR_WIDTH}px)`,
-              backgroundColor: (theme) => theme.palette.grey.A100,
-              borderTop: (theme) => '1px solid ' + theme.palette.grey.A200,
-              left: SIDEBAR_WIDTH + 'px',
-              bottom: 0,
-              zIndex: theme.zIndex.appBar,
+        bottomActions.length > 0) ||
+        isDragDropEnabled) && (
+        <Box
+          sx={{
+            position: 'fixed',
+            width:
+              props.drawerWidth && isLarge
+                ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)`
+                : `calc(100% - ${SIDEBAR_WIDTH}px)`,
+            backgroundColor: (theme) => theme.palette.grey.A100,
+            borderTop: (theme) => '1px solid ' + theme.palette.grey.A200,
+            left: SIDEBAR_WIDTH + 'px',
+            bottom: 0,
+            zIndex: theme.zIndex.appBar,
+          }}
+        >
+          <BottomActions
+            uiOptions={{}}
+            containerInfo={containerInfo}
+            defaultService={defaultService}
+            jexlCtx={jexlCtx}
+            actions={bottomActions}
+            dropzoneId={{
+              left: EDropzoneId.PAGE_BOTTOM_ACTIONS_LEFT,
+              center: EDropzoneId.PAGE_BOTTOM_ACTIONS_CENTER,
+              right: EDropzoneId.PAGE_BOTTOM_ACTIONS_RIGHT,
             }}
-          >
-            <BottomActions
-              uiOptions={{}}
-              containerInfo={containerInfo}
-              defaultService={defaultService}
-              jexlCtx={jexlCtx}
-              actions={bottomActions}
-              sx={{ padding: `${theme.spacing(3)} ${theme.spacing(4)}` }}
-            />
-          </Box>
-        )}
+            showDropzone={{ left: true, center: true, right: true }}
+            sx={{ padding: `${theme.spacing(3)} ${theme.spacing(4)}` }}
+          />
+        </Box>
+      )}
     </Grid2>
   );
 };

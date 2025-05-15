@@ -231,6 +231,12 @@ const PlayTableView = (
         containerInfo={containerInfo}
         defaultService={normalizedDefaultService}
         jexlCtx={jexlCtx}
+        dropzoneId={{
+          left: EDropzoneId.TABLE_BOTTOM_ACTIONS_LEFT,
+          center: EDropzoneId.TABLE_BOTTOM_ACTIONS_CENTER,
+          right: EDropzoneId.TABLE_BOTTOM_ACTIONS_RIGHT,
+        }}
+        showDropzone={{ left: true, center: true, right: true }}
         sx={{ marginTop: theme.spacing(2) }}
       />
     </Box>
