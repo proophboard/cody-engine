@@ -21,6 +21,7 @@ interface OwnProps {
   actions?: Action[];
   additionalRightButtons?: JSX.Element[];
   containerInfo?: ActionContainerInfo;
+  dropzoneId?: string;
 }
 
 type TopRightActionsProps = OwnProps;
@@ -46,7 +47,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
 
   const additionalRightButtons = props.additionalRightButtons || [];
 
-  if (!actions.length && !additionalRightButtons.length) {
+  if (!actions.length && !additionalRightButtons.length && !isDragDropEnabled) {
     return <></>;
   }
 
@@ -64,7 +65,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
       }}
     >
       <PlayDroppable
-        id="top-actions-dropzone-right"
+        id={props.dropzoneId ?? 'top-actions-dropzone-right'}
         isDragDropEnabled={isDragDropEnabled}
         contentPosition="right"
       >
@@ -72,7 +73,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
           // TODO add data
           <PlayDraggable
             key={`action-button-${index}-key`}
-            id={`action-button-${index}`}
+            id={`top-actions-action-button-${index}`}
             isDragDropEnabled={isDragDropEnabled}
           >
             <ActionButton
