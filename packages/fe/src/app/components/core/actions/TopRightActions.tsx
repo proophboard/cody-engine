@@ -12,6 +12,7 @@ import { RuntimeEnvironment } from '@frontend/app/providers/runtime-environment'
 import { useContext } from 'react';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 import PlayDraggable from '@cody-play/app/components/core/PlayDraggable';
+import PlayDroppable from '@cody-play/app/components/core/PlayDroppable';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -62,20 +63,27 @@ const TopRightActions = (props: TopRightActionsProps) => {
         },
       }}
     >
-      {actions.map((action, index) => (
-        <PlayDraggable
-          key={`action-button-${index}-key`}
-          id={`action-button-${index}`}
-          isDragDropEnabled={isDragDropEnabled}
-        >
-          <ActionButton
-            action={action}
-            defaultService={props.defaultService}
-            jexlCtx={props.jexlCtx}
-          />
-        </PlayDraggable>
-      ))}
-      {props.additionalRightButtons}
+      <PlayDroppable
+        id="top-actions-dropzone-right"
+        isDragDropEnabled={isDragDropEnabled}
+        contentPosition="right"
+      >
+        {actions.map((action, index) => (
+          // TODO add data
+          <PlayDraggable
+            key={`action-button-${index}-key`}
+            id={`action-button-${index}`}
+            isDragDropEnabled={isDragDropEnabled}
+          >
+            <ActionButton
+              action={action}
+              defaultService={props.defaultService}
+              jexlCtx={props.jexlCtx}
+            />
+          </PlayDraggable>
+        ))}
+        {props.additionalRightButtons}
+      </PlayDroppable>
     </Grid2>
   );
 };

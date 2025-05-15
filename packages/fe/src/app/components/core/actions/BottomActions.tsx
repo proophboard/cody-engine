@@ -14,6 +14,16 @@ import { RuntimeEnvironment } from '@frontend/app/providers/runtime-environment'
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 import PlayDroppable from '@cody-play/app/components/core/PlayDroppable';
 import { DragAndDropContext } from '@cody-play/app/providers/DragAndDrop';
+import {
+  configStore,
+  getEditedContextFromConfig,
+} from '@cody-play/state/config-store';
+import { playwithErrorCheck } from '@cody-play/infrastructure/cody/error-handling/with-error-check';
+import {
+  playDefinitionId,
+  playDefinitionIdFromFQCN,
+} from '@cody-play/infrastructure/cody/schema/play-definition-id';
+import PlayDraggable from '@cody-play/app/components/core/PlayDraggable';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -46,8 +56,9 @@ const BottomActions = (props: BottomActionsProps) => {
   const env = useEnv();
   const { liveEditMode } = useContext(LiveEditModeContext);
   const { dndEvent } = useContext(DragAndDropContext);
+  const { config, dispatch } = useContext(configStore);
   const isDragDropEnabled =
-    liveEditMode && env.UI_ENV === 'play' && props.containerInfo;
+    liveEditMode && env.UI_ENV === 'play' && props.containerInfo !== undefined;
   const actions =
     props.actions || getBottomActions(props.uiOptions, props.jexlCtx, env);
 
@@ -57,6 +68,44 @@ const BottomActions = (props: BottomActionsProps) => {
   const additionalCenterButtons = props.additionalCenterButtons || [];
   const rightActions = actions.filter((a) => a.position === 'bottom-right');
   const additionalRightButtons = props.additionalRightButtons || [];
+
+  useEffect(() => {
+    if (dndEvent) {
+      const { over } = dndEvent;
+      const { containerInfo } = props;
+
+      if (!over || !containerInfo) {
+        return;
+      }
+
+      if (containerInfo.type === 'view') {
+        const ctx = getEditedContextFromConfig(config);
+        const informationRuntimeInfo = config.types[containerInfo.name];
+        const definitionId = playDefinitionIdFromFQCN(containerInfo.name);
+
+        // dispatch({
+        //   ctx,
+        //   type: 'ADD_TYPE',
+        //   name: containerInfo.name,
+        //   information: {
+        //     ...informationRuntimeInfo,
+        //     uiSchema: {
+        //       ...informationRuntimeInfo.uiSchema,
+        //       'ui:options': {
+        //         actions: [
+        //           // TODO ...informationRuntimeInfo.uiSchema?["ui:options"].actions
+        //         ],
+        //       },
+        //     },
+        //   },
+        //   definition: {
+        //     definitionId,
+        //     schema: config.definitions[definitionId],
+        //   },
+        // });
+      }
+    }
+  }, [dndEvent]);
 
   if (
     !actions.length &&
@@ -75,95 +124,116 @@ const BottomActions = (props: BottomActionsProps) => {
       container
       sx={{ ...props.sx, gap: isDragDropEnabled ? theme.spacing(2) : null }}
     >
-      {/* TODO buttons should still be visible */}
-      {isDragDropEnabled && (
-        <>
-          <Grid2 xs>
-            <PlayDroppable id="bottom-actions-dropzone-left" />
-          </Grid2>
-          <Grid2 xs>
-            <PlayDroppable id="bottom-actions-dropzone-center" />
-          </Grid2>
-          <Grid2 xs>
-            <PlayDroppable id="bottom-actions-dropzone-right" />
-          </Grid2>
-        </>
-      )}
-      {!isDragDropEnabled &&
-        (leftActions.length > 0 || additionalLeftButtons.length > 0) && (
-          <Grid2
-            xs
-            display="flex"
-            direction="column"
-            alignItems="center"
-            justifyContent="flex-start"
-            sx={{
-              '& .MuiButton-root ~.MuiButton-root': {
-                marginLeft: (theme) => theme.spacing(1),
-              },
-            }}
+      {(leftActions.length > 0 ||
+        additionalLeftButtons.length > 0 ||
+        isDragDropEnabled) && (
+        <Grid2
+          xs
+          display="flex"
+          direction="column"
+          alignItems="center"
+          justifyContent="flex-start"
+          sx={{
+            '& .MuiButton-root ~.MuiButton-root': {
+              marginLeft: (theme) => theme.spacing(1),
+            },
+          }}
+        >
+          <PlayDroppable
+            id="bottom-actions-dropzone-left"
+            isDragDropEnabled={isDragDropEnabled}
           >
             {leftActions.map((action, index) => (
-              <ActionButton
+              <PlayDraggable
                 key={`left_action_${keyVersion}_${index}`}
-                action={action}
-                defaultService={props.defaultService}
-                jexlCtx={props.jexlCtx}
-              />
+                id={`bottom-actions-left-action-button-${index}`}
+                isDragDropEnabled={isDragDropEnabled}
+              >
+                <ActionButton
+                  action={action}
+                  defaultService={props.defaultService}
+                  jexlCtx={props.jexlCtx}
+                />
+              </PlayDraggable>
             ))}
             {props.additionalLeftButtons}
-          </Grid2>
-        )}
-      {!isDragDropEnabled &&
-        (centerActions.length > 0 || additionalCenterButtons.length > 0) && (
-          <Grid2
-            xs
-            display="flex"
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
-            sx={{
-              '& .MuiButton-root ~.MuiButton-root': {
-                marginLeft: (theme) => theme.spacing(1),
-              },
-            }}
+          </PlayDroppable>
+        </Grid2>
+      )}
+      {(centerActions.length > 0 ||
+        additionalCenterButtons.length > 0 ||
+        isDragDropEnabled) && (
+        <Grid2
+          xs
+          display="flex"
+          direction="column"
+          alignItems="center"
+          justifyContent="center"
+          sx={{
+            '& .MuiButton-root ~.MuiButton-root': {
+              marginLeft: (theme) => theme.spacing(1),
+            },
+          }}
+        >
+          <PlayDroppable
+            id="bottom-actions-dropzone-center"
+            isDragDropEnabled={isDragDropEnabled}
+            contentPosition="center"
           >
             {centerActions.map((action, index) => (
-              <ActionButton
+              <PlayDraggable
                 key={`center_action_${keyVersion}_${index}`}
-                action={action}
-                defaultService={props.defaultService}
-                jexlCtx={props.jexlCtx}
-              />
+                id={`bottom-actions-center-action-button-${index}`}
+                isDragDropEnabled={isDragDropEnabled}
+              >
+                <ActionButton
+                  action={action}
+                  defaultService={props.defaultService}
+                  jexlCtx={props.jexlCtx}
+                />
+              </PlayDraggable>
             ))}
             {props.additionalCenterButtons}
-          </Grid2>
-        )}
-      {!isDragDropEnabled &&
-        (rightActions.length > 0 || additionalRightButtons.length > 0) && (
-          <Grid2
-            xs
-            display="flex"
-            direction="column"
-            alignItems="center"
-            justifyContent="flex-end"
-            sx={{
-              '& .MuiButton-root ~.MuiButton-root': {
-                marginLeft: (theme) => theme.spacing(1),
-              },
-            }}
+          </PlayDroppable>
+        </Grid2>
+      )}
+      {(rightActions.length > 0 ||
+        additionalRightButtons.length > 0 ||
+        isDragDropEnabled) && (
+        <Grid2
+          xs
+          display="flex"
+          direction="column"
+          alignItems="center"
+          justifyContent="flex-end"
+          sx={{
+            '& .MuiButton-root ~.MuiButton-root': {
+              marginLeft: (theme) => theme.spacing(1),
+            },
+          }}
+        >
+          <PlayDroppable
+            id="bottom-actions-dropzone-right"
+            isDragDropEnabled={isDragDropEnabled}
+            contentPosition="right"
           >
             {rightActions.map((action, index) => (
-              <ActionButton
+              <PlayDraggable
                 key={`right_action_${keyVersion}_${index}`}
-                action={action}
-                defaultService={props.defaultService}
-                jexlCtx={props.jexlCtx}
-              />
+                id={`bottom-actions-right-action-button-${index}`}
+                isDragDropEnabled={isDragDropEnabled}
+              >
+                <ActionButton
+                  action={action}
+                  defaultService={props.defaultService}
+                  jexlCtx={props.jexlCtx}
+                />
+              </PlayDraggable>
             ))}
             {props.additionalRightButtons}
-          </Grid2>
-        )}
+          </PlayDroppable>
+        </Grid2>
+      )}
     </Grid2>
   );
 };
