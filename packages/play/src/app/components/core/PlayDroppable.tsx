@@ -1,21 +1,37 @@
 import { useDroppable } from '@dnd-kit/core';
 import { Box, useTheme } from '@mui/material';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
+
+type TContentPosition = 'left' | 'center' | 'right';
+type TJustifyContent = 'flex-start' | 'center' | 'flex-end';
 
 export type TPlayDroppable = {
   id: string;
   isDragDropEnabled: boolean;
   children: ReactNode;
+  contentPosition?: TContentPosition;
 };
 
-const PlayDroppable = ({ id, isDragDropEnabled, children }: TPlayDroppable) => {
+const PlayDroppable = ({
+  id,
+  isDragDropEnabled,
+  children,
+  contentPosition = 'left',
+}: TPlayDroppable) => {
   const theme = useTheme();
   const { isOver, setNodeRef } = useDroppable({
     id,
   });
+  const [justifyContent, setJustifyContent] =
+    useState<TJustifyContent>('flex-start');
   const sx = {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent,
+    gap: theme.spacing(2),
     width: '100%',
-    height: '3rem',
+    height: '3.5rem',
+    padding: theme.spacing(0.5),
     borderWidth: '2px',
     borderStyle: 'dotted',
     borderColor: theme.palette.grey['400'],
@@ -24,6 +40,18 @@ const PlayDroppable = ({ id, isDragDropEnabled, children }: TPlayDroppable) => {
       ? theme.palette.grey['200']
       : theme.palette.grey['100'],
   };
+
+  useEffect(() => {
+    let position: TJustifyContent = 'flex-start';
+
+    if (contentPosition === 'center') {
+      position = 'center';
+    } else if (contentPosition === 'right') {
+      position = 'flex-end';
+    }
+
+    setJustifyContent(position);
+  }, [contentPosition]);
 
   return (
     <>

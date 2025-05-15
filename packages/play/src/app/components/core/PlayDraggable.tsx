@@ -24,9 +24,9 @@ const PlayDraggable = ({
   const sx = {
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '0.25rem',
+    gap: theme.spacing(0.5),
     borderRadius: '0.25rem',
-    backgroundColor: theme.palette.grey['300'],
+    backgroundColor: theme.palette.grey['400'],
     padding: '0.25rem',
     cursor: 'move',
     transform: transform
