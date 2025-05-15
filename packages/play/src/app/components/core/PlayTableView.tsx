@@ -193,6 +193,7 @@ const PlayTableView = (
           defaultService={normalizedDefaultService}
           jexlCtx={jexlCtx}
           dropzoneId="table-top-actions-dropzone-right"
+          showDropzone
         />
       </Grid2>
       {query.isLoading && <CircularProgress />}

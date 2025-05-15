@@ -22,6 +22,7 @@ interface OwnProps {
   additionalRightButtons?: JSX.Element[];
   containerInfo?: ActionContainerInfo;
   dropzoneId?: string;
+  showDropzone?: boolean;
 }
 
 type TopRightActionsProps = OwnProps;
@@ -47,7 +48,10 @@ const TopRightActions = (props: TopRightActionsProps) => {
 
   const additionalRightButtons = props.additionalRightButtons || [];
 
-  if (!actions.length && !additionalRightButtons.length && !isDragDropEnabled) {
+  if (
+    (!actions.length && !additionalRightButtons.length && !isDragDropEnabled) ||
+    !props.showDropzone
+  ) {
     return <></>;
   }
 
