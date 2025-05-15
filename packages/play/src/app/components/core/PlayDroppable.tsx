@@ -4,10 +4,11 @@ import { ReactNode } from 'react';
 
 export type TPlayDroppable = {
   id: string;
-  children?: ReactNode;
+  isDragDropEnabled: boolean;
+  children: ReactNode;
 };
 
-const PlayDroppable = ({ id, children = undefined }: TPlayDroppable) => {
+const PlayDroppable = ({ id, isDragDropEnabled, children }: TPlayDroppable) => {
   const theme = useTheme();
   const { isOver, setNodeRef } = useDroppable({
     id,
@@ -17,17 +18,23 @@ const PlayDroppable = ({ id, children = undefined }: TPlayDroppable) => {
     height: '3rem',
     borderWidth: '2px',
     borderStyle: 'dotted',
-    borderColor: theme.palette.grey['500'],
+    borderColor: theme.palette.grey['400'],
     borderRadius: '0.25rem',
     backgroundColor: isOver
-      ? theme.palette.grey['300']
-      : theme.palette.grey['200'],
+      ? theme.palette.grey['200']
+      : theme.palette.grey['100'],
   };
 
   return (
-    <Box ref={setNodeRef} sx={sx}>
-      {children}
-    </Box>
+    <>
+      {!isDragDropEnabled ? (
+        children
+      ) : (
+        <Box ref={setNodeRef} sx={sx}>
+          {children}
+        </Box>
+      )}
+    </>
   );
 };
 
