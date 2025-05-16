@@ -11,7 +11,7 @@ const updateTableButtonPosition = (
   dispatch: (a: Action) => void,
   containerInfo: ActionContainerInfo,
   buttonPosition: string,
-  additionalData?: Record<string, any>
+  commandName?: string
 ) => {
   const ctx = getEditedContextFromConfig(config);
   const informationRuntimeInfo = config.types[containerInfo.name];
@@ -24,7 +24,7 @@ const updateTableButtonPosition = (
         ...action,
         position:
           // @ts-expect-error TS2339: Property command does not exist on type object
-          additionalData && additionalData.command === action.command
+          commandName === action.command
             ? buttonPosition
             : // @ts-expect-error TS2339: Property position does not exist on type object
               action.position,

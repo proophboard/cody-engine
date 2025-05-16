@@ -10,7 +10,7 @@ const updatePageButtonPosition = (
   dispatch: (a: Action) => void,
   containerInfo: ActionContainerInfo,
   buttonPosition: string,
-  additionalData?: Record<string, any>
+  commandName?: string
 ) => {
   const ctx = getEditedContextFromConfig(config);
   const pageDefinition = config.pages[containerInfo.name];
@@ -21,9 +21,7 @@ const updatePageButtonPosition = (
       ...command,
       position:
         // @ts-expect-error TS2322: Type CommandComponent is not assignable to type object
-        'command' in command &&
-        additionalData &&
-        additionalData.command === command.command
+        'command' in command && commandName === command.command
           ? buttonPosition
           : // @ts-expect-error TS2322: Type CommandComponent is not assignable to type object
           'position' in command
