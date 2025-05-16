@@ -50,6 +50,7 @@ import PlayDialogPage from '@cody-play/app/pages/PlayDialogPage';
 import PlayRightDrawerPage from '@cody-play/app/pages/PlayRightDrawerPage';
 import PlayToggleLiveEditMode from '@cody-play/app/layout/PlayToggleLiveEditMode';
 import DragAndDrop from '@cody-play/app/providers/DragAndDrop';
+import PlayVibeCodyDrawerProvider from "@cody-play/state/vibe-cody-drawer";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -172,7 +173,9 @@ export function App() {
               <PageDataProvider>
                 <CodyMessageServerInjection>
                   <PendingChanges>
-                    <RouterProvider router={router} />
+                    <PlayVibeCodyDrawerProvider>
+                      <RouterProvider router={router} />
+                    </PlayVibeCodyDrawerProvider>
                   </PendingChanges>
                 </CodyMessageServerInjection>
               </PageDataProvider>

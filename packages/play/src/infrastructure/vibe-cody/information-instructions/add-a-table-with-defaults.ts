@@ -1,5 +1,5 @@
-import {Instruction} from "@cody-play/app/components/core/cody-gpt/CodyGPTDrawer";
-import {CodyResponse, NodeType} from "@proophboard/cody-types";
+import {CodyInstructionResponse, Instruction} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
+import {CodyResponse, CodyResponseType, NodeType} from "@proophboard/cody-types";
 import {
   playMakeNodeRecordWithDefaults
 } from "@cody-play/infrastructure/cody/node-traversing/play-make-node-record-with-defaults";
@@ -7,8 +7,9 @@ import {PlayValueObjectMetadataRaw} from "@cody-play/infrastructure/cody/vo/play
 import {names} from "@event-engine/messaging/helpers";
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
-import {CodyGPTContext} from "@cody-play/infrastructure/cody-gpt/CodyGPTContext";
+import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {AddColumnsToTable} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 
 const TEXT = "I'd like to see a table of ";
 
@@ -16,7 +17,7 @@ export const AddATableWithDefaults: Instruction = {
   text: TEXT,
   isActive: context => context.page.pathname !== '/welcome',
   match: input => input.startsWith(TEXT),
-  execute: async (input, ctx: CodyGPTContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
+  execute: async (input, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyInstructionResponse> => {
     const tableName = input.replace(TEXT, '').trim();
     const tableNameNames = names(tableName);
     const voIdentifier = tableNameNames.propertyName + 'ItemId';
@@ -89,7 +90,11 @@ export const AddATableWithDefaults: Instruction = {
 
         resolve({
           cody: `I've added a ${tableName} table to the page ${pageConfig.name}.`,
-          details: `Do you want to define the columns for the table? Just give me a comma separated list of column names and I'll do the work for you.`
+          details: `Do you want to define the columns for the table? Just give me a comma separated list of column names and I'll do the work for you.`,
+          type: CodyResponseType.Question,
+          instructionReply: async (input: string, ctx, dispatch, config, navigateTo) => {
+            return AddColumnsToTable.execute(input, ctx, dispatch, config, navigateTo);
+          }
         })
       }, 100)
     })

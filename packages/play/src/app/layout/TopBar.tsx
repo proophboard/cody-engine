@@ -24,8 +24,9 @@ import { NavLink } from 'react-router-dom';
 import { LoginOutlined } from '@mui/icons-material';
 import UserAvatar from '@frontend/app/components/core/UserAvatar';
 import { Wrench, ViewDashboardEdit } from 'mdi-material-ui';
-import CodyGPTDrawer from '@cody-play/app/components/core/cody-gpt/CodyGPTDrawer';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
+import VibeCodyDrawer, {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
+import {useVibeCodyDrawerOpen} from "@cody-play/hooks/use-vibe-cody-drawer-open";
 
 interface OwnProps {
   sidebarOpen: boolean;
@@ -41,34 +42,36 @@ const TopBar = (props: TopBarProps) => {
   const { mode, toggleColorMode } = useContext(ColorModeContext);
   const { toggleLiveEditMode } = useContext(LiveEditModeContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [codyGPTOpen, setCodyGPTOpen] = useState(false);
+  const [vibeCodyOpen, setVibeCodyOpen] = useVibeCodyDrawerOpen();
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
 
+  const syncVibeCodyOpen = (open: boolean) => {
+    setVibeCodyOpen(open);
+  }
+
   const openSettingsModal = () => {
     setSettingsOpen(true);
-    setCodyGPTOpen(false);
-  };
+    syncVibeCodyOpen(false);
+  }
 
-  const openCodyGPT = () => {
-    setCodyGPTOpen(true);
+  const openVibeCody = () => {
+    syncVibeCodyOpen(true);
     setSettingsOpen(false);
   };
 
   const showLanguageSwitch = false;
 
   return (
-    <AppBar
-      position="fixed"
-      color="default"
-      sx={{
-        boxShadow: 'none',
-        backgroundColor: (theme) => theme.palette.primary.main,
-        height: '64px',
-        zIndex: theme.zIndex.drawer + 1,
-      }}
-    >
+    <AppBar position="fixed" color="default" sx={{
+      boxShadow: "none",
+      backgroundColor: (theme) => theme.palette.primary.main,
+      height: "64px",
+      width: `calc(100% - ${vibeCodyOpen? VIBE_CODY_DRAWER_WIDTH + 'px' : 0})`,
+      left: `${vibeCodyOpen? 0 : 'auto'}`,
+      zIndex: theme.zIndex.drawer + 1
+    }}>
       <Toolbar>
         {!sideBarPersistent && config.layout === 'task-based-ui' && (
           <IconButton
@@ -104,9 +107,7 @@ const TopBar = (props: TopBarProps) => {
             sx={{ color: theme.palette.primary.contrastText }}
           />
         </IconButton>
-        <IconButton onClick={openCodyGPT}>
-          <Wrench sx={{ color: theme.palette.primary.contrastText }} />
-        </IconButton>
+        <IconButton onClick={openVibeCody}><Wrench sx={{ color: theme.palette.primary.contrastText }} /></IconButton>
         <IconButton aria-label="Light mode" onClick={toggleColorMode}>
           {mode === 'light' && (
             <LightModeIcon sx={{ color: theme.palette.primary.contrastText }} />
@@ -157,11 +158,8 @@ const TopBar = (props: TopBarProps) => {
           </IconButton>
         )}
       </Toolbar>
-      <AppSettingsModal
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-      />
-      <CodyGPTDrawer open={codyGPTOpen} onClose={() => setCodyGPTOpen(false)} />
+      <AppSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <VibeCodyDrawer open={vibeCodyOpen} onClose={() => syncVibeCodyOpen(false)} />
     </AppBar>
   );
 };

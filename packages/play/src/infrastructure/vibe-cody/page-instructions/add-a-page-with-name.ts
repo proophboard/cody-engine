@@ -1,9 +1,9 @@
-import {Instruction} from "@cody-play/app/components/core/cody-gpt/CodyGPTDrawer";
+import {Instruction} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {CodyResponse} from "@proophboard/cody-types";
 import {names} from "@event-engine/messaging/helpers";
 import {PlayTopLevelPage} from "@cody-play/state/types";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
-import {CodyGPTContext} from "@cody-play/infrastructure/cody-gpt/CodyGPTContext";
+import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 
 const TEXT = "Add a page called ";
 
@@ -11,7 +11,7 @@ export const AddAPageWithName: Instruction = {
   text: TEXT,
   isActive: context => true,
   match: input => input.startsWith(TEXT),
-  execute: async (input: string, ctx: CodyGPTContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
+  execute: async (input: string, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
     const pageName = input.replace(TEXT, "").trim();
     const pageFQCN = `${names(config.defaultService).className}.${names(pageName).className}`;
     const newPageRoute = `/${names(pageName).fileName}`;

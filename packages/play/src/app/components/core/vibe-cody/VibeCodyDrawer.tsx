@@ -1,7 +1,9 @@
 import * as React from 'react';
+import {useContext, useEffect, useState} from 'react';
 import {
   Alert,
-  Autocomplete, Box,
+  Autocomplete,
+  Box,
   DialogContent,
   DialogTitle,
   Divider,
@@ -12,29 +14,27 @@ import {
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
-import {AccountCowboyHat, AccountVoice, Close} from "mdi-material-ui";
-import {useContext, useEffect, useState} from "react";
-import {CodyPlayConfig, configStore, getEditedContextFromConfig} from "@cody-play/state/config-store";
+import {AccountVoice, Close} from "mdi-material-ui";
+import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
 import {useNavigate} from "react-router-dom";
 import {UsePageResult, usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
 import {useEnv} from "@frontend/hooks/use-env";
 import {PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
-import {CodyResponse} from "@proophboard/cody-types";
+import {CodyResponse, CodyResponseType, ReplyCallback} from "@proophboard/cody-types";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
-import {AddAPageWithName} from "@cody-play/infrastructure/cody-gpt/page-instructions/add-a-page-with-name";
-import {
-  AddATableWithDefaults
-} from "@cody-play/infrastructure/cody-gpt/information-instructions/add-a-table-with-defaults";
-import {CodyGPTContext} from "@cody-play/infrastructure/cody-gpt/CodyGPTContext";
-import {instructions} from "@cody-play/infrastructure/cody-gpt/instructions";
+import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
+import {instructions} from "@cody-play/infrastructure/vibe-cody/instructions";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
+import CodyEmoji from "@cody-play/app/components/core/vibe-cody/CodyEmoji";
+
+export const VIBE_CODY_DRAWER_WIDTH = 540;
 
 interface OwnProps {
   open: boolean;
   onClose: () => void;
 }
 
-type CodyGPTDrawerProps = OwnProps;
+type VibeCodyDrawerProps = OwnProps;
 
 interface Message {
   text: string;
@@ -42,39 +42,43 @@ interface Message {
   error?: boolean;
 }
 
+export type InstructionExecutionCallback = (input: string, ctx: VibeCodyContext, dispatch: PlayConfigDispatch, config: CodyPlayConfig, navigateTo: (route: string) => void) => Promise<CodyInstructionResponse>;
+
 export interface Instruction {
   text: string,
   alternatives?: string[],
   subInstructions?: Instruction[],
-  isActive: (context: CodyGPTContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
+  isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string) => boolean,
-  execute: (input: string, ctx: CodyGPTContext, dispatch: PlayConfigDispatch, config: CodyPlayConfig, navigateTo: (route: string) => void) => Promise<CodyResponse>,
+  execute: InstructionExecutionCallback,
 }
 
-const defaultInstructions: Instruction[] = [
-  AddAPageWithName,
-]
-
-const onPageInstructions: Instruction[] = [
-  AddATableWithDefaults,
-]
+export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback};
 
 const suggestInstructions = (activePage: UsePageResult, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
-  const ctx: CodyGPTContext = {page: activePage};
+  const ctx: VibeCodyContext = {page: activePage};
 
   return instructions.filter(i => i.isActive(ctx, config, env))
 }
 
+// Persist messages across the lifetime of the session
+let globalMessages: Message[] = [];
 
-const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
+let pendingNavigateTo: string | undefined;
+
+let lockChange = false;
+
+let waitingReply: InstructionExecutionCallback | undefined;
+
+const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const env = useEnv();
   const theme = useTheme();
   const {config, dispatch} = useContext(configStore);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([...globalMessages]);
   const [selectedInstruction, setSelectedInstruction] = useState<Instruction|undefined>(undefined);
   const [value, setValue] = useState<string | Instruction | null>(null);
   const [searchStr, setSearchStr] = useState<string>('');
-  const [navigateTo, setNavigateTo] = useState<string|undefined>();
+  const [navigateTo, setNavigateTo] = useState<string|undefined>(pendingNavigateTo);
   const pageMatch = usePlayPageMatch();
   const navigate = useNavigate();
 
@@ -91,14 +95,16 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
 
   const addMessage = (message: Message) => {
     messages.push(message);
+    globalMessages.push(message);
     setMessages([...messages]);
   }
 
-  const handleInstruction = (input: Instruction | string | null) => {
+  const handleInstruction = async (input: Instruction | string | null) => {
     setValue(input);
 
     if(input && typeof input === "object") {
       setSelectedInstruction(input);
+      waitingReply = undefined;
       return;
     }
 
@@ -108,7 +114,41 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
         author: "user"
       })
 
+      if(waitingReply) {
+        const codyResponse = await waitingReply(
+          input, {
+            page: syncedPageMatch,
+          },
+          dispatch,
+          config,
+          (route: string) => {
+            pendingNavigateTo = route;
+            window.setTimeout(() => {
+              pendingNavigateTo = undefined;
+              setNavigateTo(route);
+            }, 30);
+          });
+
+        addMessage({
+          text: codyResponse.cody + (codyResponse.details ? `\n\n${codyResponse.details}` : ''),
+          author: "cody",
+          error: playIsCodyError(codyResponse)
+        });
+
+        waitingReply = codyResponse.instructionReply;
+        reset();
+        return;
+      }
+
       if(!selectedInstruction) {
+        const possibleInstructions = suggestInstructions(syncedPageMatch, config, env).filter(i => i.match(input));
+
+        if(possibleInstructions.length) {
+          setSelectedInstruction(possibleInstructions[0]);
+          executeInstruction(possibleInstructions[0], input).then(() => reset()).catch((e: any) => console.error(e));
+          return;
+        }
+
         addMessage({
           text: "Sorry, I did not understand your instruction. Please try again by selecting a suggestion and complete it with your idea.",
           author: "cody",
@@ -139,9 +179,11 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
       dispatch,
       config,
       (route: string) => {
-      window.setTimeout(() => {
-        setNavigateTo(route);
-      }, 30);
+        pendingNavigateTo = route;
+        window.setTimeout(() => {
+          pendingNavigateTo = undefined;
+          setNavigateTo(route);
+        }, 30);
 
     });
 
@@ -150,6 +192,10 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
       author: "cody",
       error: playIsCodyError(codyResponse)
     });
+
+    if(codyResponse.type === CodyResponseType.Question) {
+      waitingReply = codyResponse.instructionReply;
+    }
   }
 
   useEffect(() => {
@@ -164,7 +210,7 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
                  onClose={props.onClose}
                  variant="persistent"
                  sx={{
-                   width: 540,
+                   width: VIBE_CODY_DRAWER_WIDTH,
                    overscrollBehavior: 'contain',
                    [`& .MuiDrawer-paper`]: { width:  540, boxSizing: 'border-box', overflowX: "hidden" },
                  }}
@@ -190,22 +236,50 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
                                          sx={{marginBottom: theme.spacing(2),
                                            marginRight: m.author === "user" ? theme.spacing(4) : undefined,
                                            marginLeft: m.author === 'cody' ? theme.spacing(4) : undefined}}
-                                         icon={m.author === 'cody' ? <AccountCowboyHat /> : <AccountVoice />}
+                                         icon={m.author === 'cody' ? <CodyEmoji style={{width: '30px', height: '30px'}} /> : <AccountVoice />}
                                          severity={m.author === 'user' ? 'warning' : m.error ? 'error' : 'success'}><pre style={{whiteSpace: "pre-wrap"}}>{m.text}</pre></Alert>)}
       <Box sx={{paddingBottom: theme.spacing(12), position: "sticky", bottom: 0, backgroundColor: theme.palette.background.paper}}>
         {messages.length > 0 && <Divider sx={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}}/>}
         <Autocomplete<Instruction, false, false, true> renderInput={(params) => <TextField {...params}
-                                                          helperText={<span>Start typing to get suggestions.</span>}
+                                                          helperText={<span>Start typing to get suggestions. Use Shift+Enter for multiline.</span>}
                                                           variant="outlined"
+                                                          multiline={true}
                                                           placeholder={'Next instruction'}
-                                                           />}
+                                                          onKeyDown={e => {
+                                                            if(e.shiftKey && e.key === "Enter") {
+                                                              lockChange = true;
+                                                            }
+                                                          }}
+                                                          onKeyUp={() => {
+                                                            lockChange = false;
+                                                          }}
+                                                         />}
                                    options={suggestInstructions(syncedPageMatch, config, env)}
                                    freeSolo={true}
                                    value={value}
                                    autoComplete={false}
                                    inputValue={searchStr}
-                                   onChange={(e,v) => handleInstruction(v)}
-                                   onInputChange={(e,v) => setSearchStr(v)}
+                                   filterOptions={(options, state) => {
+                                     if (state.inputValue.length >= 1) {
+                                       return options.filter((item) =>
+                                         String(item.text).toLowerCase().includes(state.inputValue.toLowerCase())
+                                       );
+                                     }
+                                     return [];
+                                   }}
+                                   onChange={(e,v) => {
+                                     e.stopPropagation();
+
+                                     if(!lockChange) {
+                                       handleInstruction(v).catch(e => console.error(e));
+                                     }
+                                   }}
+                                   onInputChange={(e,v) => {
+                                     if(v === `\n`) {
+                                       v = '';
+                                     }
+                                     setSearchStr(v)
+                                   }}
                                    getOptionLabel={o => typeof o === "string" ? o : o.text}
         />
       </Box>
@@ -213,4 +287,4 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
   </Drawer>
 };
 
-export default CodyGPTDrawer;
+export default VibeCodyDrawer;

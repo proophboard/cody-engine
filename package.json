@@ -102,6 +102,7 @@
     "ajv-formats": "^2.1.1",
     "axios": "^1.4.0",
     "commander": "^12.0.0",
+    "compromise": "^14.14.4",
     "express": "~4.18.1",
     "express-async-errors": "^3.1.1",
     "express-jwt": "^8.4.1",
