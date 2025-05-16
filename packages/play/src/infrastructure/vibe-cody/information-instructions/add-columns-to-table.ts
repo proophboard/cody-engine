@@ -16,7 +16,13 @@ export const AddColumnsToTable: Instruction = {
   isActive: (context, config) => !!getTableViewVO(context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config): Promise<CodyResponse> => {
-    const columns = input.replace(TEXT, '').split(",").map(c => names(c.trim()));
+    const columns = input.replace(TEXT, '')
+      .replaceAll(`\n`, ',')
+      .replaceAll(` and `, ',')
+      .replaceAll(';', ',')
+      .replaceAll(`- `, '')
+      .split(",")
+      .map(c => names(c.trim()));
 
     const pageConfig = ctx.page.handle.page;
 

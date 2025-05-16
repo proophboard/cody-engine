@@ -42,14 +42,18 @@ interface Message {
   error?: boolean;
 }
 
+export type InstructionExecutionCallback = (input: string, ctx: VibeCodyContext, dispatch: PlayConfigDispatch, config: CodyPlayConfig, navigateTo: (route: string) => void) => Promise<CodyInstructionResponse>;
+
 export interface Instruction {
   text: string,
   alternatives?: string[],
   subInstructions?: Instruction[],
   isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string) => boolean,
-  execute: (input: string, ctx: VibeCodyContext, dispatch: PlayConfigDispatch, config: CodyPlayConfig, navigateTo: (route: string) => void) => Promise<CodyResponse>,
+  execute: InstructionExecutionCallback,
 }
+
+export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback};
 
 const suggestInstructions = (activePage: UsePageResult, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
   const ctx: VibeCodyContext = {page: activePage};
@@ -64,7 +68,7 @@ let pendingNavigateTo: string | undefined;
 
 let lockChange = false;
 
-let waitingReply: ReplyCallback | undefined;
+let waitingReply: InstructionExecutionCallback | undefined;
 
 const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const env = useEnv();
@@ -100,6 +104,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
     if(input && typeof input === "object") {
       setSelectedInstruction(input);
+      waitingReply = undefined;
       return;
     }
 
@@ -110,7 +115,19 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       })
 
       if(waitingReply) {
-        const codyResponse = await waitingReply(input);
+        const codyResponse = await waitingReply(
+          input, {
+            page: syncedPageMatch,
+          },
+          dispatch,
+          config,
+          (route: string) => {
+            pendingNavigateTo = route;
+            window.setTimeout(() => {
+              pendingNavigateTo = undefined;
+              setNavigateTo(route);
+            }, 30);
+          });
 
         addMessage({
           text: codyResponse.cody + (codyResponse.details ? `\n\n${codyResponse.details}` : ''),
@@ -118,7 +135,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
           error: playIsCodyError(codyResponse)
         });
 
-        waitingReply = codyResponse.reply;
+        waitingReply = codyResponse.instructionReply;
         reset();
         return;
       }
@@ -177,7 +194,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     });
 
     if(codyResponse.type === CodyResponseType.Question) {
-      waitingReply = codyResponse.reply;
+      waitingReply = codyResponse.instructionReply;
     }
   }
 
