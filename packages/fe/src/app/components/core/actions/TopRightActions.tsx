@@ -22,6 +22,7 @@ import updateTableButtonPosition from '@cody-play/app/utils/updateTableButtonPos
 import { DragAndDropContext } from '@cody-play/app/providers/DragAndDrop';
 import { configStore } from '@cody-play/state/config-store';
 import updatePageButtonPosition from '@cody-play/app/utils/updatePageButtonPosition';
+import moveButtonPosition from '@cody-play/app/utils/moveButtonPosition';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -71,8 +72,14 @@ const TopRightActions = (props: TopRightActionsProps) => {
       const { id } = over;
       const dropzonePosition =
         MAP_DROPZONE_POSITION_TO_DROPZONE_ID[id as string];
-      const prevContainerInfoType = active.data.current?.prevType;
+      const prevContainerInfoType = active.data.current?.prevContainerInfo.type;
 
+      // handle only the dropped elements in the top actions
+      if (dropzonePosition !== 'table-top' && dropzonePosition !== 'page-top') {
+        return;
+      }
+
+      // button was moved inside table view
       if (
         prevContainerInfoType === 'view' &&
         dropzonePosition === 'table-top' &&
@@ -84,10 +91,11 @@ const TopRightActions = (props: TopRightActionsProps) => {
           dispatch,
           containerInfo,
           buttonPosition,
-          active.data.current
+          active.data.current?.command
         );
       }
 
+      // button was moved inside page view
       if (
         prevContainerInfoType === 'page' &&
         dropzonePosition === 'page-top' &&
@@ -99,7 +107,23 @@ const TopRightActions = (props: TopRightActionsProps) => {
           dispatch,
           containerInfo,
           buttonPosition,
-          active.data.current
+          active.data.current?.command
+        );
+      }
+
+      // button was moved from page view to table view or vice versa
+      if (
+        (prevContainerInfoType === 'view' && containerInfo.type === 'page') ||
+        (prevContainerInfoType === 'page' && containerInfo.type === 'view')
+      ) {
+        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[id as string];
+        moveButtonPosition(
+          config,
+          dispatch,
+          containerInfo,
+          active.data.current?.prevContainerInfo,
+          buttonPosition,
+          active.data.current?.command
         );
       }
     }
@@ -134,7 +158,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
             isDragDropEnabled={isDragDropEnabled}
             data={{
               command: (action as any).command,
-              prevType: props.containerInfo?.type,
+              prevContainerInfo: props.containerInfo,
             }}
           >
             <ActionButton

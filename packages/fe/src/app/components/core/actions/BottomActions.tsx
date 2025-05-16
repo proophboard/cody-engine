@@ -82,7 +82,7 @@ const BottomActions = (props: BottomActionsProps) => {
       const { id } = over;
       const dropzonePosition =
         MAP_DROPZONE_POSITION_TO_DROPZONE_ID[id as string];
-      const prevContainerInfoType = active.data.current?.prevType;
+      const prevContainerInfoType = active.data.current?.prevContainerInfo.type;
 
       // handle only the dropped elements in the bottom actions
       if (
@@ -171,7 +171,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 isDragDropEnabled={isDragDropEnabled}
                 data={{
                   command: (action as any).command,
-                  prevType: props.containerInfo?.type,
+                  prevContainerInfo: props.containerInfo,
                 }}
               >
                 <ActionButton
@@ -214,7 +214,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 isDragDropEnabled={isDragDropEnabled}
                 data={{
                   command: (action as any).command,
-                  prevType: props.containerInfo?.type,
+                  prevContainerInfo: props.containerInfo,
                 }}
               >
                 <ActionButton
@@ -255,7 +255,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 isDragDropEnabled={isDragDropEnabled}
                 data={{
                   command: (action as any).command,
-                  prevType: props.containerInfo?.type,
+                  prevContainerInfo: props.containerInfo,
                 }}
               >
                 <ActionButton
