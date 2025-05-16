@@ -3,7 +3,6 @@ import {
   CodyPlayConfig,
   getEditedContextFromConfig,
 } from '@cody-play/state/config-store';
-import { playDefinitionIdFromFQCN } from '@cody-play/infrastructure/cody/schema/play-definition-id';
 import { ActionContainerInfo } from '@frontend/app/components/core/form/types/action';
 
 const updatePageButtonPosition = (
@@ -14,43 +13,30 @@ const updatePageButtonPosition = (
   additionalData?: Record<string, any>
 ) => {
   const ctx = getEditedContextFromConfig(config);
-  const informationRuntimeInfo = config.types[containerInfo.name];
-  const uiOptions = informationRuntimeInfo.uiSchema?.['ui:options'];
-  const uiOptionsActions = uiOptions
-    ? (uiOptions.actions as object[])
-    : undefined;
-  const actions = uiOptionsActions
-    ? uiOptionsActions.map((action) => ({
-        ...action,
-        position:
-          // @ts-expect-error TS2339: Property command does not exist on type object
-          additionalData && additionalData.command === action.command
-            ? buttonPosition
-            : // @ts-expect-error TS2339: Property position does not exist on type object
-              action.position,
-      }))
-    : [];
-  const information = {
-    ...informationRuntimeInfo,
-    uiSchema: {
-      ...informationRuntimeInfo.uiSchema,
-      'ui:options': {
-        ...uiOptions,
-        actions,
-      },
-    },
+  const pageDefinition = config.pages[containerInfo.name];
+  const page = {
+    ...pageDefinition,
+    commands: pageDefinition.commands.map((command) => ({
+      // @ts-expect-error TS2698: Spread types may only be created from object types.
+      ...command,
+      position:
+        // @ts-expect-error TS2322: Type CommandComponent is not assignable to type object
+        'command' in command &&
+        additionalData &&
+        additionalData.command === command.command
+          ? buttonPosition
+          : // @ts-expect-error TS2322: Type CommandComponent is not assignable to type object
+          'position' in command
+          ? command.position
+          : null,
+    })),
   };
-  const definitionId = playDefinitionIdFromFQCN(containerInfo.name);
 
   dispatch({
     ctx,
-    type: 'ADD_TYPE',
+    type: 'ADD_PAGE',
+    page,
     name: containerInfo.name,
-    information,
-    definition: {
-      definitionId,
-      schema: config.definitions[definitionId],
-    },
   });
 };
 
