@@ -1,7 +1,9 @@
 import * as React from 'react';
+import {useContext, useEffect, useState} from 'react';
 import {
   Alert,
-  Autocomplete, Box,
+  Autocomplete,
+  Box,
   DialogContent,
   DialogTitle,
   Divider,
@@ -12,14 +14,13 @@ import {
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
-import {AccountCowboyHat, AccountVoice, Close} from "mdi-material-ui";
-import {useContext, useEffect, useState} from "react";
-import {CodyPlayConfig, configStore, getEditedContextFromConfig} from "@cody-play/state/config-store";
+import {AccountVoice, Close} from "mdi-material-ui";
+import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
 import {useNavigate} from "react-router-dom";
 import {UsePageResult, usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
 import {useEnv} from "@frontend/hooks/use-env";
 import {PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
-import {CodyResponse} from "@proophboard/cody-types";
+import {CodyResponse, CodyResponseType, ReplyCallback} from "@proophboard/cody-types";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import {instructions} from "@cody-play/infrastructure/vibe-cody/instructions";
@@ -63,6 +64,8 @@ let pendingNavigateTo: string | undefined;
 
 let lockChange = false;
 
+let waitingReply: ReplyCallback | undefined;
+
 const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const env = useEnv();
   const theme = useTheme();
@@ -92,7 +95,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     setMessages([...messages]);
   }
 
-  const handleInstruction = (input: Instruction | string | null) => {
+  const handleInstruction = async (input: Instruction | string | null) => {
     setValue(input);
 
     if(input && typeof input === "object") {
@@ -105,6 +108,20 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
         text: input,
         author: "user"
       })
+
+      if(waitingReply) {
+        const codyResponse = await waitingReply(input);
+
+        addMessage({
+          text: codyResponse.cody + (codyResponse.details ? `\n\n${codyResponse.details}` : ''),
+          author: "cody",
+          error: playIsCodyError(codyResponse)
+        });
+
+        waitingReply = codyResponse.reply;
+        reset();
+        return;
+      }
 
       if(!selectedInstruction) {
         const possibleInstructions = suggestInstructions(syncedPageMatch, config, env).filter(i => i.match(input));
@@ -158,6 +175,10 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       author: "cody",
       error: playIsCodyError(codyResponse)
     });
+
+    if(codyResponse.type === CodyResponseType.Question) {
+      waitingReply = codyResponse.reply;
+    }
   }
 
   useEffect(() => {
@@ -166,8 +187,6 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       dialogContent.scrollTo(0, dialogContent.scrollHeight);
     }
   }, [messages]);
-
-  console.log("searchStr: ", `"${searchStr}"`);
 
   return <Drawer anchor={"right"}
                  open={props.open}
@@ -223,11 +242,19 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                    value={value}
                                    autoComplete={false}
                                    inputValue={searchStr}
+                                   filterOptions={(options, state) => {
+                                     if (state.inputValue.length >= 1) {
+                                       return options.filter((item) =>
+                                         String(item.text).toLowerCase().includes(state.inputValue.toLowerCase())
+                                       );
+                                     }
+                                     return [];
+                                   }}
                                    onChange={(e,v) => {
                                      e.stopPropagation();
 
                                      if(!lockChange) {
-                                       handleInstruction(v);
+                                       handleInstruction(v).catch(e => console.error(e));
                                      }
                                    }}
                                    onInputChange={(e,v) => {
