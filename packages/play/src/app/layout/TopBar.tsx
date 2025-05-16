@@ -27,24 +27,32 @@ interface OwnProps {
 
 type TopBarProps = OwnProps;
 
+// This is handled outside the component lifecycle
+let globalVibeCodyOpen = false;
+
 const TopBar = (props: TopBarProps) => {
   const {config} = useContext(configStore);
   const [currentUser] = useUser();
   const theme = useTheme();
   const {mode, toggleColorMode} = useContext(ColorModeContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [vibeCodyOpen, setVibeCodyOpen] = useState(false);
+  const [vibeCodyOpen, setVibeCodyOpen] = useState(globalVibeCodyOpen);
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
 
+  const syncVibeCodyOpen = (open: boolean) => {
+    globalVibeCodyOpen = open;
+    setVibeCodyOpen(open);
+  }
+
   const openSettingsModal = () => {
     setSettingsOpen(true);
-    setVibeCodyOpen(false);
+    syncVibeCodyOpen(false);
   }
 
   const openVibeCody = () => {
-    setVibeCodyOpen(true);
+    syncVibeCodyOpen(true);
     setSettingsOpen(false);
   }
 
@@ -96,7 +104,7 @@ const TopBar = (props: TopBarProps) => {
         </IconButton>}
       </Toolbar>
       <AppSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
-      <VibeCodyDrawer open={vibeCodyOpen} onClose={() => setVibeCodyOpen(false)} />
+      <VibeCodyDrawer open={vibeCodyOpen} onClose={() => syncVibeCodyOpen(false)} />
     </AppBar>
   )
 };

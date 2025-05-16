@@ -54,16 +54,20 @@ const suggestInstructions = (activePage: UsePageResult, config: CodyPlayConfig, 
   return instructions.filter(i => i.isActive(ctx, config, env))
 }
 
+// Persist messages across the lifetime of the session
+let globalMessages: Message[] = [];
+
+let pendingNavigateTo: string | undefined;
 
 const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const env = useEnv();
   const theme = useTheme();
   const {config, dispatch} = useContext(configStore);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<Message[]>([...globalMessages]);
   const [selectedInstruction, setSelectedInstruction] = useState<Instruction|undefined>(undefined);
   const [value, setValue] = useState<string | Instruction | null>(null);
   const [searchStr, setSearchStr] = useState<string>('');
-  const [navigateTo, setNavigateTo] = useState<string|undefined>();
+  const [navigateTo, setNavigateTo] = useState<string|undefined>(pendingNavigateTo);
   const pageMatch = usePlayPageMatch();
   const navigate = useNavigate();
 
@@ -80,6 +84,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
   const addMessage = (message: Message) => {
     messages.push(message);
+    globalMessages.push(message);
     setMessages([...messages]);
   }
 
@@ -136,9 +141,11 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       dispatch,
       config,
       (route: string) => {
-      window.setTimeout(() => {
-        setNavigateTo(route);
-      }, 30);
+        pendingNavigateTo = route;
+        window.setTimeout(() => {
+          pendingNavigateTo = undefined;
+          setNavigateTo(route);
+        }, 30);
 
     });
 
@@ -201,7 +208,10 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                    value={value}
                                    autoComplete={false}
                                    inputValue={searchStr}
-                                   onChange={(e,v) => handleInstruction(v)}
+                                   onChange={(e,v) => {
+                                     e.stopPropagation();
+                                     handleInstruction(v);
+                                   }}
                                    onInputChange={(e,v) => setSearchStr(v)}
                                    getOptionLabel={o => typeof o === "string" ? o : o.text}
         />
