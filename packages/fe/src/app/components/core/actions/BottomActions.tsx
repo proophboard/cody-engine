@@ -22,6 +22,7 @@ import {
   MAP_POSITION_TO_DROPZONE_ID,
 } from '@cody-play/app/types/enums/EDropzoneId';
 import updateTableButtonPosition from '@cody-play/app/utils/updateTableButtonPosition';
+import updatePageButtonPosition from '@cody-play/app/utils/updatePageButtonPosition';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -81,13 +82,30 @@ const BottomActions = (props: BottomActionsProps) => {
       const { id } = over;
       const dropzonePosition =
         MAP_DROPZONE_POSITION_TO_DROPZONE_ID[id as string];
+      const prevContainerInfoType = active.data.current?.prevType;
 
       if (
+        prevContainerInfoType === 'view' &&
         dropzonePosition === 'table-bottom' &&
         containerInfo.type === 'view'
       ) {
         const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[id as string];
         updateTableButtonPosition(
+          config,
+          dispatch,
+          containerInfo,
+          buttonPosition,
+          active.data.current
+        );
+      }
+
+      if (
+        prevContainerInfoType === 'page' &&
+        dropzonePosition === 'page-bottom' &&
+        containerInfo.type === 'page'
+      ) {
+        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[id as string];
+        updatePageButtonPosition(
           config,
           dispatch,
           containerInfo,
@@ -139,8 +157,10 @@ const BottomActions = (props: BottomActionsProps) => {
                 key={`left_action_${keyVersion}_${index}`}
                 id={`${props.containerInfo?.type}-bottom-actions-left-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
-                // @ts-expect-error TS2339: Property command does not exist on type Action
-                data={{ command: action.command }}
+                data={{
+                  command: (action as any).command,
+                  prevType: props.containerInfo?.type,
+                }}
               >
                 <ActionButton
                   action={action}
@@ -180,8 +200,10 @@ const BottomActions = (props: BottomActionsProps) => {
                 key={`center_action_${keyVersion}_${index}`}
                 id={`${props.containerInfo?.type}-bottom-actions-center-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
-                // @ts-expect-error TS2339: Property command does not exist on type Action
-                data={{ command: action.command }}
+                data={{
+                  command: (action as any).command,
+                  prevType: props.containerInfo?.type,
+                }}
               >
                 <ActionButton
                   action={action}
@@ -219,8 +241,10 @@ const BottomActions = (props: BottomActionsProps) => {
                 key={`right_action_${keyVersion}_${index}`}
                 id={`${props.containerInfo?.type}-bottom-actions-right-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
-                // @ts-expect-error TS2339: Property command does not exist on type Action
-                data={{ command: action.command }}
+                data={{
+                  command: (action as any).command,
+                  prevType: props.containerInfo?.type,
+                }}
               >
                 <ActionButton
                   action={action}

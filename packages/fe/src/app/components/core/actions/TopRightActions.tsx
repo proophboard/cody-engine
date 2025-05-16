@@ -21,6 +21,7 @@ import {
 import updateTableButtonPosition from '@cody-play/app/utils/updateTableButtonPosition';
 import { DragAndDropContext } from '@cody-play/app/providers/DragAndDrop';
 import { configStore } from '@cody-play/state/config-store';
+import updatePageButtonPosition from '@cody-play/app/utils/updatePageButtonPosition';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -70,10 +71,30 @@ const TopRightActions = (props: TopRightActionsProps) => {
       const { id } = over;
       const dropzonePosition =
         MAP_DROPZONE_POSITION_TO_DROPZONE_ID[id as string];
+      const prevContainerInfoType = active.data.current?.prevType;
 
-      if (dropzonePosition === 'table-top' && containerInfo.type === 'view') {
+      if (
+        prevContainerInfoType === 'view' &&
+        dropzonePosition === 'table-top' &&
+        containerInfo.type === 'view'
+      ) {
         const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[id as string];
         updateTableButtonPosition(
+          config,
+          dispatch,
+          containerInfo,
+          buttonPosition,
+          active.data.current
+        );
+      }
+
+      if (
+        prevContainerInfoType === 'page' &&
+        dropzonePosition === 'page-top' &&
+        containerInfo.type === 'page'
+      ) {
+        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[id as string];
+        updatePageButtonPosition(
           config,
           dispatch,
           containerInfo,
@@ -108,11 +129,13 @@ const TopRightActions = (props: TopRightActionsProps) => {
       >
         {actions.map((action, index) => (
           <PlayDraggable
-            key={`action-button-${index}-key`}
-            id={`top-actions-action-button-${index}`}
+            key={`${props.containerInfo?.type}-action-button-${index}-key`}
+            id={`${props.containerInfo?.type}-top-actions-action-button-${index}`}
             isDragDropEnabled={isDragDropEnabled}
-            // @ts-expect-error TS2339: Property command does not exist on type Action
-            data={{ command: action.command }}
+            data={{
+              command: (action as any).command,
+              prevType: props.containerInfo?.type,
+            }}
           >
             <ActionButton
               action={action}
