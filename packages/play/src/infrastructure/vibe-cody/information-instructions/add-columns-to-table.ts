@@ -1,4 +1,4 @@
-import {Instruction} from "@cody-play/app/components/core/cody-gpt/CodyGPTDrawer";
+import {Instruction} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {CodyResponse, CodyResponseType} from "@proophboard/cody-types";
 import {PlayInformationRuntimeInfo, PlayPageDefinition} from "@cody-play/state/types";
 import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";

@@ -1,4 +1,4 @@
-import {Instruction} from "@cody-play/app/components/core/cody-gpt/CodyGPTDrawer";
+import {Instruction} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {CodyResponse, NodeType} from "@proophboard/cody-types";
 import {
   playMakeNodeRecordWithDefaults
@@ -7,7 +7,7 @@ import {PlayValueObjectMetadataRaw} from "@cody-play/infrastructure/cody/vo/play
 import {names} from "@event-engine/messaging/helpers";
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
-import {CodyGPTContext} from "@cody-play/infrastructure/cody-gpt/CodyGPTContext";
+import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 
 const TEXT = "I'd like to see a table of ";
@@ -16,7 +16,7 @@ export const AddATableWithDefaults: Instruction = {
   text: TEXT,
   isActive: context => context.page.pathname !== '/welcome',
   match: input => input.startsWith(TEXT),
-  execute: async (input, ctx: CodyGPTContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
+  execute: async (input, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
     const tableName = input.replace(TEXT, '').trim();
     const tableNameNames = names(tableName);
     const voIdentifier = tableNameNames.propertyName + 'ItemId';

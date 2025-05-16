@@ -21,20 +21,17 @@ import {useEnv} from "@frontend/hooks/use-env";
 import {PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
 import {CodyResponse} from "@proophboard/cody-types";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
-import {AddAPageWithName} from "@cody-play/infrastructure/cody-gpt/page-instructions/add-a-page-with-name";
-import {
-  AddATableWithDefaults
-} from "@cody-play/infrastructure/cody-gpt/information-instructions/add-a-table-with-defaults";
-import {CodyGPTContext} from "@cody-play/infrastructure/cody-gpt/CodyGPTContext";
-import {instructions} from "@cody-play/infrastructure/cody-gpt/instructions";
+import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
+import {instructions} from "@cody-play/infrastructure/vibe-cody/instructions";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
+import CodyEmoji from "@cody-play/app/components/core/vibe-cody/CodyEmoji";
 
 interface OwnProps {
   open: boolean;
   onClose: () => void;
 }
 
-type CodyGPTDrawerProps = OwnProps;
+type VibeCodyDrawerProps = OwnProps;
 
 interface Message {
   text: string;
@@ -46,27 +43,19 @@ export interface Instruction {
   text: string,
   alternatives?: string[],
   subInstructions?: Instruction[],
-  isActive: (context: CodyGPTContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
+  isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string) => boolean,
-  execute: (input: string, ctx: CodyGPTContext, dispatch: PlayConfigDispatch, config: CodyPlayConfig, navigateTo: (route: string) => void) => Promise<CodyResponse>,
+  execute: (input: string, ctx: VibeCodyContext, dispatch: PlayConfigDispatch, config: CodyPlayConfig, navigateTo: (route: string) => void) => Promise<CodyResponse>,
 }
 
-const defaultInstructions: Instruction[] = [
-  AddAPageWithName,
-]
-
-const onPageInstructions: Instruction[] = [
-  AddATableWithDefaults,
-]
-
 const suggestInstructions = (activePage: UsePageResult, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
-  const ctx: CodyGPTContext = {page: activePage};
+  const ctx: VibeCodyContext = {page: activePage};
 
   return instructions.filter(i => i.isActive(ctx, config, env))
 }
 
 
-const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
+const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const env = useEnv();
   const theme = useTheme();
   const {config, dispatch} = useContext(configStore);
@@ -109,6 +98,14 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
       })
 
       if(!selectedInstruction) {
+        const possibleInstructions = suggestInstructions(syncedPageMatch, config, env).filter(i => i.match(input));
+
+        if(possibleInstructions.length) {
+          setSelectedInstruction(possibleInstructions[0]);
+          executeInstruction(possibleInstructions[0], input).then(() => reset()).catch((e: any) => console.error(e));
+          return;
+        }
+
         addMessage({
           text: "Sorry, I did not understand your instruction. Please try again by selecting a suggestion and complete it with your idea.",
           author: "cody",
@@ -190,7 +187,7 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
                                          sx={{marginBottom: theme.spacing(2),
                                            marginRight: m.author === "user" ? theme.spacing(4) : undefined,
                                            marginLeft: m.author === 'cody' ? theme.spacing(4) : undefined}}
-                                         icon={m.author === 'cody' ? <AccountCowboyHat /> : <AccountVoice />}
+                                         icon={m.author === 'cody' ? <CodyEmoji style={{width: '30px', height: '30px'}} /> : <AccountVoice />}
                                          severity={m.author === 'user' ? 'warning' : m.error ? 'error' : 'success'}><pre style={{whiteSpace: "pre-wrap"}}>{m.text}</pre></Alert>)}
       <Box sx={{paddingBottom: theme.spacing(12), position: "sticky", bottom: 0, backgroundColor: theme.palette.background.paper}}>
         {messages.length > 0 && <Divider sx={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}}/>}
@@ -213,4 +210,4 @@ const CodyGPTDrawer = (props: CodyGPTDrawerProps) => {
   </Drawer>
 };
 
-export default CodyGPTDrawer;
+export default VibeCodyDrawer;

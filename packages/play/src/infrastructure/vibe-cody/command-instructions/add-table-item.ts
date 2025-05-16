@@ -1,5 +1,5 @@
-import {Instruction} from "@cody-play/app/components/core/cody-gpt/CodyGPTDrawer";
-import {getTableViewVO} from "@cody-play/infrastructure/cody-gpt/information-instructions/add-columns-to-table";
+import {Instruction} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
+import {getTableViewVO} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 import {CodyResponse, CodyResponseType, NodeType} from "@proophboard/cody-types";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
