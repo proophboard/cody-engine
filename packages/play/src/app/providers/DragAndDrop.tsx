@@ -1,5 +1,5 @@
 import { createContext, ReactNode, useMemo, useState } from 'react';
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, useSensor, useSensors, MouseSensor, TouchSensor, KeyboardSensor, PointerSensor } from '@dnd-kit/core';
 
 type TDragAndDrop = {
   children: ReactNode;
@@ -22,13 +22,29 @@ const DragAndDrop = ({ children }: TDragAndDrop) => {
     [dndEvent]
   );
 
+  const pointerSensor = useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 0.01
+    }
+  })
+  const mouseSensor = useSensor(MouseSensor)
+  const touchSensor = useSensor(TouchSensor)
+  const keyboardSensor = useSensor(KeyboardSensor)
+
+  const sensors = useSensors(
+    mouseSensor,
+    touchSensor,
+    keyboardSensor,
+    pointerSensor
+  )
+
   const handleDragEnd = (event: DragEndEvent) => {
     setDndEvent(event);
   };
 
   return (
     <DragAndDropContext.Provider value={dnd}>
-      <DndContext onDragEnd={handleDragEnd}>{children}</DndContext>
+      <DndContext onDragEnd={handleDragEnd} sensors={sensors}>{children}</DndContext>
     </DragAndDropContext.Provider>
   );
 };

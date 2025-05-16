@@ -25,8 +25,6 @@ const MainLayout = (props: MainLayoutProps) => {
       return window.matchMedia(breakPointHelper(key).replace('@media ', '')).matches;
     });
 
-    console.log("VibeCodyOpen: ", vibeCodyOpen);
-
     return (
         <Box sx={{
             paddingTop: {
@@ -43,7 +41,7 @@ const MainLayout = (props: MainLayoutProps) => {
             width: `calc(100% - ${vibeCodyOpen? VIBE_CODY_DRAWER_WIDTH + 'px' : 0})`,
             boxSizing: 'border-box',
             backgroundColor: (theme) => theme.palette.background.default,
-            display: 'flex'
+            display: 'flex',
         }}>
             <CssBaseline />
             <TopBar sidebarOpen={sideBarOpen} onOpenSidebar={handleOpenSidebar} />

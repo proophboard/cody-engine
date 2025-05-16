@@ -33,9 +33,6 @@ const PlayDraggable = ({
       ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
       : 'none',
     zIndex: transform ? theme.zIndex.drawer + 1 : 'auto',
-    '.children-wrapper button': {
-      pointerEvents: 'none',
-    },
   };
 
   return (
