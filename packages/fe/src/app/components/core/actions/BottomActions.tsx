@@ -23,6 +23,7 @@ import {
 } from '@cody-play/app/types/enums/EDropzoneId';
 import updateTableButtonPosition from '@cody-play/app/utils/updateTableButtonPosition';
 import updatePageButtonPosition from '@cody-play/app/utils/updatePageButtonPosition';
+import moveButtonPosition from '@cody-play/app/utils/moveButtonPosition';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -125,6 +126,20 @@ const BottomActions = (props: BottomActionsProps) => {
       }
 
       // button was moved from page view to table view or vice versa
+      if (
+        (prevContainerInfoType === 'view' && containerInfo.type === 'page') ||
+        (prevContainerInfoType === 'page' && containerInfo.type === 'view')
+      ) {
+        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[id as string];
+        moveButtonPosition(
+          config,
+          dispatch,
+          containerInfo,
+          active.data.current?.prevContainerInfo,
+          buttonPosition,
+          active.data.current?.command
+        );
+      }
     }
   }, [dndEvent]);
 
