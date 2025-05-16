@@ -84,6 +84,15 @@ const BottomActions = (props: BottomActionsProps) => {
         MAP_DROPZONE_POSITION_TO_DROPZONE_ID[id as string];
       const prevContainerInfoType = active.data.current?.prevType;
 
+      // handle only the dropped elements in the bottom actions
+      if (
+        dropzonePosition !== 'table-bottom' &&
+        dropzonePosition !== 'page-bottom'
+      ) {
+        return;
+      }
+
+      // button was moved inside table view
       if (
         prevContainerInfoType === 'view' &&
         dropzonePosition === 'table-bottom' &&
@@ -95,10 +104,11 @@ const BottomActions = (props: BottomActionsProps) => {
           dispatch,
           containerInfo,
           buttonPosition,
-          active.data.current
+          active.data.current?.command
         );
       }
 
+      // button was moved inside page view
       if (
         prevContainerInfoType === 'page' &&
         dropzonePosition === 'page-bottom' &&
@@ -110,9 +120,11 @@ const BottomActions = (props: BottomActionsProps) => {
           dispatch,
           containerInfo,
           buttonPosition,
-          active.data.current
+          active.data.current?.command
         );
       }
+
+      // button was moved from page view to table view or vice versa
     }
   }, [dndEvent]);
 
