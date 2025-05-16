@@ -49,6 +49,7 @@ const TopBar = (props: TopBarProps) => {
 
   const syncVibeCodyOpen = (open: boolean) => {
     setVibeCodyOpen(open);
+    toggleLiveEditMode(open);
   }
 
   const openSettingsModal = () => {
@@ -101,13 +102,12 @@ const TopBar = (props: TopBarProps) => {
         <IconButton
           aria-label="Live edit mode"
           title="Toggle live edit mode"
-          onClick={toggleLiveEditMode}
+          onClick={e => syncVibeCodyOpen(!vibeCodyOpen)}
         >
           <ViewDashboardEdit
-            sx={{ color: theme.palette.primary.contrastText }}
+            sx={{ color: vibeCodyOpen ? theme.palette.primary.light : theme.palette.primary.contrastText }}
           />
         </IconButton>
-        <IconButton onClick={openVibeCody}><Wrench sx={{ color: theme.palette.primary.contrastText }} /></IconButton>
         <IconButton aria-label="Light mode" onClick={toggleColorMode}>
           {mode === 'light' && (
             <LightModeIcon sx={{ color: theme.palette.primary.contrastText }} />

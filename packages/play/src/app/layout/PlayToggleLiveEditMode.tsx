@@ -7,7 +7,7 @@ type TToggleLiveEditMode = {
 export const LiveEditModeContext = createContext({
   liveEditMode: false,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  toggleLiveEditMode: () => {},
+  toggleLiveEditMode: (open: boolean) => {},
 });
 
 const PlayToggleLiveEditMode = ({ children }: TToggleLiveEditMode) => {
@@ -15,9 +15,7 @@ const PlayToggleLiveEditMode = ({ children }: TToggleLiveEditMode) => {
   const liveEditModeContextValue = useMemo(
     () => ({
       liveEditMode,
-      toggleLiveEditMode: () => {
-        setLiveEditMode((prevState) => !prevState);
-      },
+      toggleLiveEditMode: setLiveEditMode,
     }),
     [liveEditMode]
   );
