@@ -61,6 +61,8 @@ let globalMessages: Message[] = [];
 
 let pendingNavigateTo: string | undefined;
 
+let lockChange = false;
+
 const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const env = useEnv();
   const theme = useTheme();
@@ -165,6 +167,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     }
   }, [messages]);
 
+  console.log("searchStr: ", `"${searchStr}"`);
+
   return <Drawer anchor={"right"}
                  open={props.open}
                  onClose={props.onClose}
@@ -201,10 +205,19 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       <Box sx={{paddingBottom: theme.spacing(12), position: "sticky", bottom: 0, backgroundColor: theme.palette.background.paper}}>
         {messages.length > 0 && <Divider sx={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}}/>}
         <Autocomplete<Instruction, false, false, true> renderInput={(params) => <TextField {...params}
-                                                          helperText={<span>Start typing to get suggestions.</span>}
+                                                          helperText={<span>Start typing to get suggestions. Use Shift+Enter for multiline.</span>}
                                                           variant="outlined"
+                                                          multiline={true}
                                                           placeholder={'Next instruction'}
-                                                           />}
+                                                          onKeyDown={e => {
+                                                            if(e.shiftKey && e.key === "Enter") {
+                                                              lockChange = true;
+                                                            }
+                                                          }}
+                                                          onKeyUp={() => {
+                                                            lockChange = false;
+                                                          }}
+                                                         />}
                                    options={suggestInstructions(syncedPageMatch, config, env)}
                                    freeSolo={true}
                                    value={value}
@@ -212,9 +225,17 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                    inputValue={searchStr}
                                    onChange={(e,v) => {
                                      e.stopPropagation();
-                                     handleInstruction(v);
+
+                                     if(!lockChange) {
+                                       handleInstruction(v);
+                                     }
                                    }}
-                                   onInputChange={(e,v) => setSearchStr(v)}
+                                   onInputChange={(e,v) => {
+                                     if(v === `\n`) {
+                                       v = '';
+                                     }
+                                     setSearchStr(v)
+                                   }}
                                    getOptionLabel={o => typeof o === "string" ? o : o.text}
         />
       </Box>
