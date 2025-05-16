@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Box, useTheme } from '@mui/material';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import {Target} from "mdi-material-ui";
 
 type TPlayDraggable = {
   id: string;
@@ -44,6 +45,7 @@ const PlayDraggable = ({
           <Box flex={1} className="children-wrapper">
             {children}
           </Box>
+          <Target />
           <DragIndicatorIcon />
         </Box>
       )}

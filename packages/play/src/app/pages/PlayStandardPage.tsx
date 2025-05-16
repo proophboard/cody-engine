@@ -58,6 +58,7 @@ import { execMappingSync } from '@app/shared/rule-engine/exec-mapping';
 import { parseActionsFromPageCommands } from '@frontend/app/components/core/form/types/parse-actions';
 import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
+import {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 
 export type PageMode = 'standard' | 'dialog' | 'drawer';
 
@@ -319,6 +320,7 @@ export const PlayStandardPage = (props: Props) => {
         pageMode === 'standard' &&
         (bottomActions.length > 0 || isDragDropEnabled) && (
           <Box
+            className={'CodyBottomBar-placeholder'}
             sx={{
               width:
                 props.drawerWidth && isLarge
@@ -335,13 +337,14 @@ export const PlayStandardPage = (props: Props) => {
         pageMode === 'standard' &&
         (bottomActions.length > 0 || isDragDropEnabled) && (
           <Box
+            className={'CodyBottomBar-root'}
             sx={{
               position: 'fixed',
               width:
                 props.drawerWidth && isLarge
-                  ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)`
-                  : `calc(100% - ${SIDEBAR_WIDTH}px)`,
-              backgroundColor: (theme) => theme.palette.grey.A100,
+                  ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px - ${isDragDropEnabled ? VIBE_CODY_DRAWER_WIDTH : 0}px)`
+                  : `calc(100% - ${SIDEBAR_WIDTH}px - ${isDragDropEnabled ? VIBE_CODY_DRAWER_WIDTH : 0}px)`,
+              backgroundColor: (theme) => theme.palette.mode === 'light' ? theme.palette.grey.A100 : theme.palette.background.paper,
               borderTop: (theme) => '1px solid ' + theme.palette.grey.A200,
               left: SIDEBAR_WIDTH + 'px',
               bottom: 0,

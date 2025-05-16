@@ -69,7 +69,7 @@ const TopBar = (props: TopBarProps) => {
       boxShadow: "none",
       backgroundColor: (theme) => theme.palette.primary.main,
       height: "64px",
-      width: `calc(100% - ${vibeCodyOpen? VIBE_CODY_DRAWER_WIDTH + 'px' : 0})`,
+      width: `calc(100% - ${vibeCodyOpen? VIBE_CODY_DRAWER_WIDTH : 0}px)`,
       left: `${vibeCodyOpen? 0 : 'auto'}`,
       zIndex: theme.zIndex.drawer + 1
     }}>

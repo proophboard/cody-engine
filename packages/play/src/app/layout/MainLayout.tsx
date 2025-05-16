@@ -38,7 +38,7 @@ const MainLayout = (props: MainLayoutProps) => {
               xs: "50px"
             },
             height: '100%',
-            width: `calc(100% - ${vibeCodyOpen? VIBE_CODY_DRAWER_WIDTH + 'px' : 0})`,
+            width: `calc(100% - ${vibeCodyOpen? VIBE_CODY_DRAWER_WIDTH : 0}px)`,
             boxSizing: 'border-box',
             backgroundColor: (theme) => theme.palette.background.default,
             display: 'flex',
