@@ -80,9 +80,8 @@ const BottomActions = (props: BottomActionsProps) => {
         return;
       }
 
-      const { id } = over;
       const dropzonePosition =
-        MAP_DROPZONE_POSITION_TO_DROPZONE_ID[id as string];
+        MAP_DROPZONE_POSITION_TO_DROPZONE_ID[over.id as string];
       const prevContainerInfoType = active.data.current?.prevContainerInfo.type;
 
       // handle only the dropped elements in the bottom actions
@@ -99,7 +98,7 @@ const BottomActions = (props: BottomActionsProps) => {
         dropzonePosition === 'table-bottom' &&
         containerInfo.type === 'view'
       ) {
-        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[id as string];
+        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[over.id as string];
         updateTableButtonPosition(
           config,
           dispatch,
@@ -107,6 +106,7 @@ const BottomActions = (props: BottomActionsProps) => {
           buttonPosition,
           active.data.current?.command
         );
+        return;
       }
 
       // button was moved inside page view
@@ -115,7 +115,7 @@ const BottomActions = (props: BottomActionsProps) => {
         dropzonePosition === 'page-bottom' &&
         containerInfo.type === 'page'
       ) {
-        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[id as string];
+        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[over.id as string];
         updatePageButtonPosition(
           config,
           dispatch,
@@ -123,14 +123,19 @@ const BottomActions = (props: BottomActionsProps) => {
           buttonPosition,
           active.data.current?.command
         );
+        return;
       }
 
       // button was moved from page view to table view or vice versa
       if (
-        (prevContainerInfoType === 'view' && containerInfo.type === 'page') ||
-        (prevContainerInfoType === 'page' && containerInfo.type === 'view')
+        (prevContainerInfoType === 'view' &&
+          dropzonePosition === 'page-bottom' &&
+          containerInfo.type === 'page') ||
+        (prevContainerInfoType === 'page' &&
+          dropzonePosition === 'table-bottom' &&
+          containerInfo.type === 'view')
       ) {
-        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[id as string];
+        const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[over.id as string];
         moveButtonPosition(
           config,
           dispatch,

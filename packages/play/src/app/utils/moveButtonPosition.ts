@@ -75,7 +75,57 @@ const moveButtonPosition = (
 
   // button was moved from page view to table view
   if (prevContainerInfo.type === 'page' && containerInfo.type === 'view') {
-    // TODO implement me
+    const pageDefinition = config.pages[prevContainerInfo.name];
+    const commands = pageDefinition.commands.filter(
+      // @ts-expect-error TS2339: Property command does not exist on type CommandComponent
+      (c) => commandName !== c.command
+    );
+    const foundCommand = pageDefinition.commands.find(
+      // @ts-expect-error TS2339: Property command does not exist on type CommandComponent
+      (c) => commandName === c.command
+    );
+    const command = foundCommand
+      ? // @ts-expect-error TS2698: Spread types may only be created from object types.
+        { ...foundCommand, position: buttonPosition }
+      : undefined;
+    const page = {
+      ...pageDefinition,
+      commands,
+    };
+    const informationRuntimeInfo = config.types[containerInfo.name];
+    const uiOptions = informationRuntimeInfo.uiSchema?.['ui:options'];
+    const uiOptionsActions = uiOptions ? uiOptions.actions : undefined;
+    const actions = uiOptionsActions
+      ? [...(uiOptionsActions as any[]), command]
+      : [];
+    const information = {
+      ...informationRuntimeInfo,
+      uiSchema: {
+        ...informationRuntimeInfo.uiSchema,
+        'ui:options': {
+          ...uiOptions,
+          actions,
+        },
+      },
+    };
+    const definitionId = playDefinitionIdFromFQCN(containerInfo.name);
+
+    dispatch({
+      ctx,
+      type: 'ADD_PAGE',
+      page,
+      name: prevContainerInfo.name,
+    });
+    dispatch({
+      ctx,
+      type: 'ADD_TYPE',
+      name: containerInfo.name,
+      information,
+      definition: {
+        definitionId,
+        schema: config.definitions[definitionId],
+      },
+    });
   }
 };
 
