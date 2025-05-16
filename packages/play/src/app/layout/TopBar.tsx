@@ -16,8 +16,8 @@ import {NavLink} from "react-router-dom";
 import {LoginOutlined} from "@mui/icons-material";
 import UserAvatar from "@frontend/app/components/core/UserAvatar";
 import {Wrench} from "mdi-material-ui";
-import VibeCodyDrawer from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
-import CodyEmoji from "@cody-play/app/components/core/vibe-cody/CodyEmoji";
+import VibeCodyDrawer, {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
+import {useVibeCodyDrawerOpen} from "@cody-play/hooks/use-vibe-cody-drawer-open";
 
 
 interface OwnProps {
@@ -27,22 +27,18 @@ interface OwnProps {
 
 type TopBarProps = OwnProps;
 
-// This is handled outside the component lifecycle
-let globalVibeCodyOpen = false;
-
 const TopBar = (props: TopBarProps) => {
   const {config} = useContext(configStore);
   const [currentUser] = useUser();
   const theme = useTheme();
   const {mode, toggleColorMode} = useContext(ColorModeContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [vibeCodyOpen, setVibeCodyOpen] = useState(globalVibeCodyOpen);
+  const [vibeCodyOpen, setVibeCodyOpen] = useVibeCodyDrawerOpen();
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
 
   const syncVibeCodyOpen = (open: boolean) => {
-    globalVibeCodyOpen = open;
     setVibeCodyOpen(open);
   }
 
@@ -63,6 +59,8 @@ const TopBar = (props: TopBarProps) => {
       boxShadow: "none",
       backgroundColor: (theme) => theme.palette.primary.main,
       height: "64px",
+      width: `calc(100% - ${vibeCodyOpen? VIBE_CODY_DRAWER_WIDTH + 'px' : 0})`,
+      left: `${vibeCodyOpen? 0 : 'auto'}`,
       zIndex: theme.zIndex.drawer + 1
     }}>
       <Toolbar>

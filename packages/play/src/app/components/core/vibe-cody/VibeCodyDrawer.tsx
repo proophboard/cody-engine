@@ -26,6 +26,8 @@ import {instructions} from "@cody-play/infrastructure/vibe-cody/instructions";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 import CodyEmoji from "@cody-play/app/components/core/vibe-cody/CodyEmoji";
 
+export const VIBE_CODY_DRAWER_WIDTH = 540;
+
 interface OwnProps {
   open: boolean;
   onClose: () => void;
@@ -168,7 +170,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                  onClose={props.onClose}
                  variant="persistent"
                  sx={{
-                   width: 540,
+                   width: VIBE_CODY_DRAWER_WIDTH,
                    overscrollBehavior: 'contain',
                    [`& .MuiDrawer-paper`]: { width:  540, boxSizing: 'border-box', overflowX: "hidden" },
                  }}

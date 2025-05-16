@@ -51,6 +51,7 @@ import PlayDialogPage from "@cody-play/app/pages/PlayDialogPage";
 import PlayRightDrawerPage from "@cody-play/app/pages/PlayRightDrawerPage";
 import {useMediaQuery} from "@mui/material";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
+import PlayVibeCodyDrawerProvider from "@cody-play/state/vibe-cody-drawer";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -162,7 +163,9 @@ export function App() {
               <PageDataProvider>
                 <CodyMessageServerInjection>
                   <PendingChanges>
-                    <RouterProvider router={router} />
+                    <PlayVibeCodyDrawerProvider>
+                      <RouterProvider router={router} />
+                    </PlayVibeCodyDrawerProvider>
                   </PendingChanges>
                 </CodyMessageServerInjection>
               </PageDataProvider>
