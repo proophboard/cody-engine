@@ -317,7 +317,7 @@ export const PlayStandardPage = (props: Props) => {
       {/*Render a placeholder to keep space for the  bottom bar */}
       {config.layout === 'task-based-ui' &&
         pageMode === 'standard' &&
-        bottomActions.length > 0 && (
+        (bottomActions.length > 0 || isDragDropEnabled) && (
           <Box
             sx={{
               width:
