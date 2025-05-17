@@ -9,7 +9,7 @@ const TEXT = "Add a page called ";
 
 export const AddAPageWithName: Instruction = {
   text: TEXT,
-  isActive: context => true,
+  isActive: context => !context.focusedElement,
   match: input => input.startsWith(TEXT),
   execute: async (input: string, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
     const pageName = input.replace(TEXT, "").trim();

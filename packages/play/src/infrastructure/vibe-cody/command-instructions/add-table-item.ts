@@ -24,7 +24,7 @@ const TEXT = "Place a button above the table to add a ";
 
 export const AddTableItem: Instruction = {
   text: TEXT,
-  isActive: (context, config) => !!getTableViewVO(context.page.handle.page, config),
+  isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config): Promise<CodyResponse> => {
     const btnLabel = input.replace(TEXT, '').trim();

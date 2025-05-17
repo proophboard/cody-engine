@@ -28,6 +28,7 @@ import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 import CodyEmoji from "@cody-play/app/components/core/vibe-cody/CodyEmoji";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 import {startCase} from "lodash";
+import {DragAndDropContext} from "@cody-play/app/providers/DragAndDrop";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
 
@@ -57,9 +58,7 @@ export interface Instruction {
 
 export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback};
 
-const suggestInstructions = (activePage: UsePageResult, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
-  const ctx: VibeCodyContext = {page: activePage};
-
+const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
   return instructions.filter(i => i.isActive(ctx, config, env))
 }
 
@@ -84,10 +83,25 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const pageMatch = usePlayPageMatch();
   const navigate = useNavigate();
   const [focusedElement, setFocusedElement] = useVibeCodyFocusElement();
+  const { dndEvent } = useContext(DragAndDropContext);
+
+  useEffect(() => {
+    if(dndEvent) {
+      // Force the user to focus an element again, to avoid that focused element
+      // is moved so that e.g. containerInfo is no longer valid
+      // @TODO: maybe find a softer way to handle the issue
+      setFocusedElement(undefined);
+    }
+  }, [dndEvent]);
 
   // Ensure that latest page is available for instructions
   const configPage = config.pages[pageMatch.handle.page.name];
   const syncedPageMatch = configPage ? {...pageMatch, handle: {page: configPage}} : pageMatch;
+
+  const vibeCodyCtx: VibeCodyContext = {
+    page: syncedPageMatch,
+    focusedElement,
+  }
 
   useEffect(() => {
     if(navigateTo) {
@@ -119,9 +133,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
       if(waitingReply) {
         const codyResponse = await waitingReply(
-          input, {
-            page: syncedPageMatch,
-          },
+          input,
+          vibeCodyCtx,
           dispatch,
           config,
           (route: string) => {
@@ -144,7 +157,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       }
 
       if(!selectedInstruction) {
-        const possibleInstructions = suggestInstructions(syncedPageMatch, config, env).filter(i => i.match(input));
+        const possibleInstructions = suggestInstructions(vibeCodyCtx, config, env).filter(i => i.match(input));
 
         if(possibleInstructions.length) {
           setSelectedInstruction(possibleInstructions[0]);
@@ -176,9 +189,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
     const codyResponse = await instruction.execute(
       userInput,
-      {
-        page: syncedPageMatch,
-      },
+      vibeCodyCtx,
       dispatch,
       config,
       (route: string) => {
@@ -264,10 +275,11 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                                             lockChange = false;
                                                           }}
                                                          />}
-                                   options={suggestInstructions(syncedPageMatch, config, env)}
+                                   options={suggestInstructions(vibeCodyCtx, config, env)}
                                    freeSolo={true}
                                    value={value}
                                    autoComplete={false}
+                                   autoHighlight={true}
                                    inputValue={searchStr}
                                    filterOptions={(options, state) => {
                                      if (state.inputValue.length >= 1) {

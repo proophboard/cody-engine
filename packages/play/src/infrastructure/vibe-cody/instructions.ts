@@ -5,10 +5,13 @@ import {
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/add-a-table-with-defaults";
 import {AddColumnsToTable} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 import {AddTableItem} from "@cody-play/infrastructure/vibe-cody/command-instructions/add-table-item";
+import {ChangeButtonLabel} from "@cody-play/infrastructure/vibe-cody/button-instructions/change-button-label";
 
 export const instructions: Instruction[] = [
   AddAPageWithName,
   AddATableWithDefaults,
   AddColumnsToTable,
   AddTableItem,
+  /* Button Instructions */
+  ChangeButtonLabel,
 ]

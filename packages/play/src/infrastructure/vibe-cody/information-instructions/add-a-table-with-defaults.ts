@@ -15,7 +15,7 @@ const TEXT = "I'd like to see a table of ";
 
 export const AddATableWithDefaults: Instruction = {
   text: TEXT,
-  isActive: context => context.page.pathname !== '/welcome',
+  isActive: context => !context.focusedElement && context.page.pathname !== '/welcome',
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyInstructionResponse> => {
     const tableName = input.replace(TEXT, '').trim();
