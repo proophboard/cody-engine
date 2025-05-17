@@ -221,8 +221,8 @@ export const AddTableItem: Instruction = {
     });
 
     return {
-      cody: `I've added the button. A click will open a form dialog to enter the data for a new ${btnLabel}. Default logic to save and load the data is installed as well.`,
-      details: `If you want to adjust the form dialog or the processing logic of the data, keep the dialog open and provide me with appropriate instructions.`
+      cody: `The button is in place. It opens a form dialog to enter the data for a new ${btnLabel}.`,
+      details: `To adjust the form dialog or the processing logic, keep the dialog open and provide me with appropriate instructions.`
     }
   }
 }

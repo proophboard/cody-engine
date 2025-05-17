@@ -233,7 +233,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       </Grid2>
     </DialogTitle>
     <DialogContent id="cody-gpt-dialog-content" sx={{padding: '24px 24px', paddingBottom: 0}}>
-      <Alert severity="info">Start typing to tell Cody what you want to build. It works best when using one instruction at a time. Cody will immediately apply them. A saved Playshot will also update the connected prooph board.</Alert>
+      <Alert severity="info">Tell Cody what you want to build using one instruction at a time.</Alert>
       <Divider sx={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}} />
       {messages.map((m, index) => <Alert key={`cody_gpt_msg_${index}`}
                                          sx={{marginBottom: theme.spacing(2),

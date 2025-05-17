@@ -41,7 +41,7 @@ export const AddAPageWithName: Instruction = {
     navigateTo(newPageRoute);
 
     return {
-      cody: `I've added a new empty page "${pageName}" and redirected you to it. What do you want to see on the page?`
+      cody: `Added a new page "${pageName}". What do you want to see on the page?`
     }
   }
 }

@@ -1,4 +1,5 @@
 import {createContext, PropsWithChildren, useState} from "react";
+import {Action} from "@frontend/app/components/core/form/types/action";
 
 type VCCtx = {
   open: boolean;
@@ -11,10 +12,15 @@ export type FocusedElementType = 'button' | 'sidebarItem' | 'tab' | 'breadcrumb'
   | 'table' | 'tableColumn' | 'stateView' | 'formView' | 'formViewInput' | 'formViewObject' | 'formViewArray'
   | 'commandForm' | 'commandFormInput' | 'commandFormObject' | 'commandFormArray';
 
-export type FocusedElement = {
+export interface FocusedElement {
   id: string;
   name: string;
   type: FocusedElementType;
+}
+
+export interface FocusedButton extends FocusedElement {
+  action: Action;
+
 }
 
 export const VibeCodyContext = createContext<VCCtx>({
