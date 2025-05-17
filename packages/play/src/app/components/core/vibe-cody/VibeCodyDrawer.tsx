@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {useContext, useEffect, useState} from 'react';
 import {
-  Alert,
+  Alert, AlertTitle,
   Autocomplete,
   Box,
   DialogContent,
@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
-import {AccountVoice, Close} from "mdi-material-ui";
+import {AccountVoice, Close, Target} from "mdi-material-ui";
 import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
 import {useNavigate} from "react-router-dom";
 import {UsePageResult, usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
@@ -26,6 +26,8 @@ import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyConte
 import {instructions} from "@cody-play/infrastructure/vibe-cody/instructions";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 import CodyEmoji from "@cody-play/app/components/core/vibe-cody/CodyEmoji";
+import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
+import {startCase} from "lodash";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
 
@@ -81,6 +83,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const [navigateTo, setNavigateTo] = useState<string|undefined>(pendingNavigateTo);
   const pageMatch = usePlayPageMatch();
   const navigate = useNavigate();
+  const [focusedElement, setFocusedElement] = useVibeCodyFocusElement();
 
   // Ensure that latest page is available for instructions
   const configPage = config.pages[pageMatch.handle.page.name];
@@ -240,6 +243,13 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                          severity={m.author === 'user' ? 'warning' : m.error ? 'error' : 'success'}><pre style={{whiteSpace: "pre-wrap"}}>{m.text}</pre></Alert>)}
       <Box sx={{paddingBottom: theme.spacing(12), position: "sticky", bottom: 0, backgroundColor: theme.palette.background.paper}}>
         {messages.length > 0 && <Divider sx={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}}/>}
+        {focusedElement && <Alert severity={"info"}
+                                  icon={<Target/>}
+                                  sx={{marginBottom: theme.spacing(2)}}
+                                  onClose={e => setFocusedElement(undefined)}>
+          <AlertTitle>{startCase(focusedElement.type)} {focusedElement.name} is focused</AlertTitle>
+          Changes made by Cody will only affect the focused element, and prompt suggestions are filtered accordingly.
+        </Alert>}
         <Autocomplete<Instruction, false, false, true> renderInput={(params) => <TextField {...params}
                                                           helperText={<span>Start typing to get suggestions. Use Shift+Enter for multiline.</span>}
                                                           variant="outlined"

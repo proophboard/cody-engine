@@ -23,6 +23,7 @@ import { DragAndDropContext } from '@cody-play/app/providers/DragAndDrop';
 import { configStore } from '@cody-play/state/config-store';
 import updatePageButtonPosition from '@cody-play/app/utils/updatePageButtonPosition';
 import moveButtonPosition from '@cody-play/app/utils/moveButtonPosition';
+import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -161,6 +162,12 @@ const TopRightActions = (props: TopRightActionsProps) => {
             key={`${props.containerInfo?.type}-action-button-${index}-key`}
             id={`${props.containerInfo?.type}-top-actions-action-button-${index}`}
             isDragDropEnabled={isDragDropEnabled}
+            focusableElement={{
+              // @TODO: handle other button types, too
+              id: (action as any).command,
+              name: playNodeLabel((action as any).command),
+              type: "button"
+            }}
             data={{
               command: (action as any).command,
               prevContainerInfo: props.containerInfo,

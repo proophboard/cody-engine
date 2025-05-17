@@ -3,7 +3,7 @@ import {Box, CssBaseline, useTheme} from "@mui/material";
 import TopBar from "@cody-play/app/layout/TopBar";
 import Sidebar from "@cody-play/app/layout/Sidebar";
 import jexl from "@app/shared/jexl/get-configured-jexl";
-import {useVibeCodyDrawerOpen} from "@cody-play/hooks/use-vibe-cody-drawer-open";
+import {useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
 import {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 
 interface MainLayoutProps {
@@ -12,7 +12,7 @@ interface MainLayoutProps {
 
 const MainLayout = (props: MainLayoutProps) => {
     const theme = useTheme();
-    const [vibeCodyOpen] = useVibeCodyDrawerOpen();
+    const [vibeCodyOpen] = useVibeCodyOpen();
 
     const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
 

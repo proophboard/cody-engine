@@ -4,7 +4,7 @@ import {createTheme} from "@frontend/app/layout/theme";
 import {ThemeProvider} from "@mui/material/styles";
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 import {configStore} from "@cody-play/state/config-store";
-import {useVibeCodyDrawerOpen} from "@cody-play/hooks/use-vibe-cody-drawer-open";
+import {useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
 import {merge} from "lodash/fp";
 import {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 
@@ -15,7 +15,7 @@ interface Props {
 const PlayToggleColorMode = ({children}: Props) => {
   const {config} = useContext(configStore);
   const [mode, setMode] = React.useState<'light' | 'dark'>('light');
-  const [vibeCodyOpen] = useVibeCodyDrawerOpen();
+  const [vibeCodyOpen] = useVibeCodyOpen();
   const colorMode = {
     mode,
     toggleColorMode: () => {

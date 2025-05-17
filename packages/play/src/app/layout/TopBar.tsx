@@ -26,7 +26,7 @@ import UserAvatar from '@frontend/app/components/core/UserAvatar';
 import { Wrench, ViewDashboardEdit } from 'mdi-material-ui';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 import VibeCodyDrawer, {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
-import {useVibeCodyDrawerOpen} from "@cody-play/hooks/use-vibe-cody-drawer-open";
+import {useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
 
 interface OwnProps {
   sidebarOpen: boolean;
@@ -42,7 +42,7 @@ const TopBar = (props: TopBarProps) => {
   const { mode, toggleColorMode } = useContext(ColorModeContext);
   const { toggleLiveEditMode } = useContext(LiveEditModeContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [vibeCodyOpen, setVibeCodyOpen] = useVibeCodyDrawerOpen();
+  const [vibeCodyOpen, setVibeCodyOpen] = useVibeCodyOpen();
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });

@@ -24,6 +24,7 @@ import {
 import updateTableButtonPosition from '@cody-play/app/utils/updateTableButtonPosition';
 import updatePageButtonPosition from '@cody-play/app/utils/updatePageButtonPosition';
 import moveButtonPosition from '@cody-play/app/utils/moveButtonPosition';
+import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -189,6 +190,12 @@ const BottomActions = (props: BottomActionsProps) => {
                 key={`left_action_${keyVersion}_${index}`}
                 id={`${props.containerInfo?.type}-bottom-actions-left-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
+                focusableElement={{
+                  // @TODO: handle other button types, too
+                  id: (action as any).command,
+                  name: playNodeLabel((action as any).command),
+                  type: "button"
+                }}
                 data={{
                   command: (action as any).command,
                   prevContainerInfo: props.containerInfo,
@@ -232,6 +239,12 @@ const BottomActions = (props: BottomActionsProps) => {
                 key={`center_action_${keyVersion}_${index}`}
                 id={`${props.containerInfo?.type}-bottom-actions-center-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
+                focusableElement={{
+                  // @TODO: handle other button types, too
+                  id: (action as any).command,
+                  name: playNodeLabel((action as any).command),
+                  type: "button"
+                }}
                 data={{
                   command: (action as any).command,
                   prevContainerInfo: props.containerInfo,
@@ -273,6 +286,12 @@ const BottomActions = (props: BottomActionsProps) => {
                 key={`right_action_${keyVersion}_${index}`}
                 id={`${props.containerInfo?.type}-bottom-actions-right-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
+                focusableElement={{
+                  // @TODO: handle other button types, too
+                  id: (action as any).command,
+                  name: playNodeLabel((action as any).command),
+                  type: "button"
+                }}
                 data={{
                   command: (action as any).command,
                   prevContainerInfo: props.containerInfo,

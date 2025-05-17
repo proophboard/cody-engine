@@ -1,13 +1,35 @@
 import {createContext, PropsWithChildren, useState} from "react";
 
-export const openContext = createContext({open: false, setOpen: (open: boolean) => {}});
+type VCCtx = {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  focusedElement?: FocusedElement;
+  focusElement: (ele: FocusedElement | undefined) => void;
+}
 
-const {Provider} = openContext;
+export type FocusedElementType = 'button' | 'sidebarItem' | 'tab' | 'breadcrumb'
+  | 'table' | 'tableColumn' | 'stateView' | 'formView' | 'formViewInput' | 'formViewObject' | 'formViewArray'
+  | 'commandForm' | 'commandFormInput' | 'commandFormObject' | 'commandFormArray';
+
+export type FocusedElement = {
+  id: string;
+  name: string;
+  type: FocusedElementType;
+}
+
+export const VibeCodyContext = createContext<VCCtx>({
+  open: false,
+  setOpen: (open: boolean) => {},
+  focusElement: (ele: FocusedElement | undefined) => {},
+});
+
+const {Provider} = VibeCodyContext;
 
 const PlayVibeCodyDrawerProvider = (props: PropsWithChildren) => {
   const [open, setOpen] = useState(false);
+  const [focusedElement, focusElement] = useState<FocusedElement | undefined>();
 
-  return <Provider value={{open, setOpen}}>{props.children}</Provider>
+  return <Provider value={{open, setOpen, focusedElement, focusElement}}>{props.children}</Provider>
 }
 
 export default PlayVibeCodyDrawerProvider;

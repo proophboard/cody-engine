@@ -24,7 +24,7 @@ const DragAndDrop = ({ children }: TDragAndDrop) => {
 
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: {
-      distance: 0.01
+      distance: 10
     }
   })
   const mouseSensor = useSensor(MouseSensor)
