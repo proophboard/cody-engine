@@ -1,5 +1,6 @@
 import {useContext} from "react";
-import {FocusedElement, VibeCodyContext} from "@cody-play/state/vibe-cody-drawer";
+import {VibeCodyContext} from "@cody-play/state/vibe-cody-drawer";
+import {FocusedElement} from "@cody-play/state/focused-element";
 
 export const useVibeCodyOpen = (): [boolean, (open: boolean) => void] => {
   const {open, setOpen} = useContext(VibeCodyContext);

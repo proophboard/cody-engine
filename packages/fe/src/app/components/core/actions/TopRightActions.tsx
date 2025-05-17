@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
   Action,
-  ActionContainerInfo,
+  ActionContainerInfo, ButtonPosition, getActionId, getActionName,
 } from '@frontend/app/components/core/form/types/action';
 import { FormJexlContext } from '@frontend/app/components/core/form/types/form-jexl-context';
 import Grid2 from '@mui/material/Unstable_Grid2';
@@ -24,6 +24,7 @@ import { configStore } from '@cody-play/state/config-store';
 import updatePageButtonPosition from '@cody-play/app/utils/updatePageButtonPosition';
 import moveButtonPosition from '@cody-play/app/utils/moveButtonPosition';
 import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {FocusedButton} from "@cody-play/state/focused-element";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -91,7 +92,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
           dispatch,
           containerInfo,
           buttonPosition,
-          active.data.current?.command
+          active.data.current?.action
         );
         return;
       }
@@ -107,8 +108,8 @@ const TopRightActions = (props: TopRightActionsProps) => {
           config,
           dispatch,
           containerInfo,
-          buttonPosition,
-          active.data.current?.command
+          buttonPosition as ButtonPosition,
+          active.data.current?.action
         );
         return;
       }
@@ -129,7 +130,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
           containerInfo,
           active.data.current?.prevContainerInfo,
           buttonPosition,
-          active.data.current?.command
+          active.data.current?.action
         );
       }
     }
@@ -163,13 +164,14 @@ const TopRightActions = (props: TopRightActionsProps) => {
             id={`${props.containerInfo?.type}-top-actions-action-button-${index}`}
             isDragDropEnabled={isDragDropEnabled}
             focusableElement={{
-              // @TODO: handle other button types, too
-              id: (action as any).command,
-              name: playNodeLabel((action as any).command),
-              type: "button"
-            }}
+              id: getActionId(action),
+              name: getActionName(action),
+              type: "button",
+              action,
+              containerInfo: props.containerInfo!
+            } as FocusedButton}
             data={{
-              command: (action as any).command,
+              action,
               prevContainerInfo: props.containerInfo,
             }}
           >

@@ -3,9 +3,23 @@ import {
   CodyPlayConfig,
   getEditedContextFromConfig,
 } from '@cody-play/state/config-store';
-import { ActionContainerInfo } from '@frontend/app/components/core/form/types/action';
+import {ActionContainerInfo, isCommandAction} from '@frontend/app/components/core/form/types/action';
 import { playDefinitionIdFromFQCN } from '@cody-play/infrastructure/cody/schema/play-definition-id';
 import { CommandComponent } from '@cody-engine/cody/hooks/utils/ui/types';
+import {Action as AppAction} from "@frontend/app/components/core/form/types/action";
+import {isSameAction} from "@cody-play/infrastructure/vibe-cody/utils/set-button-property";
+
+export const isSameCommand = (a: CommandComponent, b: AppAction): boolean => {
+  if(typeof a === "string") {
+    if(isCommandAction(b)) {
+      return a === b.command;
+    }
+
+    return false;
+  } else {
+    return isSameAction(a, b);
+  }
+}
 
 const moveButtonPosition = (
   config: CodyPlayConfig,
@@ -13,7 +27,7 @@ const moveButtonPosition = (
   containerInfo: ActionContainerInfo,
   prevContainerInfo: ActionContainerInfo,
   buttonPosition: string,
-  commandName?: string
+  movedAction: AppAction,
 ) => {
   const ctx = getEditedContextFromConfig(config);
 
@@ -22,15 +36,13 @@ const moveButtonPosition = (
     const informationRuntimeInfo = config.types[prevContainerInfo.name];
     const uiOptions = informationRuntimeInfo.uiSchema?.['ui:options'];
     const uiOptionsActions = uiOptions
-      ? (uiOptions.actions as object[])
+      ? (uiOptions.actions as AppAction[])
       : undefined;
     const actions = uiOptionsActions
-      ? // @ts-expect-error TS2339: Property command does not exist on type object
-        uiOptionsActions.filter((a) => commandName !== a.command)
+      ? uiOptionsActions.filter((a) => !isSameAction(a, movedAction))
       : [];
     const foundAction = uiOptionsActions
-      ? // @ts-expect-error TS2339: Property command does not exist on type object
-        uiOptionsActions.find((a) => commandName === a.command)
+      ? uiOptionsActions.find((a) => isSameAction(a, movedAction))
       : undefined;
     const action = foundAction
       ? { ...foundAction, position: buttonPosition }
@@ -77,16 +89,15 @@ const moveButtonPosition = (
   if (prevContainerInfo.type === 'page' && containerInfo.type === 'view') {
     const pageDefinition = config.pages[prevContainerInfo.name];
     const commands = pageDefinition.commands.filter(
-      // @ts-expect-error TS2339: Property command does not exist on type CommandComponent
-      (c) => commandName !== c.command
+      (c) => !isSameCommand(c, movedAction)
     );
     const foundCommand = pageDefinition.commands.find(
-      // @ts-expect-error TS2339: Property command does not exist on type CommandComponent
-      (c) => commandName === c.command
+      (c) => isSameCommand(c, movedAction)
     );
     const command = foundCommand
-      ? // @ts-expect-error TS2698: Spread types may only be created from object types.
-        { ...foundCommand, position: buttonPosition }
+      ? typeof foundCommand === 'string'
+        ? {...movedAction, position: buttonPosition }
+        : { ...foundCommand, position: buttonPosition }
       : undefined;
     const page = {
       ...pageDefinition,

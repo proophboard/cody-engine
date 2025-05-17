@@ -4,7 +4,8 @@ import {Box, Collapse, IconButton, useTheme} from '@mui/material';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import {Target} from "mdi-material-ui";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
-import {FocusedElement} from "@cody-play/state/vibe-cody-drawer";
+
+import {FocusedElement} from "@cody-play/state/focused-element";
 
 type TPlayDraggable = {
   id: string;

@@ -3,7 +3,7 @@ import { useContext, useEffect } from 'react';
 import { FormJexlContext } from '@frontend/app/components/core/form/types/form-jexl-context';
 import {
   Action,
-  ActionContainerInfo,
+  ActionContainerInfo, ButtonPosition, getActionId, getActionName,
 } from '@frontend/app/components/core/form/types/action';
 import Grid2 from '@mui/material/Unstable_Grid2';
 import ActionButton from '@frontend/app/components/core/ActionButton';
@@ -105,7 +105,7 @@ const BottomActions = (props: BottomActionsProps) => {
           dispatch,
           containerInfo,
           buttonPosition,
-          active.data.current?.command
+          active.data.current?.action
         );
         return;
       }
@@ -121,8 +121,8 @@ const BottomActions = (props: BottomActionsProps) => {
           config,
           dispatch,
           containerInfo,
-          buttonPosition,
-          active.data.current?.command
+          buttonPosition as ButtonPosition,
+          active.data.current?.action
         );
         return;
       }
@@ -143,7 +143,7 @@ const BottomActions = (props: BottomActionsProps) => {
           containerInfo,
           active.data.current?.prevContainerInfo,
           buttonPosition,
-          active.data.current?.command
+          active.data.current?.action
         );
       }
     }
@@ -191,13 +191,12 @@ const BottomActions = (props: BottomActionsProps) => {
                 id={`${props.containerInfo?.type}-bottom-actions-left-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
                 focusableElement={{
-                  // @TODO: handle other button types, too
-                  id: (action as any).command,
-                  name: playNodeLabel((action as any).command),
+                  id: getActionId(action),
+                  name: getActionName(action),
                   type: "button"
                 }}
                 data={{
-                  command: (action as any).command,
+                  action,
                   prevContainerInfo: props.containerInfo,
                 }}
               >
@@ -240,13 +239,12 @@ const BottomActions = (props: BottomActionsProps) => {
                 id={`${props.containerInfo?.type}-bottom-actions-center-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
                 focusableElement={{
-                  // @TODO: handle other button types, too
-                  id: (action as any).command,
-                  name: playNodeLabel((action as any).command),
+                  id: getActionId(action),
+                  name: getActionName(action),
                   type: "button"
                 }}
                 data={{
-                  command: (action as any).command,
+                  action,
                   prevContainerInfo: props.containerInfo,
                 }}
               >
@@ -287,13 +285,12 @@ const BottomActions = (props: BottomActionsProps) => {
                 id={`${props.containerInfo?.type}-bottom-actions-right-action-button-${index}`}
                 isDragDropEnabled={isDragDropEnabled}
                 focusableElement={{
-                  // @TODO: handle other button types, too
-                  id: (action as any).command,
-                  name: playNodeLabel((action as any).command),
+                  id: getActionId(action),
+                  name: getActionName(action),
                   type: "button"
                 }}
                 data={{
-                  command: (action as any).command,
+                  action,
                   prevContainerInfo: props.containerInfo,
                 }}
               >

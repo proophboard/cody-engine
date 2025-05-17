@@ -1,26 +1,11 @@
 import {createContext, PropsWithChildren, useState} from "react";
-import {Action} from "@frontend/app/components/core/form/types/action";
+import {FocusedElement} from "@cody-play/state/focused-element";
 
 type VCCtx = {
   open: boolean;
   setOpen: (open: boolean) => void;
   focusedElement?: FocusedElement;
   focusElement: (ele: FocusedElement | undefined) => void;
-}
-
-export type FocusedElementType = 'button' | 'sidebarItem' | 'tab' | 'breadcrumb'
-  | 'table' | 'tableColumn' | 'stateView' | 'formView' | 'formViewInput' | 'formViewObject' | 'formViewArray'
-  | 'commandForm' | 'commandFormInput' | 'commandFormObject' | 'commandFormArray';
-
-export interface FocusedElement {
-  id: string;
-  name: string;
-  type: FocusedElementType;
-}
-
-export interface FocusedButton extends FocusedElement {
-  action: Action;
-
 }
 
 export const VibeCodyContext = createContext<VCCtx>({
