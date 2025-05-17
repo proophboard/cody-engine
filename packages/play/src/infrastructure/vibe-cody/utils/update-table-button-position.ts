@@ -1,11 +1,7 @@
-import {
-  Action,
-  CodyPlayConfig,
-  getEditedContextFromConfig,
-} from '@cody-play/state/config-store';
-import { playDefinitionIdFromFQCN } from '@cody-play/infrastructure/cody/schema/play-definition-id';
-import {Action as AppAction, ActionContainerInfo } from '@frontend/app/components/core/form/types/action';
+import {Action, CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
+import {Action as AppAction, ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 import {isSameAction} from "@cody-play/infrastructure/vibe-cody/utils/set-button-property";
+import {playDefinitionIdFromFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
 const updateTableButtonPosition = (
   config: CodyPlayConfig,
@@ -22,12 +18,12 @@ const updateTableButtonPosition = (
     : undefined;
   const actions = uiOptionsActions
     ? uiOptionsActions.map((action) => ({
-        ...action,
-        position:
-          isSameAction(action, movedAction)
-            ? buttonPosition
-            : action.position,
-      }))
+      ...action,
+      position:
+        isSameAction(action, movedAction)
+          ? buttonPosition
+          : action.position,
+    }))
     : [];
   const information = {
     ...informationRuntimeInfo,
@@ -52,5 +48,4 @@ const updateTableButtonPosition = (
     },
   });
 };
-
 export default updateTableButtonPosition;

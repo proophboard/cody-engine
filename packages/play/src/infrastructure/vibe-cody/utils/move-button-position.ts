@@ -1,17 +1,16 @@
+import {CommandComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 import {
-  Action,
-  CodyPlayConfig,
-  getEditedContextFromConfig,
-} from '@cody-play/state/config-store';
-import {ActionContainerInfo, isCommandAction} from '@frontend/app/components/core/form/types/action';
-import { playDefinitionIdFromFQCN } from '@cody-play/infrastructure/cody/schema/play-definition-id';
-import { CommandComponent } from '@cody-engine/cody/hooks/utils/ui/types';
-import {Action as AppAction} from "@frontend/app/components/core/form/types/action";
+  Action as AppAction,
+  ActionContainerInfo,
+  isCommandAction
+} from "@frontend/app/components/core/form/types/action";
 import {isSameAction} from "@cody-play/infrastructure/vibe-cody/utils/set-button-property";
+import {Action, CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
+import {playDefinitionIdFromFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
 export const isSameCommand = (a: CommandComponent, b: AppAction): boolean => {
-  if(typeof a === "string") {
-    if(isCommandAction(b)) {
+  if (typeof a === "string") {
+    if (isCommandAction(b)) {
       return a === b.command;
     }
 
@@ -20,7 +19,6 @@ export const isSameCommand = (a: CommandComponent, b: AppAction): boolean => {
     return isSameAction(a, b);
   }
 }
-
 const moveButtonPosition = (
   config: CodyPlayConfig,
   dispatch: (a: Action) => void,
@@ -45,7 +43,7 @@ const moveButtonPosition = (
       ? uiOptionsActions.find((a) => isSameAction(a, movedAction))
       : undefined;
     const action = foundAction
-      ? { ...foundAction, position: buttonPosition }
+      ? {...foundAction, position: buttonPosition}
       : undefined;
     const information = {
       ...informationRuntimeInfo,
@@ -96,8 +94,8 @@ const moveButtonPosition = (
     );
     const command = foundCommand
       ? typeof foundCommand === 'string'
-        ? {...movedAction, position: buttonPosition }
-        : { ...foundCommand, position: buttonPosition }
+        ? {...movedAction, position: buttonPosition}
+        : {...foundCommand, position: buttonPosition}
       : undefined;
     const page = {
       ...pageDefinition,
@@ -139,5 +137,4 @@ const moveButtonPosition = (
     });
   }
 };
-
 export default moveButtonPosition;

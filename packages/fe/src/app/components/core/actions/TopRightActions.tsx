@@ -18,13 +18,13 @@ import {
   MAP_DROPZONE_POSITION_TO_DROPZONE_ID,
   MAP_POSITION_TO_DROPZONE_ID,
 } from '@cody-play/app/types/enums/EDropzoneId';
-import updateTableButtonPosition from '@cody-play/app/utils/updateTableButtonPosition';
 import { DragAndDropContext } from '@cody-play/app/providers/DragAndDrop';
 import { configStore } from '@cody-play/state/config-store';
-import updatePageButtonPosition from '@cody-play/app/utils/updatePageButtonPosition';
-import moveButtonPosition from '@cody-play/app/utils/moveButtonPosition';
 import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {FocusedButton} from "@cody-play/state/focused-element";
+import moveButtonPosition from "@cody-play/infrastructure/vibe-cody/utils/move-button-position";
+import updatePageButtonPosition from "@cody-play/infrastructure/vibe-cody/utils/update-page-button-position";
+import updateTableButtonPosition from "@cody-play/infrastructure/vibe-cody/utils/update-table-button-position";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
