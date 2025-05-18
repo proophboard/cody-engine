@@ -6,6 +6,7 @@ import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/confi
 import {Action, isCommandAction, isLinkAction, LinkAction} from "@frontend/app/components/core/form/types/action";
 import {playDefinitionIdFromFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {CodyResponseType} from "@proophboard/cody-types";
+import {isSameCommand} from "@cody-play/infrastructure/vibe-cody/utils/move-button-position";
 
 const pageLink = (action: LinkAction): string => action.pageLink ? typeof action.pageLink === "string" ? action.pageLink : action.pageLink.page : '';
 
@@ -51,11 +52,56 @@ export const setButtonProperty = async (
     )
   }
 
+  if(button.containerInfo.type === "page") {
+    return await setButtonPropertyForPageButton(
+      button,
+      property,
+      value,
+       config,
+      dispatch
+    )
+  }
+
   return {
     cody: `Container Info type: ${button.containerInfo.type} can't be handled.`,
     details: `This is a system bug. Please contact the prooph board Team!`,
     type: CodyResponseType.Error
   }
+}
+
+const setButtonPropertyForPageButton = async (
+  {action, containerInfo, name}: FocusedButton,
+  property: keyof ButtonConfig,
+  value: any,
+  config: CodyPlayConfig,
+  dispatch: PlayConfigDispatch
+): Promise<true | CodyInstructionResponse> => {
+  const ctx = getEditedContextFromConfig(config);
+
+  const pageDefinition = config.pages[containerInfo.name];
+  const page = {
+    ...pageDefinition,
+    commands: pageDefinition.commands.map(c => {
+      if(isSameCommand(c, action)) {
+        const modifiedAction = typeof c === "string"? action : c;
+        const button: ButtonConfig = modifiedAction.button || {};
+        button[property] = value;
+        modifiedAction.button = button;
+        return modifiedAction;
+      }
+
+      return c;
+    }),
+  };
+
+  dispatch({
+    ctx,
+    type: 'ADD_PAGE',
+    page,
+    name: containerInfo.name,
+  });
+
+  return true;
 }
 
 const setButtonPropertyForViewButton = async (

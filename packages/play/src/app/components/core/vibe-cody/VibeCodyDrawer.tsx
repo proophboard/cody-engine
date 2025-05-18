@@ -124,6 +124,12 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     }
   }, [focusedElement?.id]);
 
+  useEffect(() => {
+    if(inputRef.current && props.open) {
+      inputRef.current.focus();
+    }
+  }, [inputRef.current, props.open]);
+
   // Ensure that latest page is available for instructions
   const configPage = config.pages[pageMatch.handle.page.name];
   const syncedPageMatch = configPage ? {...pageMatch, handle: {page: configPage}} : pageMatch;
