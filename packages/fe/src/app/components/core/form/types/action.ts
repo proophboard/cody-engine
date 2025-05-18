@@ -49,6 +49,10 @@ export const getActionName = (action: Action): string => {
   return 'Rules Action';
 }
 
+export const getActionButtonName = (action: Action): string => {
+  return action.button?.label || getActionName(action);
+}
+
 export const isLinkAction = (action: Action): action is LinkAction => {
   return action.type === "link";
 }

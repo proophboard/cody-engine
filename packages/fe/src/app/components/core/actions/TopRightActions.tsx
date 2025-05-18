@@ -1,7 +1,7 @@
 import * as React from 'react';
 import {
   Action,
-  ActionContainerInfo, ButtonPosition, getActionId, getActionName,
+  ActionContainerInfo, ButtonPosition, getActionButtonName, getActionId,
 } from '@frontend/app/components/core/form/types/action';
 import { FormJexlContext } from '@frontend/app/components/core/form/types/form-jexl-context';
 import Grid2 from '@mui/material/Unstable_Grid2';
@@ -165,7 +165,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
             isDragDropEnabled={isDragDropEnabled}
             focusableElement={{
               id: getActionId(action),
-              name: getActionName(action),
+              name: getActionButtonName(action),
               type: "button",
               action,
               containerInfo: props.containerInfo!

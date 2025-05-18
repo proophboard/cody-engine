@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {useContext, useEffect, useState} from 'react';
+import {useContext, useEffect, useRef, useState} from 'react';
 import {
   Alert, AlertTitle,
   Autocomplete,
@@ -49,17 +49,36 @@ export type InstructionExecutionCallback = (input: string, ctx: VibeCodyContext,
 
 export interface Instruction {
   text: string,
-  alternatives?: string[],
-  subInstructions?: Instruction[],
+  noInputNeeded?: boolean,
   isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string) => boolean,
   execute: InstructionExecutionCallback,
 }
 
+export interface InstructionProvider {
+  isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
+  provide: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => Instruction[],
+}
+
+const isInstructionProvider = (i: Instruction | InstructionProvider): i is InstructionProvider => {
+  return typeof (i as any).provide === "function";
+}
+
 export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback};
 
 const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
-  return instructions.filter(i => i.isActive(ctx, config, env))
+  const suggestions: Instruction[] = [];
+
+  instructions.filter(i => i.isActive(ctx, config, env))
+    .forEach(i => {
+      if(isInstructionProvider(i)) {
+        suggestions.push(...i.provide(ctx, config, env));
+      } else {
+        suggestions.push(i);
+      }
+    })
+
+  return suggestions;
 }
 
 // Persist messages across the lifetime of the session
@@ -84,6 +103,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const navigate = useNavigate();
   const [focusedElement, setFocusedElement] = useVibeCodyFocusElement();
   const { dndEvent } = useContext(DragAndDropContext);
+  const inputRef = useRef<HTMLInputElement>();
 
   useEffect(() => {
     if(dndEvent) {
@@ -94,6 +114,16 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     }
   }, [dndEvent]);
 
+  useEffect(() => {
+    setFocusedElement(undefined);
+  }, [pageMatch.handle.page.name]);
+
+  useEffect(() => {
+    if(focusedElement && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [focusedElement?.id]);
+
   // Ensure that latest page is available for instructions
   const configPage = config.pages[pageMatch.handle.page.name];
   const syncedPageMatch = configPage ? {...pageMatch, handle: {page: configPage}} : pageMatch;
@@ -101,6 +131,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const vibeCodyCtx: VibeCodyContext = {
     page: syncedPageMatch,
     focusedElement,
+    setFocusedElement,
   }
 
   useEffect(() => {
@@ -122,6 +153,17 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     if(input && typeof input === "object") {
       setSelectedInstruction(input);
       waitingReply = undefined;
+
+      if(input.noInputNeeded) {
+        addMessage({
+          text: input.text,
+          author: "user"
+        })
+
+        await executeInstruction(input, '');
+        reset();
+      }
+
       return;
     }
 
@@ -263,12 +305,18 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
         </Alert>}
         <Autocomplete<Instruction, false, false, true> renderInput={(params) => <TextField {...params}
                                                           helperText={<span>Start typing to get suggestions. Use Shift+Enter for multiline.</span>}
+                                                          inputRef={inputRef}
                                                           variant="outlined"
                                                           multiline={true}
                                                           placeholder={'Next instruction'}
                                                           onKeyDown={e => {
                                                             if(e.shiftKey && e.key === "Enter") {
                                                               lockChange = true;
+                                                            }
+
+                                                            if(e.key === "Escape") {
+                                                              setFocusedElement(undefined);
+                                                              reset();
                                                             }
                                                           }}
                                                           onKeyUp={() => {

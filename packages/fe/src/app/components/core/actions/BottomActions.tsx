@@ -3,7 +3,7 @@ import { useContext, useEffect } from 'react';
 import { FormJexlContext } from '@frontend/app/components/core/form/types/form-jexl-context';
 import {
   Action,
-  ActionContainerInfo, ButtonPosition, getActionId, getActionName,
+  ActionContainerInfo, ButtonPosition, getActionButtonName, getActionId,
 } from '@frontend/app/components/core/form/types/action';
 import Grid2 from '@mui/material/Unstable_Grid2';
 import ActionButton from '@frontend/app/components/core/ActionButton';
@@ -194,7 +194,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 isDragDropEnabled={isDragDropEnabled}
                 focusableElement={{
                   id: getActionId(action),
-                  name: getActionName(action),
+                  name: getActionButtonName(action),
                   type: "button"
                 }}
                 data={{
@@ -242,7 +242,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 isDragDropEnabled={isDragDropEnabled}
                 focusableElement={{
                   id: getActionId(action),
-                  name: getActionName(action),
+                  name: getActionButtonName(action),
                   type: "button"
                 }}
                 data={{
@@ -290,7 +290,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 isDragDropEnabled={isDragDropEnabled}
                 focusableElement={{
                   id: getActionId(action),
-                  name: getActionName(action),
+                  name: getActionButtonName(action),
                   type: "button"
                 }}
                 data={{
