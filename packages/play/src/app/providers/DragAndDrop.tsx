@@ -1,5 +1,21 @@
 import { createContext, ReactNode, useMemo, useState } from 'react';
-import { DndContext, DragEndEvent, useSensor, useSensors, MouseSensor, TouchSensor, KeyboardSensor, PointerSensor } from '@dnd-kit/core';
+import {
+  DndContext,
+  DragEndEvent,
+  useSensor,
+  useSensors,
+  MouseSensor,
+  TouchSensor,
+  KeyboardSensor,
+  PointerSensor,
+} from '@dnd-kit/core';
+
+type TTransform = {
+  x: number;
+  y: number;
+  scaleX: number;
+  scaleY: number;
+};
 
 type TDragAndDrop = {
   children: ReactNode;
@@ -7,36 +23,46 @@ type TDragAndDrop = {
 
 type TDragAndDropContext = {
   dndEvent: DragEndEvent | null;
+  transformValue: TTransform | null;
+  setTransformValue: (newValue: TTransform | null) => void;
 };
 
 export const DragAndDropContext = createContext<TDragAndDropContext>({
   dndEvent: null,
+  transformValue: null,
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  setTransformValue: (newValue: TTransform | null) => {},
 });
 
 const DragAndDrop = ({ children }: TDragAndDrop) => {
   const [dndEvent, setDndEvent] = useState<DragEndEvent | null>(null);
+  const [transformValue, setNewTransformValue] = useState<TTransform | null>(
+    null
+  );
   const dnd = useMemo(
     () => ({
       dndEvent,
+      transformValue,
+      setTransformValue: setNewTransformValue,
     }),
-    [dndEvent]
+    [dndEvent, transformValue]
   );
 
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: {
-      distance: 10
-    }
-  })
-  const mouseSensor = useSensor(MouseSensor)
-  const touchSensor = useSensor(TouchSensor)
-  const keyboardSensor = useSensor(KeyboardSensor)
+      distance: 10,
+    },
+  });
+  const mouseSensor = useSensor(MouseSensor);
+  const touchSensor = useSensor(TouchSensor);
+  const keyboardSensor = useSensor(KeyboardSensor);
 
   const sensors = useSensors(
     mouseSensor,
     touchSensor,
     keyboardSensor,
     pointerSensor
-  )
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
     setDndEvent(event);
@@ -44,7 +70,9 @@ const DragAndDrop = ({ children }: TDragAndDrop) => {
 
   return (
     <DragAndDropContext.Provider value={dnd}>
-      <DndContext onDragEnd={handleDragEnd} sensors={sensors}>{children}</DndContext>
+      <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+        {children}
+      </DndContext>
     </DragAndDropContext.Provider>
   );
 };

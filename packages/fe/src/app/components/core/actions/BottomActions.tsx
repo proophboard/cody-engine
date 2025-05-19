@@ -60,7 +60,7 @@ const BottomActions = (props: BottomActionsProps) => {
   const theme = useTheme();
   const env = useEnv();
   const { liveEditMode } = useContext(LiveEditModeContext);
-  const { dndEvent } = useContext(DragAndDropContext);
+  const { dndEvent, setTransformValue } = useContext(DragAndDropContext);
   const { config, dispatch } = useContext(configStore);
   const isDragDropEnabled =
     liveEditMode && env.UI_ENV === 'play' && props.containerInfo !== undefined;
@@ -109,6 +109,7 @@ const BottomActions = (props: BottomActionsProps) => {
           buttonPosition,
           active.data.current?.action
         );
+        setTransformValue(null);
         return;
       }
 
@@ -126,6 +127,7 @@ const BottomActions = (props: BottomActionsProps) => {
           buttonPosition as ButtonPosition,
           active.data.current?.action
         );
+        setTransformValue(null);
         return;
       }
 
@@ -147,6 +149,7 @@ const BottomActions = (props: BottomActionsProps) => {
           buttonPosition,
           active.data.current?.action
         );
+        setTransformValue(null);
       }
     }
   }, [dndEvent]);

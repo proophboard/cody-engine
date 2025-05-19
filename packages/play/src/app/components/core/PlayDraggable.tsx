@@ -1,11 +1,11 @@
-import { ReactNode, useState } from 'react';
+import { ReactNode, useContext, useEffect, useState } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Box, Collapse, IconButton, useTheme } from '@mui/material';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
 import { Target } from 'mdi-material-ui';
 import { useVibeCodyFocusElement } from '@cody-play/hooks/use-vibe-cody';
-
 import { FocusedElement } from '@cody-play/state/focused-element';
+import { DragAndDropContext } from '@cody-play/app/providers/DragAndDrop';
 
 type TPlayDraggable = {
   id: string;
@@ -23,6 +23,7 @@ const PlayDraggable = ({
   children,
 }: TPlayDraggable) => {
   const theme = useTheme();
+  const { transformValue, setTransformValue } = useContext(DragAndDropContext);
   const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
   const [showTarget, setShowTarget] = useState(false);
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -39,9 +40,17 @@ const PlayDraggable = ({
     cursor: 'move',
     transform: transform
       ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      : transformValue
+      ? `translate3d(${transformValue.x}px, ${transformValue.y}px, 0)`
       : 'none',
     zIndex: transform ? theme.zIndex.drawer + 1 : 'auto',
   };
+
+  useEffect(() => {
+    if (transform) {
+      setTransformValue(transform);
+    }
+  }, [transform]);
 
   const isFocusedEle =
     focusableElement && focusedEle && focusableElement.id === focusedEle.id;
