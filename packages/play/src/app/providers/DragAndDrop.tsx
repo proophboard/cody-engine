@@ -8,6 +8,7 @@ import {
   TouchSensor,
   KeyboardSensor,
   PointerSensor,
+  DragMoveEvent,
 } from '@dnd-kit/core';
 
 type TTransform = {
@@ -23,12 +24,14 @@ type TDragAndDrop = {
 
 type TDragAndDropContext = {
   dndEvent: DragEndEvent | null;
+  activeElementId: string;
   transformValue: TTransform | null;
   setTransformValue: (newValue: TTransform | null) => void;
 };
 
 export const DragAndDropContext = createContext<TDragAndDropContext>({
   dndEvent: null,
+  activeElementId: '',
   transformValue: null,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   setTransformValue: (newValue: TTransform | null) => {},
@@ -39,13 +42,15 @@ const DragAndDrop = ({ children }: TDragAndDrop) => {
   const [transformValue, setNewTransformValue] = useState<TTransform | null>(
     null
   );
+  const [activeElementId, setActiveElementId] = useState<string>('');
   const dnd = useMemo(
     () => ({
       dndEvent,
+      activeElementId,
       transformValue,
       setTransformValue: setNewTransformValue,
     }),
-    [dndEvent, transformValue]
+    [dndEvent, activeElementId, transformValue]
   );
 
   const pointerSensor = useSensor(PointerSensor, {
@@ -64,13 +69,23 @@ const DragAndDrop = ({ children }: TDragAndDrop) => {
     pointerSensor
   );
 
+  const handleDragMove = (event: DragMoveEvent) => {
+    const { active } = event;
+    const { id } = active;
+    setActiveElementId((id as string) ?? '');
+  };
+
   const handleDragEnd = (event: DragEndEvent) => {
     setDndEvent(event);
   };
 
   return (
     <DragAndDropContext.Provider value={dnd}>
-      <DndContext onDragEnd={handleDragEnd} sensors={sensors}>
+      <DndContext
+        onDragMove={handleDragMove}
+        onDragEnd={handleDragEnd}
+        sensors={sensors}
+      >
         {children}
       </DndContext>
     </DragAndDropContext.Provider>

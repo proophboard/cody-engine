@@ -23,7 +23,8 @@ const PlayDraggable = ({
   children,
 }: TPlayDraggable) => {
   const theme = useTheme();
-  const { transformValue, setTransformValue } = useContext(DragAndDropContext);
+  const { activeElementId, transformValue, setTransformValue } =
+    useContext(DragAndDropContext);
   const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
   const [showTarget, setShowTarget] = useState(false);
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -40,7 +41,7 @@ const PlayDraggable = ({
     cursor: 'move',
     transform: transform
       ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-      : transformValue
+      : transformValue && activeElementId === id
       ? `translate3d(${transformValue.x}px, ${transformValue.y}px, 0)`
       : 'none',
     zIndex: transform ? theme.zIndex.drawer + 1 : 'auto',
