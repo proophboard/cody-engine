@@ -15,7 +15,7 @@ const TEXT = "I'd like to see a table of ";
 
 export const AddATableWithDefaults: Instruction = {
   text: TEXT,
-  isActive: context => context.page.pathname !== '/welcome',
+  isActive: context => !context.focusedElement && context.page.pathname !== '/welcome',
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyInstructionResponse> => {
     const tableName = input.replace(TEXT, '').trim();
@@ -89,8 +89,8 @@ export const AddATableWithDefaults: Instruction = {
         navigateTo(ctx.page.pathname);
 
         resolve({
-          cody: `I've added a ${tableName} table to the page ${pageConfig.name}.`,
-          details: `Do you want to define the columns for the table? Just give me a comma separated list of column names and I'll do the work for you.`,
+          cody: `Added a ${tableName} table to the page ${pageConfig.name}.`,
+          details: `Do you want to define the columns for the table? Just give me a comma separated list of column names.`,
           type: CodyResponseType.Question,
           instructionReply: async (input: string, ctx, dispatch, config, navigateTo) => {
             return AddColumnsToTable.execute(input, ctx, dispatch, config, navigateTo);

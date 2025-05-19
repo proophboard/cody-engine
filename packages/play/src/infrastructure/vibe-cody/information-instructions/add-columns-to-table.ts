@@ -13,7 +13,7 @@ const TEXT = 'Add the following columns to the table: ';
 
 export const AddColumnsToTable: Instruction = {
   text: TEXT,
-  isActive: (context, config) => !!getTableViewVO(context.page.handle.page, config),
+  isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config): Promise<CodyResponse> => {
     const columns = input.replace(TEXT, '')

@@ -1,7 +1,7 @@
 import * as React from 'react';
-import {useContext, useEffect, useState} from 'react';
+import {useContext, useEffect, useRef, useState} from 'react';
 import {
-  Alert,
+  Alert, AlertTitle,
   Autocomplete,
   Box,
   DialogContent,
@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
-import {AccountVoice, Close} from "mdi-material-ui";
+import {AccountVoice, Close, Target} from "mdi-material-ui";
 import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
 import {useNavigate} from "react-router-dom";
 import {UsePageResult, usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
@@ -26,6 +26,9 @@ import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyConte
 import {instructions} from "@cody-play/infrastructure/vibe-cody/instructions";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 import CodyEmoji from "@cody-play/app/components/core/vibe-cody/CodyEmoji";
+import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
+import {startCase} from "lodash";
+import {DragAndDropContext} from "@cody-play/app/providers/DragAndDrop";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
 
@@ -46,19 +49,36 @@ export type InstructionExecutionCallback = (input: string, ctx: VibeCodyContext,
 
 export interface Instruction {
   text: string,
-  alternatives?: string[],
-  subInstructions?: Instruction[],
+  noInputNeeded?: boolean,
   isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string) => boolean,
   execute: InstructionExecutionCallback,
 }
 
+export interface InstructionProvider {
+  isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
+  provide: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => Instruction[],
+}
+
+const isInstructionProvider = (i: Instruction | InstructionProvider): i is InstructionProvider => {
+  return typeof (i as any).provide === "function";
+}
+
 export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback};
 
-const suggestInstructions = (activePage: UsePageResult, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
-  const ctx: VibeCodyContext = {page: activePage};
+const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
+  const suggestions: Instruction[] = [];
 
-  return instructions.filter(i => i.isActive(ctx, config, env))
+  instructions.filter(i => i.isActive(ctx, config, env))
+    .forEach(i => {
+      if(isInstructionProvider(i)) {
+        suggestions.push(...i.provide(ctx, config, env));
+      } else {
+        suggestions.push(i);
+      }
+    })
+
+  return suggestions;
 }
 
 // Persist messages across the lifetime of the session
@@ -81,10 +101,44 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const [navigateTo, setNavigateTo] = useState<string|undefined>(pendingNavigateTo);
   const pageMatch = usePlayPageMatch();
   const navigate = useNavigate();
+  const [focusedElement, setFocusedElement] = useVibeCodyFocusElement();
+  const { dndEvent } = useContext(DragAndDropContext);
+  const inputRef = useRef<HTMLInputElement>();
+
+  useEffect(() => {
+    if(dndEvent) {
+      // Force the user to focus an element again, to avoid that focused element
+      // is moved so that e.g. containerInfo is no longer valid
+      // @TODO: maybe find a softer way to handle the issue
+      setFocusedElement(undefined);
+    }
+  }, [dndEvent]);
+
+  useEffect(() => {
+    setFocusedElement(undefined);
+  }, [pageMatch.handle.page.name]);
+
+  useEffect(() => {
+    if(focusedElement && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [focusedElement?.id]);
+
+  useEffect(() => {
+    if(inputRef.current && props.open) {
+      inputRef.current.focus();
+    }
+  }, [inputRef.current, props.open]);
 
   // Ensure that latest page is available for instructions
   const configPage = config.pages[pageMatch.handle.page.name];
   const syncedPageMatch = configPage ? {...pageMatch, handle: {page: configPage}} : pageMatch;
+
+  const vibeCodyCtx: VibeCodyContext = {
+    page: syncedPageMatch,
+    focusedElement,
+    setFocusedElement,
+  }
 
   useEffect(() => {
     if(navigateTo) {
@@ -105,6 +159,17 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     if(input && typeof input === "object") {
       setSelectedInstruction(input);
       waitingReply = undefined;
+
+      if(input.noInputNeeded) {
+        addMessage({
+          text: input.text,
+          author: "user"
+        })
+
+        await executeInstruction(input, '');
+        reset();
+      }
+
       return;
     }
 
@@ -116,9 +181,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
       if(waitingReply) {
         const codyResponse = await waitingReply(
-          input, {
-            page: syncedPageMatch,
-          },
+          input,
+          vibeCodyCtx,
           dispatch,
           config,
           (route: string) => {
@@ -141,7 +205,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       }
 
       if(!selectedInstruction) {
-        const possibleInstructions = suggestInstructions(syncedPageMatch, config, env).filter(i => i.match(input));
+        const possibleInstructions = suggestInstructions(vibeCodyCtx, config, env).filter(i => i.match(input));
 
         if(possibleInstructions.length) {
           setSelectedInstruction(possibleInstructions[0]);
@@ -173,9 +237,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
     const codyResponse = await instruction.execute(
       userInput,
-      {
-        page: syncedPageMatch,
-      },
+      vibeCodyCtx,
       dispatch,
       config,
       (route: string) => {
@@ -230,7 +292,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       </Grid2>
     </DialogTitle>
     <DialogContent id="cody-gpt-dialog-content" sx={{padding: '24px 24px', paddingBottom: 0}}>
-      <Alert severity="info">Start typing to tell Cody what you want to build. It works best when using one instruction at a time. Cody will immediately apply them. A saved Playshot will also update the connected prooph board.</Alert>
+      <Alert severity="info">Tell Cody what you want to build using one instruction at a time.</Alert>
       <Divider sx={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}} />
       {messages.map((m, index) => <Alert key={`cody_gpt_msg_${index}`}
                                          sx={{marginBottom: theme.spacing(2),
@@ -240,8 +302,16 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                          severity={m.author === 'user' ? 'warning' : m.error ? 'error' : 'success'}><pre style={{whiteSpace: "pre-wrap"}}>{m.text}</pre></Alert>)}
       <Box sx={{paddingBottom: theme.spacing(12), position: "sticky", bottom: 0, backgroundColor: theme.palette.background.paper}}>
         {messages.length > 0 && <Divider sx={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}}/>}
+        {focusedElement && <Alert severity={"info"}
+                                  icon={<Target/>}
+                                  sx={{marginBottom: theme.spacing(2)}}
+                                  onClose={e => setFocusedElement(undefined)}>
+          <AlertTitle>{startCase(focusedElement.type)} {focusedElement.name} is focused</AlertTitle>
+          Changes made by Cody will only affect the focused element, and prompt suggestions are filtered accordingly.
+        </Alert>}
         <Autocomplete<Instruction, false, false, true> renderInput={(params) => <TextField {...params}
                                                           helperText={<span>Start typing to get suggestions. Use Shift+Enter for multiline.</span>}
+                                                          inputRef={inputRef}
                                                           variant="outlined"
                                                           multiline={true}
                                                           placeholder={'Next instruction'}
@@ -249,15 +319,21 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                                             if(e.shiftKey && e.key === "Enter") {
                                                               lockChange = true;
                                                             }
+
+                                                            if(e.key === "Escape") {
+                                                              setFocusedElement(undefined);
+                                                              reset();
+                                                            }
                                                           }}
                                                           onKeyUp={() => {
                                                             lockChange = false;
                                                           }}
                                                          />}
-                                   options={suggestInstructions(syncedPageMatch, config, env)}
+                                   options={suggestInstructions(vibeCodyCtx, config, env)}
                                    freeSolo={true}
                                    value={value}
                                    autoComplete={false}
+                                   autoHighlight={true}
                                    inputValue={searchStr}
                                    filterOptions={(options, state) => {
                                      if (state.inputValue.length >= 1) {
