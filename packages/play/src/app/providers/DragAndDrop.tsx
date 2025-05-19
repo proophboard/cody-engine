@@ -72,7 +72,9 @@ const DragAndDrop = ({ children }: TDragAndDrop) => {
   const handleDragMove = (event: DragMoveEvent) => {
     const { active } = event;
     const { id } = active;
-    setActiveElementId((id as string) ?? '');
+    if (id !== activeElementId) {
+      setActiveElementId((id as string) ?? '');
+    }
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
