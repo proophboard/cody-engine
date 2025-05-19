@@ -1,7 +1,7 @@
 import Grid2 from "@mui/material/Unstable_Grid2";
 import {generatePath, useParams} from "react-router-dom";
 import CommandBar, {renderTabs} from "@frontend/app/layout/CommandBar";
-import React, {useContext, useEffect} from "react";
+import React, {useContext, useEffect, useMemo} from "react";
 import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
 import {
@@ -40,8 +40,8 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
-import {omit} from "lodash";
-import ErrorBoundary from "@frontend/app/components/core/ErrorBoundary";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+import {merge, omit} from "lodash";
 
 export type PageMode = 'standard' | 'dialog' | 'drawer';
 
@@ -85,6 +85,10 @@ export const PlayStandardPage = (props: Props) => {
     store,
     data: {}
   }
+
+  const copiedRouteParams = useMemo(() => {
+    return cloneDeepJSON(routeParams);
+  }, [routeParams]);
 
 
   // @TODO: inject via config or theme
@@ -184,7 +188,13 @@ export const PlayStandardPage = (props: Props) => {
 
     const containerProps = {xs: 12, className: "CodyView-root", ...(props?.container || {})};
 
-    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent({...routeParams, ...omit(props, 'container')})}</Grid2>
+    // Merging this way is important here!
+    // We need routeParams to keep its identity
+    // otherwise react ends up in an endless update call insight the views
+    // due to params being passed to useApiQuery()
+    merge(copiedRouteParams, omit(props, 'container'));
+
+    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(copiedRouteParams)}</Grid2>
   });
 
   const defaultContainerProps = {
