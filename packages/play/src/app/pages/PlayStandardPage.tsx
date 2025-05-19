@@ -1,8 +1,9 @@
-import Grid2 from '@mui/material/Unstable_Grid2';
-import { generatePath, useParams } from 'react-router-dom';
-import CommandBar, { renderTabs } from '@frontend/app/layout/CommandBar';
-import React, { useContext, useEffect } from 'react';
-import { configStore } from '@cody-play/state/config-store';
+import Grid2 from "@mui/material/Unstable_Grid2";
+import {generatePath, useParams} from "react-router-dom";
+import CommandBar, {renderTabs} from "@frontend/app/layout/CommandBar";
+import React, {useContext, useEffect, useMemo} from "react";
+import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
+import PlayCommand from "@cody-play/app/components/core/PlayCommand";
 import {
   PlayInformationRegistry,
   PlayPageRegistry,
@@ -38,10 +39,11 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
-import {omit} from "lodash";
+import {omit, merge} from "lodash";
 import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
 import {EDropzoneId} from "@cody-play/app/types/enums/EDropzoneId";
 import {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
 export type PageMode = 'standard' | 'dialog' | 'drawer';
 
@@ -92,6 +94,10 @@ export const PlayStandardPage = (props: Props) => {
     store,
     data: {},
   };
+
+  const copiedRouteParams = useMemo(() => {
+    return cloneDeepJSON(routeParams);
+  }, [routeParams]);
 
   // @TODO: inject via config or theme
   let SIDEBAR_WIDTH = 300;
@@ -244,7 +250,13 @@ export const PlayStandardPage = (props: Props) => {
       ...(props?.container || {}),
     };
 
-    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent({...routeParams, ...omit(props, 'container')})}</Grid2>
+    // Merging this way is important here!
+    // We need routeParams to keep its identity
+    // otherwise react ends up in an endless update call insight the views
+    // due to params being passed to useApiQuery()
+    merge(copiedRouteParams, omit(props, 'container'));
+
+    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(copiedRouteParams)}</Grid2>
   });
 
   const defaultContainerProps = {
