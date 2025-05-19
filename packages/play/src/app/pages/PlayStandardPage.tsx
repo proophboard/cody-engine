@@ -40,6 +40,8 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
+import {omit} from "lodash";
+import ErrorBoundary from "@frontend/app/components/core/ErrorBoundary";
 
 export type PageMode = 'standard' | 'dialog' | 'drawer';
 
@@ -182,7 +184,7 @@ export const PlayStandardPage = (props: Props) => {
 
     const containerProps = {xs: 12, className: "CodyView-root", ...(props?.container || {})};
 
-    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(routeParams)}</Grid2>
+    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent({...routeParams, ...omit(props, 'container')})}</Grid2>
   });
 
   const defaultContainerProps = {
