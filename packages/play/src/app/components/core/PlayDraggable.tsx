@@ -1,11 +1,11 @@
-import {ReactNode, useState} from 'react';
+import { ReactNode, useState } from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import {Box, Collapse, IconButton, useTheme} from '@mui/material';
+import { Box, Collapse, IconButton, useTheme } from '@mui/material';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
-import {Target} from "mdi-material-ui";
-import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
+import { Target } from 'mdi-material-ui';
+import { useVibeCodyFocusElement } from '@cody-play/hooks/use-vibe-cody';
 
-import {FocusedElement} from "@cody-play/state/focused-element";
+import { FocusedElement } from '@cody-play/state/focused-element';
 
 type TPlayDraggable = {
   id: string;
@@ -43,27 +43,40 @@ const PlayDraggable = ({
     zIndex: transform ? theme.zIndex.drawer + 1 : 'auto',
   };
 
-  const isFocusedEle = (focusableElement && focusedEle && focusableElement.id === focusedEle.id);
+  const isFocusedEle =
+    focusableElement && focusedEle && focusableElement.id === focusedEle.id;
 
   return (
     <>
       {!isDragDropEnabled ? (
         children
       ) : (
-        <Box ref={setNodeRef} {...listeners} {...attributes} sx={sx}
-             onMouseEnter={e => setShowTarget(true)}
-             onMouseLeave={e => setShowTarget(false)}
+        <Box
+          ref={setNodeRef}
+          {...listeners}
+          {...attributes}
+          sx={sx}
+          onMouseEnter={(e) => setShowTarget(true)}
+          onMouseLeave={(e) => setShowTarget(false)}
         >
           <Box flex={1} className="children-wrapper">
             {children}
           </Box>
-          {focusableElement && <Collapse orientation={"horizontal"} in={showTarget || isFocusedEle}>
-            <IconButton onClick={e => setFocusedEle(isFocusedEle ? undefined : focusableElement)}
-                        color={isFocusedEle ? "info" : undefined}
+          {focusableElement && (
+            <Collapse
+              orientation={'horizontal'}
+              in={showTarget || isFocusedEle}
             >
-              <Target/>
-            </IconButton>
-          </Collapse>}
+              <IconButton
+                onClick={(e) =>
+                  setFocusedEle(isFocusedEle ? undefined : focusableElement)
+                }
+                color={isFocusedEle ? 'info' : undefined}
+              >
+                <Target />
+              </IconButton>
+            </Collapse>
+          )}
           <DragIndicatorIcon />
         </Box>
       )}
