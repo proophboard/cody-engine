@@ -25,6 +25,7 @@ import {ViewRuntimeConfig} from "@frontend/app/components/core/views/view-runtim
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import Breadcrumbs from "@frontend/app/layout/Breadcrumbs";
+import {omit} from "lodash";
 
 interface Props {
   page: PageDefinition;
@@ -162,7 +163,7 @@ export const StandardPage = (props: Props) => {
       injectedInitialValues: initialValues,
     };
 
-    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent({...routeParams, hidden: isHiddenView}, runtimeConfig)}</Grid2>
+    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent({...routeParams, ...{...routeParams, ...omit(props, 'container')}, hidden: isHiddenView}, runtimeConfig)}</Grid2>
   });
 
 

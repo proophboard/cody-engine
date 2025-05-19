@@ -2,62 +2,45 @@ import Grid2 from '@mui/material/Unstable_Grid2';
 import { generatePath, useParams } from 'react-router-dom';
 import CommandBar, { renderTabs } from '@frontend/app/layout/CommandBar';
 import React, { useContext, useEffect } from 'react';
-import { CodyPlayConfig, configStore } from '@cody-play/state/config-store';
-import PlayCommand from '@cody-play/app/components/core/PlayCommand';
+import { configStore } from '@cody-play/state/config-store';
 import {
   PlayInformationRegistry,
-  PlayPageDefinition,
   PlayPageRegistry,
   PlayViewComponentConfig,
 } from '@cody-play/state/types';
 import {
   isQueryableDescription,
-  isQueryableListDescription,
-  isQueryableNotStoredStateListDescription,
-  isQueryableStateListDescription,
-} from '@event-engine/descriptions/descriptions';
-import PlayTableView from '@cody-play/app/components/core/PlayTableView';
-import PlayStateView from '@cody-play/app/components/core/PlayStateView';
-import { PageDataContext } from '@frontend/app/providers/PageData';
-import {
-  getPageTitle,
-  PageDefinition,
-  Tab,
-} from '@frontend/app/pages/page-definitions';
-import {
-  Alert,
-  Box,
-  SxProps,
-  Tabs,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
-import PlayStaticView from '@cody-play/app/components/core/PlayStaticView';
-import { names } from '@event-engine/messaging/helpers';
-import PlayStateFormView from '@cody-play/app/components/core/PlayStateFormView';
-import { ViewComponentType } from '@cody-engine/cody/hooks/utils/ui/types';
-import { UiSchema } from '@rjsf/utils';
-import PlayNewStateFormView from '@cody-play/app/components/core/PlayNewStateFormView';
-import PlayBreadcrumbs from '@cody-play/app/layout/PlayBreadcrumbs';
-import { useUser } from '@frontend/hooks/use-user';
-import { usePageData } from '@frontend/hooks/use-page-data';
-import { useTranslation } from 'react-i18next';
-import BottomActions from '@frontend/app/components/core/actions/BottomActions';
-import { FormJexlContext } from '@frontend/app/components/core/form/types/form-jexl-context';
-import { useGlobalStore } from '@frontend/hooks/use-global-store';
-import {
-  Action,
-  ActionContainerInfo,
-} from '@frontend/app/components/core/form/types/action';
-import { useEnv } from '@frontend/hooks/use-env';
-import ActionButton from '@frontend/app/components/core/ActionButton';
-import TopRightActions from '@frontend/app/components/core/actions/TopRightActions';
-import jexl from '@app/shared/jexl/get-configured-jexl';
-import { execMappingSync } from '@app/shared/rule-engine/exec-mapping';
-import { parseActionsFromPageCommands } from '@frontend/app/components/core/form/types/parse-actions';
-import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
-import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
+  isQueryableListDescription, isQueryableNotStoredStateListDescription,
+  isQueryableStateListDescription
+} from "@event-engine/descriptions/descriptions";
+import PlayTableView from "@cody-play/app/components/core/PlayTableView";
+import PlayStateView from "@cody-play/app/components/core/PlayStateView";
+import {PageDataContext} from "@frontend/app/providers/PageData";
+import {getPageTitle, PageDefinition, Tab} from "@frontend/app/pages/page-definitions";
+import {Alert, Box, SxProps, Tabs, Typography, useMediaQuery, useTheme} from "@mui/material";
+import PlayStaticView from "@cody-play/app/components/core/PlayStaticView";
+import {names} from "@event-engine/messaging/helpers";
+import PlayStateFormView from "@cody-play/app/components/core/PlayStateFormView";
+import {ViewComponentType} from "@cody-engine/cody/hooks/utils/ui/types";
+import {UiSchema} from "@rjsf/utils";
+import PlayNewStateFormView from "@cody-play/app/components/core/PlayNewStateFormView";
+import PlayBreadcrumbs from "@cody-play/app/layout/PlayBreadcrumbs";
+import {useUser} from "@frontend/hooks/use-user";
+import {usePageData} from "@frontend/hooks/use-page-data";
+import {useTranslation} from "react-i18next";
+import BottomActions from "@frontend/app/components/core/actions/BottomActions";
+import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
+import {Action, ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
+import {useEnv} from "@frontend/hooks/use-env";
+import ActionButton from "@frontend/app/components/core/ActionButton";
+import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
+import jexl from "@app/shared/jexl/get-configured-jexl";
+import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
+import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
+import {omit} from "lodash";
+import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
+import {EDropzoneId} from "@cody-play/app/types/enums/EDropzoneId";
 import {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 
 export type PageMode = 'standard' | 'dialog' | 'drawer';
@@ -261,11 +244,7 @@ export const PlayStandardPage = (props: Props) => {
       ...(props?.container || {}),
     };
 
-    return (
-      <Grid2 key={'comp' + index} {...containerProps}>
-        {ViewComponent(routeParams)}
-      </Grid2>
-    );
+    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent({...routeParams, ...omit(props, 'container')})}</Grid2>
   });
 
   const defaultContainerProps = {
