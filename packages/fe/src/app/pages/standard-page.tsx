@@ -4,7 +4,7 @@ import {generatePath, useParams} from "react-router-dom";
 import CommandBar, {renderTabs} from "@frontend/app/layout/CommandBar";
 import {loadViewComponent} from "@frontend/util/components/load-view-components";
 import {PageRegistry, pages} from "@frontend/app/pages/index";
-import React, {useContext, useEffect} from "react";
+import React, {useContext, useEffect, useMemo} from "react";
 import {PageDataContext} from "@frontend/app/providers/PageData";
 import {useUser} from "@frontend/hooks/use-user";
 import {Box, SxProps, Typography, useMediaQuery, useTheme} from "@mui/material";
@@ -25,7 +25,8 @@ import {ViewRuntimeConfig} from "@frontend/app/components/core/views/view-runtim
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import Breadcrumbs from "@frontend/app/layout/Breadcrumbs";
-import {omit} from "lodash";
+import {omit, merge} from "lodash";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
 interface Props {
   page: PageDefinition;
@@ -52,12 +53,17 @@ export const StandardPage = (props: Props) => {
   const [store] = useGlobalStore();
   const {reset} = useContext(PageDataContext);
 
+  const copiedRouteParams = useMemo(() => {
+    return cloneDeepJSON(routeParams);
+  }, [routeParams]);
+
   const pageMode = props.mode || "standard";
   const page = {...props.page};
 
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
+
   const isLarge = useMediaQuery(theme.breakpoints.up('xl'));
   const jexlCtx: FormJexlContext = {
     user,
@@ -163,7 +169,14 @@ export const StandardPage = (props: Props) => {
       injectedInitialValues: initialValues,
     };
 
-    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent({...routeParams, ...{...routeParams, ...omit(props, 'container')}, hidden: isHiddenView}, runtimeConfig)}</Grid2>
+    // Merging this way is important here!
+    // We need routeParams to keep its identity
+    // otherwise react ends up in an endless update call insight the views
+    // due to params being passed to useApiQuery()
+    merge(copiedRouteParams, omit(props, 'container'));
+    merge(copiedRouteParams, {hidden: isHiddenView});
+
+    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(copiedRouteParams, runtimeConfig)}</Grid2>
   });
 
 
