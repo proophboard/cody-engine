@@ -1,7 +1,11 @@
 import * as React from 'react';
+import { useContext, useEffect } from 'react';
 import {
   Action,
-  ActionContainerInfo, ButtonPosition, getActionButtonName, getActionId,
+  ActionContainerInfo,
+  ButtonPosition,
+  getActionButtonName,
+  getActionId,
 } from '@frontend/app/components/core/form/types/action';
 import { FormJexlContext } from '@frontend/app/components/core/form/types/form-jexl-context';
 import Grid2 from '@mui/material/Unstable_Grid2';
@@ -9,7 +13,6 @@ import ActionButton from '@frontend/app/components/core/ActionButton';
 import { useEnv } from '@frontend/hooks/use-env';
 import { parseActionsFromUiOptions } from '@frontend/app/components/core/form/types/parse-actions';
 import { RuntimeEnvironment } from '@frontend/app/providers/runtime-environment';
-import { useContext, useEffect } from 'react';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 import PlayDraggable from '@cody-play/app/components/core/PlayDraggable';
 import PlayDroppable from '@cody-play/app/components/core/PlayDroppable';
@@ -20,11 +23,10 @@ import {
 } from '@cody-play/app/types/enums/EDropzoneId';
 import { DragAndDropContext } from '@cody-play/app/providers/DragAndDrop';
 import { configStore } from '@cody-play/state/config-store';
-import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
-import {FocusedButton} from "@cody-play/state/focused-element";
-import moveButtonPosition from "@cody-play/infrastructure/vibe-cody/utils/move-button-position";
-import updatePageButtonPosition from "@cody-play/infrastructure/vibe-cody/utils/update-page-button-position";
-import updateTableButtonPosition from "@cody-play/infrastructure/vibe-cody/utils/update-table-button-position";
+import { FocusedButton } from '@cody-play/state/focused-element';
+import moveButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/move-button-position';
+import updatePageButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-page-button-position';
+import updateTableButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-table-button-position';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -163,13 +165,15 @@ const TopRightActions = (props: TopRightActionsProps) => {
             key={`${props.containerInfo?.type}-action-button-${index}-key`}
             id={`${props.containerInfo?.type}-top-actions-action-button-${index}`}
             isDragDropEnabled={isDragDropEnabled}
-            focusableElement={{
-              id: getActionId(action),
-              name: getActionButtonName(action),
-              type: "button",
-              action,
-              containerInfo: props.containerInfo!
-            } as FocusedButton}
+            focusableElement={
+              {
+                id: getActionId(action),
+                name: getActionButtonName(action),
+                type: 'button',
+                action,
+                containerInfo: props.containerInfo!,
+              } as FocusedButton
+            }
             data={{
               action,
               prevContainerInfo: props.containerInfo,

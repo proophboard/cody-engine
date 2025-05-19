@@ -3,7 +3,10 @@ import { useContext, useEffect } from 'react';
 import { FormJexlContext } from '@frontend/app/components/core/form/types/form-jexl-context';
 import {
   Action,
-  ActionContainerInfo, ButtonPosition, getActionButtonName, getActionId,
+  ActionContainerInfo,
+  ButtonPosition,
+  getActionButtonName,
+  getActionId,
 } from '@frontend/app/components/core/form/types/action';
 import Grid2 from '@mui/material/Unstable_Grid2';
 import ActionButton from '@frontend/app/components/core/ActionButton';
@@ -21,10 +24,9 @@ import {
   MAP_DROPZONE_POSITION_TO_DROPZONE_ID,
   MAP_POSITION_TO_DROPZONE_ID,
 } from '@cody-play/app/types/enums/EDropzoneId';
-import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
-import moveButtonPosition from "@cody-play/infrastructure/vibe-cody/utils/move-button-position";
-import updatePageButtonPosition from "@cody-play/infrastructure/vibe-cody/utils/update-page-button-position";
-import updateTableButtonPosition from "@cody-play/infrastructure/vibe-cody/utils/update-table-button-position";
+import moveButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/move-button-position';
+import updatePageButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-page-button-position';
+import updateTableButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-table-button-position';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -169,7 +171,8 @@ const BottomActions = (props: BottomActionsProps) => {
       {(leftActions.length > 0 ||
         additionalLeftButtons.length > 0 ||
         // If center and right buttons are given, we need the left placeholder so that center buttons are really centered
-        (centerActions.length + additionalCenterButtons.length > 0 && rightActions.length + additionalRightButtons.length > 0) ||
+        (centerActions.length + additionalCenterButtons.length > 0 &&
+          rightActions.length + additionalRightButtons.length > 0) ||
         isDragDropEnabled) && (
         <Grid2
           xs
@@ -195,7 +198,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 focusableElement={{
                   id: getActionId(action),
                   name: getActionButtonName(action),
-                  type: "button"
+                  type: 'button',
                 }}
                 data={{
                   action,
@@ -243,7 +246,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 focusableElement={{
                   id: getActionId(action),
                   name: getActionButtonName(action),
-                  type: "button"
+                  type: 'button',
                 }}
                 data={{
                   action,
@@ -264,7 +267,8 @@ const BottomActions = (props: BottomActionsProps) => {
       {(rightActions.length > 0 ||
         additionalRightButtons.length > 0 ||
         // If center and left buttons are given, we need the right placeholder so that center buttons are really centered
-        (centerActions.length + additionalCenterButtons.length > 0 && leftActions.length + additionalLeftButtons.length > 0) ||
+        (centerActions.length + additionalCenterButtons.length > 0 &&
+          leftActions.length + additionalLeftButtons.length > 0) ||
         isDragDropEnabled) && (
         <Grid2
           xs
@@ -291,7 +295,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 focusableElement={{
                   id: getActionId(action),
                   name: getActionButtonName(action),
-                  type: "button"
+                  type: 'button',
                 }}
                 data={{
                   action,
