@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import {CommandRuntimeInfo} from "@event-engine/messaging/command";
 import {Field, getUiOptions, Widget} from "@rjsf/utils";
-import {useRef, useState} from "react";
+import {useContext, useRef, useState} from "react";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {UseMutateAsyncFunction, useQueryClient} from "@tanstack/react-query";
 import {commandTitle} from "@frontend/app/components/core/CommandButton";
@@ -38,6 +38,7 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import {getObjPropTitleStyle} from "@frontend/app/components/core/form/templates/ObjectFieldTemplate";
 import commandForm from "@frontend/app/components/core/CommandForm";
 import {ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
+import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
 
 export interface AggregateIdentifier {
   identifier: string;
@@ -104,7 +105,7 @@ const CommandDialog = (props: CommandDialogProps) => {
   const [pageData,] = usePageData();
   const [store] = useGlobalStore();
   const {t} = useTranslation();
-
+  const { liveEditMode } = useContext(LiveEditModeContext);
 
   const filteredRouteParams: Record<string, string> = {};
 
@@ -231,7 +232,13 @@ const CommandDialog = (props: CommandDialogProps) => {
   }
 
   return (
-    <Dialog open={props.open} fullWidth={true} maxWidth={'lg'} onClose={handleCancel} sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}>
+    <Dialog open={props.open}
+            fullWidth={true}
+            maxWidth={'lg'}
+            onClose={handleCancel}
+            sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}
+            disableEnforceFocus={liveEditMode}
+    >
       <DialogTitle sx={{
         overflow: "hidden",
         scrollbarGutter: "stable both-edges"
