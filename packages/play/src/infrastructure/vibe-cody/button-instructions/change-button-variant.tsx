@@ -48,7 +48,15 @@ const makeChangeButtonVariantInstruction = (variant: Variant): Instruction => {
 }
 
 export const ChangeButtonVariantProvider: InstructionProvider = {
-  isActive: context => !!context.focusedElement && context.focusedElement.type === "button",
+  isActive: context => {
+    if(!context.focusedElement || context.focusedElement.type !== "button") {
+      return false;
+    }
+
+    const focusedButton = context.focusedElement as FocusedButton;
+
+    return !!focusedButton.action.button?.label;
+  },
   provide: () => {
     return (['outlined', 'contained', 'text'] as Variant[]).map(makeChangeButtonVariantInstruction)
   }
