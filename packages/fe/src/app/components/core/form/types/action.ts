@@ -50,7 +50,8 @@ export const getActionName = (action: Action): string => {
 }
 
 export const getActionButtonName = (action: Action): string => {
-  return action.button?.label || getActionName(action);
+  return action.button?.label || (typeof action.button?.icon === "string" ? `${action.button?.icon} icon` : undefined)
+    || getActionName(action);
 }
 
 export const isLinkAction = (action: Action): action is LinkAction => {
