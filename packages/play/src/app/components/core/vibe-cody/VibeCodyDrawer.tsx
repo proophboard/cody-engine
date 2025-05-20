@@ -8,7 +8,7 @@ import {
   DialogTitle,
   Divider,
   Drawer,
-  IconButton,
+  IconButton, ListItem, ListItemIcon, ListItemText,
   TextField,
   useTheme
 } from "@mui/material";
@@ -49,6 +49,7 @@ export type InstructionExecutionCallback = (input: string, ctx: VibeCodyContext,
 
 export interface Instruction {
   text: string,
+  icon?: React.ReactNode,
   noInputNeeded?: boolean,
   isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string) => boolean,
@@ -330,11 +331,14 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                                           }}
                                                          />}
                                    options={suggestInstructions(vibeCodyCtx, config, env)}
-                                   freeSolo={true}
-                                   value={value}
-                                   autoComplete={false}
-                                   autoHighlight={true}
-                                   inputValue={searchStr}
+                                   renderOption={(props, option) => {
+                                     return (
+                                       <ListItem {...props}>
+                                         {option.icon && <ListItemIcon>{option.icon}</ListItemIcon>}
+                                         <ListItemText>{option.text}</ListItemText>
+                                       </ListItem>
+                                     );
+                                   }}
                                    filterOptions={(options, state) => {
                                      if (state.inputValue.length >= 1) {
                                        return options.filter((item) =>
@@ -343,6 +347,11 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                      }
                                      return [];
                                    }}
+                                   freeSolo={true}
+                                   value={value}
+                                   autoComplete={false}
+                                   autoHighlight={true}
+                                   inputValue={searchStr}
                                    onChange={(e,v) => {
                                      e.stopPropagation();
 
