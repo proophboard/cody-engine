@@ -8,13 +8,13 @@ import {
   DialogTitle,
   Divider,
   Drawer,
-  IconButton, ListItem, ListItemIcon, ListItemText,
-  TextField,
+  IconButton, Link, ListItem, ListItemIcon, ListItemText,
+  TextField, Typography,
   useTheme
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
-import {AccountVoice, Close, Target} from "mdi-material-ui";
+import {AccountVoice, Close, HelpCircle, Target} from "mdi-material-ui";
 import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
 import {useNavigate} from "react-router-dom";
 import {UsePageResult, usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
@@ -29,6 +29,8 @@ import CodyEmoji from "@cody-play/app/components/core/vibe-cody/CodyEmoji";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 import {startCase} from "lodash";
 import {DragAndDropContext} from "@cody-play/app/providers/DragAndDrop";
+import {QuestionMarkOutlined, QuestionMarkRounded} from "@mui/icons-material";
+import {includesAllWords} from "@cody-play/infrastructure/vibe-cody/utils/includes-all-words";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
 
@@ -43,6 +45,7 @@ interface Message {
   text: string;
   author: 'user' | 'cody';
   error?: boolean;
+  helpLink?: HelpLink;
 }
 
 export type InstructionExecutionCallback = (input: string, ctx: VibeCodyContext, dispatch: PlayConfigDispatch, config: CodyPlayConfig, navigateTo: (route: string) => void) => Promise<CodyInstructionResponse>;
@@ -65,7 +68,9 @@ const isInstructionProvider = (i: Instruction | InstructionProvider): i is Instr
   return typeof (i as any).provide === "function";
 }
 
-export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback};
+export type HelpLink = {text: string, href: string};
+
+export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback, helpLink?: HelpLink};
 
 const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
   const suggestions: Instruction[] = [];
@@ -137,6 +142,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
   const vibeCodyCtx: VibeCodyContext = {
     page: syncedPageMatch,
+    searchStr,
     focusedElement,
     setFocusedElement,
   }
@@ -197,7 +203,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
         addMessage({
           text: codyResponse.cody + (codyResponse.details ? `\n\n${codyResponse.details}` : ''),
           author: "cody",
-          error: playIsCodyError(codyResponse)
+          error: playIsCodyError(codyResponse),
+          helpLink: codyResponse.helpLink,
         });
 
         waitingReply = codyResponse.instructionReply;
@@ -253,7 +260,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     addMessage({
       text: codyResponse.cody + (codyResponse.details ? `\n\n${codyResponse.details}` : ''),
       author: "cody",
-      error: playIsCodyError(codyResponse)
+      error: playIsCodyError(codyResponse),
+      helpLink: codyResponse.helpLink,
     });
 
     if(codyResponse.type === CodyResponseType.Question) {
@@ -300,7 +308,10 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                            marginRight: m.author === "user" ? theme.spacing(4) : undefined,
                                            marginLeft: m.author === 'cody' ? theme.spacing(4) : undefined}}
                                          icon={m.author === 'cody' ? <CodyEmoji style={{width: '30px', height: '30px'}} /> : <AccountVoice />}
-                                         severity={m.author === 'user' ? 'warning' : m.error ? 'error' : 'success'}><pre style={{whiteSpace: "pre-wrap"}}>{m.text}</pre></Alert>)}
+                                         severity={m.author === 'user' ? 'warning' : m.error ? 'error' : 'success'}>
+        <pre style={{whiteSpace: "pre-wrap"}}>{m.text}</pre>
+        {m.helpLink && <Typography><Link href={m.helpLink.href} target="_blank" rel="noopener noreferrer">{m.helpLink.text}</Link></Typography>}
+      </Alert>)}
       <Box sx={{paddingBottom: theme.spacing(12), position: "sticky", bottom: 0, backgroundColor: theme.palette.background.paper}}>
         {messages.length > 0 && <Divider sx={{marginTop: theme.spacing(2), marginBottom: theme.spacing(2)}}/>}
         {focusedElement && <Alert severity={"info"}
@@ -342,7 +353,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                    filterOptions={(options, state) => {
                                      if (state.inputValue.length >= 1) {
                                        return options.filter((item) =>
-                                         String(item.text).toLowerCase().includes(state.inputValue.toLowerCase())
+                                         includesAllWords(String(item.text).toLowerCase(), state.inputValue.toLowerCase().split(" "))
                                        );
                                      }
                                      return [];

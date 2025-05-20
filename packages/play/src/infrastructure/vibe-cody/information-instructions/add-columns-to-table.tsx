@@ -8,11 +8,13 @@ import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {isInlineItemsArraySchema, isObjectSchema} from "@app/shared/utils/schema-checks";
 import {camelCaseToTitle} from "@cody-play/infrastructure/utils/string";
 import {playDefinitionIdFromFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {TableColumn} from "mdi-material-ui";
 
 const TEXT = 'Add the following columns to the table: ';
 
 export const AddColumnsToTable: Instruction = {
   text: TEXT,
+  icon: <TableColumn />,
   isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config): Promise<CodyResponse> => {

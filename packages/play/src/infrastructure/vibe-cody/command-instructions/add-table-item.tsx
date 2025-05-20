@@ -19,11 +19,13 @@ import {now} from "@cody-engine/cody/hooks/utils/time";
 import {convertNodeToJs} from "@cody-play/infrastructure/cody/node-traversing/convert-node-to-js";
 import {Action, CommandAction} from "@frontend/app/components/core/form/types/action";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
+import {PlusBoxOutline} from "mdi-material-ui";
 
 const TEXT = "Place a button above the table to add a ";
 
 export const AddTableItem: Instruction = {
   text: TEXT,
+  icon: <PlusBoxOutline />,
   isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config): Promise<CodyResponse> => {

@@ -11,6 +11,7 @@ import {
 } from "@cody-play/infrastructure/vibe-cody/button-instructions/change-button-variant";
 import {FocusOnButtonProvider} from "@cody-play/infrastructure/vibe-cody/button-instructions/focus-on-button";
 import {ChangeButtonColorProvider} from "@cody-play/infrastructure/vibe-cody/button-instructions/change-button-color";
+import {ChangeButtonIconProvider} from "@cody-play/infrastructure/vibe-cody/button-instructions/change-button-icon";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -24,4 +25,5 @@ export const instructions: InstructionOrProvider[] = [
   ChangeButtonLabel,
   ChangeButtonVariantProvider,
   ChangeButtonColorProvider,
+  ChangeButtonIconProvider,
 ]

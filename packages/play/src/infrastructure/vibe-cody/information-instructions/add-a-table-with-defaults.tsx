@@ -10,11 +10,13 @@ import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {AddColumnsToTable} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
+import { TableLarge } from "mdi-material-ui";
 
 const TEXT = "I'd like to see a table of ";
 
 export const AddATableWithDefaults: Instruction = {
   text: TEXT,
+  icon: <TableLarge />,
   isActive: context => !context.focusedElement && context.page.pathname !== '/welcome',
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyInstructionResponse> => {

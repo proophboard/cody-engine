@@ -1,13 +1,14 @@
 import {Instruction} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {setButtonProperty} from "@cody-play/infrastructure/vibe-cody/utils/set-button-property";
-import {context} from "esbuild";
 import {FocusedButton} from "@cody-play/state/focused-element";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {FormatText} from "mdi-material-ui";
 
 const TEXT = "Change label to ";
 
 export const ChangeButtonLabel: Instruction = {
   text: TEXT,
+  icon: <FormatText />,
   isActive: context => !!context.focusedElement && context.focusedElement.type === "button",
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config) => {

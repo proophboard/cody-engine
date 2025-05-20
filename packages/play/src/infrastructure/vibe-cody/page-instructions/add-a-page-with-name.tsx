@@ -4,11 +4,13 @@ import {names} from "@event-engine/messaging/helpers";
 import {PlayTopLevelPage} from "@cody-play/state/types";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
+import { PageNextOutline } from "mdi-material-ui";
 
 const TEXT = "Add a page called ";
 
 export const AddAPageWithName: Instruction = {
   text: TEXT,
+  icon: <PageNextOutline />,
   isActive: context => !context.focusedElement,
   match: input => input.startsWith(TEXT),
   execute: async (input: string, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyResponse> => {

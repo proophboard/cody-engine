@@ -2,12 +2,28 @@ import {Instruction, InstructionProvider} from "@cody-play/app/components/core/v
 import {setButtonProperty} from "@cody-play/infrastructure/vibe-cody/utils/set-button-property";
 import {FocusedButton} from "@cody-play/state/focused-element";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {FormatText, SquareRounded, SquareRoundedOutline} from "mdi-material-ui";
 
-const makeChangeButtonVariantInstruction = (variant: string): Instruction => {
+type Variant = 'contained' | 'outlined' | 'text';
+
+const variantIcon = (variant: Variant): React.ReactNode => {
+  switch (variant) {
+    case "contained":
+      return <SquareRounded />
+    case "outlined":
+      return <SquareRoundedOutline />
+    case "text":
+      return <FormatText />
+  }
+}
+
+
+const makeChangeButtonVariantInstruction = (variant: Variant): Instruction => {
   const TEXT = `Use the ${variant} variant for the button.`;
 
   return {
     text: TEXT,
+    icon: variantIcon(variant),
     noInputNeeded: true,
     isActive: context => !!context.focusedElement && context.focusedElement.type === "button",
     match: input => input.startsWith(TEXT),
@@ -34,7 +50,7 @@ const makeChangeButtonVariantInstruction = (variant: string): Instruction => {
 export const ChangeButtonVariantProvider: InstructionProvider = {
   isActive: context => !!context.focusedElement && context.focusedElement.type === "button",
   provide: () => {
-    return ['outlined', 'contained', 'text'].map(makeChangeButtonVariantInstruction)
+    return (['outlined', 'contained', 'text'] as Variant[]).map(makeChangeButtonVariantInstruction)
   }
 }
 

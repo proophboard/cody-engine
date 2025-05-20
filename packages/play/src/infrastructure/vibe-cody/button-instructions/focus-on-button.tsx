@@ -11,6 +11,7 @@ import {FocusedButton} from "@cody-play/state/focused-element";
 import {ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 import {get} from "lodash";
 import {getUiOptions} from "@rjsf/utils";
+import { Target } from "mdi-material-ui";
 
 export const FocusOnButtonProvider: InstructionProvider = {
   isActive: context => !context.focusedElement && context.page.pathname !== '/welcome',
@@ -19,6 +20,7 @@ export const FocusOnButtonProvider: InstructionProvider = {
     const focusedButtons: Instruction[] = getAllFocusableButtonsOnPage(page, config).map(a => ({
       isActive: () => true,
       text: `Focus on the button ${getActionButtonName(a.action)}`,
+      icon: <Target />,
       match: input => input.startsWith(`Focus on button ${getActionButtonName(a.action)}`),
       noInputNeeded: true,
       execute: async () => {
@@ -36,6 +38,7 @@ export const FocusOnButtonProvider: InstructionProvider = {
           .map(btn => ({
             isActive: () => true,
             text: `Focus on the button ${getActionButtonName(btn.action)}`,
+            icon: <Target />,
             match: input => input.startsWith(`Focus on button ${getActionButtonName(btn.action)}`),
             noInputNeeded: true,
             execute: async () => {
