@@ -24,6 +24,7 @@ export const AddATableWithDefaults: Instruction = {
 
     const metadata: PlayValueObjectMetadataRaw = {
       identifier: voIdentifier,
+      hasIdentifier: true,
       ns: "App",
       schema: {
         "$items": {

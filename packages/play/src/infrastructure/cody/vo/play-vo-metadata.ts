@@ -38,6 +38,7 @@ import {isInlineItemsArraySchema, isListSchema} from "@app/shared/utils/schema-c
 
 export interface PlayValueObjectMetadataRaw {
   identifier?: string;
+  hasIdentifier?: boolean;
   schema: any;
   querySchema?: any;
   resolve?: ResolveConfig;

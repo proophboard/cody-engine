@@ -36,7 +36,7 @@ const PlayDraggable = ({
     alignItems: 'center',
     gap: theme.spacing(0.5),
     borderRadius: '0.25rem',
-    backgroundColor: theme.palette.grey['400'],
+    backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey['800'] : theme.palette.grey['200'],
     padding: '0.25rem',
     cursor: 'move',
     transform: transform

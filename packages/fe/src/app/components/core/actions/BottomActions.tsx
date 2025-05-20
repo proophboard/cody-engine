@@ -27,6 +27,7 @@ import {
 import moveButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/move-button-position';
 import updatePageButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-page-button-position';
 import updateTableButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-table-button-position';
+import {FocusedButton} from "@cody-play/state/focused-element";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -202,7 +203,9 @@ const BottomActions = (props: BottomActionsProps) => {
                   id: getActionId(action),
                   name: getActionButtonName(action),
                   type: 'button',
-                }}
+                  action,
+                  containerInfo: props.containerInfo!,
+                } as FocusedButton}
                 data={{
                   action,
                   prevContainerInfo: props.containerInfo,
@@ -250,7 +253,9 @@ const BottomActions = (props: BottomActionsProps) => {
                   id: getActionId(action),
                   name: getActionButtonName(action),
                   type: 'button',
-                }}
+                  action,
+                  containerInfo: props.containerInfo!,
+                } as FocusedButton}
                 data={{
                   action,
                   prevContainerInfo: props.containerInfo,
@@ -299,7 +304,9 @@ const BottomActions = (props: BottomActionsProps) => {
                   id: getActionId(action),
                   name: getActionButtonName(action),
                   type: 'button',
-                }}
+                  action,
+                  containerInfo: props.containerInfo!,
+                } as FocusedButton}
                 data={{
                   action,
                   prevContainerInfo: props.containerInfo,

@@ -39,8 +39,8 @@ const PlayDroppable = ({
     borderColor: theme.palette.grey['400'],
     borderRadius: '0.25rem',
     backgroundColor: isOver
-      ? theme.palette.grey['200']
-      : theme.palette.grey['100'],
+      ? theme.palette.mode === 'dark' ? theme.palette.grey['700'] : theme.palette.grey['100']
+      : theme.palette.mode === 'dark' ? theme.palette.grey['600'] :theme.palette.grey['50'],
   };
 
   useEffect(() => {
