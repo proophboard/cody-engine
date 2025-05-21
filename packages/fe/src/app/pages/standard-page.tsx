@@ -210,7 +210,7 @@ export const StandardPage = (props: Props) => {
     {environment.layout === 'task-based-ui' && pageMode === 'standard' && bottomActions.length > 0 && <Box className={'CodyBottomBar-root'} sx={{
       position: "fixed",
       width: props.drawerWidth && isLarge ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)` : `calc(100% - ${SIDEBAR_WIDTH}px)`,
-      backgroundColor: (theme) => theme.palette.mode === 'light' ? theme.palette.grey.A100 : theme.palette.background.paper,
+      backgroundColor: theme.palette.background.paper,
       borderTop: (theme) => '1px solid ' + theme.palette.grey.A200,
       left: SIDEBAR_WIDTH + 'px',
       bottom: 0,

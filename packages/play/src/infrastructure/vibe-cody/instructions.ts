@@ -13,6 +13,7 @@ import {FocusOnButtonProvider} from "@cody-play/infrastructure/vibe-cody/button-
 import {ChangeButtonColorProvider} from "@cody-play/infrastructure/vibe-cody/button-instructions/change-button-color";
 import {ChangeButtonIconProvider} from "@cody-play/infrastructure/vibe-cody/button-instructions/change-button-icon";
 import {IconOnlyButton} from "@cody-play/infrastructure/vibe-cody/button-instructions/icon-only-button";
+import {ChangeThemeProvider} from "@cody-play/infrastructure/vibe-cody/theme-instructions/change-theme";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -21,6 +22,8 @@ export const instructions: InstructionOrProvider[] = [
   AddATableWithDefaults,
   AddColumnsToTable,
   AddTableItem,
+  /* Theme */
+  ChangeThemeProvider,
   /* Button Instructions */
   FocusOnButtonProvider,
   ChangeButtonLabel,

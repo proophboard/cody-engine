@@ -31,6 +31,7 @@ import {startCase} from "lodash";
 import {DragAndDropContext} from "@cody-play/app/providers/DragAndDrop";
 import {QuestionMarkOutlined, QuestionMarkRounded} from "@mui/icons-material";
 import {includesAllWords} from "@cody-play/infrastructure/vibe-cody/utils/includes-all-words";
+import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
 
@@ -96,6 +97,17 @@ let lockChange = false;
 
 let waitingReply: InstructionExecutionCallback | undefined;
 
+const trimText = (text: string): string => {
+  let lines = text.split(`\n`);
+
+  if(lines.length > 5) {
+    lines = lines.slice(0, 5);
+    lines.push(`...`);
+  }
+
+  return lines.join(`\n`);
+}
+
 const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const env = useEnv();
   const theme = useTheme();
@@ -110,6 +122,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const [focusedElement, setFocusedElement] = useVibeCodyFocusElement();
   const { dndEvent } = useContext(DragAndDropContext);
   const inputRef = useRef<HTMLInputElement>();
+  const { mode, toggleColorMode } = useContext(ColorModeContext);
 
   useEffect(() => {
     if(dndEvent) {
@@ -145,6 +158,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     searchStr,
     focusedElement,
     setFocusedElement,
+    colorMode: mode,
+    toggleColorMode,
   }
 
   useEffect(() => {
@@ -169,7 +184,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
       if(input.noInputNeeded) {
         addMessage({
-          text: input.text,
+          text: trimText(input.text),
           author: "user"
         })
 
@@ -182,7 +197,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
     if(typeof input === "string") {
       addMessage({
-        text: input,
+        text: trimText(input),
         author: "user"
       })
 
@@ -326,6 +341,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                                           inputRef={inputRef}
                                                           variant="outlined"
                                                           multiline={true}
+                                                          maxRows={10}
                                                           placeholder={'Next instruction'}
                                                           onKeyDown={e => {
                                                             if(e.shiftKey && e.key === "Enter") {
