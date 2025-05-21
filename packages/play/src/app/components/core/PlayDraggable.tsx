@@ -51,7 +51,7 @@ const PlayDraggable = ({
     if (transform) {
       setTransformValue(transform);
     }
-  }, [transform]);
+  }, [JSON.stringify(transform)]);
 
   const isFocusedEle =
     focusableElement && focusedEle && focusableElement.id === focusedEle.id;
@@ -66,8 +66,14 @@ const PlayDraggable = ({
           {...listeners}
           {...attributes}
           sx={sx}
-          onMouseEnter={(e) => setShowTarget(true)}
-          onMouseLeave={(e) => setShowTarget(false)}
+          onMouseEnter={(e) => {
+            console.log("setShowTarget");
+            setShowTarget(true)
+          }}
+          onMouseLeave={(e) => {
+            console.log("setShowTarget");
+            setShowTarget(false)
+          }}
         >
           <Box flex={1} className="children-wrapper">
             {children}
@@ -78,8 +84,9 @@ const PlayDraggable = ({
               in={showTarget || isFocusedEle}
             >
               <IconButton
-                onClick={(e) =>
-                  setFocusedEle(isFocusedEle ? undefined : focusableElement)
+                onClick={(e) => {
+                    setFocusedEle(isFocusedEle ? undefined : focusableElement)
+                  }
                 }
                 color={isFocusedEle ? 'info' : undefined}
               >

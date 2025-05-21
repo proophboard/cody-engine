@@ -56,3 +56,13 @@ export const playNodeLabel = (nodeFQCN: string): string => {
 
   return startCase(parts.pop());
 }
+
+export const playServiceFromFQCN = (nodeFQCN: string): string => {
+  if(nodeFQCN === '') {
+    return '';
+  }
+
+  const parts = nodeFQCN.split(".");
+
+  return parts.shift() || '';
+}

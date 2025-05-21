@@ -11,6 +11,7 @@ import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyConte
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {AddColumnsToTable} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 import { TableLarge } from "mdi-material-ui";
+import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
 const TEXT = "I'd like to see a table of ";
 
@@ -92,8 +93,8 @@ export const AddATableWithDefaults: Instruction = {
         navigateTo(ctx.page.pathname);
 
         resolve({
-          cody: `Added a ${tableName} table to the page ${pageConfig.name}.`,
-          details: `Do you want to define the columns for the table? Just give me a comma separated list of column names.`,
+          cody: `Added a ${tableName} table to the page ${playNodeLabel(pageConfig.name)}.`,
+          details: `Do you want to define the columns for the table? Just give me a comma separated list of column names.\n\nHint: You can also use a bullet point list.`,
           type: CodyResponseType.Question,
           instructionReply: async (input: string, ctx, dispatch, config, navigateTo) => {
             return AddColumnsToTable.execute(input, ctx, dispatch, config, navigateTo);

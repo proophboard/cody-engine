@@ -17,11 +17,14 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import {AccountVoice, Close, HelpCircle, Target} from "mdi-material-ui";
 import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
 import {useNavigate} from "react-router-dom";
-import {UsePageResult, usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
+import {usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
 import {useEnv} from "@frontend/hooks/use-env";
 import {PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
 import {CodyResponse, CodyResponseType, ReplyCallback} from "@proophboard/cody-types";
-import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {
+  CodyResponseException,
+  playIsCodyError,
+} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import {instructions} from "@cody-play/infrastructure/vibe-cody/instructions";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
@@ -29,7 +32,6 @@ import CodyEmoji from "@cody-play/app/components/core/vibe-cody/CodyEmoji";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 import {startCase} from "lodash";
 import {DragAndDropContext} from "@cody-play/app/providers/DragAndDrop";
-import {QuestionMarkOutlined, QuestionMarkRounded} from "@mui/icons-material";
 import {includesAllWords} from "@cody-play/infrastructure/vibe-cody/utils/includes-all-words";
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 
@@ -165,6 +167,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   useEffect(() => {
     if(navigateTo) {
       navigate(navigateTo);
+      pendingNavigateTo = undefined;
       setNavigateTo(undefined);
     }
   }, [navigateTo]);
@@ -232,7 +235,18 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
         if(possibleInstructions.length) {
           setSelectedInstruction(possibleInstructions[0]);
-          executeInstruction(possibleInstructions[0], input).then(() => reset()).catch((e: any) => console.error(e));
+          executeInstruction(possibleInstructions[0], input).then(() => reset())
+            .catch((e: any) => {
+              console.error(e.toString());
+
+              if(e instanceof CodyResponseException) {
+                addMessage({
+                  text: e.codyResponse.cody + (e.codyResponse.details ? `\n\n${e.codyResponse.details}` : ''),
+                  author: "cody",
+                  error: true,
+                })
+              }
+            });
           return;
         }
 
@@ -242,7 +256,18 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
           error: true
         })
       } else {
-        executeInstruction(selectedInstruction, input).then(() => reset()).catch((e: any) => console.error(e));
+        executeInstruction(selectedInstruction, input).then(() => reset())
+          .catch((e: any) => {
+            console.error(e.toString());
+
+            if(e instanceof CodyResponseException) {
+              addMessage({
+                text: e.codyResponse.cody + (e.codyResponse.details ? `\n\n${e.codyResponse.details}` : ''),
+                author: "cody",
+                error: true,
+              })
+            }
+          });
       }
     } else {
       reset();
@@ -253,11 +278,11 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     setSelectedInstruction(undefined);
     setSearchStr('');
     setValue(null);
+    setNavigateTo(undefined);
+    pendingNavigateTo = undefined;
   }
 
   const executeInstruction = async (instruction: Instruction, userInput: string) => {
-    console.log(instruction, userInput);
-
     const codyResponse = await instruction.execute(
       userInput,
       vibeCodyCtx,
@@ -269,8 +294,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
           pendingNavigateTo = undefined;
           setNavigateTo(route);
         }, 30);
-
-    });
+      });
 
     addMessage({
       text: codyResponse.cody + (codyResponse.details ? `\n\n${codyResponse.details}` : ''),
@@ -323,7 +347,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                            marginRight: m.author === "user" ? theme.spacing(4) : undefined,
                                            marginLeft: m.author === 'cody' ? theme.spacing(4) : undefined}}
                                          icon={m.author === 'cody' ? <CodyEmoji style={{width: '30px', height: '30px'}} /> : <AccountVoice />}
-                                         severity={m.author === 'user' ? 'warning' : m.error ? 'error' : 'success'}>
+                                         severity={m.author === 'user' ? 'info' : m.error ? 'error' : 'success'}>
         <pre style={{whiteSpace: "pre-wrap"}}>{m.text}</pre>
         {m.helpLink && <Typography><Link href={m.helpLink.href} target="_blank" rel="noopener noreferrer">{m.helpLink.text}</Link></Typography>}
       </Alert>)}
@@ -336,63 +360,65 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
           <AlertTitle>{startCase(focusedElement.type)} {focusedElement.name} is focused</AlertTitle>
           Changes made by Cody will only affect the focused element, and prompt suggestions are filtered accordingly.
         </Alert>}
-        <Autocomplete<Instruction, false, false, true> renderInput={(params) => <TextField {...params}
-                                                          helperText={<span>Start typing to get suggestions. Use Shift+Enter for multiline.</span>}
-                                                          inputRef={inputRef}
-                                                          variant="outlined"
-                                                          multiline={true}
-                                                          maxRows={10}
-                                                          placeholder={'Next instruction'}
-                                                          onKeyDown={e => {
-                                                            if(e.shiftKey && e.key === "Enter") {
-                                                              lockChange = true;
-                                                            }
+        <Autocomplete<Instruction, false, false, true>
+          renderInput={(params) => <TextField {...params}
+           helperText={<span>Start typing to get suggestions. Use Shift+Enter for multiline.</span>}
+           inputRef={inputRef}
+           variant="outlined"
+           multiline={true}
+           maxRows={10}
+           placeholder={'Next instruction'}
+           onKeyDown={e => {
+             if(e.shiftKey && e.key === "Enter") {
+               lockChange = true;
+             }
 
-                                                            if(e.key === "Escape") {
-                                                              setFocusedElement(undefined);
-                                                              reset();
-                                                            }
-                                                          }}
-                                                          onKeyUp={() => {
-                                                            lockChange = false;
-                                                          }}
-                                                         />}
-                                   options={suggestInstructions(vibeCodyCtx, config, env)}
-                                   renderOption={(props, option) => {
-                                     return (
-                                       <ListItem {...props}>
-                                         {option.icon && <ListItemIcon>{option.icon}</ListItemIcon>}
-                                         <ListItemText>{option.text}</ListItemText>
-                                       </ListItem>
-                                     );
-                                   }}
-                                   filterOptions={(options, state) => {
-                                     if (state.inputValue.length >= 1) {
-                                       return options.filter((item) =>
-                                         includesAllWords(String(item.text).toLowerCase(), state.inputValue.toLowerCase().split(" "))
-                                       );
-                                     }
-                                     return [];
-                                   }}
-                                   freeSolo={true}
-                                   value={value}
-                                   autoComplete={false}
-                                   autoHighlight={true}
-                                   inputValue={searchStr}
-                                   onChange={(e,v) => {
-                                     e.stopPropagation();
+             if(e.key === "Escape") {
+               setFocusedElement(undefined);
+               reset();
+             }
+           }}
+           onKeyUp={() => {
+             lockChange = false;
+           }}
+        />}
+       options={suggestInstructions(vibeCodyCtx, config, env)}
+       renderOption={(props, option) => {
+         return (
+           <ListItem {...props}>
+             {option.icon && <ListItemIcon>{option.icon}</ListItemIcon>}
+             <ListItemText>{option.text}</ListItemText>
+           </ListItem>
+         );
+       }}
+       filterOptions={(options, state) => {
+         if (state.inputValue.length >= 1) {
+           return options.filter((item) =>
+             includesAllWords(String(item.text).toLowerCase(), state.inputValue.toLowerCase().split(" "))
+           );
+         }
+         return [];
+       }}
+       freeSolo={true}
+       value={value}
+       autoComplete={false}
+       autoHighlight={false}
+       inputValue={searchStr}
+       onChange={(e,v) => {
+         e.stopPropagation();
 
-                                     if(!lockChange) {
-                                       handleInstruction(v).catch(e => console.error(e));
-                                     }
-                                   }}
-                                   onInputChange={(e,v) => {
-                                     if(v === `\n`) {
-                                       v = '';
-                                     }
-                                     setSearchStr(v)
-                                   }}
-                                   getOptionLabel={o => typeof o === "string" ? o : o.text}
+         debugger;
+         if(!lockChange) {
+           handleInstruction(v).catch(e => console.error(e));
+         }
+       }}
+       onInputChange={(e,v) => {
+         if(v === `\n`) {
+           v = '';
+         }
+         setSearchStr(v)
+       }}
+       getOptionLabel={o => typeof o === "string" ? o : o.text}
         />
       </Box>
     </DialogContent>

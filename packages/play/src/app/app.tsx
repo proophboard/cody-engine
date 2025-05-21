@@ -149,7 +149,6 @@ export function App() {
 
       const newRoutes = Object.values(updatedState.pages).map((p) => p.route);
 
-      console.log(currentRoutes, newRoutes);
       if (
         currentRoutes.length === newRoutes.length &&
         JSON.stringify(currentRoutes) === JSON.stringify(newRoutes)

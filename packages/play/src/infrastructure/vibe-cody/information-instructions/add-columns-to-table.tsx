@@ -3,12 +3,24 @@ import {CodyResponse, CodyResponseType} from "@proophboard/cody-types";
 import {PlayInformationRuntimeInfo, PlayPageDefinition} from "@cody-play/state/types";
 import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
-import {names} from "@event-engine/messaging/helpers";
+import {Names, names} from "@event-engine/messaging/helpers";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {isInlineItemsArraySchema, isObjectSchema} from "@app/shared/utils/schema-checks";
 import {camelCaseToTitle} from "@cody-play/infrastructure/utils/string";
-import {playDefinitionIdFromFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {
+  playDefinitionIdFromFQCN,
+  playFQCNFromDefinitionId,
+  playServiceFromFQCN
+} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {TableColumn} from "mdi-material-ui";
+import {isMultilineText} from "@cody-play/infrastructure/vibe-cody/utils/is-multiline-text";
+import {
+  getSchemaFromNodeDescription
+} from "@cody-play/infrastructure/vibe-cody/utils/schema/get-schema-from-node-description";
+import {namespaceNames, valueObjectNamespaceFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
+import {JSONSchema7} from "json-schema";
+import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
+import {withId} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/with-id";
 
 const TEXT = 'Add the following columns to the table: ';
 
@@ -18,13 +30,6 @@ export const AddColumnsToTable: Instruction = {
   isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config): Promise<CodyResponse> => {
-    const columns = input.replace(TEXT, '')
-      .replaceAll(`\n`, ',')
-      .replaceAll(` and `, ',')
-      .replaceAll(';', ',')
-      .replaceAll(`- `, '')
-      .split(",")
-      .map(c => names(c.trim()));
 
     const pageConfig = ctx.page.handle.page;
 
@@ -37,23 +42,25 @@ export const AddColumnsToTable: Instruction = {
       }
     }
 
-    const schema = cloneDeepJSON(tableVO.schema);
+    const tableVoSchema = new Schema(cloneDeepJSON(tableVO.schema) as JSONSchema7, true);
     let uiSchema = cloneDeepJSON(tableVO.uiSchema);
+    let itemSchema = new Schema({});
+    let itemFQCN = '';
 
-    // @TODO: handle ref items
-    if(!isInlineItemsArraySchema(schema)) {
-      return {
-        cody: `I can't add columns to the table, because the schema of the view component ${tableVO.desc.name} is not an array schema (no items property defined).`,
-        type: CodyResponseType.Error,
-        details: `There seems to be something wrong with your Cody Play configuration of the page. Please have a look at the Cody Play tab in the Backend dialog.`
-      }
+    if(tableVoSchema.getListItemsSchema(itemSchema).isRef()) {
+      itemSchema = tableVoSchema.getListItemsSchema(itemSchema).resolveRef(playServiceFromFQCN(tableVO.desc.name), config.types)
+      itemFQCN = playFQCNFromDefinitionId(tableVoSchema.getListItemsSchema(itemSchema).getRef());
+    } else {
+      itemSchema = tableVoSchema.getListItemsSchema(itemSchema);
+      itemFQCN = tableVO.desc.name + 'Item'
+
     }
 
-    const itemInfo = config.types[tableVO.desc.name + 'Item'];
+    const itemInfo = config.types[itemFQCN];
 
     if(!itemInfo) {
       return {
-        cody: `I can't add columns to the table. I found the information schema for the table ${tableVO.desc.name}, but not the schema for the column items. There should be a schema with name "${tableVO.desc.name}Item" registered in the types section of the Cody Play Config, but there is none.`
+        cody: `I can't add columns to the table. I found the information schema for the table ${tableVO.desc.name}, but not the schema for the column items. There should be a schema with name "${itemFQCN}" registered in the types section of the Cody Play Config, but there is none.`
       }
     }
 
@@ -72,10 +79,7 @@ export const AddColumnsToTable: Instruction = {
     const existingColumns = uiSchema['ui:table']['columns'];
     const existingColumnNames = existingColumns.map(c => typeof c === "string" ? c : c.field);
 
-
-    const itemsSchema = schema.items;
-
-    if(!isObjectSchema(itemsSchema)) {
+    if(!itemSchema.isObject()) {
       return {
         cody: `I can't add columns to the table, because the items schema of ${tableVO.desc.name} is not of type object and therefor no items properties can be defined.`,
         type: CodyResponseType.Error,
@@ -83,19 +87,51 @@ export const AddColumnsToTable: Instruction = {
       }
     }
 
-    columns.forEach(c => {
-      if(!itemsSchema.properties[c.propertyName]) {
-        itemsSchema.properties[c.propertyName] = {type: "string", title: camelCaseToTitle(c.propertyName)};
-        itemsSchema.required.push(c.propertyName);
-      }
+    const serviceNames = names(playServiceFromFQCN(tableVO.desc.name));
+    const ns = namespaceNames(valueObjectNamespaceFromFQCN(tableVO.desc.name));
+    let columnNames: Names[] = [];
 
-      if(!existingColumnNames.includes(c.propertyName)) {
-        existingColumns.push({
-          field: c.propertyName,
-          headerName: camelCaseToTitle(c.propertyName)
-        })
-      }
-    })
+    if(isMultilineText(input)) {
+      const schema = getSchemaFromNodeDescription(
+        input.replace(TEXT, '')
+          .split(`\n`)
+          .filter(line => line.trim() !== '')
+          .join(`\n`)
+      );
+
+      schema.getObjectProperties().forEach(prop => {
+        if(!itemSchema.getObjectPropertySchema(prop)) {
+          const propSchema = schema.getObjectPropertySchema(prop, new Schema({type: "string", title: camelCaseToTitle(prop)}));
+          const propJsonSchema = propSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`);
+          if(!propJsonSchema.title) {
+            propJsonSchema.title = camelCaseToTitle(prop);
+          }
+
+          itemSchema.setObjectProperty(prop, new Schema(propJsonSchema, true), schema.isRequired(prop));
+        }
+
+        if(!existingColumnNames.includes(prop)) {
+          existingColumns.push(prop);
+        }
+      })
+    } else {
+      columnNames = input.replace(TEXT, '')
+        .replaceAll(` and `, ',')
+        .replaceAll(';', ',')
+        .replaceAll(`- `, '')
+        .split(",")
+        .map(c => names(c.trim()));
+
+      columnNames.forEach(c => {
+        if(!itemSchema.getObjectPropertySchema(c.propertyName)) {
+          itemSchema.setObjectProperty(c.propertyName, new Schema({type: "string", title: camelCaseToTitle(c.propertyName)}));
+        }
+
+        if(!existingColumnNames.includes(c.propertyName)) {
+          existingColumns.push(c.propertyName)
+        }
+      })
+    }
 
     const editedCtx = getEditedContextFromConfig(config);
 
@@ -106,13 +142,13 @@ export const AddColumnsToTable: Instruction = {
       name: tableVO.desc.name,
       information: {
         desc: tableVO.desc,
-        schema,
+        schema: withId(tableVoSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`), tableVO.desc.name),
         uiSchema,
         factory: tableVO.factory,
       },
       definition: {
         definitionId: playDefinitionIdFromFQCN(tableVO.desc.name),
-        schema
+        schema: withId(tableVoSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`), tableVO.desc.name),
       }
     });
 
@@ -123,13 +159,13 @@ export const AddColumnsToTable: Instruction = {
       name: itemInfo.desc.name,
       information: {
         desc: itemInfo.desc,
-        schema: itemsSchema,
+        schema: withId(itemSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`), itemInfo.desc.name),
         uiSchema: itemInfo.uiSchema,
         factory: itemInfo.factory,
       },
       definition: {
         definitionId: playDefinitionIdFromFQCN(itemInfo.desc.name),
-        schema: itemsSchema
+        schema: withId(itemSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`), itemInfo.desc.name),
       }
     });
 
