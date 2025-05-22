@@ -94,10 +94,6 @@ export class SchemaFromNodeDescriptionParser {
       return INVALID_LINE;
     }
 
-    if(lineStr.trimStart().charAt(0) !== "-") {
-      return INVALID_LINE;
-    }
-
     const parts = lineStr.split(":");
 
     let prop = '';
@@ -115,7 +111,11 @@ export class SchemaFromNodeDescriptionParser {
       type = `string|format:${type}`;
     }
 
-    const isSubSchema = prop.charAt(0) !== "-";
+    if(type && type.startsWith('time')) {
+      type = `string|format:${type}`;
+    }
+
+    const isSubSchema = prop.startsWith('  ');
     const normalizedPropName = prop.trim().replace(/^-/, '').trimStart();
     const propName = names(normalizedPropName).propertyName;
     const optional = normalizedPropName.endsWith('?');
@@ -126,6 +126,12 @@ export class SchemaFromNodeDescriptionParser {
         schemaType = "object";
       } else if (isShorthand(type.trim())) {
         schemaType = type.trim() as JSONSchema7TypeName;
+      } else if (type.includes(",") && !type.trim().startsWith('enum:')) {
+        // that might be an enum list
+        schemaType = `enum:${type.split(',').map(i => i.trim()).join(',')}` as JSONSchema7TypeName;
+      } else {
+        // Enforce a ref schema with default ns
+        schemaType = `/App/${names(type).className}` as JSONSchema7TypeName;
       }
     }
 

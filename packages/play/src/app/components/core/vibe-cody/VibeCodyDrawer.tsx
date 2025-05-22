@@ -407,7 +407,6 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
        onChange={(e,v) => {
          e.stopPropagation();
 
-         debugger;
          if(!lockChange) {
            handleInstruction(v).catch(e => console.error(e));
          }

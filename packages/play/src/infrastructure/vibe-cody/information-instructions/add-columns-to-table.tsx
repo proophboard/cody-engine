@@ -2,10 +2,13 @@ import {Instruction} from "@cody-play/app/components/core/vibe-cody/VibeCodyDraw
 import {CodyResponse, CodyResponseType} from "@proophboard/cody-types";
 import {PlayInformationRuntimeInfo, PlayPageDefinition} from "@cody-play/state/types";
 import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
-import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {
+  isListDescription,
+  isQueryableStateListDescription,
+  isStateDescription
+} from "@event-engine/descriptions/descriptions";
 import {Names, names} from "@event-engine/messaging/helpers";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
-import {isInlineItemsArraySchema, isObjectSchema} from "@app/shared/utils/schema-checks";
 import {camelCaseToTitle} from "@cody-play/infrastructure/utils/string";
 import {
   playDefinitionIdFromFQCN,
@@ -21,6 +24,10 @@ import {namespaceNames, valueObjectNamespaceFromFQCN} from "@cody-engine/cody/ho
 import {JSONSchema7} from "json-schema";
 import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
 import {withId} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/with-id";
+import {CodyResponseException} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {merge} from "lodash/fp";
+import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
+import {startCase} from "lodash";
 
 const TEXT = 'Add the following columns to the table: ';
 
@@ -76,6 +83,7 @@ export const AddColumnsToTable: Instruction = {
       uiSchema['ui:table']['columns'] = [];
     }
 
+    const itemUiSchema = cloneDeepJSON(itemInfo.uiSchema || {});
     const existingColumns = uiSchema['ui:table']['columns'];
     const existingColumnNames = existingColumns.map(c => typeof c === "string" ? c : c.field);
 
@@ -105,6 +113,46 @@ export const AddColumnsToTable: Instruction = {
           const propJsonSchema = propSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`);
           if(!propJsonSchema.title) {
             propJsonSchema.title = camelCaseToTitle(prop);
+          }
+
+          if(propSchema.isRef()) {
+            const propRefInfo = propSchema.getRefRuntimeInfo(serviceNames.className, config.types);
+
+            if(!propRefInfo) {
+              throw new CodyResponseException({
+                cody: `I can't resolve the reference "${propSchema.getRef()}" to a known data type in the app. Maybe it's a typo? Please check your input and try again.`,
+                type: CodyResponseType.Error
+              })
+            }
+
+            const {desc} = propRefInfo;
+
+            if(isStateDescription(desc)) {
+              const matchingListVOs = Object.values(config.types)
+                .filter(t => isListDescription(t.desc) && t.desc.itemType === desc.name);
+
+              if(matchingListVOs.length > 0) {
+                propJsonSchema.$ref = `${propJsonSchema.$ref}:${desc.identifier}`;
+
+                const firstMatch = matchingListVOs[0];
+
+                if(!itemUiSchema[prop] || !itemUiSchema[prop]['ui:widget']) {
+                  itemUiSchema[prop] = merge(itemUiSchema[prop] || {}, {
+                    'ui:widget': 'DataSelect',
+                    'ui:options': {
+                      'data': registryIdToDataReference(firstMatch.desc.name),
+                      'text': (new Schema(propRefInfo.schema as JSONSchema7, true))
+                        .getDisplayNamePropertyCandidates().map(c => `data.${c}`).join(` + ' ' + `) || `data.${desc.identifier}`,
+                      'value': `data.${desc.identifier}`
+                    }
+                  })
+
+                  if(!itemUiSchema[prop]['ui:title']) {
+                    itemUiSchema[prop]['ui:title'] = camelCaseToTitle(prop);
+                  }
+                }
+              }
+            }
           }
 
           itemSchema.setObjectProperty(prop, new Schema(propJsonSchema, true), schema.isRequired(prop));
@@ -160,7 +208,7 @@ export const AddColumnsToTable: Instruction = {
       information: {
         desc: itemInfo.desc,
         schema: withId(itemSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`), itemInfo.desc.name),
-        uiSchema: itemInfo.uiSchema,
+        uiSchema: itemUiSchema,
         factory: itemInfo.factory,
       },
       definition: {

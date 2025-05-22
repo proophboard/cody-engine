@@ -185,13 +185,14 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
   }
 }
 
-const getInlineItemDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, desc: ValueObjectDescription): ValueObjectDescription | QueryableValueObjectDescription => {
+const getInlineItemDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, desc: ValueObjectDescription): ValueObjectDescription | QueryableValueObjectDescription | StateDescription => {
   return {
     ...playGetProophBoardInfoFromDescription(desc),
     isList: false,
     isQueryable: desc.isQueryable,
     name: voName + 'Item',
     hasIdentifier: desc.hasIdentifier,
+    identifier: desc.hasIdentifier ? voMeta.identifier : undefined,
     isNotStored: desc.isNotStored,
     collection: desc.isQueryable && !desc.isNotStored? (desc as QueryableStateListDescription).collection || names(vo.getName()).constantName.toLowerCase() + '_collection' : undefined,
   }

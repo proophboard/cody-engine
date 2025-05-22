@@ -17,11 +17,13 @@ import {
   ShorthandObject,
   splitPropertyRef
 } from "./shorthand";
-import {PlayInformationRegistry} from "@cody-play/state/types";
+import {PlayInformationRegistry, PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {playGetVoRuntimeInfoFromDataReference} from "@cody-play/state/play-get-vo-runtime-info-from-data-reference";
-import {playFQCNFromDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {playFQCNFromDefinitionId, playServiceFromFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {playwithErrorCheck} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {playJsonSchemaFromShorthand} from "@cody-play/infrastructure/cody/schema/play-json-schema-from-shorthand";
+import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-normalize-refs";
+import {namespaceToJSONPointer, prepareNs} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 
 
 export class Schema {
@@ -140,26 +142,20 @@ export class Schema {
     return notSetValue;
   }
 
-  public resolveRef(sourceService: string, types: PlayInformationRegistry): Schema {
-    const emptySchema = new Schema({});
-
+  public getRefRuntimeInfo(sourceService: string, types: PlayInformationRegistry): PlayInformationRuntimeInfo | undefined {
     if(!this.isRef()) {
-      return emptySchema;
+      return;
     }
 
-    if(this.isShorthand()) {
+    if(this.shorthand) {
       const [refWithoutProp, prop] = splitPropertyRef(this.getRef());
 
       try {
-        const refVo =  playGetVoRuntimeInfoFromDataReference(refWithoutProp, sourceService, types);
-        return new Schema(refVo.schema as JSONSchema7);
+        return playGetVoRuntimeInfoFromDataReference(refWithoutProp, sourceService, types);
       } catch (e) {
         console.warn(`Could not resolve ref: ${this.getRef()} to a type registered in the cody play config`, e);
-        return emptySchema;
+        return;
       }
-
-
-
     }
 
     if(this.jsonSchema) {
@@ -167,10 +163,22 @@ export class Schema {
 
       if(!jsonSchemaRefVo) {
         console.warn(`Could not resolve ref: ${this.getRef()} to a type registered in the cody play config`);
-        return emptySchema;
+        return;
       }
+    }
+  }
 
-      return new Schema(jsonSchemaRefVo.schema as JSONSchema7);
+  public resolveRef(sourceService: string, types: PlayInformationRegistry): Schema {
+    const emptySchema = new Schema({});
+
+    if(!this.isRef()) {
+      return emptySchema;
+    }
+
+    const refInfo = this.getRefRuntimeInfo(sourceService, types);
+
+    if(refInfo) {
+      return new Schema(refInfo.schema as JSONSchema7, true);
     }
 
     return emptySchema;
@@ -223,6 +231,34 @@ export class Schema {
     }
 
     return false;
+  }
+
+  public getDisplayNamePropertyCandidates(): string[] {
+    const candidates = this.getObjectProperties().filter(prop => {
+      if(prop.toLowerCase().includes('name')) {
+        const propSchema = this.getObjectPropertySchema(prop, undefined);
+
+        if(!propSchema) {
+          return false;
+        }
+
+        return propSchema.isString() && !propSchema.isString('uuid');
+      }
+    })
+
+    if(candidates.length) {
+      return candidates;
+    }
+
+    return this.getObjectProperties().filter(prop => {
+      const propSchema = this.getObjectPropertySchema(prop, undefined);
+
+      if(!propSchema) {
+        return false;
+      }
+
+      return propSchema.isString() && !propSchema.isString('uuid');
+    })
   }
 
   public getObjectProperties(): string[] {
@@ -324,7 +360,9 @@ export class Schema {
       return this.jsonSchema;
     }
 
-    return playwithErrorCheck(playJsonSchemaFromShorthand, [this.shorthand || "{}", namespace || '/']) as JSONSchema7;
+    const service = playServiceFromFQCN(prepareNs(namespace || '').split('/').join('.'));
+
+    return playNormalizeRefs(playwithErrorCheck(playJsonSchemaFromShorthand, [this.shorthand || "{}", namespace || '/']), service) as JSONSchema7;
   }
 
   public toString(): string {

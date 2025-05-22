@@ -49,6 +49,9 @@ export const isPrimitive = (schema: string | ShorthandObject): boolean => {
     type = schema.$type;
   }
 
+  if(type.startsWith('enum:')) {
+    return true;
+  }
 
   return PRIMITIVE_SCHEMA_TYPES.includes(type as JSONSchema7TypeName);
 }

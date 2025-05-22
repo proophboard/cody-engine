@@ -4,6 +4,7 @@ import {Writable} from "json-schema-to-ts/lib/types/type-utils";
 import {UiSchema} from "@rjsf/utils";
 import {names} from "@event-engine/messaging/helpers";
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
+import {merge} from "lodash/fp";
 
 export type UiSchemaTFunction = (uiSchema: UiSchema, key: string) => UiSchema;
 export type JsonSchemaTFunction = (schema: JSONSchema7, key: string) => JSONSchema7;
@@ -85,6 +86,14 @@ export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: 
   return Object.keys(uiSchema).length > 0 ? uiSchema : undefined;
 }
 
+const withOriginalTitle = (resolvedSchema: JSONSchema7, originalTitle?: string): JSONSchema7 => {
+  if(!originalTitle) {
+    return resolvedSchema;
+  }
+
+  return merge(resolvedSchema, {title: originalTitle})
+}
+
 export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: DeepReadonly<JSONSchema7>}, isNested?: boolean, t?: JsonSchemaTFunction): JSONSchema7 => {
   schema = cloneSchema(schema);
 
@@ -114,10 +123,10 @@ export const resolveRefs = (schema: JSONSchema7, definitions: {[id: string]: Dee
           throw new Error(`The reference "${schema['$ref']}" cannot be resolved. Property "${prop}" is not found in the resolved schema of "${ref}"!`);
         }
 
-        return resolvedSchema.properties[prop] as JSONSchema7;
+        return withOriginalTitle(resolvedSchema.properties[prop] as JSONSchema7, schema.title);
       }
 
-      return resolvedSchema as JSONSchema7;
+      return withOriginalTitle(resolvedSchema as JSONSchema7, schema.title);
     }
     throw new Error(`The reference "${schema['$ref']}" cannot be resolved. It is not listed in types/definitions.ts!`);
   }
