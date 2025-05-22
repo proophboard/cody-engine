@@ -14,14 +14,19 @@ import {ChangeButtonColorProvider} from "@cody-play/infrastructure/vibe-cody/but
 import {ChangeButtonIconProvider} from "@cody-play/infrastructure/vibe-cody/button-instructions/change-button-icon";
 import {IconOnlyButton} from "@cody-play/infrastructure/vibe-cody/button-instructions/icon-only-button";
 import {ChangeThemeProvider} from "@cody-play/infrastructure/vibe-cody/theme-instructions/change-theme";
+import {
+  RenameTableRowDataTypeProvider
+} from "@cody-play/infrastructure/vibe-cody/information-instructions/rename-table-row-data-type";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
 export const instructions: InstructionOrProvider[] = [
   AddAPageWithName,
+  /* Table Instructions */
   AddATableWithDefaults,
   AddColumnsToTable,
   AddTableItem,
+  RenameTableRowDataTypeProvider,
   /* Theme */
   ChangeThemeProvider,
   /* Button Instructions */

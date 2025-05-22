@@ -60,6 +60,7 @@ import {ElementEditedContext} from "@cody-play/infrastructure/cody/cody-message-
 import {Map} from "immutable";
 import {Node} from "@proophboard/cody-types";
 import {LayoutType} from "@frontend/app/layout/layout-type";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -155,6 +156,17 @@ const syncTypesWithSharedRegistry = (config: CodyPlayConfig): void => {
   for (const typeName in config.types) {
     sharedTypes[typeName] = config.types[typeName] as any;
   }
+}
+
+export const cloneConfig = (config: CodyPlayConfig): CodyPlayConfig => {
+  const shallowClone = {...config};
+
+  delete shallowClone.pages.Welcome;
+  delete shallowClone.views['Core.Welcome'];
+
+  const deepClone = cloneDeepJSON(shallowClone);
+
+  return enhanceConfigWithDefaults(deepClone);
 }
 
 export const enhanceConfigWithDefaults = (config: CodyPlayConfig): CodyPlayConfig => {

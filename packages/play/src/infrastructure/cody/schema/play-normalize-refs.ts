@@ -33,7 +33,7 @@ export const playNormalizeRefs = (schema: JSONSchema7, service: string): JSONSch
   })
 }
 
-const visitRef = (schema: JSONSchema7, visitor: (ref: string) => string): JSONSchema7 => {
+export const visitRef = (schema: JSONSchema7, visitor: (ref: string) => string): JSONSchema7 => {
   const internalSchema: any = schema;
 
   if(internalSchema['$id']) {
