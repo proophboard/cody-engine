@@ -60,6 +60,11 @@ const makeInstructionReplyCallback = (withHint: boolean): InstructionExecutionCa
           delete palette.divider;
         }
 
+        // Hover is too dark without opacity
+        if(palette.action && palette.action.hover && palette.action.hover.startsWith('#')) {
+          palette.action.hover = hexToRGBA(palette.action.hover, '0.04');
+        }
+
         if(palette.mode === "dark") {
           theme = merge(theme, {darkPalette: palette})
           toggleMode = ctx.colorMode !== "dark";
