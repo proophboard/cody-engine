@@ -24,6 +24,7 @@ import {
   PlaySchemaDefinitions,
 } from '@cody-play/state/types';
 import {
+  isListDescription,
   isQueryableListDescription,
   isQueryableNotStoredStateListDescription,
   isQueryableStateListDescription,
@@ -32,6 +33,7 @@ import {
 import { CONTACT_PB_TEAM } from '@cody-play/infrastructure/error/message';
 import { getUiOptions, UiSchema } from '@rjsf/utils';
 import {
+  enrichColumnConfigFromSchema,
   getColumns,
   getTableDensity,
   getTablePageSizeConfig,
@@ -74,6 +76,7 @@ import { showTitle } from '@frontend/util/schema/show-title';
 import { informationTitle } from '@frontend/util/information/titelize';
 import { ActionContainerInfo } from '@frontend/app/components/core/form/types/action';
 import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
+import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
 
 const PlayTableView = (
   params: any,
@@ -267,10 +270,15 @@ const compileTableColumns = (
     );
   }
 
+  const itemSchema = resolveRefs(schema.items, schemaDefinitions);
+  const wrappedItemSchema = new Schema(itemSchema, true);
+  const itemUiSchema = getItemUiSchema(information, types);
+
   const columns = getColumns(
     information,
     uiSchema,
-    resolveRefs(schema.items, schemaDefinitions)
+    itemSchema,
+    itemUiSchema
   );
 
   const columnQueries: RefQueryMap = {};
@@ -307,6 +315,12 @@ const compileTableColumns = (
       throw new Error(
         `Missing "field" property in a column definition. Every column needs to have at least a field property. Please check your configuration`
       );
+    }
+
+    const columnSchema = wrappedItemSchema.getObjectPropertySchema(column.field);
+
+    if(columnSchema) {
+      column = enrichColumnConfigFromSchema(column, (columnSchema as Schema).toJsonSchema(), itemUiSchema[column.field] || {});
     }
 
     if (!column['headerName']) {
@@ -427,7 +441,7 @@ const compileTableColumns = (
               !isQueryableNotStoredStateListDescription(refListDesc)
             ) {
               throw new Error(
-                `The ref in column "${column.field}" is not a list with an itemIdentifier! Either reference a list if an item identifier or configure one in the ref options!`
+                `The ref in column "${column.field}" is not a list with an itemIdentifier! Either reference a list with an item identifier or configure one in the ref options!`
               );
             }
 
@@ -501,6 +515,16 @@ const compileTableColumns = (
 
   return gridColDefs;
 };
+
+const getItemUiSchema = ({desc}: PlayInformationRuntimeInfo, types: PlayInformationRegistry): UiSchema => {
+  const itemType = isListDescription(desc) ? desc.itemType : '';
+
+  if(!types[itemType]) {
+    return {}
+  }
+
+  return types[itemType].uiSchema || {};
+}
 
 const getVOFromTypes = (
   refOrFQCN: string,
