@@ -11,22 +11,57 @@ import jexl from "@app/shared/jexl/get-configured-jexl";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {useEnv} from "@frontend/hooks/use-env";
 import {commands} from "@frontend/app/components/commands";
-import {Link, useParams} from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row-jexl-context";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import PlayConnectedCommand from "@cody-play/app/components/core/PlayConnectedCommand";
 import PlayDirectSubmitCommand from "@cody-play/app/components/core/PlayDirectSubmitCommand";
 import {ButtonConfig} from "@frontend/app/components/core/button/button-config";
+import {Plus, Square} from "mdi-material-ui";
+import {GridActionsCellItem} from "@mui/x-data-grid";
+import {commandTitle} from "@frontend/app/components/core/CommandButton";
 
 interface OwnProps {
   action: Action;
   defaultService: string;
   jexlCtx: FormJexlContext | TableRowJexlContext;
   onDialogClose?: () => void;
+  asGridActionsCellItem?: boolean;
+  showInMenu?: boolean;
 }
 
 type ActionButtonProps = OwnProps;
+
+const makeGridActionsCellItemLink = (config: ButtonConfig, to: string, external: boolean, navigate: (to: string) => void) => {
+  return <GridActionsCellItem
+    label={config.label || ''}
+    icon={(config.icon ? config.icon :  <Square />) as any}
+    showInMenu={config.showInMenu}
+    onClick={(e: any) => {
+      if(external) {
+        window.location.href = to;
+      } else {
+        navigate(to);
+      }
+    }}
+    disabled={config.disabled}
+    color={config.color}
+    sx={{ ...config.style }}
+  />
+}
+
+const makeGridActionsCellItemRulesBtn = (config: ButtonConfig, onClick: () => void) => {
+  return <GridActionsCellItem
+    label={config.label || ''}
+    icon={(config.icon ? config.icon :  <Square />) as any}
+    showInMenu={config.showInMenu}
+    onClick={onClick}
+    disabled={config.disabled}
+    color={config.color}
+    sx={{ ...config.style }}
+  />
+}
 
 const makeButton = (config: ButtonConfig, additionalProps: object) => {
   if (config.hidden) {
@@ -60,12 +95,21 @@ const makeButton = (config: ButtonConfig, additionalProps: object) => {
   }
 };
 
-const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: ActionButtonProps) => {
+const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose, asGridActionsCellItem, showInMenu }: ActionButtonProps) => {
   const env = useEnv();
   const { config } = useContext(configStore);
   const [, setGlobalStore] = useGlobalStore();
   const params = useParams();
   const buttonProps = determineButtonConfig(action.button, {}, jexlCtx, env);
+  const navigate = useNavigate();
+
+  if(asGridActionsCellItem) {
+    buttonProps.asGridActionsCellItem = true;
+
+    if(showInMenu) {
+      buttonProps.showInMenu = true;
+    }
+  }
 
   if (isCommandAction(action)) {
     let initialValues;
@@ -115,7 +159,9 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
 
   if (isLinkAction(action)) {
     if (action.href) {
-      return makeButton(action.button, { component: 'a', href: action.href });
+      return buttonProps.asGridActionsCellItem
+        ? makeGridActionsCellItemLink(buttonProps, action.href, true, navigate)
+        : makeButton({...action.button, asGridActionsCellItem, showInMenu}, { component: 'a', href: action.href });
     } else if (action.pageLink) {
       const paramsMapping: Record<string, any> = {};
       const pageLink = typeof action.pageLink === "string" ? {page: action.pageLink, mapping: undefined} : action.pageLink;
@@ -138,12 +184,22 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose }: Action
         { ...jexlCtx.routeParams, ...paramsMapping }
       );
 
-      return makeButton(buttonProps, { component: Link, to: path })
+      return buttonProps.asGridActionsCellItem
+        ? makeGridActionsCellItemLink(buttonProps, path, false, navigate)
+        : makeButton(buttonProps, { component: Link, to: path })
     }
   }
 
   if (isRulesAction(action)) {
-    return makeButton(buttonProps, {
+    return buttonProps.asGridActionsCellItem
+      ? makeGridActionsCellItemRulesBtn(buttonProps, () => {
+        (async () => {
+          const exec = makeAsyncExecutable(action.rules);
+          await exec(jexlCtx);
+          setGlobalStore(jexlCtx.store);
+        })().catch((e) => console.error(e));
+      })
+      : makeButton(buttonProps, {
       onClick: (event: MouseEvent) => {
         event.preventDefault();
         event.stopPropagation();

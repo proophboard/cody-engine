@@ -1,5 +1,5 @@
-import {StringOrTableColumnUiSchema, TableColumnUiSchema} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
+import {StringOrTableColumnUiSchema} from "@cody-engine/cody/hooks/utils/value-object/types";
 
-export const isActionsColumn = (col: StringOrTableColumnUiSchema): col is TableColumnUiSchema => {
-  return typeof col === "object" && (col.type === "actions" || (col.field === 'actions' && !col.type))
+export const isActionsColumn = <T extends StringOrTableColumnUiSchema>(col: T): boolean => {
+  return typeof col === "object" && (col.type === "actions" || !!col.action || !!col.actions)
 }

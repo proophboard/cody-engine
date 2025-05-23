@@ -18,6 +18,7 @@ import {isJsonSchemaObject} from "@cody-play/infrastructure/vibe-cody/utils/json
 import {isJsonSchemaString} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/is-json-schema-string";
 import {isJsonSchema} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/is-json-schema";
 import {get, zip} from "lodash";
+import {isActionsColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/is-actions-column";
 
 export const getTablePageSizeConfig = (uiSchema: TableUiSchema): {pageSize: number, pageSizeOptions: number[]} => {
   let pageSize: number, pageSizeOptions: number[];
@@ -84,7 +85,7 @@ const deriveColumnsFromSchema = (information: PlayInformationRuntimeInfo, itemSc
 export const enrichColumnConfigFromSchema = (columnConfig: TableColumnUiSchema, schema: JSONSchema7, uiSchema: UiSchema, isRequired: boolean): TableColumnUiSchema => {
   columnConfig = deepClone(columnConfig);
 
-  if(!columnConfig.headerName && !columnConfig.action && !columnConfig.actions) {
+  if(!columnConfig.headerName && !columnConfig.action && !isActionsColumn(columnConfig)) {
     columnConfig.headerName = uiSchema['ui:title'] || uiSchema['ui:options']?.title || schema.title;
   }
 
@@ -132,6 +133,12 @@ export const enrichColumnConfigFromSchema = (columnConfig: TableColumnUiSchema, 
           value: options.label ? String(options.label) : String(options.text)
         }
       }
+    }
+  }
+
+  if(!columnConfig.type) {
+    if(isActionsColumn(columnConfig)) {
+      columnConfig.type = 'actions';
     }
   }
 

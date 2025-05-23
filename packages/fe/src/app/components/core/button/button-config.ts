@@ -18,4 +18,7 @@ export interface ButtonConfig {
   'icon:expr'?: string,
   'label:expr'?: string,
   'endIcon:expr'?: string,
+  /* DataGrid specific config */
+  asGridActionsCellItem?: boolean;
+  showInMenu?: boolean;
 }

@@ -14,6 +14,8 @@ interface OwnProps {
   row: {[prop: string]: any};
   defaultService: string;
   onDialogClose?: () => void;
+  asGridActionsCellItem?: boolean;
+  showInMenu?: boolean;
 }
 
 type ColumnActionProps = OwnProps;
@@ -40,6 +42,8 @@ const ColumnAction = (props: ColumnActionProps) => {
     defaultService={props.defaultService}
     jexlCtx={jexlCtx}
     onDialogClose={props.onDialogClose}
+    asGridActionsCellItem={true}
+    showInMenu={props.showInMenu}
   />
 };
 

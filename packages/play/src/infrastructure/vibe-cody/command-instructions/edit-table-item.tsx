@@ -202,11 +202,12 @@ export const EditTableItem: Instruction = {
       data: `$> row`,
       button: {
         label: `Edit`,
-        icon: 'pencil'
+        icon: 'pencil',
+        color: 'inherit'
       }
     }
 
-    if(lastCol && isActionsColumn(lastCol)) {
+    if(lastCol && isActionsColumn(lastCol) && typeof lastCol === "object") {
       if(!lastCol.actions) {
         lastCol.actions = [];
       }

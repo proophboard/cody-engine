@@ -27,6 +27,9 @@ export interface ButtonProps {
   'icon:expr'?: string,
   'label:expr'?: string,
   'endIcon:expr'?: string,
+  /* DataGrid specific config */
+  asGridActionsCellItem?: boolean;
+  showInMenu?: boolean;
 }
 
 const makeIcon = (icon: React.ReactNode | string | undefined): React.ReactNode | undefined => {
@@ -119,6 +122,8 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
     hidden,
     icon: makeIcon(icon),
     label,
-    endIcon: makeIcon(endIcon)
+    endIcon: makeIcon(endIcon),
+    asGridActionsCellItem: props.asGridActionsCellItem,
+    showInMenu: props.showInMenu,
   }
 }

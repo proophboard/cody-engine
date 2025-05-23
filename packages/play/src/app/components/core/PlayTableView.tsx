@@ -1,6 +1,6 @@
 import { Box, CircularProgress, Typography, useTheme } from '@mui/material';
 import {
-  DataGrid,
+  DataGrid, GridActionsColDef,
   GridColDef,
   GridRenderCellParams,
   GridToolbar,
@@ -77,6 +77,7 @@ import { informationTitle } from '@frontend/util/information/titelize';
 import { ActionContainerInfo } from '@frontend/app/components/core/form/types/action';
 import { EDropzoneId } from '@cody-play/app/types/enums/EDropzoneId';
 import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
+import {isActionsColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/is-actions-column";
 
 const PlayTableView = (
   params: any,
@@ -328,11 +329,11 @@ const compileTableColumns = (
       );
     }
 
-    if (!column['headerName']) {
+    if (!column['headerName'] && !isActionsColumn(column)) {
       column['headerName'] = camelCaseToTitle(column['field']);
     }
 
-    if (!column['flex'] && !column['width']) {
+    if (!column['flex'] && !column['width'] && !isActionsColumn(column)) {
       column['flex'] = 1;
     }
 
@@ -349,6 +350,21 @@ const compileTableColumns = (
         case 'action':
           const actionConfig = cValue as ActionTableColumn;
 
+          if(column.type === "actions") {
+            (gridColDef as GridActionsColDef).getActions = (rowParams) => {
+              return [
+                <ColumnAction
+                  action={actionConfig}
+                  row={rowParams.row}
+                  defaultService={defaultService}
+                  asGridActionsCellItem={true}
+                  showInMenu={actionConfig.showInMenu}
+                />
+              ]
+            }
+            break;
+          }
+
           gridColDef.renderCell = (rowParams) => (
             <ColumnAction
               action={actionConfig}
@@ -359,6 +375,19 @@ const compileTableColumns = (
           break;
         case 'actions':
           const actionConfigs = cValue as ActionTableColumn[];
+
+          if(column.type === "actions") {
+            (gridColDef as GridActionsColDef).getActions = (rowParams) => {
+              return actionConfigs.map(aConfig => <ColumnAction
+                action={aConfig}
+                row={rowParams.row}
+                defaultService={defaultService}
+                asGridActionsCellItem={true}
+                showInMenu={aConfig.showInMenu}
+              />)
+            }
+            break;
+          }
 
           gridColDef.renderCell = (rowParams) => (
             <div style={{ display: 'flex' }}>

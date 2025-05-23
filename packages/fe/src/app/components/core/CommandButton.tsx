@@ -3,7 +3,7 @@ import { CommandRuntimeInfo } from '@event-engine/messaging/command';
 import { camelCaseToTitle } from '@frontend/util/string';
 import { Button, IconButton } from '@mui/material';
 import { isAggregateCommandDescription } from '@event-engine/descriptions/descriptions';
-import { Plus } from 'mdi-material-ui';
+import { Plus, Square } from 'mdi-material-ui';
 import { useUser } from '@frontend/hooks/use-user';
 import { usePageData } from '@frontend/hooks/use-page-data';
 import {
@@ -19,6 +19,7 @@ import {useTranslation} from "react-i18next";
 import {useEnv} from "@frontend/hooks/use-env";
 import {ButtonConfig} from "@frontend/app/components/core/button/button-config";
 import {UiSchema} from "@rjsf/utils";
+import {GridActionsCellItem} from "@mui/x-data-grid";
 
 interface OwnProps {
   command: CommandRuntimeInfo;
@@ -77,7 +78,7 @@ const CommandButton = (props: CommandButtonProps) => {
   const [store] = useGlobalStore();
   const {t} = useTranslation();
 
-  const { variant, color, disabled, style, hidden, icon, label } =
+  const { variant, color, disabled, style, hidden, icon, label, asGridActionsCellItem, showInMenu } =
     determineButtonConfig(props, props.command.uiSchema || {}, {
       user,
       page,
@@ -89,6 +90,18 @@ const CommandButton = (props: CommandButtonProps) => {
 
   if (hidden) {
     return <></>;
+  }
+
+  if(asGridActionsCellItem) {
+    return <GridActionsCellItem
+      label={props.label || label || commandTitle(props.command, t)}
+      icon={(props.startIcon ? props.startIcon : icon ? icon : newAggregate ? <Plus /> : <Square />) as any}
+      showInMenu={showInMenu}
+      onClick={props.onClick}
+      disabled={disabled}
+      color={color}
+      sx={{ ...style }}
+    />
   }
 
   if (icon && !label) {
