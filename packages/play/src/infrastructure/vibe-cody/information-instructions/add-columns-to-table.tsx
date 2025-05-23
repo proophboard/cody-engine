@@ -28,6 +28,7 @@ import {CodyResponseException} from "@cody-play/infrastructure/cody/error-handli
 import {merge} from "lodash/fp";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 import {startCase} from "lodash";
+import {withNavigateToWelcome} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-welcome";
 
 const TEXT = 'Add the following columns to the table: ';
 
@@ -36,7 +37,7 @@ export const AddColumnsToTable: Instruction = {
   icon: <TableColumn />,
   isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
-  execute: async (input, ctx, dispatch, config): Promise<CodyResponse> => {
+  execute: withNavigateToWelcome(async (input, ctx, dispatch, config): Promise<CodyResponse> => {
 
     const pageConfig = ctx.page.handle.page;
 
@@ -141,8 +142,8 @@ export const AddColumnsToTable: Instruction = {
                     'ui:widget': 'DataSelect',
                     'ui:options': {
                       'data': registryIdToDataReference(firstMatch.desc.name),
-                      'text': (new Schema(propRefInfo.schema as JSONSchema7, true))
-                        .getDisplayNamePropertyCandidates().map(c => `$> data.${c}`).join(` + ' ' + `) || `$> data.${desc.identifier}`,
+                      'label': `$> ` + (new Schema(propRefInfo.schema as JSONSchema7, true))
+                        .getDisplayNamePropertyCandidates().map(c => `data.${c}`).join(` + ' ' + `) || `data.${desc.identifier}`,
                       'value': `$> data.${desc.identifier}`
                     }
                   })
@@ -220,7 +221,7 @@ export const AddColumnsToTable: Instruction = {
     return {
       cody: `Alright, I've added the columns.`
     }
-  }
+  })
 }
 
 export const getTableViewVO = (page: PlayPageDefinition, config: CodyPlayConfig): PlayInformationRuntimeInfo | null => {
