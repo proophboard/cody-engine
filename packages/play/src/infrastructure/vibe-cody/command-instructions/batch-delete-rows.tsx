@@ -191,7 +191,7 @@ export const BatchDeleteRows: Instruction = {
     actions.push({
       type: "command",
       directSubmit: true,
-      position: "bottom-right",
+      position: "bottom-left",
       command: `${names(config.defaultService).className}.${names(cmdName).className}`,
       data: {
         [tableLabelNames.propertyName]: `$> page|data('${registryIdToDataReference(tableVO.desc.name)}/Selection', [])`
