@@ -30,6 +30,9 @@ import {
   renameTableRowDataType
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/rename-table-row-data-type";
 import {isJsonSchemaArray} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/is-json-schema-array";
+import {
+  playGetProophBoardInfoFromDescription
+} from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
 
 
 const TEXT = "Place a button above the table to add a ";
@@ -157,6 +160,8 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
 
   const prjName = tableVO.desc.projection || `${tableVO.desc.name.split('.').pop()}Projection`;
 
+  const pbInfo = playGetProophBoardInfoFromDescription(tableVO.desc);
+
   // Add event projection case
   dispatch({
     ctx: editedCtx,
@@ -164,14 +169,10 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
     name: prjName,
     event: `${names(config.defaultService).className}.${names(eventName).className}`,
     desc: {
-      _pbLink: tableVO.desc._pbLink,
-      _pbBoardId: tableVO.desc._pbBoardId,
-      _pbCardId: tableVO.desc._pbCardId,
-      _pbCreatedAt: tableVO.desc._pbCreatedAt,
-      _pbCreatedBy: tableVO.desc._pbCreatedBy,
+      ...pbInfo,
       _pbLastUpdatedAt: now(),
       _pbLastUpdatedBy: editedCtx.userId,
-      _pbVersion: 1,
+      _pbVersion: pbInfo._pbVersion + 1,
       name: prjName,
       rules: [
         {
@@ -179,8 +180,8 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
           then: {
             upsert: {
               information: tableVO.desc.name,
-              id: ` event.${desc.itemIdentifier}`,
-              set: " event"
+              id: `$> event.${desc.itemIdentifier}`,
+              set: "$> event"
             }
           }
         }
@@ -201,7 +202,7 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
         then: {
           record: {
             event: `${eventName}`,
-            mapping: ` command`
+            mapping: `$> command`
           }
         }
       }

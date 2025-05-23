@@ -142,8 +142,8 @@ export const AddColumnsToTable: Instruction = {
                     'ui:options': {
                       'data': registryIdToDataReference(firstMatch.desc.name),
                       'text': (new Schema(propRefInfo.schema as JSONSchema7, true))
-                        .getDisplayNamePropertyCandidates().map(c => `data.${c}`).join(` + ' ' + `) || `data.${desc.identifier}`,
-                      'value': `data.${desc.identifier}`
+                        .getDisplayNamePropertyCandidates().map(c => `$> data.${c}`).join(` + ' ' + `) || `$> data.${desc.identifier}`,
+                      'value': `$> data.${desc.identifier}`
                     }
                   })
 
