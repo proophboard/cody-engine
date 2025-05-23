@@ -228,6 +228,8 @@ export const getTableViewVO = (page: PlayPageDefinition, config: CodyPlayConfig)
     return null;
   }
 
+  const tables: PlayInformationRuntimeInfo[] = [];
+
   for (const component of page.components) {
     const viewName = typeof component === "string" ? component : component.view;
 
@@ -241,9 +243,13 @@ export const getTableViewVO = (page: PlayPageDefinition, config: CodyPlayConfig)
       const voRuntimeInfo = config.types[view.information];
 
       if(isQueryableStateListDescription(voRuntimeInfo.desc)) {
-        return voRuntimeInfo;
+        tables.push(voRuntimeInfo)
       }
     }
+  }
+
+  if(tables.length === 1) {
+    return tables.pop() as PlayInformationRuntimeInfo;
   }
 
   return null;

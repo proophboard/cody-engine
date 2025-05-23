@@ -159,7 +159,15 @@ const syncTypesWithSharedRegistry = (config: CodyPlayConfig): void => {
 }
 
 export const cloneConfig = (config: CodyPlayConfig): CodyPlayConfig => {
-  const shallowClone = {...config};
+  const shallowClone = {
+    ...config,
+    pages: {
+      ...config.pages
+    },
+    views: {
+      ...config.views
+    }
+  };
 
   delete shallowClone.pages.Welcome;
   delete shallowClone.views['Core.Welcome'];

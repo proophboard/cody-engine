@@ -1,4 +1,5 @@
 import {
+  CodyInstructionResponse,
   Instruction,
   InstructionExecutionCallback,
   InstructionProvider
@@ -12,17 +13,58 @@ import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {JSONSchema7} from "json-schema";
 import {
+  playDefinitionIdFromFQCN,
   playFQCNFromDefinitionId,
   playNodeLabel,
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {renameFQCN} from "@cody-play/infrastructure/vibe-cody/utils/rename-fqcn";
 import {renameType} from "@cody-play/infrastructure/vibe-cody/utils/types/rename-type";
-import {getEditedContextFromConfig} from "@cody-play/state/config-store";
+import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {isListDescription} from "@event-engine/descriptions/descriptions";
 import {WrenchCog} from "mdi-material-ui";
 import {withNavigateToWelcome} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-welcome";
+import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
+import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 
-export const makeRenameTableRowDataType = (currentName: string): Instruction => {
+export const renameTableRowDataType = (newTypeName: string, ctx: VibeCodyContext, config: CodyPlayConfig): CodyPlayConfig | CodyInstructionResponse => {
+  const pageConfig = ctx.page.handle.page;
+
+  const tableVO = getTableViewVO(pageConfig, config);
+
+  if(!tableVO) {
+    return {
+      cody: `I can't find a table on the page ${pageConfig.name}`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  const tableVoSchema = new Schema(cloneDeepJSON(tableVO.schema) as JSONSchema7, true);
+  let emptySchema = new Schema({});
+  let itemFQCN = '';
+
+  if(tableVoSchema.getListItemsSchema(emptySchema).isRef()) {
+    itemFQCN = playFQCNFromDefinitionId(tableVoSchema.getListItemsSchema(emptySchema).getRef());
+  } else {
+    itemFQCN = tableVO.desc.name + 'Item'
+  }
+
+  const newItemFQCN = renameFQCN(itemFQCN, newTypeName);
+  const newConfig = renameType(itemFQCN, newItemFQCN, config);
+
+  if(!tableVoSchema.getListItemsSchema(emptySchema).isRef()) {
+    const tableVoJSONSchema = cloneDeepJSON(tableVO.schema) as JSONSchema7;
+    tableVoJSONSchema.items = {
+      $ref: playDefinitionIdFromFQCN(newItemFQCN)
+    }
+
+    newConfig.types[tableVO.desc.name].schema = tableVoJSONSchema;
+    newConfig.definitions[playDefinitionIdFromFQCN(tableVO.desc.name)] = tableVoJSONSchema;
+  }
+
+  return newConfig;
+}
+
+const makeRenameTableRowDataType = (currentName: string): Instruction => {
 
   const TEXT = `Rename row data type from "${currentName}" to `;
 
@@ -38,29 +80,12 @@ export const makeRenameTableRowDataType = (currentName: string): Instruction => 
       }
     }
 
-    const pageConfig = ctx.page.handle.page;
+    const newConfig = renameTableRowDataType(newTypeName, ctx, config);
 
-    const tableVO = getTableViewVO(pageConfig, config);
-
-    if(!tableVO) {
-      return {
-        cody: `I can't find a table on the page ${pageConfig.name}`,
-        type: CodyResponseType.Error
-      }
+    if(playIsCodyError(newConfig)) {
+      return newConfig;
     }
 
-    const tableVoSchema = new Schema(cloneDeepJSON(tableVO.schema) as JSONSchema7, true);
-    let emptySchema = new Schema({});
-    let itemFQCN = '';
-
-    if(tableVoSchema.getListItemsSchema(emptySchema).isRef()) {
-      itemFQCN = playFQCNFromDefinitionId(tableVoSchema.getListItemsSchema(emptySchema).getRef());
-    } else {
-      itemFQCN = tableVO.desc.name + 'Item'
-    }
-
-    const newItemFQCN = renameFQCN(itemFQCN, newTypeName);
-    const newConfig = renameType(itemFQCN, newItemFQCN, config);
 
     dispatch({
       type: "INIT",
