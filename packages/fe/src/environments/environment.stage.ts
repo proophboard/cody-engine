@@ -5,7 +5,7 @@ export const environment = {
   production: true,
   appName: 'Cody Engine',
   mode: 'production-stack' as CodyEngineMode,
-  layout: 'prototype' as LayoutType,
+  layout: 'task-based-ui' as LayoutType,
   defaultService: 'App',
   keycloak: {
     baseUrl: 'https://auth.cody.local/auth',

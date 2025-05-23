@@ -89,7 +89,7 @@ export interface CodyPlayConfig {
 const initialPlayConfig: CodyPlayConfig = {
   appName: 'Cody Play',
   defaultService: 'App',
-  layout: 'prototype',
+  layout: 'task-based-ui',
   boardId: '',
   boardName: '',
   origin: 'https://app.prooph-board.com',
