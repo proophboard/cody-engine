@@ -18,6 +18,7 @@ import {
   RenameTableRowDataTypeProvider
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/rename-table-row-data-type";
 import {BatchDeleteRows} from "@cody-play/infrastructure/vibe-cody/command-instructions/batch-delete-rows";
+import {EditTableItem} from "@cody-play/infrastructure/vibe-cody/command-instructions/edit-table-item";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -28,6 +29,7 @@ export const instructions: InstructionOrProvider[] = [
   AddColumnsToTable,
   AddTableItem,
   BatchDeleteRows,
+  EditTableItem,
   RenameTableRowDataTypeProvider,
   /* Theme */
   ChangeThemeProvider,

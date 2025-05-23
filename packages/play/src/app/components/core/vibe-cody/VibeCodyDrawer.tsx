@@ -279,7 +279,6 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     setSearchStr('');
     setValue(null);
     setNavigateTo(undefined);
-    pendingNavigateTo = undefined;
   }
 
   const executeInstruction = async (instruction: Instruction, userInput: string) => {

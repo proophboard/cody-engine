@@ -10,8 +10,7 @@ export const withNavigateToWelcome = (cb: InstructionExecutionCallback): Instruc
         const res = await cb(input, ctx, dispatch, config, navigateTo);
 
         navigateTo(ctx.page.pathname);
-
-        resolve(res)
+        resolve(res);
       }, 100)
     })
   }

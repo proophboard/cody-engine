@@ -40,11 +40,12 @@ export interface PageLinkTableColumn {
   'page:expr'?: string;
 }
 
-export type ActionTableColumn = Omit<Action, 'position'>;
+export type ActionTableColumn = Omit<Action, 'position'> & {showInMenu?: boolean};
 
 export interface TableColumnUiSchema {
   field: string;
   headerName?: string;
+  columnType?: 'string' | 'number' | 'date' | 'dateTime' | 'boolean' | 'singleSelect' | 'actions';
   flex?: string | number;
   width?: string | number;
   value?: Rule[] | string;
