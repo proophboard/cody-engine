@@ -36,6 +36,6 @@ const makeChangeButtonColorInstruction = (color: string): Instruction => {
 export const ChangeButtonColorProvider: InstructionProvider = {
   isActive: context => !!context.focusedElement && context.focusedElement.type === "button",
   provide: () => {
-    return ['primary', 'secondary', 'info', 'success', 'warning', 'error'].map(makeChangeButtonColorInstruction)
+    return ['primary', 'secondary', 'info', 'success', 'warning', 'error', 'default', 'inherit'].map(makeChangeButtonColorInstruction)
   }
 }

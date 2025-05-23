@@ -17,6 +17,7 @@ import {names} from "@event-engine/messaging/helpers";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import SidebarItem from "@frontend/app/layout/SidebarItem";
 import {useTranslation} from "react-i18next";
+import {ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 
 interface OwnProps {
   open: boolean;
@@ -80,8 +81,9 @@ export const sortTopLevelPages = (a: {sidebar: {position?: number}}, b: {sidebar
   return aPos - bPos;
 }
 
-export const makeSidebarItem = (route: string, label: string, Icon: JSX.Element, theme: Theme, user: User, pageMatch: {pathname: string}, invisible?: string | boolean, service = '', dynamic?: DynamicSidebar) => {
+export const makeSidebarItem = (pageName: string, route: string, label: string, Icon: JSX.Element, theme: Theme, user: User, pageMatch: {pathname: string}, invisible?: string | boolean, service = '', dynamic?: DynamicSidebar) => {
   return <SidebarItem key={route}
+                      pageName={pageName}
                       route={route}
                       label={label}
                       Icon={Icon}
@@ -131,7 +133,7 @@ const Sidebar = (props: SidebarProps) => {
     return true;
   })
 
-  const topLevelPageItems = topLevelPagesWithoutGroups.map(({route, service, sidebar}) => {
+  const topLevelPageItems = topLevelPagesWithoutGroups.map(({name, route, service, sidebar}) => {
     const pGroup = belongsToGroup({sidebar})
     if(pGroup) {
       const cachedPGroup = groups[pGroup.label];
@@ -139,6 +141,7 @@ const Sidebar = (props: SidebarProps) => {
                               label={cachedPGroup.config['label:t'] ? t(cachedPGroup.config['label:t']) : cachedPGroup.config.label}
                               Icon={<MdiIcon icon={cachedPGroup.config.icon} />}
                               pages={cachedPGroup.pages.map(p => makeSidebarItem(
+                                p.name,
                                 p.route,
                                 p.sidebar['label:t'] ? t(p.sidebar['label:t']) : p.sidebar.label,
                                 <p.sidebar.Icon />,
@@ -152,7 +155,7 @@ const Sidebar = (props: SidebarProps) => {
       />
     }
 
-    return makeSidebarItem(route, sidebar['label:t'] ? t(sidebar['label:t']) : sidebar.label, <sidebar.Icon />, theme, user, pageMatch, sidebar.invisible, service, sidebar.dynamic)
+    return makeSidebarItem(name, route, sidebar['label:t'] ? t(sidebar['label:t']) : sidebar.label, <sidebar.Icon />, theme, user, pageMatch, sidebar.invisible, service, sidebar.dynamic)
   });
 
   return <Drawer

@@ -1,11 +1,11 @@
 import * as React from 'react';
-import {Box, Button, ListItem, Theme} from "@mui/material";
+import {Box, Button, IconButton, ListItem, Theme} from "@mui/material";
 import {User} from "@app/shared/types/core/user/user";
 import {DynamicSidebar} from "@frontend/app/pages/page-definitions";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {NavLink} from "react-router-dom";
 import {makeButtonSx, makeIconBoxSx, makeListItemSx} from "@frontend/app/layout/Sidebar";
-import {useEffect, useState} from "react";
+import {useContext, useEffect, useState} from "react";
 import {
   isQueryableDescription, QueryableDescription
 } from "@event-engine/descriptions/descriptions";
@@ -15,8 +15,13 @@ import {playGetVoRuntimeInfoFromDataReference} from "@cody-play/state/play-get-v
 import {useTypes} from "@frontend/hooks/use-types";
 import {PlayInformationRegistry} from "@cody-play/state/types";
 import {getApiQuery} from "@frontend/queries/use-api-query";
+import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
+import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
+import {Target} from "mdi-material-ui";
+import {FocusedSidebarItem} from "@cody-play/state/focused-element";
 
 interface OwnProps {
+  pageName: string,
   route: string,
   label: string,
   service: string,
@@ -25,17 +30,21 @@ interface OwnProps {
   user: User,
   pageMatch: {pathname: string},
   invisible?: string | boolean,
-  dynamic?: DynamicSidebar
+  dynamic?: DynamicSidebar,
+  isFirst?: boolean,
+  isLast?: boolean
 }
 
 type SidebarItemProps = OwnProps;
 
-const SidebarItem = ({invisible, route, label, Icon, theme, user, pageMatch, service, dynamic}: SidebarItemProps) => {
+const SidebarItem = ({pageName, invisible, route, label, Icon, theme, user, pageMatch, service, dynamic}: SidebarItemProps) => {
   const [hidden, setHidden] = useState(false);
   const [dynamicLabel, setDynamicLabel] = useState<string | undefined>('');
   const [DynamicIcon, setDynamicIcon] = useState<JSX.Element | undefined>();
   const [page] = usePageData();
   const [types] = useTypes();
+  const { liveEditMode } = useContext(LiveEditModeContext);
+  const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
 
   useEffect(() => {
     if(dynamic) {
@@ -87,6 +96,8 @@ const SidebarItem = ({invisible, route, label, Icon, theme, user, pageMatch, ser
     return <></>
   }
 
+  const isFocusedEle = focusedEle && focusedEle.type === "sidebarItem" && focusedEle.id === route;
+
   return <div key={route}><ListItem
     key={route}
     disableGutters={true}
@@ -102,6 +113,12 @@ const SidebarItem = ({invisible, route, label, Icon, theme, user, pageMatch, ser
       </Box>
       {dynamicLabel || label}
     </Button>
+    {liveEditMode && <IconButton onClick={() => setFocusedEle({
+      id: route,
+      name: dynamicLabel || label,
+      type: 'sidebarItem',
+      pageName,
+    } as FocusedSidebarItem)} color={isFocusedEle ? 'info' : undefined}><Target /></IconButton>}
   </ListItem>
     {/* Deactivated for now, the idea is to bring it back as an optional feature on a per page basis {pageMatch.pathname.includes(route) && <SidebarSubMenu/>}*/}
   </div>

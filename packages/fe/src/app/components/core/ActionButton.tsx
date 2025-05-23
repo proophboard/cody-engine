@@ -46,7 +46,7 @@ const makeGridActionsCellItemLink = (config: ButtonConfig, to: string, external:
       }
     }}
     disabled={config.disabled}
-    color={config.color}
+    color={config.color === 'default' ? undefined : config.color}
     sx={{ ...config.style }}
   />
 }
@@ -58,7 +58,7 @@ const makeGridActionsCellItemRulesBtn = (config: ButtonConfig, onClick: () => vo
     showInMenu={config.showInMenu}
     onClick={onClick}
     disabled={config.disabled}
-    color={config.color}
+    color={config.color === 'default' ? undefined : config.color}
     sx={{ ...config.style }}
   />
 }
@@ -72,7 +72,7 @@ const makeButton = (config: ButtonConfig, additionalProps: object) => {
     return (
       <IconButton
         sx={config.style}
-        color={config.color}
+        color={config.color === 'default' ? undefined : config.color}
         disabled={config.disabled}
         {...additionalProps}
       >
@@ -84,7 +84,7 @@ const makeButton = (config: ButtonConfig, additionalProps: object) => {
       <Button
         variant={config.variant}
         sx={{ ...config.style }}
-        color={config.color}
+        color={config.color === 'default' ? undefined : config.color}
         startIcon={config.icon}
         endIcon={config.endIcon}
         children={config.label ? config.label : 'change'}

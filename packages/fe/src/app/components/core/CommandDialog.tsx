@@ -301,7 +301,7 @@ const CommandDialog = (props: CommandDialogProps) => {
         />}
         {props.commandFn && <Button
           variant={buttonProps.variant || 'contained'}
-          color={buttonProps.color || 'primary'}
+          color={(buttonProps.color === 'default' ? undefined : buttonProps.color) || 'primary'}
           startIcon={transactionState.isSubmitting ? <CircularProgress size={20}/> : buttonProps.icon || <Send/>}
           sx={{textTransform: 'none', margin: '5px', ...buttonProps.style}}
           onClick={handleExecuteCommand}

@@ -99,7 +99,7 @@ const CommandButton = (props: CommandButtonProps) => {
       showInMenu={showInMenu}
       onClick={props.onClick}
       disabled={disabled}
-      color={color}
+      color={color === 'default' ? undefined : color}
       sx={{ ...style }}
     />
   }
@@ -109,7 +109,7 @@ const CommandButton = (props: CommandButtonProps) => {
       <IconButton
         key={desc.name}
         sx={style}
-        color={color}
+        color={color === 'default' ? undefined : color}
         onClick={props.onClick}
         disabled={disabled}
       >
@@ -123,7 +123,7 @@ const CommandButton = (props: CommandButtonProps) => {
       key={desc.name}
       variant={variant}
       sx={{ ...style }}
-      color={color}
+      color={color === 'default' ? undefined : color}
       startIcon={
         props.startIcon ? props.startIcon : icon ? icon : newAggregate ? <Plus /> : undefined
       }

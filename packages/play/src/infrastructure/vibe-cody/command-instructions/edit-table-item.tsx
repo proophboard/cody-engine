@@ -203,7 +203,7 @@ export const EditTableItem: Instruction = {
       button: {
         label: `Edit`,
         icon: 'pencil',
-        color: 'inherit'
+        color: 'default'
       }
     }
 

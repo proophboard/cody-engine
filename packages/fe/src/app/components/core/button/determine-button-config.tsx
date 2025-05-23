@@ -14,7 +14,7 @@ export interface ButtonProps {
   startIcon?: React.ReactNode | false | string | undefined;
   endIcon?: React.ReactNode | string | undefined;
   icon?: React.ReactNode | false | string | undefined;
-  color?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
+  color?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning' | 'default';
   style?: SxProps;
   disabled?: boolean;
   hidden?: boolean;
