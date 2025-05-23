@@ -29,6 +29,7 @@ import {merge} from "lodash/fp";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 import {startCase} from "lodash";
 import {withNavigateToWelcome} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-welcome";
+import {addNewColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/add-new-column";
 
 const TEXT = 'Add the following columns to the table: ';
 
@@ -52,7 +53,7 @@ export const AddColumnsToTable: Instruction = {
 
     const tableVoSchema = new Schema(cloneDeepJSON(tableVO.schema) as JSONSchema7, true);
     let uiSchema = cloneDeepJSON(tableVO.uiSchema);
-    let itemSchema = new Schema({});
+    let itemSchema = new Schema({}, true);
     let itemFQCN = '';
 
     if(tableVoSchema.getListItemsSchema(itemSchema).isRef()) {
@@ -85,7 +86,7 @@ export const AddColumnsToTable: Instruction = {
     }
 
     const itemUiSchema = cloneDeepJSON(itemInfo.uiSchema || {});
-    const existingColumns = uiSchema['ui:table']['columns'];
+    let existingColumns = uiSchema['ui:table']['columns'];
     const existingColumnNames = existingColumns.map(c => typeof c === "string" ? c : c.field);
 
     if(!itemSchema.isObject()) {
@@ -114,6 +115,20 @@ export const AddColumnsToTable: Instruction = {
           const propJsonSchema = propSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`);
           if(!propJsonSchema.title) {
             propJsonSchema.title = camelCaseToTitle(prop);
+          }
+
+          if(propJsonSchema.enum) {
+            const enumNames: string[] = [];
+            const enumValues: string[] = [];
+
+            propJsonSchema.enum.forEach(v => {
+              const vNames = names(v as string);
+              enumValues.push(vNames.constantName.toLowerCase());
+              enumNames.push(vNames.name);
+            })
+
+            propJsonSchema.enum = enumValues;
+            (propJsonSchema as any).enumNames = enumNames;
           }
 
           if(propSchema.isRef()) {
@@ -160,7 +175,7 @@ export const AddColumnsToTable: Instruction = {
         }
 
         if(!existingColumnNames.includes(prop)) {
-          existingColumns.push(prop);
+          existingColumns = addNewColumn(existingColumns, prop);
         }
       })
     } else {
@@ -177,7 +192,7 @@ export const AddColumnsToTable: Instruction = {
         }
 
         if(!existingColumnNames.includes(c.propertyName)) {
-          existingColumns.push(c.propertyName)
+          existingColumns = addNewColumn(existingColumns, c.propertyName);
         }
       })
     }

@@ -42,13 +42,16 @@ export interface PageLinkTableColumn {
 
 export type ActionTableColumn = Omit<Action, 'position'> & {showInMenu?: boolean};
 
+export type ColumnSingleSelectValueOption = string | {label: string, value: string};
+
 export interface TableColumnUiSchema {
   field: string;
   headerName?: string;
-  columnType?: 'string' | 'number' | 'date' | 'dateTime' | 'boolean' | 'singleSelect' | 'actions';
+  type?: 'string' | 'number' | 'date' | 'dateTime' | 'boolean' | 'singleSelect' | 'actions';
   flex?: string | number;
   width?: string | number;
   value?: Rule[] | string;
+  valueOptions?: ColumnSingleSelectValueOption[];
   pageLink?: string | PageLinkTableColumn;
   action?: ActionTableColumn;
   actions?: ActionTableColumn[];

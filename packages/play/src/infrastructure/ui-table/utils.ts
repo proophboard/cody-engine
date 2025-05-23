@@ -4,6 +4,7 @@ import {camelCaseToTitle} from "@frontend/util/string";
 import {names} from "@event-engine/messaging/helpers";
 import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {
+  ColumnSingleSelectValueOption,
   StringOrTableColumnUiSchema,
   TableColumnUiSchema,
   TableUiSchema
@@ -16,6 +17,7 @@ import {deepClone} from "@mui/x-data-grid/utils/utils";
 import {isJsonSchemaObject} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/is-json-schema-object";
 import {isJsonSchemaString} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/is-json-schema-string";
 import {isJsonSchema} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/is-json-schema";
+import {get, zip} from "lodash";
 
 export const getTablePageSizeConfig = (uiSchema: TableUiSchema): {pageSize: number, pageSizeOptions: number[]} => {
   let pageSize: number, pageSizeOptions: number[];
@@ -56,7 +58,7 @@ const deriveColumnsFromSchema = (information: PlayInformationRuntimeInfo, itemSc
       headerName: camelCaseToTitle(name),
       flex: 1,
       value: [{rule: "always", then: {assign: {variable: "value", value: "row"}}}]
-    }, itemSchema, itemUiSchema))
+    }, itemSchema, itemUiSchema, true))
 
     return columns;
   }
@@ -73,38 +75,50 @@ const deriveColumnsFromSchema = (information: PlayInformationRuntimeInfo, itemSc
       field: propertyName,
       headerName: propSchema.title || propUiSchema['ui:title'] || propUiSchema['ui:options']?.title || camelCaseToTitle(propertyName),
       flex: 1,
-    }, propSchema, propUiSchema))
+    }, propSchema, propUiSchema, itemSchema.required && itemSchema.required.includes(propertyName)))
   }
 
   return columns;
 }
 
-export const enrichColumnConfigFromSchema = (columnConfig: TableColumnUiSchema, schema: JSONSchema7, uiSchema: UiSchema): TableColumnUiSchema => {
+export const enrichColumnConfigFromSchema = (columnConfig: TableColumnUiSchema, schema: JSONSchema7, uiSchema: UiSchema, isRequired: boolean): TableColumnUiSchema => {
   columnConfig = deepClone(columnConfig);
 
-  if(!columnConfig.headerName) {
+  if(!columnConfig.headerName && !columnConfig.action && !columnConfig.actions) {
     columnConfig.headerName = uiSchema['ui:title'] || uiSchema['ui:options']?.title || schema.title;
   }
 
   if(!columnConfig.value) {
     if(isJsonSchemaObject(schema)) {
-      columnConfig.value = `row.${columnConfig.field}|values()|map('item|toStr()')|join(', ')`
+      columnConfig.value = `$> row.${columnConfig.field}|values()|map('item|toStr()')|join(', ')`
     }
 
     if(isJsonSchemaArray(schema)) {
-      columnConfig.value = `row.${columnConfig.field}|map('item|toStr()')|join(', ')`
+      columnConfig.value = `$> row.${columnConfig.field}|map('item|toStr()')|join(', ')`
     }
 
     if(isJsonSchemaString(schema, 'date')) {
-      columnConfig.value = `row.${columnConfig.field}|localDate()`
+      columnConfig.value = isRequired ? `$> row.${columnConfig.field}|date()` : `$> row.${columnConfig.field} ? row.${columnConfig.field}|localDate() : '-'`;
+      columnConfig.type = isRequired ? 'date' : 'string';
     }
 
     if(isJsonSchemaString(schema, 'datetime')) {
-      columnConfig.value = `row.${columnConfig.field}|localDateTime()`
+      columnConfig.value = isRequired ? `$> row.${columnConfig.field}|date()` : `$> row.${columnConfig.field} ? row.${columnConfig.field}|localDateTime() : '-'`;
+      columnConfig.type = isRequired ? 'dateTime' : 'string';
     }
 
     if(isJsonSchemaString(schema, 'time')) {
-      columnConfig.value = `row.${columnConfig.field}|localTime()`
+      columnConfig.value = isRequired ? `$> row.${columnConfig.field}|localTime()` : `$> row.${columnConfig.field} ? row.${columnConfig.field}|localTime() : undefined`
+    }
+
+    if(schema.type === "boolean") {
+      columnConfig.value = `$> row.${columnConfig.field} ? true : false`;
+      columnConfig.type = "boolean";
+    }
+
+    if(schema.enum) {
+      columnConfig.type = 'singleSelect';
+      columnConfig.valueOptions = getValueOptions(schema.enum as string[], (schema as any).enumNames)
     }
   }
 
@@ -122,4 +136,12 @@ export const enrichColumnConfigFromSchema = (columnConfig: TableColumnUiSchema, 
   }
 
   return columnConfig;
+}
+
+const getValueOptions = (enumValues: string[], enumNames?: string[]): ColumnSingleSelectValueOption[] => {
+  if(!enumNames) {
+    return enumValues;
+  }
+
+  return zip(enumNames, enumValues).map(([label, value]) => ({label: label || '', value: value || ''}))
 }

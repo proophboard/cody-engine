@@ -165,11 +165,13 @@ export class Schema {
         console.warn(`Could not resolve ref: ${this.getRef()} to a type registered in the cody play config`);
         return;
       }
+
+      return jsonSchemaRefVo;
     }
   }
 
   public resolveRef(sourceService: string, types: PlayInformationRegistry): Schema {
-    const emptySchema = new Schema({});
+    const emptySchema = new Schema({}, !!this.jsonSchema);
 
     if(!this.isRef()) {
       return emptySchema;

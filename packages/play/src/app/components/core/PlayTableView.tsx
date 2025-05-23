@@ -320,7 +320,12 @@ const compileTableColumns = (
     const columnSchema = wrappedItemSchema.getObjectPropertySchema(column.field);
 
     if(columnSchema) {
-      column = enrichColumnConfigFromSchema(column, (columnSchema as Schema).toJsonSchema(), itemUiSchema[column.field] || {});
+      column = enrichColumnConfigFromSchema(
+        column,
+        (columnSchema as Schema).toJsonSchema(),
+        itemUiSchema[column.field] || {},
+        wrappedItemSchema.isRequired(column.field)
+      );
     }
 
     if (!column['headerName']) {

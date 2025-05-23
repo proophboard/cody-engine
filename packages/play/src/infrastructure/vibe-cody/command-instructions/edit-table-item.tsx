@@ -25,6 +25,7 @@ import {convertNodeToJs} from "@cody-play/infrastructure/cody/node-traversing/co
 import {CommandAction} from "@frontend/app/components/core/form/types/action";
 import {ActionTableColumn} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {PropMapping} from "@app/shared/rule-engine/configuration";
+import {isActionsColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/is-actions-column";
 
 const TEXT = `Place an edit button at the end of each table row`;
 
@@ -205,16 +206,21 @@ export const EditTableItem: Instruction = {
       }
     }
 
-    if(lastCol && typeof lastCol === "object" && lastCol.field === 'actions') {
+    if(lastCol && isActionsColumn(lastCol)) {
       if(!lastCol.actions) {
         lastCol.actions = [];
       }
 
       lastCol.actions.push(editAction);
     } else {
+      if(lastCol) {
+        // Push back last col, before adding a new actions col
+        tableVoUiSchema['ui:table']['columns'].push(lastCol);
+      }
+
       lastCol = {
         field: 'actions',
-        columnType: 'actions',
+        type: 'actions',
         actions: [
           editAction
         ]
