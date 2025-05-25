@@ -86,7 +86,7 @@ const makeMoveSidebarItem = (direction: Direction): Instruction => {
   }
 }
 
-const getGroup = (page: PlayTopLevelPage): TopLevelGroup | undefined => {
+export const getGroup = (page: PlayTopLevelPage): TopLevelGroup | undefined => {
   if(!page.sidebar.group) {
     return;
   }
