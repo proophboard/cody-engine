@@ -99,6 +99,8 @@ let lockChange = false;
 
 let waitingReply: InstructionExecutionCallback | undefined;
 
+let currentPage: string | undefined;
+
 const trimText = (text: string): string => {
   let lines = text.split(`\n`);
 
@@ -136,7 +138,11 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   }, [dndEvent]);
 
   useEffect(() => {
-    setFocusedElement(undefined);
+    if(pageMatch.handle.page.name !== currentPage) {
+      currentPage = pageMatch.handle.page.name;
+
+      setFocusedElement(undefined);
+    }
   }, [pageMatch.handle.page.name]);
 
   useEffect(() => {

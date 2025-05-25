@@ -4,18 +4,23 @@ type TToggleLiveEditMode = {
   children: ReactNode;
 };
 
+let isLiveEditMode = false;
+
 export const LiveEditModeContext = createContext({
-  liveEditMode: false,
+  liveEditMode: isLiveEditMode,
   // eslint-disable-next-line @typescript-eslint/no-empty-function
   toggleLiveEditMode: (open: boolean) => {},
 });
 
 const PlayToggleLiveEditMode = ({ children }: TToggleLiveEditMode) => {
-  const [liveEditMode, setLiveEditMode] = useState<boolean>(false);
+  const [liveEditMode, setLiveEditMode] = useState<boolean>(isLiveEditMode);
   const liveEditModeContextValue = useMemo(
     () => ({
       liveEditMode,
-      toggleLiveEditMode: setLiveEditMode,
+      toggleLiveEditMode: (liveEdit: boolean) => {
+        setLiveEditMode(liveEdit);
+        isLiveEditMode = liveEdit;
+      },
     }),
     [liveEditMode]
   );

@@ -22,7 +22,7 @@ const makeChangeSidebarIconInstruction = (icon: string): Instruction => {
 
       if(!focusedElement || !isFocusedSidebarItem(focusedElement)) {
         return {
-          cody: `Oh, something went wrong. I can't change the label, because focused element is not a sidebar item`,
+          cody: `Oh, something went wrong. I can't change the icon, because focused element is not a sidebar item`,
           details: `This looks like a software bug. Please contact the prooph board team.`,
           type: CodyResponseType.Error
         }
