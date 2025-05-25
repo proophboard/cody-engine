@@ -23,7 +23,7 @@ import {
   ChangeSidebarItemLabel
 } from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/change-sidebar-item-label";
 import {
-  ChangeSidebarItemIconIconProvider
+  ChangeSidebarItemIconProvider
 } from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/change-sidebar-item-icon";
 import {MoveSidebarItemProvider} from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/move-sidebar-item";
 import {
@@ -35,6 +35,9 @@ import {
 import {
   MoveSidebarItemIntoExistingGroupProvider
 } from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/move-sidebar-item-into-existing-group";
+import {
+  ChangeSidebarGroupIconProvider
+} from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/change-sidebar-group-icon";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -58,9 +61,10 @@ export const instructions: InstructionOrProvider[] = [
   IconOnlyButton,
   /* Sidebar Instructions */
   ChangeSidebarItemLabel,
-  ChangeSidebarItemIconIconProvider,
+  ChangeSidebarItemIconProvider,
   MoveSidebarItemProvider,
   MoveSidebarItemIntoNewGroup,
   MoveSidebarItemOutOfGroup,
   MoveSidebarItemIntoExistingGroupProvider,
+  ChangeSidebarGroupIconProvider,
 ]

@@ -1,53 +1,54 @@
 import {Instruction, InstructionProvider} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
-import {isFocusedSidebarItem} from "@cody-play/state/focused-element";
-import {HeartOutline} from "mdi-material-ui";
 import {CodyResponseType} from "@proophboard/cody-types";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {PlayTopLevelPage} from "@cody-play/state/types";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
+import {isTopLevelPage, PageDefinition} from "@frontend/app/pages/page-definitions";
+import {getGroup} from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/move-sidebar-item";
 import {getIconNameFromSearchStr, matchIcons} from "@cody-play/infrastructure/vibe-cody/utils/icons/mdi-icons";
+import {HeartOutline} from "mdi-material-ui";
 
-const makeChangeSidebarIconInstruction = (icon: string): Instruction => {
+const makeChangeSidebarGroupIconInstruction = (icon: string): Instruction => {
   const TEXT = `Use icon ${icon}`;
 
   return {
     text: TEXT,
     noInputNeeded: true,
-    icon: <MdiIcon icon={icon} />,
-    isActive: context => context.focusedElement?.type === "sidebarItem",
+    icon: <MdiIcon icon={icon}/>,
+    isActive: context => context.focusedElement?.type === "sidebarItemGroup",
     match: input => input.startsWith(TEXT),
     execute: async (input, ctx, dispatch, config) => {
       const {focusedElement} = ctx;
 
-      if(!focusedElement || !isFocusedSidebarItem(focusedElement)) {
+      if (!focusedElement) {
         return {
-          cody: `Oh, something went wrong. I can't change the icon, because focused element is not a sidebar item`,
+          cody: `Oh, something went wrong. I can't change the icon, because focused element is not a sidebar item group.`,
           details: `This looks like a software bug. Please contact the prooph board team.`,
           type: CodyResponseType.Error
         }
       }
 
-      const page = config.pages[focusedElement.pageName];
+      const groupName = focusedElement.name;
 
-      if(!page) {
-        return {
-          cody: `Oh, something went wrong. The focused sidebar item should be configured for page ${focusedElement.pageName}, but I can't find the page in teh cody play config`,
-          details: `This looks like a bug in the software. Please contact the prooph board team.`,
-          type: CodyResponseType.Error
+      const groupPages = Object.values(config.pages).filter(p  => isTopLevelPage(p as PageDefinition) && getGroup(p as PlayTopLevelPage)?.label === groupName) as PlayTopLevelPage[];
+
+      groupPages.forEach(p => {
+        const copy = cloneDeepJSON(p) as PlayTopLevelPage;
+        const group = getGroup(copy);
+        if (group) {
+          group.icon = icon;
         }
-      }
 
-      const pageCopy = cloneDeepJSON(page) as PlayTopLevelPage;
+        copy.sidebar.group = group;
 
-      pageCopy.sidebar.icon = icon;
-
-      dispatch({
-        ctx: getEditedContextFromConfig(config),
-        type: "ADD_PAGE",
-        page: pageCopy,
-        name: focusedElement.pageName,
-      });
+        dispatch({
+          ctx: getEditedContextFromConfig(config),
+          type: "ADD_PAGE",
+          page: copy,
+          name: copy.name,
+        });
+      })
 
       return {
         cody: `Changed the icon.`
@@ -56,9 +57,9 @@ const makeChangeSidebarIconInstruction = (icon: string): Instruction => {
   }
 }
 
-export const ChangeSidebarItemIconProvider: InstructionProvider = {
+export const ChangeSidebarGroupIconProvider: InstructionProvider = {
   isActive: context => {
-    if(context.focusedElement?.type !== "sidebarItem") {
+    if(context.focusedElement?.type !== "sidebarItemGroup") {
       return false;
     }
 
@@ -84,7 +85,7 @@ export const ChangeSidebarItemIconProvider: InstructionProvider = {
                 const firstMatchedIcon = matchedIcons.shift();
 
                 if(firstMatchedIcon) {
-                  return await makeChangeSidebarIconInstruction(firstMatchedIcon).execute(input, ctx, dispatch, config, navigateTo);
+                  return await makeChangeSidebarGroupIconInstruction(firstMatchedIcon).execute(input, ctx, dispatch, config, navigateTo);
                 }
               }
             }
@@ -102,6 +103,6 @@ export const ChangeSidebarItemIconProvider: InstructionProvider = {
       ];
     }
 
-    return matchIcons(iconName).map(makeChangeSidebarIconInstruction);
+    return matchIcons(iconName).map(makeChangeSidebarGroupIconInstruction);
   }
 }

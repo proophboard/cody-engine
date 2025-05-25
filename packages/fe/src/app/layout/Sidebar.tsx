@@ -140,6 +140,7 @@ const Sidebar = (props: SidebarProps) => {
       return <SidebarNavGroup name={'group-' + names(cachedPGroup.config.label).fileName}
                               label={cachedPGroup.config['label:t'] ? t(cachedPGroup.config['label:t']) : cachedPGroup.config.label}
                               Icon={<MdiIcon icon={cachedPGroup.config.icon} />}
+                              pageDefinitions={cachedPGroup.pages}
                               pages={cachedPGroup.pages.map(p => makeSidebarItem(
                                 p.name,
                                 p.route,

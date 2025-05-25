@@ -66,6 +66,7 @@ const Sidebar = (props: SidebarProps) => {
       return <SidebarNavGroup name={'group-' + names(cachedPGroup.config.label).fileName}
                               label={cachedPGroup.config.label}
                               Icon={<MdiIcon icon={cachedPGroup.config.icon} />}
+                              pageDefinitions={cachedPGroup.pages as PageDefinition[]}
                               pages={cachedPGroup.pages.map(p => makeSidebarItem(p.name, p.route, p.sidebar.label, <MdiIcon icon={p.sidebar.icon} />, theme, user, pageMatch, p.sidebar.invisible, service, dynamic))}
       />
     }
