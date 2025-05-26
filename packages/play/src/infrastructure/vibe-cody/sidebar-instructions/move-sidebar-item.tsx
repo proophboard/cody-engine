@@ -8,7 +8,7 @@ import {cloneConfig, CodyPlayConfig, getEditedContextFromConfig} from "@cody-pla
 import {isTopLevelPage, PageDefinition, TopLevelGroup} from "@frontend/app/pages/page-definitions";
 import {sortTopLevelPages} from "@frontend/app/layout/Sidebar";
 
-type Direction = 'up' | 'down';
+export type Direction = 'up' | 'down';
 
 export const MoveSidebarItemProvider: InstructionProvider = {
   isActive: context => context.focusedElement?.type === "sidebarItem",
