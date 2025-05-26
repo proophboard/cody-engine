@@ -135,7 +135,7 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
 
   cmdUiSchema["ui:form"] = {
     "data": {
-      [desc.itemIdentifier]: " uuid()"
+      [desc.itemIdentifier]: "$> uuid()"
     }
   }
 

@@ -111,6 +111,7 @@ export const AddColumnsToTable: Instruction = {
 
       schema.getObjectProperties().forEach(prop => {
         if(!itemSchema.getObjectPropertySchema(prop)) {
+          debugger;
           const propSchema = schema.getObjectPropertySchema(prop, new Schema({type: "string", title: camelCaseToTitle(prop)}));
           const propJsonSchema = propSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`);
           if(!propJsonSchema.title) {
@@ -118,6 +119,7 @@ export const AddColumnsToTable: Instruction = {
           }
 
           if(propJsonSchema.enum) {
+
             const enumNames: string[] = [];
             const enumValues: string[] = [];
 
@@ -188,7 +190,7 @@ export const AddColumnsToTable: Instruction = {
 
       columnNames.forEach(c => {
         if(!itemSchema.getObjectPropertySchema(c.propertyName)) {
-          itemSchema.setObjectProperty(c.propertyName, new Schema({type: "string", title: camelCaseToTitle(c.propertyName)}));
+          itemSchema.setObjectProperty(c.propertyName, new Schema(`string|title:${camelCaseToTitle(c.propertyName)}`));
         }
 
         if(!existingColumnNames.includes(c.propertyName)) {

@@ -50,13 +50,21 @@ export class SchemaFromNodeDescriptionParser {
   }
 
   public parse(): Schema {
+    debugger;
     let line = this.parseNextLine();
 
     while (line.isSchemaLine) {
       if(line.type === "object") {
         const subSchemaLines = this.parseAllSubSchemaLines();
         const subSchema = (new SchemaFromNodeDescriptionParser(removeOneNestingLevel(subSchemaLines).join("\n"))).parse();
-        this.schema.setObjectProperty(line.propName, subSchema);
+
+        if(line.propName === "$items") {
+          this.schema = new Schema({
+            $items: subSchema.toShorthand()
+          })
+        } else {
+          this.schema.setObjectProperty(line.propName, subSchema);
+        }
       } else {
         this.schema.setObjectProperty(line.propName, new Schema(line.type), !line.optional);
       }
@@ -98,34 +106,37 @@ export class SchemaFromNodeDescriptionParser {
 
     let prop = '';
     let type: string | undefined;
+    let normalizedType: string | undefined;
 
     prop = parts[0];
 
     if(parts.length === 2) {
-      type = parts[1].trim().toLowerCase();
+      type = parts[1].trim();
+      normalizedType = type.toLowerCase();
     } else if (parts.length > 2) {
-      type = parts.slice(1).join(":").trim().toLowerCase();
+      type = parts.slice(1).join(":").trim();
+      normalizedType = type.split(":").map((p,i) => i === 0 ? p.toLowerCase() : p).join(":");
     }
 
-    if(type && type.startsWith('date')) {
+    if(normalizedType && normalizedType.startsWith('date')) {
       type = `string|format:${type}`;
     }
 
-    if(type && type.startsWith('time')) {
+    if(normalizedType && normalizedType.startsWith('time')) {
       type = `string|format:${type}`;
     }
 
     const isSubSchema = prop.startsWith('  ');
     const normalizedPropName = prop.trim().replace(/^-/, '').trimStart();
-    const propName = names(normalizedPropName).propertyName;
+    const propName = normalizedPropName === "$items" ? normalizedPropName : names(normalizedPropName).propertyName;
     const optional = normalizedPropName.endsWith('?');
-    let schemaType: JSONSchema7TypeName = propName.toLowerCase().match(/id$/) ? "string|format:uuid" as JSONSchema7TypeName : "string";
+    let schemaType: JSONSchema7TypeName = "string";
 
     if(typeof type === "string") {
       if(type.trim() === "") {
         schemaType = "object";
-      } else if (isShorthand(type.trim())) {
-        schemaType = type.trim() as JSONSchema7TypeName;
+      } else if (normalizedType && isShorthand(normalizedType.trim())) {
+        schemaType = normalizedType.trim() as JSONSchema7TypeName;
       } else if (type.includes(",") && !type.trim().startsWith('enum:')) {
         // that might be an enum list
         schemaType = `enum:${type.split(',').map(i => i.trim()).join(',')}` as JSONSchema7TypeName;

@@ -68,8 +68,8 @@ export const EditTableItem: Instruction = {
 
     const itemLabelNames = names(playNodeLabel(itemInfo.desc.name));
 
-    const cmdName = `Add ${itemLabelNames.name}`;
-    const eventName = `${itemLabelNames.name} Added`;
+    const cmdName = `Edit ${itemLabelNames.name}`;
+    const eventName = `${itemLabelNames.name} Edited`;
 
     const cmdSchema = {
       $ref: registryIdToDataReference(itemInfo.desc.name),

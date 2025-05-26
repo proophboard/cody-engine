@@ -91,11 +91,11 @@ export const enrichColumnConfigFromSchema = (columnConfig: TableColumnUiSchema, 
 
   if(!columnConfig.value) {
     if(isJsonSchemaObject(schema)) {
-      columnConfig.value = `$> row.${columnConfig.field}|values()|map('item|toStr()')|join(', ')`
+      columnConfig.value = `$> row|get('${columnConfig.field}', {})|values()|map('item|toStr()')|join(', ')`
     }
 
     if(isJsonSchemaArray(schema)) {
-      columnConfig.value = `$> row.${columnConfig.field}|map('item|toStr()')|join(', ')`
+      columnConfig.value = `$> row|get('${columnConfig.field}', [])|map('item|toStr()')|join(', ')`
     }
 
     if(isJsonSchemaString(schema, 'date')) {
