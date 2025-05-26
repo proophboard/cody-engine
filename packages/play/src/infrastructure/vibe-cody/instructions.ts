@@ -44,10 +44,16 @@ import {
 import {
   MoveSidebarGroupItemProvider
 } from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/move-sidebar-group-item";
+import {ChangeAppName} from "@cody-play/infrastructure/vibe-cody/app-instructions/change-app-name";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
 export const instructions: InstructionOrProvider[] = [
+  /* App Settings */
+  ChangeAppName,
+  /* Theme */
+  ChangeThemeProvider,
+  /* Page Instructions */
   AddAPageWithName,
   /* Table Instructions */
   AddATableWithDefaults,
@@ -56,8 +62,6 @@ export const instructions: InstructionOrProvider[] = [
   BatchDeleteRows,
   EditTableItem,
   RenameTableRowDataTypeProvider,
-  /* Theme */
-  ChangeThemeProvider,
   /* Button Instructions */
   FocusOnButtonProvider,
   ChangeButtonLabel,

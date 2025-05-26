@@ -23,10 +23,11 @@ import LanguageSwitch from '@frontend/app/components/core/LanguageSwitch';
 import { NavLink } from 'react-router-dom';
 import { LoginOutlined } from '@mui/icons-material';
 import UserAvatar from '@frontend/app/components/core/UserAvatar';
-import { Wrench, ViewDashboardEdit } from 'mdi-material-ui';
+import {Wrench, ViewDashboardEdit, Target} from 'mdi-material-ui';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 import VibeCodyDrawer, {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
-import {useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
+import {useVibeCodyFocusElement, useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
+import {FocusedSidebarItem} from "@cody-play/state/focused-element";
 
 interface OwnProps {
   sidebarOpen: boolean;
@@ -40,9 +41,10 @@ const TopBar = (props: TopBarProps) => {
   const [currentUser] = useUser();
   const theme = useTheme();
   const { mode, toggleColorMode } = useContext(ColorModeContext);
-  const { toggleLiveEditMode } = useContext(LiveEditModeContext);
+  const { liveEditMode, toggleLiveEditMode } = useContext(LiveEditModeContext);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [vibeCodyOpen, setVibeCodyOpen] = useVibeCodyOpen();
+  const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
   });
@@ -63,6 +65,8 @@ const TopBar = (props: TopBarProps) => {
   };
 
   const showLanguageSwitch = false;
+
+  const isAppNameFocused = focusedEle?.type === 'appName';
 
   return (
     <AppBar position="fixed" color="default" sx={{
@@ -94,6 +98,11 @@ const TopBar = (props: TopBarProps) => {
             }}
           >
             {config.appName}
+            {liveEditMode && <IconButton onClick={() => setFocusedEle({
+              id: config.appName,
+              name: config.appName,
+              type: 'appName',
+            })} sx={{color: isAppNameFocused ? theme.palette.info.main : theme.palette.primary.contrastText}}><Target /></IconButton>}
           </Typography>
         </Box>
         {config.layout === 'prototype' && <PlayBreadcrumbs />}
