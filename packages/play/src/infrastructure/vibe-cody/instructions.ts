@@ -38,6 +38,9 @@ import {
 import {
   ChangeSidebarGroupIconProvider
 } from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/change-sidebar-group-icon";
+import {
+  ChangeSidebarGroupLabel
+} from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/change-sidebar-group-label";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -67,4 +70,5 @@ export const instructions: InstructionOrProvider[] = [
   MoveSidebarItemOutOfGroup,
   MoveSidebarItemIntoExistingGroupProvider,
   ChangeSidebarGroupIconProvider,
+  ChangeSidebarGroupLabel,
 ]

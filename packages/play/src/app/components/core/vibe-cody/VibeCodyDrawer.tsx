@@ -407,7 +407,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
        freeSolo={true}
        value={value}
        autoComplete={false}
-       autoHighlight={false}
+       autoHighlight={true}
        inputValue={searchStr}
        onChange={(e,v) => {
          e.stopPropagation();
