@@ -45,6 +45,7 @@ import {
   MoveSidebarGroupItemProvider
 } from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/move-sidebar-group-item";
 import {ChangeAppName} from "@cody-play/infrastructure/vibe-cody/app-instructions/change-app-name";
+import {RemoveColumnProvider} from "@cody-play/infrastructure/vibe-cody/information-instructions/remove-column";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -62,6 +63,7 @@ export const instructions: InstructionOrProvider[] = [
   BatchDeleteRows,
   EditTableItem,
   RenameTableRowDataTypeProvider,
+  RemoveColumnProvider,
   /* Button Instructions */
   FocusOnButtonProvider,
   ChangeButtonLabel,
