@@ -14,7 +14,7 @@ import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {withId} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/with-id";
 import {names} from "@event-engine/messaging/helpers";
 import {namespaceNames, valueObjectNamespaceFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
-import {withNavigateToWelcome} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-welcome";
+import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
 import {camelCaseToTitle} from "@cody-play/infrastructure/utils/string";
 import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
@@ -28,7 +28,7 @@ const makeRemoveColumn = (columnTitle: string, columnName: string): Instruction 
     noInputNeeded: true,
     isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
     match: input => input.startsWith(TEXT),
-    execute: withNavigateToWelcome(async (input, ctx, dispatch, config, navigateTo) => {
+    execute: withNavigateToProcessing(async (input, ctx, dispatch, config, navigateTo) => {
       const pageConfig = ctx.page.handle.page;
 
       const tableVO = getTableViewVO(pageConfig, config);

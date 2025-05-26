@@ -25,7 +25,7 @@ import {Action, CommandAction} from "@frontend/app/components/core/form/types/ac
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 import {PlusBoxOutline} from "mdi-material-ui";
 import {renameFQCN} from "@cody-play/infrastructure/vibe-cody/utils/rename-fqcn";
-import {withNavigateToWelcome} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-welcome";
+import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
 import {
   renameTableRowDataType
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/rename-table-row-data-type";
@@ -92,7 +92,7 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
       return newConfig;
     }
 
-    await withNavigateToWelcome(
+    await withNavigateToProcessing(
       async () => {
         dispatch({
           type: "INIT",

@@ -22,7 +22,7 @@ import {renameType} from "@cody-play/infrastructure/vibe-cody/utils/types/rename
 import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {isListDescription} from "@event-engine/descriptions/descriptions";
 import {WrenchCog} from "mdi-material-ui";
-import {withNavigateToWelcome} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-welcome";
+import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 
@@ -76,7 +76,7 @@ const makeRenameTableRowDataType = (currentName: string): Instruction => {
         cody: `Upps, you forgot to tell me a new name for the row data type!`,
         details: `Please, try again.`,
         type: CodyResponseType.Question,
-        instructionReply: withNavigateToWelcome(renameRowType),
+        instructionReply: withNavigateToProcessing(renameRowType),
       }
     }
 
@@ -103,7 +103,7 @@ const makeRenameTableRowDataType = (currentName: string): Instruction => {
     icon: <WrenchCog />,
     isActive: () => true,
     match: input => input.startsWith(TEXT),
-    execute: withNavigateToWelcome(renameRowType),
+    execute: withNavigateToProcessing(renameRowType),
   } as Instruction
 }
 

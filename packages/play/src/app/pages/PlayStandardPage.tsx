@@ -287,20 +287,22 @@ export const PlayStandardPage = (props: Props) => {
           <Grid2 xs={12} sx={headerGridSx}>
             <PlayBreadcrumbs />
           </Grid2>
-          <Grid2 xs sx={headerGridSx}>
-            <Typography variant="h1" className="CodyPageTitle-root">
-              {getPageTitle(page as unknown as PageDefinition)}
-            </Typography>
-          </Grid2>
-          <TopRightActions
-            actions={topActions}
-            containerInfo={containerInfo}
-            uiOptions={{}}
-            defaultService={defaultService}
-            jexlCtx={jexlCtx}
-            dropzoneId={EDropzoneId.PAGE_TOP_ACTIONS_RIGHT}
-            showDropzone
-          />
+          {page.title !== '' && <>
+            <Grid2 xs sx={headerGridSx}>
+              <Typography variant="h1" className="CodyPageTitle-root">
+                {getPageTitle(page as unknown as PageDefinition)}
+              </Typography>
+            </Grid2>
+              <TopRightActions
+              actions={topActions}
+              containerInfo={containerInfo}
+              uiOptions={{}}
+              defaultService={defaultService}
+              jexlCtx={jexlCtx}
+              dropzoneId={EDropzoneId.PAGE_TOP_ACTIONS_RIGHT}
+              showDropzone
+            />
+          </>}
         </>
       )}
       {topBar}

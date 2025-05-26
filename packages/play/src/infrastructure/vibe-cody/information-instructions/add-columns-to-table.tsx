@@ -27,8 +27,7 @@ import {withId} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/with
 import {CodyResponseException} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {merge} from "lodash/fp";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
-import {startCase} from "lodash";
-import {withNavigateToWelcome} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-welcome";
+import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
 import {addNewColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/add-new-column";
 
 const TEXT = 'Add the following columns to the table: ';
@@ -38,7 +37,7 @@ export const AddColumnsToTable: Instruction = {
   icon: <TableColumn />,
   isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
-  execute: withNavigateToWelcome(async (input, ctx, dispatch, config): Promise<CodyResponse> => {
+  execute: withNavigateToProcessing(async (input, ctx, dispatch, config): Promise<CodyResponse> => {
 
     const pageConfig = ctx.page.handle.page;
 
@@ -102,84 +101,102 @@ export const AddColumnsToTable: Instruction = {
     let columnNames: Names[] = [];
 
     if(isMultilineText(input)) {
-      const schema = getSchemaFromNodeDescription(
-        input.replace(TEXT, '')
-          .split(`\n`)
-          .filter(line => line.trim() !== '')
-          .join(`\n`)
-      );
+      try {
+        const schema = getSchemaFromNodeDescription(
+          input.replace(TEXT, '')
+            .split(`\n`)
+            .filter(line => line.trim() !== '')
+            .join(`\n`)
+        );
 
-      schema.getObjectProperties().forEach(prop => {
-        if(!itemSchema.getObjectPropertySchema(prop)) {
-          debugger;
-          const propSchema = schema.getObjectPropertySchema(prop, new Schema({type: "string", title: camelCaseToTitle(prop)}));
-          const propJsonSchema = propSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`);
-          if(!propJsonSchema.title) {
-            propJsonSchema.title = camelCaseToTitle(prop);
-          }
 
-          if(propJsonSchema.enum) {
-
-            const enumNames: string[] = [];
-            const enumValues: string[] = [];
-
-            propJsonSchema.enum.forEach(v => {
-              const vNames = names(v as string);
-              enumValues.push(vNames.constantName.toLowerCase());
-              enumNames.push(vNames.name);
-            })
-
-            propJsonSchema.enum = enumValues;
-            (propJsonSchema as any).enumNames = enumNames;
-          }
-
-          if(propSchema.isRef()) {
-            const propRefInfo = propSchema.getRefRuntimeInfo(serviceNames.className, config.types);
-
-            if(!propRefInfo) {
-              throw new CodyResponseException({
-                cody: `I can't resolve the reference "${propSchema.getRef()}" to a known data type in the app. Maybe it's a typo? Please check your input and try again.`,
-                type: CodyResponseType.Error
-              })
+        schema.getObjectProperties().forEach(prop => {
+          if(!itemSchema.getObjectPropertySchema(prop)) {
+            const propSchema = schema.getObjectPropertySchema(prop, new Schema({type: "string", title: camelCaseToTitle(prop)}));
+            const propJsonSchema = propSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`);
+            if(!propJsonSchema.title) {
+              propJsonSchema.title = camelCaseToTitle(prop);
             }
 
-            const {desc} = propRefInfo;
+            if(propJsonSchema.enum) {
 
-            if(isStateDescription(desc)) {
-              const matchingListVOs = Object.values(config.types)
-                .filter(t => isListDescription(t.desc) && t.desc.itemType === desc.name);
+              const enumNames: string[] = [];
+              const enumValues: string[] = [];
 
-              if(matchingListVOs.length > 0) {
-                propJsonSchema.$ref = `${propJsonSchema.$ref}:${desc.identifier}`;
+              propJsonSchema.enum.forEach(v => {
+                const vNames = names(v as string);
+                enumValues.push(vNames.constantName.toLowerCase());
+                enumNames.push(vNames.name);
+              })
 
-                const firstMatch = matchingListVOs[0];
+              propJsonSchema.enum = enumValues;
+              (propJsonSchema as any).enumNames = enumNames;
+            }
 
-                if(!itemUiSchema[prop] || !itemUiSchema[prop]['ui:widget']) {
-                  itemUiSchema[prop] = merge(itemUiSchema[prop] || {}, {
-                    'ui:widget': 'DataSelect',
-                    'ui:options': {
-                      'data': registryIdToDataReference(firstMatch.desc.name),
-                      'label': `$> ` + (new Schema(propRefInfo.schema as JSONSchema7, true))
-                        .getDisplayNamePropertyCandidates().map(c => `data.${c}`).join(` + ' ' + `) || `data.${desc.identifier}`,
-                      'value': `$> data.${desc.identifier}`
+            if(propSchema.isRef()) {
+              const propRefInfo = propSchema.getRefRuntimeInfo(serviceNames.className, config.types);
+
+              if(!propRefInfo) {
+                throw new CodyResponseException({
+                  cody: `I can't resolve the reference "${propSchema.getRef()}" to a known data type in the app. Maybe it's a typo? Please check your input and try again.`,
+                  type: CodyResponseType.Error
+                })
+              }
+
+              const {desc} = propRefInfo;
+
+              if(isStateDescription(desc)) {
+                const matchingListVOs = Object.values(config.types)
+                  .filter(t => isListDescription(t.desc) && t.desc.itemType === desc.name);
+
+                if(matchingListVOs.length > 0) {
+                  propJsonSchema.$ref = `${propJsonSchema.$ref}:${desc.identifier}`;
+
+                  const firstMatch = matchingListVOs[0];
+
+                  if(!itemUiSchema[prop] || !itemUiSchema[prop]['ui:widget']) {
+                    let dropdownLabel = (new Schema(propRefInfo.schema as JSONSchema7, true))
+                      .getDisplayNamePropertyCandidates().map(c => `data.${c}`).join(` + ' ' + `);
+
+                    if(dropdownLabel === '') {
+                      dropdownLabel = `data.${desc.identifier}`;
                     }
-                  })
 
-                  if(!itemUiSchema[prop]['ui:title']) {
-                    itemUiSchema[prop]['ui:title'] = camelCaseToTitle(prop);
+                    itemUiSchema[prop] = merge(itemUiSchema[prop] || {}, {
+                      'ui:widget': 'DataSelect',
+                      'ui:options': {
+                        'data': registryIdToDataReference(firstMatch.desc.name),
+                        'label': `$> ${dropdownLabel}`,
+                        'value': `$> data.${desc.identifier}`
+                      }
+                    })
+
+                    if(!itemUiSchema[prop]['ui:title']) {
+                      itemUiSchema[prop]['ui:title'] = camelCaseToTitle(prop);
+                    }
                   }
                 }
               }
             }
+
+            itemSchema.setObjectProperty(prop, new Schema(propJsonSchema, true), schema.isRequired(prop));
           }
 
-          itemSchema.setObjectProperty(prop, new Schema(propJsonSchema, true), schema.isRequired(prop));
+          if(!existingColumnNames.includes(prop)) {
+            existingColumns = addNewColumn(existingColumns, prop);
+          }
+        })
+      } catch (e) {
+        if (e instanceof CodyResponseException) {
+          return e.codyResponse;
+        } else {
+          console.error(e);
+          return {
+            cody: `Failed to parse the data structure`,
+            details: (e as any).toString()
+          }
         }
-
-        if(!existingColumnNames.includes(prop)) {
-          existingColumns = addNewColumn(existingColumns, prop);
-        }
-      })
+      }
     } else {
       columnNames = input.replace(TEXT, '')
         .replaceAll(` and `, ',')

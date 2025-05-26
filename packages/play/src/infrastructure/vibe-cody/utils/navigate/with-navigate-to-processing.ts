@@ -1,9 +1,9 @@
 import {InstructionExecutionCallback} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 
-export const withNavigateToWelcome = (cb: InstructionExecutionCallback): InstructionExecutionCallback => {
+export const withNavigateToProcessing = (cb: InstructionExecutionCallback): InstructionExecutionCallback => {
   return (input, ctx, dispatch, config, navigateTo) => {
     return new Promise(async (resolve, reject) => {
-      navigateTo('/welcome');
+      navigateTo('/cody-play-internal/vibe-cody-processing');
 
       setTimeout(async () => {
 
@@ -11,7 +11,7 @@ export const withNavigateToWelcome = (cb: InstructionExecutionCallback): Instruc
 
         navigateTo(ctx.page.pathname);
         resolve(res);
-      }, 100)
+      }, 500)
     })
   }
 }

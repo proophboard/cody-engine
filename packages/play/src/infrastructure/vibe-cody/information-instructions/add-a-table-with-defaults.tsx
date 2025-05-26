@@ -12,6 +12,7 @@ import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/wit
 import {AddColumnsToTable} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 import { TableLarge } from "mdi-material-ui";
 import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
 
 const TEXT = "I'd like to see a table of ";
 
@@ -20,7 +21,7 @@ export const AddATableWithDefaults: Instruction = {
   icon: <TableLarge />,
   isActive: context => !context.focusedElement && context.page.pathname !== '/welcome',
   match: input => input.startsWith(TEXT),
-  execute: async (input, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyInstructionResponse> => {
+  execute: withNavigateToProcessing(async (input, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyInstructionResponse> => {
     const tableName = input.replace(TEXT, '').trim();
     const tableNameNames = names(tableName);
     const voIdentifier = tableNameNames.propertyName + 'ItemId';
@@ -79,28 +80,20 @@ export const AddATableWithDefaults: Instruction = {
 
     const pageConfig = ctx.page.handle.page;
 
-    return new Promise((resolve, reject) => {
-      navigateTo('/welcome');
-
-      setTimeout(() => {
-        dispatch({
-          ctx: getEditedContextFromConfig(config),
-          type: "ADD_PAGE",
-          page: {...pageConfig, components: [...pageConfig.components, `${config.defaultService}.${tableNameNames.className}`]},
-          name: pageConfig.name
-        })
-
-        navigateTo(ctx.page.pathname);
-
-        resolve({
-          cody: `Added a ${tableName} table to the page ${playNodeLabel(pageConfig.name)}.`,
-          details: `Do you want to define the columns for the table? Just give me a comma separated list of column names.\n\nHint: You can also use a bullet point list.`,
-          type: CodyResponseType.Question,
-          instructionReply: async (input: string, ctx, dispatch, config, navigateTo) => {
-            return AddColumnsToTable.execute(input, ctx, dispatch, config, navigateTo);
-          }
-        })
-      }, 100)
+    dispatch({
+      ctx: getEditedContextFromConfig(config),
+      type: "ADD_PAGE",
+      page: {...pageConfig, components: [...pageConfig.components, `${config.defaultService}.${tableNameNames.className}`]},
+      name: pageConfig.name
     })
-  }
+
+    return {
+      cody: `Added a ${tableName} table to the page ${playNodeLabel(pageConfig.name)}.`,
+      details: `Do you want to define the columns for the table? Just give me a comma separated list of column names.\n\nHint: You can also use a bullet point list.`,
+      type: CodyResponseType.Question,
+      instructionReply: async (input: string, ctx, dispatch, config, navigateTo) => {
+        return AddColumnsToTable.execute(input, ctx, dispatch, config, navigateTo);
+      }
+    }
+  })
 }

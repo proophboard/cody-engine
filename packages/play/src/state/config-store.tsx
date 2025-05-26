@@ -61,6 +61,7 @@ import {Map} from "immutable";
 import {Node} from "@proophboard/cody-types";
 import {LayoutType} from "@frontend/app/layout/layout-type";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+import PlayVibeCodyProcessing from "@cody-play/app/components/core/PlayVibeCodyProcessing";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -123,9 +124,24 @@ const initialPlayConfig: CodyPlayConfig = {
       route: "/welcome",
       topLevel: true
     } as PlayTopLevelPage),
+    'CodyPlay.VibeCodyProcessing': ({
+      name: 'CodyPlay.VibeCodyProcessing',
+      service: 'CodyPlay',
+      commands: [],
+      components: ["CodyPlay.VibeCodyProcessing"],
+      title: '',
+      sidebar: {
+        label: "VC Processing",
+        icon: "cogs",
+        invisible: true
+      },
+      route: "/cody-play-internal/vibe-cody-processing",
+      topLevel: true
+    } as PlayTopLevelPage),
   },
   views: {
     "Core.Welcome": PlayWelcome,
+    "CodyPlay.VibeCodyProcessing": PlayVibeCodyProcessing,
   },
   commands: {
   },
@@ -171,6 +187,8 @@ export const cloneConfig = (config: CodyPlayConfig): CodyPlayConfig => {
 
   delete shallowClone.pages.Welcome;
   delete shallowClone.views['Core.Welcome'];
+  delete shallowClone.pages['CodyPlay.VibeCodyProcessing'];
+  delete shallowClone.views['CodyPlay.VibeCodyProcessing'];
 
   const deepClone = cloneDeepJSON(shallowClone);
 
@@ -186,10 +204,12 @@ export const enhanceConfigWithDefaults = (config: CodyPlayConfig): CodyPlayConfi
     pages: {
       ...config.pages,
       Welcome: initialPlayConfig.pages.Welcome,
+      'CodyPlay.VibeCodyProcessing': initialPlayConfig.pages['CodyPlay.VibeCodyProcessing'],
     },
     views: {
       ...config.views,
       "Core.Welcome": initialPlayConfig.views['Core.Welcome'],
+      "CodyPlay.VibeCodyProcessing": initialPlayConfig.views['CodyPlay.VibeCodyProcessing'],
     }
   }
 }
