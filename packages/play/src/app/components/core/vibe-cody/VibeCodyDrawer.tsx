@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
-import {AccountVoice, Close, HelpCircle, Target} from "mdi-material-ui";
+import {AccountVoice, Close, HelpCircle, HelpCircleOutline, Target} from "mdi-material-ui";
 import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
 import {useNavigate} from "react-router-dom";
 import {usePlayPageMatch} from "@cody-play/hooks/use-play-page-match";
@@ -34,6 +34,7 @@ import {startCase} from "lodash";
 import {DragAndDropContext} from "@cody-play/app/providers/DragAndDrop";
 import {includesAllWords} from "@cody-play/infrastructure/vibe-cody/utils/includes-all-words";
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
+import {QuestionMarkOutlined, QuestionMarkRounded} from "@mui/icons-material";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
 
@@ -333,7 +334,9 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     <DialogTitle>
       <Grid2 container>
         <Grid2 xs sx={{padding: theme.spacing(2)}}>
-          Vibe Cody
+          Vibe Cody (beta version) <IconButton size="small" sx={{marginTop: '-2px', color: theme.palette.grey[500]}}
+            title={'Learn more about Vibe Cody'}
+            onClick={() => window.open('https://wiki.prooph-board.com/cody_play/vibe-cody.html', '_blank')}><HelpCircleOutline /></IconButton>
         </Grid2>
         <TopRightActions  uiOptions={{}} defaultService={config.defaultService} jexlCtx={{} as any} additionalRightButtons={[
           <IconButton key={'app_settings_close_btn'} sx={{
