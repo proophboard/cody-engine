@@ -3,6 +3,8 @@ import {Box, CssBaseline, useTheme} from "@mui/material";
 import TopBar from "@cody-play/app/layout/TopBar";
 import Sidebar from "@cody-play/app/layout/Sidebar";
 import jexl from "@app/shared/jexl/get-configured-jexl";
+import {useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
+import {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 
 interface MainLayoutProps {
     children: React.ReactNode;
@@ -10,6 +12,7 @@ interface MainLayoutProps {
 
 const MainLayout = (props: MainLayoutProps) => {
     const theme = useTheme();
+    const [vibeCodyOpen] = useVibeCodyOpen();
 
     const [sideBarOpen, setSideBarOpen] = useState<boolean>(false);
 
@@ -35,9 +38,10 @@ const MainLayout = (props: MainLayoutProps) => {
               xs: "50px"
             },
             height: '100%',
+            width: `calc(100% - ${vibeCodyOpen? VIBE_CODY_DRAWER_WIDTH : 0}px)`,
             boxSizing: 'border-box',
             backgroundColor: (theme) => theme.palette.background.default,
-            display: 'flex'
+            display: 'flex',
         }}>
             <CssBaseline />
             <TopBar sidebarOpen={sideBarOpen} onOpenSidebar={handleOpenSidebar} />

@@ -1,7 +1,6 @@
 import {CodyResponse, CodyResponseType} from "@proophboard/cody-types";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {JSONSchema7} from "json-schema";
-import {PlaySchemaDefinitions} from "@cody-play/state/types";
 
 export const NAMESPACE = "namespace";
 

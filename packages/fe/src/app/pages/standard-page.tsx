@@ -200,17 +200,17 @@ export const StandardPage = (props: Props) => {
     <Grid2 xs={12} sx={{padding: 0}} />
     {components}
     { /*Render a placeholder to keep space for the  bottom bar */ }
-    {environment.layout === 'task-based-ui' && pageMode === 'standard' && bottomActions.length > 0 && <Box sx={{
+    {environment.layout === 'task-based-ui' && pageMode === 'standard' && bottomActions.length > 0 && <Box className={'CodyBottomBar-placeholder'} sx={{
       width: props.drawerWidth && isLarge ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)` : `calc(100% - ${SIDEBAR_WIDTH}px)`,
       left: SIDEBAR_WIDTH + 'px',
       bottom: 0,
       marginTop: theme.spacing(2),
       height: '60px'
     }} />}
-    {environment.layout === 'task-based-ui' && pageMode === 'standard' && bottomActions.length > 0 && <Box sx={{
+    {environment.layout === 'task-based-ui' && pageMode === 'standard' && bottomActions.length > 0 && <Box className={'CodyBottomBar-root'} sx={{
       position: "fixed",
       width: props.drawerWidth && isLarge ? `calc(100% - ${SIDEBAR_WIDTH}px - ${props.drawerWidth}px)` : `calc(100% - ${SIDEBAR_WIDTH}px)`,
-      backgroundColor: (theme) => theme.palette.grey.A100,
+      backgroundColor: theme.palette.background.paper,
       borderTop: (theme) => '1px solid ' + theme.palette.grey.A200,
       left: SIDEBAR_WIDTH + 'px',
       bottom: 0,

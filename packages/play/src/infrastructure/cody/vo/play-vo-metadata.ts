@@ -35,9 +35,11 @@ import {valueObjectNameFromFQCN} from "@cody-engine/cody/hooks/utils/value-objec
 import {normalizeProjectionConfig, ProjectionConfig} from "@app/shared/rule-engine/projection-config";
 import {isRefSchema} from "@app/shared/utils/json-schema/is-ref-schema";
 import {isInlineItemsArraySchema, isListSchema} from "@app/shared/utils/schema-checks";
+import {ColumnSingleSelectValueOption} from "@cody-engine/cody/hooks/utils/value-object/types";
 
 export interface PlayValueObjectMetadataRaw {
   identifier?: string;
+  hasIdentifier?: boolean;
   schema: any;
   querySchema?: any;
   resolve?: ResolveConfig;
@@ -69,9 +71,11 @@ export interface PageLinkTableColumn {
 export interface TableColumnUiSchema {
   field: string;
   headerName?: string;
+  type?: 'string' | 'number' | 'date' | 'dateTime' | 'boolean' | 'singleSelect' | 'actions';
   flex?: string | number;
   width?: string | number;
   value?: Rule[] | string;
+  valueOptions?: ColumnSingleSelectValueOption[];
   pageLink?: string | PageLinkTableColumn;
   ref?: { data: string; value: string };
   link?: string | Rule[];

@@ -21,6 +21,7 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
 import {ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
+import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
 
 interface OwnProps {
   page: string;
@@ -40,6 +41,7 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
   const defaultService = names(config.defaultService).className;
   const navigate = useNavigate();
   const {t} = useTranslation();
+  const { liveEditMode } = useContext(LiveEditModeContext);
 
   const jexlCtx: FormJexlContext = {
     user,
@@ -74,7 +76,13 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
 
   return <>
       <PlayStandardPage page={mainPage.name} />
-      <Dialog open={true} fullWidth={true} maxWidth={'lg'} onClose={handleClose} sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}>
+      <Dialog open={true}
+              fullWidth={true}
+              maxWidth={'lg'}
+              onClose={handleClose}
+              sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}
+              disableEnforceFocus={liveEditMode}
+      >
         <DialogTitle>
           <Grid2 container={true}>
             <Grid2 xs>

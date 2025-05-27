@@ -3,7 +3,7 @@ import * as React from "react";
 
 export interface ButtonConfig {
   variant?: "text" | "outlined" | "contained",
-  color?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+  color?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning' | 'default',
   disabled?: boolean,
   style?: SxProps,
   hidden?: boolean,
@@ -18,4 +18,7 @@ export interface ButtonConfig {
   'icon:expr'?: string,
   'label:expr'?: string,
   'endIcon:expr'?: string,
+  /* DataGrid specific config */
+  asGridActionsCellItem?: boolean;
+  showInMenu?: boolean;
 }

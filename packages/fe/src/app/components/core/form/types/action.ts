@@ -1,12 +1,57 @@
 import {AnyRule, PropMapping} from "@app/shared/rule-engine/configuration";
 import {UiSchema} from "@rjsf/utils";
 import {ButtonConfig} from "@frontend/app/components/core/button/button-config";
+import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+
+export type ButtonPosition = "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
 
 export interface Action {
   type: "command" | "link" | "rules";
   description?: string;
-  position: "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
+  position: ButtonPosition;
   button: ButtonConfig;
+}
+
+export const getActionId = (action: Action): string => {
+  if(isCommandAction(action)) {
+    return action.command;
+  }
+
+  if(isLinkAction(action)) {
+    if(action.href) {
+      return action.href;
+    }
+
+    if(action.pageLink) {
+      return typeof action.pageLink === "string" ? action.pageLink : action.pageLink.page;
+    }
+  }
+
+  return JSON.stringify(action);
+}
+
+export const getActionName = (action: Action): string => {
+  if(isCommandAction(action)) {
+    return playNodeLabel(action.command);
+  }
+
+  if(isLinkAction(action)) {
+    if(action.href) {
+      return `Link to ${(new URL(action.href).host)}`;
+    }
+
+    if(action.pageLink) {
+      const pageName = typeof action.pageLink === "string" ? action.pageLink : action.pageLink.page;
+      return `Page Link to ${playNodeLabel(pageName)}`;
+    }
+  }
+
+  return 'Rules Action';
+}
+
+export const getActionButtonName = (action: Action): string => {
+  return action.button?.label || (typeof action.button?.icon === "string" ? `${action.button?.icon} icon` : undefined)
+    || getActionName(action);
 }
 
 export const isLinkAction = (action: Action): action is LinkAction => {

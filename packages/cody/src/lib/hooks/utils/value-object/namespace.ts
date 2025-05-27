@@ -1,6 +1,6 @@
 import {names} from "@event-engine/messaging/helpers";
 
-const prepareNs = (ns: string): string => {
+export const prepareNs = (ns: string): string => {
   if(ns.length === 0) {
     return ns;
   }

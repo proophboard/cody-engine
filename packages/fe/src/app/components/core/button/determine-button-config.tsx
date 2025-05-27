@@ -14,7 +14,7 @@ export interface ButtonProps {
   startIcon?: React.ReactNode | false | string | undefined;
   endIcon?: React.ReactNode | string | undefined;
   icon?: React.ReactNode | false | string | undefined;
-  color?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning';
+  color?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning' | 'default';
   style?: SxProps;
   disabled?: boolean;
   hidden?: boolean;
@@ -27,6 +27,9 @@ export interface ButtonProps {
   'icon:expr'?: string,
   'label:expr'?: string,
   'endIcon:expr'?: string,
+  /* DataGrid specific config */
+  asGridActionsCellItem?: boolean;
+  showInMenu?: boolean;
 }
 
 const makeIcon = (icon: React.ReactNode | string | undefined): React.ReactNode | undefined => {
@@ -77,7 +80,7 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
   const color = props.color || uiButtonConfig['color'] || 'primary';
   const style = props.style || uiButtonConfig['style'] || undefined;
   const icon = props.startIcon === false ? undefined : props.startIcon || props.icon || uiConfigIcon;
-  const label = props.label || uiButtonConfig['label'] || undefined;
+  const label = props.label || (!props.icon && !props["icon:expr"] ? uiButtonConfig['label'] : undefined) || undefined;
 
   let disabled: boolean | undefined = undefined;
 
@@ -119,6 +122,8 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
     hidden,
     icon: makeIcon(icon),
     label,
-    endIcon: makeIcon(endIcon)
+    endIcon: makeIcon(endIcon),
+    asGridActionsCellItem: props.asGridActionsCellItem,
+    showInMenu: props.showInMenu,
   }
 }

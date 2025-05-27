@@ -5,6 +5,7 @@ import {namespaceToFilePath, namespaceToJSONPointer} from "@cody-engine/cody/hoo
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {PlayValueObjectMetadata} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
+import {startCase} from "lodash";
 
 export const playDefinitionId = (vo: Node, ns: string, ctx: ElementEditedContext): string | CodyResponse => {
   const service = playService(vo, ctx);
@@ -44,4 +45,24 @@ export const playDefinitionIdFromFQCN = (fqcn: string): string => {
     .split(".")
     .map(r => names(r).fileName)
     .join("/");
+}
+
+export const playNodeLabel = (nodeFQCN: string): string => {
+  if(nodeFQCN === '') {
+    return '';
+  }
+
+  const parts = nodeFQCN.split(".");
+
+  return startCase(parts.pop());
+}
+
+export const playServiceFromFQCN = (nodeFQCN: string): string => {
+  if(nodeFQCN === '') {
+    return '';
+  }
+
+  const parts = nodeFQCN.split(".");
+
+  return parts.shift() || '';
 }

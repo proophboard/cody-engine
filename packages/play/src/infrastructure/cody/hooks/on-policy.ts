@@ -72,6 +72,7 @@ export const onPolicy = async (policy: Node, dispatch: PlayConfigDispatch, ctx: 
       const pbInfo = playwithErrorCheck(playUpdateProophBoardInfo, [policy, ctx, (config.eventPolicies[eventMeta.fqcn] || {})[policyName]])
 
       dispatch({
+        ctx,
         type: "ADD_EVENT_POLICY",
         name: policyName,
         event: eventMeta.fqcn,

@@ -4,6 +4,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {playParseJsonMetadata} from "@cody-play/infrastructure/cody/metadata/play-parse-json-metadata";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {playFindParentByType} from "@cody-play/infrastructure/cody/node-traversing/node-tree";
+import {CodyPlayConfig} from "@cody-play/state/config-store";
 
 export const playService = (node: Node, ctx: ElementEditedContext): string | CodyResponse => {
   const meta = node.getMetadata() ? playParseJsonMetadata<{service?: string}>(node) : {};
@@ -39,3 +40,4 @@ export const playService = (node: Node, ctx: ElementEditedContext): string | Cod
 
   return ctx.service;
 }
+

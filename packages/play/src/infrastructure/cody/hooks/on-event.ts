@@ -38,6 +38,7 @@ export const onEvent = async (event: Node, dispatch: PlayConfigDispatch, ctx: El
 
     if(!isAggregateEvent) {
       dispatch({
+        ctx,
         type: "ADD_PURE_EVENT",
         name: meta.fqcn,
         event: {
@@ -92,6 +93,7 @@ export const onEvent = async (event: Node, dispatch: PlayConfigDispatch, ctx: El
     }
 
     dispatch({
+      ctx,
       type: "ADD_AGGREGATE_EVENT",
       name: meta.fqcn,
       aggregate: `${serviceNames.className}.${aggregateNames.className}`,

@@ -4,6 +4,9 @@ import {createTheme} from "@frontend/app/layout/theme";
 import {ThemeProvider} from "@mui/material/styles";
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 import {configStore} from "@cody-play/state/config-store";
+import {useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
+import {merge} from "lodash/fp";
+import {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 
 interface Props {
   children: ReactNode
@@ -12,6 +15,7 @@ interface Props {
 const PlayToggleColorMode = ({children}: Props) => {
   const {config} = useContext(configStore);
   const [mode, setMode] = React.useState<'light' | 'dark'>('light');
+  const [vibeCodyOpen] = useVibeCodyOpen();
   const colorMode = {
     mode,
     toggleColorMode: () => {
@@ -19,18 +23,33 @@ const PlayToggleColorMode = ({children}: Props) => {
     },
   };
 
+  const components = vibeCodyOpen
+    ?  {
+      MuiDialog: {
+        styleOverrides: {
+          root: {
+            width: `calc(100% - ${VIBE_CODY_DRAWER_WIDTH}px)`,
+            '& .MuiBackdrop-root': {
+              right: `${VIBE_CODY_DRAWER_WIDTH}px`
+            }
+          }
+        }
+      }
+    }
+    : {};
+
   const theme = React.useMemo(
     () =>
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       createTheme({
-        ...config.theme,
+        ...merge(config.theme, {components}),
         palette: {
           ...config.theme.palette || {},
           mode,
-        },
+        }
       }),
-    [mode, config.theme],
+    [mode, config.theme, vibeCodyOpen],
   );
 
   return (
