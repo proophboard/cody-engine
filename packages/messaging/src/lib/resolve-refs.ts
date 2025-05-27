@@ -60,7 +60,7 @@ export const resolveUiSchema = (schema: JSONSchema7, types: { [valueObjectName: 
       if(!isPropRef) {
         uiSchema = t(refUiSchema, `${fqcn}.uiSchema`);
       } else {
-        uiSchema = t(refUiSchema[prop], `${fqcn}.uiSchema`);
+        uiSchema = t(refUiSchema[prop] || {}, `${fqcn}.${prop}.uiSchema`);
       }
     }
   }
