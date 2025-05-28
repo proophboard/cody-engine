@@ -1,5 +1,5 @@
 import {Jexl} from "@event-engine/infrastructure/jexl/jexl";
-import {orderBy} from "lodash";
+import {orderBy, reduce, reverse} from "lodash";
 
 export const registerArrayExtensions = (jexl: Jexl): void => {
   jexl.addFunction('push', arrayPush);
@@ -16,6 +16,8 @@ export const registerArrayExtensions = (jexl: Jexl): void => {
   jexl.addTransform('last', (arr: Array<unknown>, notSetValue?: any) => arr.length? arr[arr.length-1] : notSetValue);
   jexl.addTransform('orderBy', (arr: Array<unknown>, iteratees: string|string[], orders: Array<"asc"|"desc">) => orderBy(arr, iteratees, orders));
   jexl.addTransform('list', (v: unknown): unknown[] => typeof v === "undefined" ? [] :Array.isArray(v) ? v : [v]);
+  jexl.addTransform('reduce', (arr: Array<unknown>, iterateeExpr: string, accumulator: any, ctx?: object): any => reduce(arr, (sum, item) => reduceWithExpr(sum, item, iterateeExpr, ctx || {}, jexl), accumulator));
+  jexl.addTransform('reverse', (arr: Array<unknown>) => reverse(arr));
 }
 
 const arrayPush = (arr: Array<unknown>, val: unknown): Array<unknown> => {
@@ -73,6 +75,10 @@ const map = (arr: Array<unknown>, expr: string, ctx: object, jexl: Jexl): Array<
   return arr.map((item, index) => {
     return jexl.evalSync(expr, {...ctx, item, _: item, index});
   })
+}
+
+const reduceWithExpr = (sum: any, item: any, expr: string, ctx: object, jexl: Jexl): any => {
+  return jexl.evalSync(expr, {...ctx, sum, item});
 }
 
 
