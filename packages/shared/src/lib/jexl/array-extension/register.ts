@@ -78,7 +78,7 @@ const map = (arr: Array<unknown>, expr: string, ctx: object, jexl: Jexl): Array<
 }
 
 const reduceWithExpr = (sum: any, item: any, expr: string, ctx: object, jexl: Jexl): any => {
-  return jexl.evalSync(expr, {...ctx, sum, item});
+  return jexl.evalSync(expr, {...ctx, sum, item, _: item});
 }
 
 
