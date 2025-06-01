@@ -18,7 +18,7 @@ import PlayTableView from "@cody-play/app/components/core/PlayTableView";
 import PlayStateView from "@cody-play/app/components/core/PlayStateView";
 import {PageDataContext} from "@frontend/app/providers/PageData";
 import {getPageTitle, PageDefinition, Tab} from "@frontend/app/pages/page-definitions";
-import {Alert, Box, SxProps, Tabs, Typography, useMediaQuery, useTheme} from "@mui/material";
+import {Alert, Box, IconButton, SxProps, Tabs, Typography, useMediaQuery, useTheme} from "@mui/material";
 import PlayStaticView from "@cody-play/app/components/core/PlayStaticView";
 import {names} from "@event-engine/messaging/helpers";
 import PlayStateFormView from "@cody-play/app/components/core/PlayStateFormView";
@@ -44,6 +44,9 @@ import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode"
 import {EDropzoneId} from "@cody-play/app/types/enums/EDropzoneId";
 import {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+import {FocusedSidebarItem} from "@cody-play/state/focused-element";
+import {Target} from "mdi-material-ui";
+import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 
 export type PageMode = 'standard' | 'dialog' | 'drawer';
 
@@ -81,6 +84,7 @@ export const PlayStandardPage = (props: Props) => {
   const [pageData] = usePageData();
   const { t } = useTranslation();
   const [store] = useGlobalStore();
+  const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
 
   const pageMode = props.mode || 'standard';
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
@@ -274,6 +278,8 @@ export const PlayStandardPage = (props: Props) => {
     type: 'page',
   };
 
+  const isFocusedEle = focusedEle && focusedEle.type === "pageTitle" && focusedEle.id === page.name;
+
   return (
     <Grid2
       {...{
@@ -287,22 +293,30 @@ export const PlayStandardPage = (props: Props) => {
           <Grid2 xs={12} sx={headerGridSx}>
             <PlayBreadcrumbs />
           </Grid2>
-          {page.title !== '' && <>
+          {(page.title !== '' || liveEditMode) && <>
             <Grid2 xs sx={headerGridSx}>
-              <Typography variant="h1" className="CodyPageTitle-root">
+              <Typography variant="h1" className="CodyPageTitle-root" sx={liveEditMode && page.title === '' ? {
+                color: theme.palette.action.disabled,
+                textDecoration: 'line-through'
+              } : undefined}>
                 {getPageTitle(page as unknown as PageDefinition)}
+                {liveEditMode && <IconButton onClick={() => setFocusedEle({
+                  id: page.name,
+                  name: getPageTitle(page as unknown as PageDefinition),
+                  type: 'pageTitle',
+                })} color={isFocusedEle ? 'info' : undefined}><Target /></IconButton>}
               </Typography>
             </Grid2>
-              <TopRightActions
-              actions={topActions}
-              containerInfo={containerInfo}
-              uiOptions={{}}
-              defaultService={defaultService}
-              jexlCtx={jexlCtx}
-              dropzoneId={EDropzoneId.PAGE_TOP_ACTIONS_RIGHT}
-              showDropzone
-            />
           </>}
+          <TopRightActions
+            actions={topActions}
+            containerInfo={containerInfo}
+            uiOptions={{}}
+            defaultService={defaultService}
+            jexlCtx={jexlCtx}
+            dropzoneId={EDropzoneId.PAGE_TOP_ACTIONS_RIGHT}
+            showDropzone
+          />
         </>
       )}
       {topBar}

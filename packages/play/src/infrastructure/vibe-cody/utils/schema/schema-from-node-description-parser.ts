@@ -119,11 +119,11 @@ export class SchemaFromNodeDescriptionParser {
     }
 
     if(normalizedType && normalizedType.startsWith('date')) {
-      type = `string|format:${type}`;
+      normalizedType = `string|format:${type}`;
     }
 
     if(normalizedType && normalizedType.startsWith('time')) {
-      type = `string|format:${type}`;
+      normalizedType = `string|format:${type}`;
     }
 
     const isSubSchema = prop.startsWith('  ');
