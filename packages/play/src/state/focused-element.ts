@@ -1,6 +1,7 @@
 import {Action, ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 
-export type FocusedElementType = 'appName' | 'button' | 'sidebarItem' | 'sidebarItemGroup' | 'tab' | 'breadcrumb'
+export type FocusedElementType = 'appName' | 'button' | 'pageTitle'
+  | 'sidebarItem' | 'sidebarItemGroup' | 'tab' | 'breadcrumb'
   | 'table' | 'tableColumn' | 'stateView' | 'formView' | 'formViewInput' | 'formViewObject' | 'formViewList'
   | 'commandForm' | 'commandFormInput' | 'commandFormObject' | 'commandFormList';
 

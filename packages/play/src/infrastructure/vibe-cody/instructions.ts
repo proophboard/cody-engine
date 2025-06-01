@@ -47,6 +47,8 @@ import {
 import {ChangeAppName} from "@cody-play/infrastructure/vibe-cody/app-instructions/change-app-name";
 import {RemoveColumnProvider} from "@cody-play/infrastructure/vibe-cody/information-instructions/remove-column";
 import {FocusOnSidebarItemProvider} from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/focus-sidebar-item";
+import {ChangePageTitleProvider} from "@cody-play/infrastructure/vibe-cody/page-instructions/change-page-title";
+import {FocusOnPageTitleProvider} from "@cody-play/infrastructure/vibe-cody/page-instructions/focus-on-page-title";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -57,6 +59,8 @@ export const instructions: InstructionOrProvider[] = [
   ChangeThemeProvider,
   /* Page Instructions */
   AddAPageWithName,
+  ChangePageTitleProvider,
+  FocusOnPageTitleProvider,
   /* Table Instructions */
   AddATableWithDefaults,
   AddColumnsToTable,
