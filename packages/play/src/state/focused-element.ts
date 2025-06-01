@@ -2,7 +2,8 @@ import {Action, ActionContainerInfo} from "@frontend/app/components/core/form/ty
 
 export type FocusedElementType = 'appName' | 'button' | 'pageTitle'
   | 'sidebarItem' | 'sidebarItemGroup' | 'tab' | 'breadcrumb'
-  | 'table' | 'tableColumn' | 'stateView' | 'formView' | 'formViewInput' | 'formViewObject' | 'formViewList'
+  | 'table' | 'tableColumn'
+  | 'viewTitle' | 'stateView' | 'formView' | 'formViewInput' | 'formViewObject' | 'formViewList'
   | 'commandForm' | 'commandFormInput' | 'commandFormObject' | 'commandFormList';
 
 export interface FocusedElement {

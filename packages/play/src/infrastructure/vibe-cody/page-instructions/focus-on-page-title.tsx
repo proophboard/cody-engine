@@ -1,4 +1,4 @@
-import {Instruction, InstructionProvider} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
+import {InstructionProvider} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {getPageTitle, PageDefinition} from "@frontend/app/pages/page-definitions";
 import {Target} from "mdi-material-ui";
 
