@@ -46,6 +46,7 @@ import {
 } from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/move-sidebar-group-item";
 import {ChangeAppName} from "@cody-play/infrastructure/vibe-cody/app-instructions/change-app-name";
 import {RemoveColumnProvider} from "@cody-play/infrastructure/vibe-cody/information-instructions/remove-column";
+import {FocusOnSidebarItemProvider} from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/focus-sidebar-item";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -81,4 +82,5 @@ export const instructions: InstructionOrProvider[] = [
   ChangeSidebarGroupIconProvider,
   ChangeSidebarGroupLabel,
   MoveSidebarGroupItemProvider,
+  FocusOnSidebarItemProvider,
 ]
