@@ -43,12 +43,20 @@ const DragAndDrop = ({ children }: TDragAndDrop) => {
     null
   );
   const [activeElementId, setActiveElementId] = useState<string>('');
+
+  const setNewTransformValueOrFinishDnD = (transformValue: TTransform | null) => {
+    setNewTransformValue(transformValue);
+    if(transformValue === null) {
+      setDndEvent(null);
+    }
+  }
+
   const dnd = useMemo(
     () => ({
       dndEvent,
       activeElementId,
       transformValue,
-      setTransformValue: setNewTransformValue,
+      setTransformValue: setNewTransformValueOrFinishDnD,
     }),
     [dndEvent, activeElementId, transformValue]
   );
