@@ -8,6 +8,9 @@ import {usePageData} from "@frontend/hooks/use-page-data";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {JSONSchemaWithId} from "@frontend/app/components/core/form/widgets/json-schema/json-schema-with-id";
+import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
+import {useEnv} from "@frontend/hooks/use-env";
+import {useTheme} from "@mui/material";
 
 interface OwnProps {
 
@@ -52,20 +55,23 @@ const HtmlWidget = (props: HtmlWidgetProps) => {
   const [user,] = useUser();
   const [pageData,] = usePageData();
   const [store,] = useGlobalStore();
+  const env = useEnv();
+  const theme = useTheme();
 
   let isDynamicHtml = !!options.data;
 
-  if(isDynamicHtml && options.if && typeof options.if === "string") {
-    const jexlCtx = {
-      routeParams,
-      data: formContext?.data || {},
-      user,
-      page: pageData,
-      store,
-      value,
-      result: undefined
-    };
+  const jexlCtx = {
+    routeParams,
+    data: formContext?.data || {},
+    user,
+    page: pageData,
+    store,
+    value,
+    theme,
+    result: undefined
+  };
 
+  if(isDynamicHtml && options.if && typeof options.if === "string") {
     isDynamicHtml = jexl.evalSync(options.if, jexlCtx);
   }
 
@@ -89,7 +95,7 @@ const HtmlWidget = (props: HtmlWidgetProps) => {
 
   return <StaticHtmlWidget
     {...props}
-    config={cleanOptions(options)}
+    config={normalizeUiSchema(cleanOptions(options), jexlCtx, env)}
     id={id}
     label={label}
     style={options.style}
