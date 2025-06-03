@@ -40,7 +40,7 @@ const <%= className %> = (props: <%= className %>Props & {hidden?: boolean}, con
   }
 
   useEffect(() => {
-    addQueryResult(`<%= dataReference %>${config.viewType === 'form' ? '/Form' : '' }`, query);
+    addQueryResult(`<%= dataReference %>`, query);
   }, [query.dataUpdatedAt]);
 
   const initialValues = config.injectedInitialValues || getInitialValuesFromUiSchema(uiSchema, RuntimeInfo.schema as unknown as JSONSchema7, jexlCtx);
