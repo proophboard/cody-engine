@@ -1,6 +1,5 @@
 import * as React from 'react';
 import {HtmlConfig} from "@frontend/app/components/core/form/widgets/HtmlWidget";
-import {JSONSchema7} from "json-schema-to-ts";
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {names} from "@event-engine/messaging/helpers";
 import {types} from "@app/shared/types";
@@ -12,7 +11,7 @@ import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {useApiQuery} from "@frontend/queries/use-api-query";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import StaticHtmlWidget from "@frontend/app/components/core/form/widgets/html/StaticHtmlWidget";
-import {CircularProgress} from "@mui/material";
+import {CircularProgress, useTheme} from "@mui/material";
 import {WidgetProps} from "@rjsf/utils";
 import {JSONSchemaWithId} from "@frontend/app/components/core/form/widgets/json-schema/json-schema-with-id";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
@@ -42,6 +41,7 @@ const DynamicHtmlWidget = (props: DynamicHtmlWidgetProps) => {
   const [pageData,] = usePageData();
   const [store,] = useGlobalStore();
   const env = useEnv();
+  const theme = useTheme();
 
   const {desc} = getVOFromTypes(props.data, props.rootSchema);
 
@@ -56,6 +56,7 @@ const DynamicHtmlWidget = (props: DynamicHtmlWidgetProps) => {
     page: pageData,
     store,
     value: props.value,
+    theme,
     result: undefined
   };
 
