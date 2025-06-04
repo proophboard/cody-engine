@@ -307,6 +307,7 @@ const makeTempPolicyProjectionFromVO = (vo: Node, event: Node, projectionName: s
       projection: projectionName,
       live: voMeta.projection?.live,
       rules,
+      service: voMeta.service
     }),
     sourcesList: List([event])
   })
