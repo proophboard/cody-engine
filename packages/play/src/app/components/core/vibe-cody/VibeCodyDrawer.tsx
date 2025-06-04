@@ -76,7 +76,11 @@ export type HelpLink = {text: string, href: string};
 
 export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback, helpLink?: HelpLink};
 
-const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment): Instruction[] => {
+const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment, selectedInstruction?: Instruction): Instruction[] => {
+  if(selectedInstruction) {
+    return [];
+  }
+
   const suggestions: Instruction[] = [];
 
   instructions.filter(i => i.isActive(ctx, config, env))
@@ -390,7 +394,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
              lockChange = false;
            }}
         />}
-       options={suggestInstructions(vibeCodyCtx, config, env)}
+       options={suggestInstructions(vibeCodyCtx, config, env, selectedInstruction)}
        renderOption={(props, option) => {
          return (
            <ListItem {...props}>
