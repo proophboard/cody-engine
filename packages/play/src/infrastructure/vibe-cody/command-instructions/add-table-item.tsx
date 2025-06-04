@@ -35,7 +35,7 @@ import {
 } from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
 
 
-const TEXT = "Place a button above the table to add a ";
+const TEXT = "Place a button above the table to add a new ";
 
 const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispatch, config, navigateTo): Promise<CodyResponse> => {
   const btnLabel = input.replace(TEXT, '').trim();
