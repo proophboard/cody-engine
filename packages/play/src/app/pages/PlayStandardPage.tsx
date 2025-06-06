@@ -293,7 +293,7 @@ export const PlayStandardPage = (props: Props) => {
           <Grid2 xs={12} sx={headerGridSx}>
             <PlayBreadcrumbs />
           </Grid2>
-          {(page.title !== '' || liveEditMode) && <>
+          {(page.title !== '' || (liveEditMode && page.name !== 'CodyPlay.VibeCodyProcessing')) && <>
             <Grid2 xs sx={headerGridSx}>
               <Typography variant="h1" className="CodyPageTitle-root" sx={liveEditMode && page.title === '' ? {
                 color: theme.palette.action.disabled,

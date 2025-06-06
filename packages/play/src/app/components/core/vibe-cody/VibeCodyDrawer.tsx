@@ -34,7 +34,6 @@ import {startCase} from "lodash";
 import {DragAndDropContext} from "@cody-play/app/providers/DragAndDrop";
 import {includesAllWords} from "@cody-play/infrastructure/vibe-cody/utils/includes-all-words";
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
-import {QuestionMarkOutlined, QuestionMarkRounded} from "@mui/icons-material";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
 
@@ -58,6 +57,7 @@ export interface Instruction {
   text: string,
   icon?: React.ReactNode,
   noInputNeeded?: boolean,
+  allowSubSuggestions?: boolean,
   isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string) => boolean,
   execute: InstructionExecutionCallback,
@@ -77,7 +77,7 @@ export type HelpLink = {text: string, href: string};
 export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback, helpLink?: HelpLink};
 
 const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment, selectedInstruction?: Instruction): Instruction[] => {
-  if(selectedInstruction) {
+  if(selectedInstruction && !selectedInstruction.allowSubSuggestions) {
     return [];
   }
 
@@ -374,7 +374,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
         </Alert>}
         <Autocomplete<Instruction, false, false, true>
           renderInput={(params) => <TextField {...params}
-           helperText={<span>Start typing to get suggestions. Use Shift+Enter for multiline.</span>}
+           helperText={<span>Press Space to get suggestions. Use Shift+Enter for multiline.</span>}
            inputRef={inputRef}
            variant="outlined"
            multiline={true}
