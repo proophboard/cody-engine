@@ -16,8 +16,6 @@ export const includesAllNouns = (searchStr: string, words: string[]): boolean =>
 
   const nouns = doc.nouns().out('array');
 
-  console.log(nouns);
-
   if(nouns.length === 0) {
     return false;
   }
