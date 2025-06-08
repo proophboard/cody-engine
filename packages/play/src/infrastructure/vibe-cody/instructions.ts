@@ -53,6 +53,7 @@ import {ChangeViewTitleProvider} from "@cody-play/infrastructure/vibe-cody/infor
 import {
   FocusOnViewTitleProvider
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/focus-on-view-title";
+import {AddPageWithTable} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-page-with-table";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -63,6 +64,7 @@ export const instructions: InstructionOrProvider[] = [
   ChangeThemeProvider,
   /* Page Instructions */
   AddAPageWithName,
+  AddPageWithTable,
   ChangePageTitleProvider,
   FocusOnPageTitleProvider,
   /* View Instructions */
