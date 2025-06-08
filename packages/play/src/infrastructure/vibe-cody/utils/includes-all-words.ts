@@ -11,10 +11,14 @@ export const includesAllWords = (searchStr: string, words: string[]): boolean =>
   return true;
 }
 
-export const includesAllNouns = (searchStr: string, words: string[]): boolean => {
-  const doc = nlp(words.join(" "));
+export const extractNouns = (sentence: string): string[] => {
+  const doc = nlp(sentence);
 
-  const nouns = doc.nouns().out('array');
+  return doc.nouns().out('array');
+}
+
+export const includesAllNouns = (searchStr: string, words: string[]): boolean => {
+  const nouns = extractNouns(words.join(" "));
 
   if(nouns.length === 0) {
     return false;

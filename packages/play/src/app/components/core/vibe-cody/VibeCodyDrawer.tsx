@@ -32,7 +32,11 @@ import CodyEmoji from "@cody-play/app/components/core/vibe-cody/CodyEmoji";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 import {startCase} from "lodash";
 import {DragAndDropContext} from "@cody-play/app/providers/DragAndDrop";
-import {includesAllNouns, includesAllWords} from "@cody-play/infrastructure/vibe-cody/utils/includes-all-words";
+import {
+  extractNouns,
+  includesAllNouns,
+  includesAllWords
+} from "@cody-play/infrastructure/vibe-cody/utils/includes-all-words";
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
@@ -416,8 +420,14 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
            );
 
            if(filtered.length === 0) {
+             const nouns = extractNouns(state.inputValue.toLowerCase());
+
+             if(nouns.length === 0) {
+               return [];
+             }
+
              return options.filter((item) =>
-               includesAllNouns(String(item.text).toLowerCase(), state.inputValue.toLowerCase().split(" "))
+               includesAllWords(String(item.text).toLowerCase(), nouns)
              )
            }
 
