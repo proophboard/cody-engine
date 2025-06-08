@@ -300,8 +300,10 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       config,
       (route: string) => {
         pendingNavigateTo = route;
+        console.log("Navigate to", route);
         window.setTimeout(() => {
           pendingNavigateTo = undefined;
+          console.log("navigate to cb: ", route);
           setNavigateTo(route);
         }, 30);
       });
