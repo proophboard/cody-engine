@@ -381,6 +381,10 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
            maxRows={10}
            placeholder={'Next instruction'}
            onKeyDown={e => {
+             if((e.key === "ArrowUp" || e.key === "ArrowDown") && searchStr.includes("\n")) {
+               e.stopPropagation();
+             }
+
              if(e.shiftKey && e.key === "Enter") {
                lockChange = true;
              }
