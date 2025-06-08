@@ -54,6 +54,7 @@ import {
   FocusOnViewTitleProvider
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/focus-on-view-title";
 import {AddPageWithTable} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-page-with-table";
+import {OpenRowOnDetailsPage} from "@cody-play/infrastructure/vibe-cody/information-instructions/OpenRowOnDetailspage";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -78,6 +79,7 @@ export const instructions: InstructionOrProvider[] = [
   EditTableItem,
   RenameTableRowDataTypeProvider,
   RemoveColumnProvider,
+  OpenRowOnDetailsPage,
   /* Button Instructions */
   FocusOnButtonProvider,
   ChangeButtonLabel,
