@@ -23,11 +23,10 @@ import LanguageSwitch from '@frontend/app/components/core/LanguageSwitch';
 import { NavLink } from 'react-router-dom';
 import { LoginOutlined } from '@mui/icons-material';
 import UserAvatar from '@frontend/app/components/core/UserAvatar';
-import {Wrench, ViewDashboardEdit, Target} from 'mdi-material-ui';
+import {Target, MonitorEdit} from 'mdi-material-ui';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
 import VibeCodyDrawer, {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {useVibeCodyFocusElement, useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
-import {FocusedSidebarItem} from "@cody-play/state/focused-element";
 
 interface OwnProps {
   sidebarOpen: boolean;
@@ -113,11 +112,11 @@ const TopBar = (props: TopBarProps) => {
           title="Toggle live edit mode"
           onClick={e => syncVibeCodyOpen(!vibeCodyOpen)}
         >
-          <ViewDashboardEdit
+          <MonitorEdit
             sx={{ color: vibeCodyOpen ? theme.palette.primary.light : theme.palette.primary.contrastText }}
           />
         </IconButton>
-        <IconButton aria-label="Light mode" onClick={toggleColorMode}>
+        <IconButton aria-label="Light mode" onClick={toggleColorMode} title="Toggle color mode">
           {mode === 'light' && (
             <LightModeIcon sx={{ color: theme.palette.primary.contrastText }} />
           )}
@@ -129,6 +128,7 @@ const TopBar = (props: TopBarProps) => {
           aria-label="App Settings"
           onClick={openSettingsModal}
           sx={{ color: theme.palette.primary.contrastText }}
+          title="Play Backend"
         >
           <SettingsSuggestIcon />
         </IconButton>
