@@ -56,6 +56,7 @@ import {
 import {AddPageWithTable} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-page-with-table";
 import {OpenRowOnDetailsPage} from "@cody-play/infrastructure/vibe-cody/page-instructions/open-row-on-details-page";
 import {AddANewTab} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-new-tab";
+import {UndoLastAction} from "@cody-play/infrastructure/vibe-cody/app-instructions/undo-last-action";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -64,13 +65,6 @@ export const instructions: InstructionOrProvider[] = [
   ChangeAppName,
   /* Theme */
   ChangeThemeProvider,
-  /* Page Instructions */
-  AddAPageWithName,
-  AddPageWithTable,
-  ChangePageTitleProvider,
-  FocusOnPageTitleProvider,
-  OpenRowOnDetailsPage,
-  AddANewTab,
   /* View Instructions */
   ChangeViewTitleProvider,
   FocusOnViewTitleProvider,
@@ -82,6 +76,13 @@ export const instructions: InstructionOrProvider[] = [
   EditTableItem,
   RenameTableRowDataTypeProvider,
   RemoveColumnProvider,
+  /* Page Instructions */
+  AddAPageWithName,
+  AddPageWithTable,
+  ChangePageTitleProvider,
+  FocusOnPageTitleProvider,
+  OpenRowOnDetailsPage,
+  AddANewTab,
   /* Button Instructions */
   FocusOnButtonProvider,
   ChangeButtonLabel,
@@ -100,4 +101,6 @@ export const instructions: InstructionOrProvider[] = [
   ChangeSidebarGroupLabel,
   MoveSidebarGroupItemProvider,
   FocusOnSidebarItemProvider,
+  /* Undo */
+  UndoLastAction,
 ]

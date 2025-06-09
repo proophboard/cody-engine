@@ -13,6 +13,7 @@ const makeFocusSidebarItem = (label: string, route: string, pageName: string): I
     text: TEXT,
     icon: <Target />,
     noInputNeeded: true,
+    notUndoable: true,
     isActive: context => !context.focusedElement,
     match: input => input.startsWith(TEXT),
     execute: async (input, ctx) => {
@@ -37,6 +38,7 @@ const makeFocusSidebarGroupItem = (label: string): Instruction => {
     text: TEXT,
     icon: <Target />,
     noInputNeeded: true,
+    notUndoable: true,
     isActive: context => !context.focusedElement,
     match: input => input.startsWith(TEXT),
     execute: async (input, ctx) => {

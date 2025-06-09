@@ -38,6 +38,7 @@ export const FocusOnViewTitleProvider: InstructionProvider = {
             text: TEXT,
             icon: <Target />,
             noInputNeeded: true,
+            notUndoable: true,
             isActive: context => !context.focusedElement,
             match: input => input.startsWith(TEXT),
             execute: async (input, ctx) => {

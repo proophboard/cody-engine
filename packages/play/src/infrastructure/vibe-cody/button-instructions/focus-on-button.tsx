@@ -23,6 +23,7 @@ export const FocusOnButtonProvider: InstructionProvider = {
       icon: <Target />,
       match: input => input.startsWith(`Focus on button ${getActionButtonName(a.action)}`),
       noInputNeeded: true,
+      notUndoable: true,
       execute: async () => {
         context.setFocusedElement(a)
 
