@@ -23,6 +23,7 @@ import {
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
+import {SubLevelPage} from "@frontend/app/pages/page-definitions";
 
 const TEXT = `I want to open a row on a details page`;
 
@@ -135,6 +136,7 @@ export const OpenRowOnDetailsPage: Instruction = {
       topLevel: false,
       breadcrumb: playNodeLabel(itemInfo.desc.name),
       routeParams: [
+        ...((pageConfig as SubLevelPage).routeParams || []),
         (itemInfo.desc as StateDescription).identifier
       ]
     };

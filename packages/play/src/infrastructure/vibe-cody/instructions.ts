@@ -54,7 +54,7 @@ import {
   FocusOnViewTitleProvider
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/focus-on-view-title";
 import {AddPageWithTable} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-page-with-table";
-import {OpenRowOnDetailsPage} from "@cody-play/infrastructure/vibe-cody/information-instructions/OpenRowOnDetailspage";
+import {OpenRowOnDetailsPage} from "@cody-play/infrastructure/vibe-cody/page-instructions/open-row-on-details-page";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
