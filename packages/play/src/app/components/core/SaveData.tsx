@@ -11,10 +11,10 @@ import {
   TextField,
   Typography
 } from "@mui/material";
-import {ZipDisk} from "mdi-material-ui";
+import {ContentSaveAlertOutline, ContentSaveCheckOutline, ContentSaveOutline, ZipDisk} from "mdi-material-ui";
 import {useContext, useEffect, useRef, useState} from "react";
 import {SnackbarMessage, useSnackbar} from "notistack";
-import {Check} from "@mui/icons-material";
+import {Check, UploadOutlined} from "@mui/icons-material";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
 import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-model-store/configured-document-store";
 import {saveToLocalStorage} from "@cody-play/infrastructure/multi-model-store/save-to-local-storage";
@@ -109,7 +109,7 @@ const SaveData = (props: SaveDataProps) => {
                        disabled={saved}
                        sx={{color: props.color}}
                        onClick={openDialog}>
-      {saved? <Check /> : <ZipDisk/>}
+      {saved? <ContentSaveCheckOutline /> : pendingChanges ? <ContentSaveAlertOutline /> : <ContentSaveOutline />}
     </IconButton>
     <Dialog open={saveDialogOpen} onClose={() => setSaveDialogOpen(false)}>
       <DialogTitle>Save Playshot</DialogTitle>
@@ -129,7 +129,7 @@ const SaveData = (props: SaveDataProps) => {
         <Button
           variant={'contained'}
           color={'primary'}
-          startIcon={ <ZipDisk />}
+          startIcon={ <UploadOutlined />}
           sx={{ textTransform: 'none', margin: '5px' }}
           onClick={submitPlayshot}
         >
