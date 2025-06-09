@@ -23,7 +23,7 @@ import {PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-se
 import {CodyResponse, CodyResponseType, ReplyCallback} from "@proophboard/cody-types";
 import {
   CodyResponseException,
-  playIsCodyError,
+  playIsCodyError, playIsCodyWarning,
 } from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import {instructions} from "@cody-play/infrastructure/vibe-cody/instructions";
@@ -34,10 +34,15 @@ import {startCase} from "lodash";
 import {DragAndDropContext} from "@cody-play/app/providers/DragAndDrop";
 import {
   extractNouns,
-  includesAllNouns,
   includesAllWords
 } from "@cody-play/infrastructure/vibe-cody/utils/includes-all-words";
 import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
+import {
+  addHistoryEntry,
+  forgetLast,
+  hasHistoryEntry,
+  undoLast
+} from "@cody-play/infrastructure/vibe-cody/utils/history";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
 
@@ -52,6 +57,7 @@ interface Message {
   text: string;
   author: 'user' | 'cody';
   error?: boolean;
+  warning?: boolean;
   helpLink?: HelpLink;
 }
 
@@ -62,6 +68,7 @@ export interface Instruction {
   icon?: React.ReactNode,
   noInputNeeded?: boolean,
   allowSubSuggestions?: boolean,
+  notUndoable?: boolean,
   isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string) => boolean,
   execute: InstructionExecutionCallback,
@@ -121,6 +128,51 @@ const trimText = (text: string): string => {
   return lines.join(`\n`);
 }
 
+const fromCodyInstructionResponse = (codyResponse: CodyInstructionResponse): Message | undefined => {
+  if(codyResponse.type === "Empty") {
+    return undefined;
+  }
+
+  return {
+    text: codyResponse.cody + (codyResponse.details ? `\n\n${codyResponse.details}` : ''),
+    author: "cody",
+    error: playIsCodyError(codyResponse),
+    warning: playIsCodyWarning(codyResponse),
+    helpLink: codyResponse.helpLink,
+  }
+}
+
+const HelpTexts = [
+  'Press Space to get suggestions. Use Shift+Enter for multiline.',
+  'Press Escape to clear the input and release focus.',
+  'Press Ctrl+Z to undo changes.',
+  'First suggestion can be selected by pressing Enter',
+];
+
+let rotate = 0;
+let tick = 0;
+let lastMessageCount = 0;
+
+const rotatePromptHelpText = (): string => {
+  const text = HelpTexts[rotate];
+
+  if(lastMessageCount !== globalMessages.length) {
+    lastMessageCount = globalMessages.length;
+    tick++;
+
+    if(tick > 4) {
+      rotate++;
+      tick = 0;
+    }
+
+    if(rotate >= HelpTexts.length) {
+      rotate = 0;
+    }
+  }
+
+  return text;
+}
+
 const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const env = useEnv();
   const theme = useTheme();
@@ -177,6 +229,15 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     setFocusedElement,
     colorMode: mode,
     toggleColorMode,
+    hasHistory: hasHistoryEntry(),
+    undo: async () => {
+      debugger;
+      const res = await undoLast(dispatch, (route: string) => navigate(route));
+
+      addMessageIfDefined(fromCodyInstructionResponse(res));
+
+      return res;
+    }
   }
 
   useEffect(() => {
@@ -186,6 +247,14 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       setNavigateTo(undefined);
     }
   }, [navigateTo]);
+
+  const addMessageIfDefined = (message: Message | undefined) => {
+    if(!message) {
+      return;
+    }
+
+    addMessage(message);
+  }
 
   const addMessage = (message: Message) => {
     messages.push(message);
@@ -220,6 +289,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       })
 
       if(waitingReply) {
+        await addHistoryEntry(input, config, syncedPageMatch.pathname);
+
         const codyResponse = await waitingReply(
           input,
           vibeCodyCtx,
@@ -233,12 +304,11 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
             }, 30);
           });
 
-        addMessage({
-          text: codyResponse.cody + (codyResponse.details ? `\n\n${codyResponse.details}` : ''),
-          author: "cody",
-          error: playIsCodyError(codyResponse),
-          helpLink: codyResponse.helpLink,
-        });
+        if(playIsCodyError(codyResponse)) {
+          forgetLast();
+        }
+
+        addMessageIfDefined(fromCodyInstructionResponse(codyResponse));
 
         waitingReply = codyResponse.instructionReply;
         reset();
@@ -253,7 +323,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
           executeInstruction(possibleInstructions[0], input).then(() => reset())
             .catch((e: any) => {
               console.error(e.toString());
-
+              forgetLast();
               if(e instanceof CodyResponseException) {
                 addMessage({
                   text: e.codyResponse.cody + (e.codyResponse.details ? `\n\n${e.codyResponse.details}` : ''),
@@ -276,6 +346,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
             console.error(e.toString());
 
             if(e instanceof CodyResponseException) {
+              forgetLast();
+
               addMessage({
                 text: e.codyResponse.cody + (e.codyResponse.details ? `\n\n${e.codyResponse.details}` : ''),
                 author: "cody",
@@ -297,6 +369,10 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   }
 
   const executeInstruction = async (instruction: Instruction, userInput: string) => {
+    if(!instruction.notUndoable) {
+      await addHistoryEntry(userInput, config, syncedPageMatch.pathname);
+    }
+
     const codyResponse = await instruction.execute(
       userInput,
       vibeCodyCtx,
@@ -312,12 +388,11 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
         }, 30);
       });
 
-    addMessage({
-      text: codyResponse.cody + (codyResponse.details ? `\n\n${codyResponse.details}` : ''),
-      author: "cody",
-      error: playIsCodyError(codyResponse),
-      helpLink: codyResponse.helpLink,
-    });
+    if(playIsCodyError(codyResponse) && !instruction.notUndoable) {
+      forgetLast();
+    }
+
+    addMessageIfDefined(fromCodyInstructionResponse(codyResponse));
 
     if(codyResponse.type === CodyResponseType.Question) {
       waitingReply = codyResponse.instructionReply;
@@ -365,7 +440,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                                            marginRight: m.author === "user" ? theme.spacing(4) : undefined,
                                            marginLeft: m.author === 'cody' ? theme.spacing(4) : undefined}}
                                          icon={m.author === 'cody' ? <CodyEmoji style={{width: '30px', height: '30px'}} /> : <AccountVoice />}
-                                         severity={m.author === 'user' ? 'info' : m.error ? 'error' : 'success'}>
+                                         severity={m.author === 'user' ? 'info' : m.error ? 'error' : m.warning ? 'warning' : 'success'}>
         <pre style={{whiteSpace: "pre-wrap"}}>{m.text}</pre>
         {m.helpLink && <Typography><Link href={m.helpLink.href} target="_blank" rel="noopener noreferrer">{m.helpLink.text}</Link></Typography>}
       </Alert>)}
@@ -380,7 +455,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
         </Alert>}
         <Autocomplete<Instruction, false, false, true>
           renderInput={(params) => <TextField {...params}
-           helperText={<span>Press Space to get suggestions. Use Shift+Enter for multiline.</span>}
+           helperText={<span>{rotatePromptHelpText()}</span>}
            inputRef={inputRef}
            variant="outlined"
            multiline={true}
@@ -398,6 +473,12 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
              if(e.key === "Escape") {
                setFocusedElement(undefined);
                reset();
+             }
+
+             if(e.ctrlKey && e.key === 'z') {
+               e.stopPropagation();
+               e.preventDefault();
+               vibeCodyCtx.undo().catch(e => console.error(e))
              }
            }}
            onKeyUp={() => {
