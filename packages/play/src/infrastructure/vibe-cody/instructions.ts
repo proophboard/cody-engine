@@ -54,6 +54,8 @@ import {
   FocusOnViewTitleProvider
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/focus-on-view-title";
 import {AddPageWithTable} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-page-with-table";
+import {OpenRowOnDetailsPage} from "@cody-play/infrastructure/vibe-cody/page-instructions/open-row-on-details-page";
+import {AddANewTab} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-new-tab";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -67,6 +69,8 @@ export const instructions: InstructionOrProvider[] = [
   AddPageWithTable,
   ChangePageTitleProvider,
   FocusOnPageTitleProvider,
+  OpenRowOnDetailsPage,
+  AddANewTab,
   /* View Instructions */
   ChangeViewTitleProvider,
   FocusOnViewTitleProvider,

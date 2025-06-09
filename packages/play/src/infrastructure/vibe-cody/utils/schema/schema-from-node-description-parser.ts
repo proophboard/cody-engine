@@ -50,7 +50,6 @@ export class SchemaFromNodeDescriptionParser {
   }
 
   public parse(): Schema {
-    debugger;
     let line = this.parseNextLine();
 
     while (line.isSchemaLine) {
