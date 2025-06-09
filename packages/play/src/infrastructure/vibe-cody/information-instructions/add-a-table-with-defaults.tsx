@@ -1,5 +1,5 @@
 import {CodyInstructionResponse, Instruction} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
-import {CodyResponse, CodyResponseType, NodeType} from "@proophboard/cody-types";
+import {CodyResponseType, NodeType} from "@proophboard/cody-types";
 import {
   playMakeNodeRecordWithDefaults
 } from "@cody-play/infrastructure/cody/node-traversing/play-make-node-record-with-defaults";
@@ -10,9 +10,11 @@ import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {AddColumnsToTable} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
-import { TableLarge } from "mdi-material-ui";
+import {TableLarge} from "mdi-material-ui";
 import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
+import {getRouteParamsFromRoute} from "@cody-play/infrastructure/vibe-cody/utils/navigate/get-route-params-from-route";
+import {AndFilter, Filter} from "@app/shared/value-object/query/filter-types";
 
 const TEXT = "I'd like to see a table of ";
 
@@ -22,18 +24,50 @@ export const AddATableWithDefaults: Instruction = {
   isActive: context => !context.focusedElement && context.page.pathname !== '/welcome',
   match: input => input.startsWith(TEXT),
   execute: withNavigateToProcessing(async (input, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyInstructionResponse> => {
+    const pageConfig = ctx.page.handle.page;
     const tableName = input.replace(TEXT, '').trim();
     const tableNameNames = names(tableName);
     const voIdentifier = tableNameNames.propertyName + 'ItemId';
+
+    const tableFQCN = `${names(config.defaultService).className}.App.${tableNameNames.className}`;
+
+    if(config.types[tableFQCN]) {
+      return {
+        cody: `Can't add a new table called "${tableName}", because the data type name "${tableFQCN}" would conflict with an existing data type name.`,
+        details: `If you want to reuse the existing data type, give the table another name and reference the existing data type in the "Information Flow" view, that you can access from the level dropdown in the top right corner of the page.`,
+        type: CodyResponseType.Error
+      }
+    }
+
+    const routeParams = getRouteParamsFromRoute(pageConfig.route);
+
+    const items: Record<string, string> = {
+      [voIdentifier]: "string|format:uuid"
+    }
+    const query: Record<string, string> = {};
+    let filter: Filter = {any: true};
+
+    routeParams.forEach(p => {
+      items[p] = "string";
+      query[p] = "string";
+    });
+
+    if(routeParams.length === 1) {
+      filter = {eq: {prop: routeParams[0], value: `$> query.${routeParams[0]}`}};
+    } else if (routeParams.length >1) {
+      filter = {and: []};
+
+      routeParams.forEach(p => {
+        (filter as AndFilter).and.push({eq: {prop: p, value: `$> query.${p}`}})
+      })
+    }
 
     const metadata: PlayValueObjectMetadataRaw = {
       identifier: voIdentifier,
       hasIdentifier: true,
       ns: "App",
       schema: {
-        "$items": {
-          [voIdentifier]: "string|format:uuid"
-        }
+        "$items": items
       },
       uiSchema: {
         "ui:table": {
@@ -42,16 +76,12 @@ export const AddATableWithDefaults: Instruction = {
           ]
         }
       },
-      querySchema: {
-
-      },
+      querySchema: query,
       resolve: {
         where: {
           rule: "always",
           then: {
-            filter: {
-              any: true
-            }
+            filter: filter,
           }
         }
       },
@@ -78,7 +108,7 @@ export const AddATableWithDefaults: Instruction = {
       return res;
     }
 
-    const pageConfig = ctx.page.handle.page;
+
 
     dispatch({
       ctx: getEditedContextFromConfig(config),
