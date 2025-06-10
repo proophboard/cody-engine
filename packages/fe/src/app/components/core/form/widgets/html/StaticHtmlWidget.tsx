@@ -8,7 +8,8 @@ import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {jsx} from "@emotion/react";
 import JSX = jsx.JSX;
 import {v4} from "uuid";
-import {Stack, Typography} from "@mui/material";
+import {Stack, Typography, useTheme} from "@mui/material";
+import {ThemeProvider} from "@mui/material/styles";
 
 interface OwnProps {
   config: HtmlConfig;
@@ -25,6 +26,7 @@ type StaticHtmlWidgetProps = OwnProps & WidgetProps;
 const StaticHtmlWidget = (props: StaticHtmlWidgetProps) => {
   const navigate = useNavigate();
   const divRef = useRef<HTMLDivElement>(null);
+  const theme = useTheme();
 
   const style = props.style || {};
 
@@ -33,7 +35,7 @@ const StaticHtmlWidget = (props: StaticHtmlWidgetProps) => {
 
       divRef.current.innerHTML = '';
 
-      createRoot(divRef.current).render(convertToJSX(props.config));
+      createRoot(divRef.current).render(<ThemeProvider  theme={theme}>{convertToJSX(props.config)}</ThemeProvider>);
 
       window.setTimeout(() => {
         if(divRef.current) {
