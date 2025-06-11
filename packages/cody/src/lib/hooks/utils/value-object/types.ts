@@ -32,6 +32,7 @@ export interface RefTableColumn {
   data: string;
   value: Rule[] | string;
   itemIdentifier?: string;
+  multiple?: boolean;
 }
 
 export interface PageLinkTableColumn {
@@ -55,7 +56,7 @@ export interface TableColumnUiSchema {
   pageLink?: string | PageLinkTableColumn;
   action?: ActionTableColumn;
   actions?: ActionTableColumn[];
-  ref?: { data: string; value: string; itemIdentifier?: string };
+  ref?: { data: string; value: string; itemIdentifier?: string; multiple?: boolean };
   link?: string | Rule[];
 }
 

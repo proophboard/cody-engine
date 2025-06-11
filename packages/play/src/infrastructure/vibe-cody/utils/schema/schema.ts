@@ -24,6 +24,9 @@ import {playwithErrorCheck} from "@cody-play/infrastructure/cody/error-handling/
 import {playJsonSchemaFromShorthand} from "@cody-play/infrastructure/cody/schema/play-json-schema-from-shorthand";
 import {playNormalizeRefs} from "@cody-play/infrastructure/cody/schema/play-normalize-refs";
 import {namespaceToJSONPointer, prepareNs} from "@cody-engine/cody/hooks/utils/value-object/namespace";
+import {
+  convertJsonSchemaToShorthandIfPossible
+} from "@cody-play/infrastructure/vibe-cody/utils/schema/convert-json-schema-to-shorthand-if-possible";
 
 
 export class Schema {
@@ -94,8 +97,7 @@ export class Schema {
     }
 
     if(this.jsonSchema) {
-      console.warn("[CodyWizard] Schema conversion from JSON Schema to shorthand is not implemented yet", this.jsonSchema);
-      return this.jsonSchema;
+      return convertJsonSchemaToShorthandIfPossible(this.jsonSchema);
     }
 
     return {};
@@ -221,6 +223,20 @@ export class Schema {
     }
 
     return notSetValue;
+  }
+
+  public setListItemsSchema(schema: Schema) {
+    if(!this.isList()) {
+      return;
+    }
+
+    if(this.shorthand) {
+      this.shorthand = {$items: schema.toShorthandIfPossible()} as ShorthandObject;
+    }
+
+    if(this.jsonSchema) {
+      this.jsonSchema.items = schema.toJsonSchema();
+    }
   }
 
   public isObject(): boolean {
