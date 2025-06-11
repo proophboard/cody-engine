@@ -68,7 +68,25 @@ const HtmlWidget = (props: HtmlWidgetProps) => {
     store,
     value,
     theme,
-    result: undefined
+    field: {
+      readonly,
+      disabled,
+      required,
+      type,
+      id,
+      label,
+      hideLabel,
+      value,
+      onChange,
+      autofocus,
+      options,
+      schema,
+      uiSchema,
+      rawErrors,
+      errorSchema
+    },
+    result: undefined,
+    form: formContext || {data: {}, updateForm: () => { /* placeholder hook */ }}
   };
 
   if(isDynamicHtml && options.if && typeof options.if === "string") {
@@ -90,6 +108,7 @@ const HtmlWidget = (props: HtmlWidgetProps) => {
       disabled={disabled || readonly}
       hideLabel={!!(options.hideLabel || hideLabel)}
       hidden={options.hidden as boolean}
+      jexlCtx={jexlCtx}
     />
   }
 
@@ -102,6 +121,7 @@ const HtmlWidget = (props: HtmlWidgetProps) => {
     disabled={disabled || readonly}
     hideLabel={!!(options.hideLabel || hideLabel)}
     hidden={options.hidden as boolean}
+    jexlCtx={jexlCtx}
   />
 
 };

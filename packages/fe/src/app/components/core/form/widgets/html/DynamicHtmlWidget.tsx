@@ -16,6 +16,7 @@ import {WidgetProps} from "@rjsf/utils";
 import {JSONSchemaWithId} from "@frontend/app/components/core/form/widgets/json-schema/json-schema-with-id";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
 import {useEnv} from "@frontend/hooks/use-env";
+import {FormJexlContextV2} from "@frontend/app/components/core/form/types/form-jexl-context";
 
 
 interface OwnProps {
@@ -31,6 +32,7 @@ interface OwnProps {
   hidden?: boolean;
   disabled?: boolean;
   style?: React.StyleHTMLAttributes<unknown>;
+  jexlCtx: FormJexlContextV2;
 }
 
 type DynamicHtmlWidgetProps = OwnProps & WidgetProps;
@@ -84,6 +86,7 @@ const DynamicHtmlWidget = (props: DynamicHtmlWidgetProps) => {
       disabled={props.disabled}
       hideLabel={props.hideLabel}
       hidden={props.hidden}
+      jexlCtx={props.jexlCtx}
     />
   }
 

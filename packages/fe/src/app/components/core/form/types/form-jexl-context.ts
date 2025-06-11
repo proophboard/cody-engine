@@ -9,3 +9,15 @@ export interface FormJexlContext {
   page: PageData;
   store: Store;
 }
+
+export interface FormJexlContextV2 {
+  routeParams: {[prop: string]: any};
+  data: {[prop: string]: any};
+  user: User;
+  page: PageData;
+  store: Store;
+  form: {
+    data: {[prop: string]: any};
+    updateForm: (data: {[prop: string]: any}) => void;
+  }
+}
