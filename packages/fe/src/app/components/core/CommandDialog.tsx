@@ -120,7 +120,14 @@ const CommandDialog = (props: CommandDialogProps) => {
 
   const formData: {[prop: string]: any} = {...filteredRouteParams, ...props.initialValues};
 
-  const jexlCtx: FormJexlContext = {user, page: pageData, routeParams, data: commandFormRef.current ? commandFormRef.current.getData() : formData, store};
+  const jexlCtx: FormJexlContext = {
+    user,
+    page: pageData,
+    routeParams,
+    data: commandFormRef.current ? commandFormRef.current.getData() : formData,
+    store,
+    mode: 'commandDialogForm'
+  };
 
   if(props.aggregateIdentifier) {
     formData[props.aggregateIdentifier.identifier] = props.aggregateIdentifier.value;
@@ -171,7 +178,8 @@ const CommandDialog = (props: CommandDialogProps) => {
       page: pageData,
       store,
       routeParams,
-      data: formData
+      data: formData,
+      mode: 'commandDialogForm'
     } as FormJexlContext, env.DEFAULT_SERVICE, env.PAGES);
 
     if (
@@ -223,7 +231,8 @@ const CommandDialog = (props: CommandDialogProps) => {
     page: pageData,
     store,
     routeParams,
-    data: commandFormRef.current?.getData() || {}
+    data: commandFormRef.current?.getData() || {},
+    mode: 'commandDialogForm'
   }, env);
 
   const containerInfo: ActionContainerInfo = {

@@ -70,7 +70,8 @@ export const StandardPage = (props: Props) => {
     page: pageData,
     routeParams,
     store,
-    data: {}
+    data: {},
+    mode: "pageForm"
   }
 
   if(page['title:expr']) {

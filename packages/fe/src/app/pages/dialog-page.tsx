@@ -42,7 +42,8 @@ const DialogPage = (props: DialogPageProps) => {
     page: pageData,
     routeParams,
     store,
-    data: {}
+    data: {},
+    mode: "dialogForm"
   }
 
   useEffect(() => {

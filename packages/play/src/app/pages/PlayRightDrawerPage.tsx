@@ -51,7 +51,8 @@ const PlayRightDrawerPage = (props: PlayRightDrawerPageProps) => {
     page: pageData,
     routeParams,
     store,
-    data: {}
+    data: {},
+    mode: "pageForm"
   }
 
   useEffect(() => {

@@ -176,7 +176,8 @@ const PlayConnectedCommand = (props: PlayConnectedCommandProps) => {
         page,
         store,
         routeParams,
-        data: form.getData()
+        data: form.getData(),
+        mode: "commandDialogForm"
       } as FormJexlContext, env.DEFAULT_SERVICE, env.PAGES);
 
       if (
