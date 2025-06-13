@@ -65,7 +65,7 @@ const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo,
         description={{...informationInfo, uiSchema, factory: makeInformationFactory(informationInfo.factory)}}
         definitions={definitions}
         widgets={{
-          DataSelect: PlayDataSelectWidget
+          DataSelect: PlayDataSelectWidget,
         }}
       />
     }
