@@ -86,7 +86,8 @@ const HtmlWidget = (props: HtmlWidgetProps) => {
       errorSchema
     },
     result: undefined,
-    form: formContext || {data: {}, updateForm: () => { /* placeholder hook */ }}
+    form: formContext || {data: {}, updateForm: () => { /* placeholder hook */ }},
+    mode: formContext!.mode
   };
 
   if(isDynamicHtml && options.if && typeof options.if === "string") {

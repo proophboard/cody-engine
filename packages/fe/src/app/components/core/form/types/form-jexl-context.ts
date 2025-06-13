@@ -21,5 +21,6 @@ export interface FormJexlContextV2 {
   form: {
     data: {[prop: string]: any};
     updateForm: (data: {[prop: string]: any}) => void;
-  }
+  },
+  mode: FormModeType;
 }
