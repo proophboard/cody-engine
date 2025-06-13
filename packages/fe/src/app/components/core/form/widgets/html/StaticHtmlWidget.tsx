@@ -8,7 +8,9 @@ import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {jsx} from "@emotion/react";
 import JSX = jsx.JSX;
 import {v4} from "uuid";
-import {Stack, Typography} from "@mui/material";
+import {Button, Stack, Typography, useTheme} from "@mui/material";
+import {ThemeProvider} from "@mui/material/styles";
+import {FormJexlContextV2} from "@frontend/app/components/core/form/types/form-jexl-context";
 
 interface OwnProps {
   config: HtmlConfig;
@@ -18,6 +20,7 @@ interface OwnProps {
   hidden?: boolean;
   disabled?: boolean;
   style?: React.StyleHTMLAttributes<unknown>;
+  jexlCtx: FormJexlContextV2
 }
 
 type StaticHtmlWidgetProps = OwnProps & WidgetProps;
@@ -25,6 +28,7 @@ type StaticHtmlWidgetProps = OwnProps & WidgetProps;
 const StaticHtmlWidget = (props: StaticHtmlWidgetProps) => {
   const navigate = useNavigate();
   const divRef = useRef<HTMLDivElement>(null);
+  const theme = useTheme();
 
   const style = props.style || {};
 
@@ -33,7 +37,7 @@ const StaticHtmlWidget = (props: StaticHtmlWidgetProps) => {
 
       divRef.current.innerHTML = '';
 
-      createRoot(divRef.current).render(convertToJSX(props.config));
+      createRoot(divRef.current).render(<ThemeProvider  theme={theme}>{convertToJSX(props.config, props)}</ThemeProvider>);
 
       window.setTimeout(() => {
         if(divRef.current) {
@@ -65,7 +69,7 @@ export default StaticHtmlWidget;
 
 const SkipAttributes = ['tag', 'children', 'text', 'query', 'if', 'ui:style'];
 
-const convertToJSX = (config: HtmlConfig): JSX.Element => {
+const convertToJSX = (config: HtmlConfig, props: StaticHtmlWidgetProps): JSX.Element => {
   const Tag = config.tag || 'div';
 
   const attributes: Record<string, any> = {};
@@ -82,7 +86,18 @@ const convertToJSX = (config: HtmlConfig): JSX.Element => {
     attributes[attribute] = config[attribute];
   }
 
-  const children = getChildrenOrText(config);
+  const children = getChildrenOrText(config, props);
+
+  if(Tag === "button") {
+    if(typeof attributes.onClick !== "undefined") {
+      const val = attributes.onClick;
+      attributes.onClick = () => {
+        props.onChange(val);
+      }
+    }
+
+    return <Button {...attributes}>{children}</Button>
+  }
 
   if(Tag === "icon") {
     return <MdiIcon icon={attributes.icon || 'square'} {...attributes} />;
@@ -107,12 +122,12 @@ const convertToJSX = (config: HtmlConfig): JSX.Element => {
   }
 }
 
-const getChildrenOrText = (config: HtmlConfig): Array<JSX.Element> | string | undefined => {
+const getChildrenOrText = (config: HtmlConfig, props: StaticHtmlWidgetProps): Array<JSX.Element> | string | undefined => {
   if(config.children) {
     const children: Array<JSX.Element> = [];
 
     config.children.forEach(child => {
-      children!.push(convertToJSX({...child, key: v4()}));
+      children!.push(convertToJSX({...child, key: v4()}, props));
     })
 
     return children;

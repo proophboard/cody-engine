@@ -80,7 +80,6 @@ import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
 import {isActionsColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/is-actions-column";
 import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
-import {getPageTitle, PageDefinition} from "@frontend/app/pages/page-definitions";
 import {Target} from "mdi-material-ui";
 
 const PlayTableView = (
@@ -545,7 +544,8 @@ const compileTableColumns = (
                 ctx = exe(ctx);
 
                 return ctx.value;
-              }
+              },
+              (cValue as RefTableColumn).multiple
             );
           };
 

@@ -15,35 +15,51 @@ export const translateUiSchema = (schema: UiSchema, key: string, t: TFunction): 
     }
   }
 
-  if(translatedSchema['ui:title']) {
-    translatedSchema['ui:title'] = t(`type.${key}.title`, {defaultValue: translatedSchema['ui:title']});
-  }
-
-  if(translatedSchema['ui:description']) {
-    translatedSchema['ui:description'] = t(`type.${key}.description`, {defaultValue: translatedSchema['ui:description']});
-  }
-
-  if(translatedSchema['ui:help']) {
-    translatedSchema['ui:help'] = t(`type.${key}.help`, {defaultValue: translatedSchema['ui:help']});
-  }
-
-  if(translatedSchema['ui:options']) {
-    const uiOptions = translatedSchema['ui:options'];
-
-    if(uiOptions.title) {
-      uiOptions.title = t(`type.${key}.title`, {defaultValue: uiOptions.title});
+  const translateUiOptions = (
+    uiOptions:Record<string, any>
+  ) => {
+    if(typeof uiOptions !== "object") {
+      return uiOptions;
     }
 
-    if(uiOptions.description) {
-      uiOptions.description = t(`type.${key}.description`, {defaultValue: uiOptions.description});
+    for (const schemaKey in uiOptions) {
+      if (schemaKey.endsWith(':t')) {
+        const uiKey = schemaKey.slice(0, -2);
+        uiOptions[uiKey] = t(uiOptions[schemaKey], {
+          defaultValue: uiOptions[uiKey] || uiOptions[schemaKey]
+        });
+        continue;
+      }
+
+      if(typeof uiOptions[schemaKey] === "object") {
+        if(Array.isArray(uiOptions[schemaKey])) {
+          uiOptions[schemaKey] = uiOptions[schemaKey].map(translateUiOptions);
+        } else {
+          uiOptions[schemaKey] = translateUiOptions(uiOptions[schemaKey]);
+        }
+      }
     }
 
-    if(uiOptions.help) {
-      uiOptions.help = t(`type.${key}.help`, {defaultValue: uiOptions.help});
+    return uiOptions;
+  };
+
+  for (const schemaKey in translatedSchema) {
+    if (!schemaKey.startsWith('ui:')) {
+      continue;
     }
 
-    translatedSchema['ui:options'] = uiOptions;
+    if (schemaKey.startsWith('ui:options')) {
+      translatedSchema['ui:options'] = translateUiOptions(translatedSchema['ui:options']!);
+      continue;
+    }
+
+    if (schemaKey.endsWith(':t')) {
+      const uiKey = schemaKey.slice(0, -2);
+      translatedSchema[uiKey] = t(translatedSchema[schemaKey], {
+        defaultValue: translatedSchema[uiKey] || translatedSchema[schemaKey]
+      });
+    }
   }
 
   return translatedSchema;
-}
+};

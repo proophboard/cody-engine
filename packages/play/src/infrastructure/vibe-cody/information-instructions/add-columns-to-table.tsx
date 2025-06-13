@@ -20,7 +20,11 @@ import {isMultilineText} from "@cody-play/infrastructure/vibe-cody/utils/is-mult
 import {
   getSchemaFromNodeDescription
 } from "@cody-play/infrastructure/vibe-cody/utils/schema/get-schema-from-node-description";
-import {namespaceNames, valueObjectNamespaceFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
+import {
+  NamespaceNames,
+  namespaceNames,
+  valueObjectNamespaceFromFQCN
+} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 import {JSONSchema7} from "json-schema";
 import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
 import {withId} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/with-id";
@@ -29,6 +33,8 @@ import {merge} from "lodash/fp";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
 import {addNewColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/add-new-column";
+import {UiSchema} from "@rjsf/utils";
+import nlp from "compromise";
 
 const TEXT = 'Add the following columns to the table: ';
 
@@ -113,73 +119,7 @@ export const AddColumnsToTable: Instruction = {
         schema.getObjectProperties().forEach(prop => {
           if(!itemSchema.getObjectPropertySchema(prop)) {
             const propSchema = schema.getObjectPropertySchema(prop, new Schema({type: "string", title: camelCaseToTitle(prop)}));
-            const propJsonSchema = propSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`);
-            if(!propJsonSchema.title) {
-              propJsonSchema.title = camelCaseToTitle(prop);
-            }
-
-            if(propJsonSchema.enum) {
-
-              const enumNames: string[] = [];
-              const enumValues: string[] = [];
-
-              propJsonSchema.enum.forEach(v => {
-                const vNames = names(v as string);
-                enumValues.push(vNames.constantName.toLowerCase());
-                enumNames.push(vNames.name);
-              })
-
-              propJsonSchema.enum = enumValues;
-              (propJsonSchema as any).enumNames = enumNames;
-            }
-
-            if(propSchema.isRef()) {
-              const propRefInfo = propSchema.getRefRuntimeInfo(serviceNames.className, config.types);
-
-              if(!propRefInfo) {
-                throw new CodyResponseException({
-                  cody: `I can't resolve the reference "${propSchema.getRef()}" to a known data type in the app. Maybe it's a typo? Please check your input and try again.`,
-                  type: CodyResponseType.Error
-                })
-              }
-
-              const {desc} = propRefInfo;
-
-              if(isStateDescription(desc)) {
-                const matchingListVOs = Object.values(config.types)
-                  .filter(t => isListDescription(t.desc) && t.desc.itemType === desc.name);
-
-                if(matchingListVOs.length > 0) {
-                  propJsonSchema.$ref = `${propJsonSchema.$ref}:${desc.identifier}`;
-
-                  const firstMatch = matchingListVOs[0];
-
-                  if(!itemUiSchema[prop] || !itemUiSchema[prop]['ui:widget']) {
-                    let dropdownLabel = (new Schema(propRefInfo.schema as JSONSchema7, true))
-                      .getDisplayNamePropertyCandidates().map(c => `data.${c}`).join(` + ' ' + `);
-
-                    if(dropdownLabel === '') {
-                      dropdownLabel = `data.${desc.identifier}`;
-                    }
-
-                    itemUiSchema[prop] = merge(itemUiSchema[prop] || {}, {
-                      'ui:widget': 'DataSelect',
-                      'ui:options': {
-                        'data': registryIdToDataReference(firstMatch.desc.name),
-                        'label': `$> ${dropdownLabel}`,
-                        'value': `$> data.${desc.identifier}`
-                      }
-                    })
-
-                    if(!itemUiSchema[prop]['ui:title']) {
-                      itemUiSchema[prop]['ui:title'] = camelCaseToTitle(prop);
-                    }
-                  }
-                }
-              }
-            }
-
-            itemSchema.setObjectProperty(prop, new Schema(propJsonSchema, true), schema.isRequired(prop));
+            normalizePropSchema(prop, propSchema, schema.isRequired(prop), itemSchema, itemUiSchema, config, serviceNames, ns);
           }
 
           if(!existingColumnNames.includes(prop)) {
@@ -288,4 +228,91 @@ export const getTableViewVO = (page: PlayPageDefinition, config: CodyPlayConfig)
   }
 
   return null;
+}
+
+const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boolean, itemSchema: Schema, itemUiSchema: UiSchema, config: CodyPlayConfig, serviceNames: Names, ns: NamespaceNames, title?: string) => {
+  if (propSchema.isObject()) {
+    propSchema.getObjectProperties().forEach(subProp => {
+      const subPropSchema = propSchema.getObjectPropertySchema(subProp, new Schema({type: "string", title: camelCaseToTitle(subProp)}));
+      itemUiSchema[prop] = itemUiSchema[prop] || {};
+      normalizePropSchema(subProp, subPropSchema, propSchema.isRequired(subProp), propSchema, itemUiSchema[prop], config, serviceNames, ns);
+    })
+  } else if (propSchema.isList()) {
+    const tempItemsSchema = new Schema({items: "string"})
+    const listItemsSchema = propSchema.getListItemsSchema(new Schema({}));
+    itemUiSchema[prop] = itemUiSchema[prop] || {};
+    const doc = nlp(prop);
+    normalizePropSchema("items", listItemsSchema, true, tempItemsSchema, itemUiSchema[prop], config, serviceNames, ns, camelCaseToTitle(doc.nouns().toSingular().text()));
+    propSchema.setListItemsSchema(tempItemsSchema.getObjectPropertySchema("items"));
+  }
+
+
+  const propJsonSchema = propSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`);
+
+  if(!propJsonSchema.title) {
+    propJsonSchema.title = title || camelCaseToTitle(prop);
+  }
+
+  if(propJsonSchema.enum) {
+
+    const enumNames: string[] = [];
+    const enumValues: string[] = [];
+
+    propJsonSchema.enum.forEach(v => {
+      const vNames = names(v as string);
+      enumValues.push(vNames.constantName.toLowerCase());
+      enumNames.push(vNames.name);
+    })
+
+    propJsonSchema.enum = enumValues;
+    (propJsonSchema as any).enumNames = enumNames;
+  }
+
+  if(propSchema.isRef()) {
+    const propRefInfo = propSchema.getRefRuntimeInfo(serviceNames.className, config.types);
+
+    if(!propRefInfo) {
+      throw new CodyResponseException({
+        cody: `I can't resolve the reference "${propSchema.getRef()}" to a known data type in the app. Maybe it's a typo? Please check your input and try again.`,
+        type: CodyResponseType.Error
+      })
+    }
+
+    const {desc} = propRefInfo;
+
+    if(isStateDescription(desc)) {
+      const matchingListVOs = Object.values(config.types)
+        .filter(t => isListDescription(t.desc) && t.desc.itemType === desc.name);
+
+      if(matchingListVOs.length > 0) {
+        propJsonSchema.$ref = `${propJsonSchema.$ref}:${desc.identifier}`;
+
+        const firstMatch = matchingListVOs[0];
+
+        if(!itemUiSchema[prop] || !itemUiSchema[prop]['ui:widget']) {
+          let dropdownLabel = (new Schema(propRefInfo.schema as JSONSchema7, true))
+            .getDisplayNamePropertyCandidates().map(c => `data.${c}`).join(` + ' ' + `);
+
+          if(dropdownLabel === '') {
+            dropdownLabel = `data.${desc.identifier}`;
+          }
+
+          itemUiSchema[prop] = merge(itemUiSchema[prop] || {}, {
+            'ui:widget': 'DataSelect',
+            'ui:options': {
+              'data': registryIdToDataReference(firstMatch.desc.name),
+              'label': `$> ${dropdownLabel}`,
+              'value': `$> data.${desc.identifier}`
+            }
+          })
+
+          if(!itemUiSchema[prop]['ui:title']) {
+            itemUiSchema[prop]['ui:title'] = title || camelCaseToTitle(prop);
+          }
+        }
+      }
+    }
+  }
+
+  itemSchema.setObjectProperty(prop, new Schema(propJsonSchema, true), isRequired);
 }

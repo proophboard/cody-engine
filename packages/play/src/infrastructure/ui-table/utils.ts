@@ -130,7 +130,20 @@ export const enrichColumnConfigFromSchema = (columnConfig: TableColumnUiSchema, 
       if(options.data) {
         columnConfig.ref = {
           data: String(options.data),
-          value: options.label ? String(options.label) : String(options.text)
+          value: options.label ? String(options.label) : String(options.text),
+          multiple: isJsonSchemaArray(schema)
+        }
+      }
+    } else if (isJsonSchemaArray(schema)) {
+      const itemsUiSchema = uiSchema['items'] || {};
+
+      const options = getUiOptions(itemsUiSchema);
+
+      if(options.data) {
+        columnConfig.ref = {
+          data: String(options.data),
+          value: options.label ? String(options.label) : String(options.text),
+          multiple: true
         }
       }
     }

@@ -24,6 +24,7 @@ const removeOneNestingLevel = (lines: string[]): string[] => {
 interface Line {
   isSchemaLine: boolean;
   isSubSchema: boolean;
+  isShorthandArray: boolean;
   type: JSONSchema7TypeName;
   propName: string;
   optional: boolean;
@@ -33,6 +34,7 @@ interface Line {
 const INVALID_LINE: Line = {
   isSchemaLine: false,
   isSubSchema: false,
+  isShorthandArray: false,
   type: "null",
   propName: '',
   optional: false,
@@ -65,7 +67,13 @@ export class SchemaFromNodeDescriptionParser {
           this.schema.setObjectProperty(line.propName, subSchema);
         }
       } else {
-        this.schema.setObjectProperty(line.propName, new Schema(line.type), !line.optional);
+        this.schema.setObjectProperty(
+          line.propName,
+          line.isShorthandArray
+            ? new Schema({ $items: line.type })
+            : new Schema(line.type),
+          !line.optional
+        );
       }
 
       line = this.parseNextLine();
@@ -106,6 +114,7 @@ export class SchemaFromNodeDescriptionParser {
     let prop = '';
     let type: string | undefined;
     let normalizedType: string | undefined;
+    let isShorthandArray = false;
 
     prop = parts[0];
 
@@ -115,6 +124,12 @@ export class SchemaFromNodeDescriptionParser {
     } else if (parts.length > 2) {
       type = parts.slice(1).join(":").trim();
       normalizedType = type.split(":").map((p,i) => i === 0 ? p.toLowerCase() : p).join(":");
+    }
+
+    if(type && type.endsWith('[]')) {
+      isShorthandArray = true;
+      type = type.slice(0, -2);
+      normalizedType = normalizedType?.slice(0, -2);
     }
 
     if(normalizedType && normalizedType.startsWith('date')) {
@@ -148,6 +163,7 @@ export class SchemaFromNodeDescriptionParser {
     return {
       isSchemaLine: true,
       isSubSchema,
+      isShorthandArray,
       propName,
       type: schemaType,
       optional,
