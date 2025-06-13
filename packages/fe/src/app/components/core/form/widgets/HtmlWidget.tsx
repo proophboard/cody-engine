@@ -68,7 +68,8 @@ const HtmlWidget = (props: HtmlWidgetProps) => {
     store,
     value,
     theme,
-    result: undefined
+    result: undefined,
+    mode: formContext!.mode
   };
 
   if(isDynamicHtml && options.if && typeof options.if === "string") {
