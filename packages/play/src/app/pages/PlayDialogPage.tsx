@@ -48,7 +48,8 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
     page: pageData,
     routeParams,
     store,
-    data: {}
+    data: {},
+    mode: "dialogForm"
   }
 
   useEffect(() => {

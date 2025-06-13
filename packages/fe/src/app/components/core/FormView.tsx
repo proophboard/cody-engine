@@ -81,6 +81,7 @@ const FormView = (props: FormViewProps) => {
     data: formData || {},
     routeParams,
     store: globalStore,
+    mode: props.pageMode === "dialog" ? "dialogForm" : "pageForm",
   }
 
   const {desc} = props.description;

@@ -137,7 +137,8 @@ const PlayDirectSubmitCommand = (props: PlayDirectSubmitCommandProps) => {
         page,
         store,
         routeParams,
-        data: props.data
+        data: props.data,
+        mode: "commandDialogForm"
       } as FormJexlContext, env.DEFAULT_SERVICE, env.PAGES);
 
       if (

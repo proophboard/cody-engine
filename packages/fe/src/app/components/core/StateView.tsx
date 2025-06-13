@@ -66,6 +66,7 @@ const StateView = (props: StateViewProps) => {
     data: props.state || {},
     routeParams,
     store: globalStore,
+    mode: props.mode || "pageView"
   }
 
   const resolvedUiSchema = resolveUiSchema(
