@@ -86,8 +86,8 @@ export class InMemoryFilterProcessor implements FilterProcessor {
         return false;
       }
 
-      const start = filter.prop.startsWith('%') && value.endsWith(filter.prop.slice(1));
-      const end = filter.prop.endsWith('%') && value.startsWith(filter.prop.slice(0, -1));
+      const start = filter.val.startsWith('%') && value.endsWith(filter.val.slice(1));
+      const end = filter.val.endsWith('%') && value.startsWith(filter.val.slice(0, -1));
       return start && end;
     };
   }
