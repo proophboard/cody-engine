@@ -34,7 +34,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
   const normalizedDefaultService = names(env.DEFAULT_SERVICE).className;
   <%- hooks %>
 
-  const jexlCtx = {routeParams: params, user, page, store, data: query.isSuccess ? query.data : {}};
+  const jexlCtx = {routeParams: params, user, page, store, data: query.isSuccess ? query.data : {}, mode: config.pageMode === "dialog" ? "dialogView" : "pageView"};
 
   const uiSchema: UiSchema & TableUiSchema = normalizeUiSchema(merge(RuntimeInfo.uiSchema || {}, config.uiSchemaOverride || {}), jexlCtx, env);
   const uiOptions = getUiOptions(uiSchema);

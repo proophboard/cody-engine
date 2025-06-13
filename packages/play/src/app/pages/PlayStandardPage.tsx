@@ -97,6 +97,7 @@ export const PlayStandardPage = (props: Props) => {
     routeParams,
     store,
     data: {},
+    mode: "pageForm"
   };
 
   const copiedRouteParams = useMemo(() => {

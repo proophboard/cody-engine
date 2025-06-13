@@ -85,6 +85,7 @@ const CommandButton = (props: CommandButtonProps) => {
       routeParams,
       data: props.formData || {},
       store,
+      mode: "commandDialogForm"
     }, env);
   const newAggregate = isAggregateCommandDescription(desc) && desc.newAggregate;
 

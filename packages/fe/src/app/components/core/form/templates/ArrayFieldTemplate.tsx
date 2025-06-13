@@ -41,7 +41,15 @@ export const ArrayFieldTemplate = <
   const [store] = useGlobalStore();
   const {t} = useTranslation();
 
-  const jexlCtx: FormJexlContext = {user, page: pageData, routeParams, data: props.formContext!.data, store};
+  const jexlCtx: FormJexlContext = {
+    user,
+    page:
+    pageData,
+    routeParams,
+    data: props.formContext!.data,
+    store,
+    mode: props.formContext!.mode,
+  };
 
   const mode: FormModeType = props.formContext!.mode || 'page';
 

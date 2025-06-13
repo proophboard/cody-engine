@@ -24,7 +24,7 @@ const <%= className %> = (props: <%= className %>Props & {hidden?: boolean}, con
   const [user] = useUser();
   const [store] = useGlobalStore();
 
-  const jexlCtx = {routeParams: props, user, page, store};
+  const jexlCtx = {routeParams: props, user, page, store, mode: config.pageMode === "dialog" ? "dialogView" : "pageView"};
 
   let isHidden = config.isHiddenView;
 
