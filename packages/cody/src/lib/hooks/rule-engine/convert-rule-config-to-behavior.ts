@@ -761,7 +761,7 @@ const convertThenCount = (node: Node, ctx: Context, then: ThenCountInformation, 
 }
 
 const convertThenInsertInformation = (node: Node, ctx: Context, then: ThenInsertInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const awaitStr = evalSync ? 'await ' : '';
+  const awaitStr = evalSync ? '' : 'await ';
   const vo = withErrorCheck(getVOFromDataReference, [then.insert.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
 
@@ -784,7 +784,7 @@ const convertThenInsertInformation = (node: Node, ctx: Context, then: ThenInsert
 }
 
 const convertThenUpsertInformation = (node: Node, ctx: Context, then: ThenUpsertInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const awaitStr = evalSync ? 'await ' : '';
+  const awaitStr = evalSync ? '' : 'await ';
   const vo = withErrorCheck(getVOFromDataReference, [then.upsert.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
 
@@ -807,7 +807,7 @@ const convertThenUpsertInformation = (node: Node, ctx: Context, then: ThenUpsert
 }
 
 const convertThenUpdateInformation = (node: Node, ctx: Context, then: ThenUpdateInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const awaitStr = evalSync ? 'await ' : '';
+  const awaitStr = evalSync ? '' : 'await ';
   const vo = withErrorCheck(getVOFromDataReference, [then.update.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
   const loadDoc = then.update.loadDocIntoVariable;
@@ -858,7 +858,7 @@ const convertThenUpdateInformation = (node: Node, ctx: Context, then: ThenUpdate
 }
 
 const convertThenReplaceInformation = (node: Node, ctx: Context, then: ThenReplaceInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const awaitStr = evalSync ? 'await ' : '';
+  const awaitStr = evalSync ? '' : 'await ';
   const vo = withErrorCheck(getVOFromDataReference, [then.replace.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
   const loadDoc = then.replace.loadDocIntoVariable;
@@ -910,7 +910,7 @@ const convertThenReplaceInformation = (node: Node, ctx: Context, then: ThenRepla
 }
 
 const convertThenDeleteInformation = (node: Node, ctx: Context, then: ThenDeleteInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const awaitStr = evalSync ? 'await ' : '';
+  const awaitStr = evalSync ? '' : 'await ';
   const vo = withErrorCheck(getVOFromDataReference, [then.delete.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
 
