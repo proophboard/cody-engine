@@ -7,6 +7,7 @@ import {useUser} from "@frontend/hooks/use-user";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {merge} from "lodash/fp";
 import jexl from "@app/shared/jexl/get-configured-jexl";
+import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 
 type <%= className %>Props = Record<string, string><% if (identifier) { %> & {<%= identifier %>: string}<% } %>;
 
@@ -15,7 +16,14 @@ const <%= className %> = (props: <%= className %>Props & {hidden?: boolean}, con
   const [user] = useUser();
   const [store] = useGlobalStore();
 
-  const jexlCtx = {routeParams: props, user, page, store, mode: config.pageMode === "dialog" ? "dialogView" : "pageView"};
+  const jexlCtx: FormJexlContext = {
+    routeParams: props,
+    user,
+    page,
+    store,
+    data: config.injectedInitialValues,
+    mode: config.pageMode === "dialog" ? "dialogView" : "pageView"
+  };
 
   let isHidden = config.isHiddenView;
 

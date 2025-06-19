@@ -151,7 +151,7 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
         convertedMeta.identifier = refVORuntimeInfo.desc.identifier;
       }
 
-      if(isQueryableStateDescription(refVORuntimeInfo.desc) && !convertedMeta.collection) {
+      if(isQueryableStateDescription(refVORuntimeInfo.desc) && !isNotStored && !convertedMeta.collection) {
         convertedMeta.collection = refVORuntimeInfo.desc.collection;
       }
     }
