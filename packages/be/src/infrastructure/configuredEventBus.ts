@@ -49,7 +49,7 @@ class LiveEventBus extends MessageBus implements EventBus {
     for (const {policy, desc} of filteredPolicies) {
       const dependencies = await this.loadDependencies(event, desc, 'event');
 
-      policy(event, dependencies).catch(e => console.error(e));
+      await policy(event, dependencies);
     }
 
     return true;

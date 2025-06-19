@@ -61,6 +61,7 @@ import {makeFilter, makePartialSelect} from "@cody-engine/cody/hooks/utils/query
 import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";
 import {validateResolverRules} from "@cody-engine/cody/hooks/rule-engine/validate-resolver-rules";
 import {LOGGER_SERVICE_NAME} from "@app/shared/utils/logger/Logger";
+import {mapOrderBy} from "@cody-engine/cody/hooks/utils/query/map-order-by";
 
 export interface Variable {
   name: string;
@@ -555,7 +556,7 @@ const convertThenLookupUsers = (node: Node, ctx: Context, then: ThenLookupUsers,
     lines.push(`${indent}  , ${then.lookup.users.limit}`);
   }
   if(then.lookup.users.orderBy) {
-    lines.push(`${indent}  , ${JSON.stringify(then.lookup.users.orderBy)}`);
+    lines.push(`${indent}  , ${JSON.stringify(mapOrderBy(then.lookup.users.orderBy))}`);
   }
 
   lines.push(`${indent});`);
@@ -606,7 +607,7 @@ const convertThenFind = (node: Node, ctx: Context, then: ThenFindInformation, ru
     lines.push(`${indent}  , undefined`);
   }
   if(then.find.orderBy) {
-    lines.push(`${indent}  , ${JSON.stringify(then.find.orderBy)}`);
+    lines.push(`${indent}  , ${JSON.stringify(mapOrderBy(then.find.orderBy))}`);
   }
 
   lines.push(`${indent});`);
@@ -643,7 +644,7 @@ const convertThenFindPartial = (node: Node, ctx: Context, then: ThenFindPartialI
     lines.push(`${indent}  , undefined`);
   }
   if(then.findPartial.orderBy) {
-    lines.push(`${indent}  , ${JSON.stringify(then.findPartial.orderBy)}`);
+    lines.push(`${indent}  , ${JSON.stringify(mapOrderBy(then.findPartial.orderBy))}`);
   }
 
   lines.push(`${indent});`);
@@ -760,7 +761,7 @@ const convertThenCount = (node: Node, ctx: Context, then: ThenCountInformation, 
 }
 
 const convertThenInsertInformation = (node: Node, ctx: Context, then: ThenInsertInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const awaitStr = evalSync ? 'await ' : '';
+  const awaitStr = evalSync ? '' : 'await ';
   const vo = withErrorCheck(getVOFromDataReference, [then.insert.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
 
@@ -783,7 +784,7 @@ const convertThenInsertInformation = (node: Node, ctx: Context, then: ThenInsert
 }
 
 const convertThenUpsertInformation = (node: Node, ctx: Context, then: ThenUpsertInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const awaitStr = evalSync ? 'await ' : '';
+  const awaitStr = evalSync ? '' : 'await ';
   const vo = withErrorCheck(getVOFromDataReference, [then.upsert.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
 
@@ -806,7 +807,7 @@ const convertThenUpsertInformation = (node: Node, ctx: Context, then: ThenUpsert
 }
 
 const convertThenUpdateInformation = (node: Node, ctx: Context, then: ThenUpdateInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const awaitStr = evalSync ? 'await ' : '';
+  const awaitStr = evalSync ? '' : 'await ';
   const vo = withErrorCheck(getVOFromDataReference, [then.update.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
   const loadDoc = then.update.loadDocIntoVariable;
@@ -857,7 +858,7 @@ const convertThenUpdateInformation = (node: Node, ctx: Context, then: ThenUpdate
 }
 
 const convertThenReplaceInformation = (node: Node, ctx: Context, then: ThenReplaceInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const awaitStr = evalSync ? 'await ' : '';
+  const awaitStr = evalSync ? '' : 'await ';
   const vo = withErrorCheck(getVOFromDataReference, [then.replace.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
   const loadDoc = then.replace.loadDocIntoVariable;
@@ -909,7 +910,7 @@ const convertThenReplaceInformation = (node: Node, ctx: Context, then: ThenRepla
 }
 
 const convertThenDeleteInformation = (node: Node, ctx: Context, then: ThenDeleteInformation, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
-  const awaitStr = evalSync ? 'await ' : '';
+  const awaitStr = evalSync ? '' : 'await ';
   const vo = withErrorCheck(getVOFromDataReference, [then.delete.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
 

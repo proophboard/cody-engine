@@ -4,6 +4,7 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import {useEffect} from "react";
 import {merge} from "lodash/fp";
 import jexl from "@app/shared/jexl/get-configured-jexl";
+import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {useEnv} from "@frontend/hooks/use-env";
@@ -34,7 +35,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
   const normalizedDefaultService = names(env.DEFAULT_SERVICE).className;
   <%- hooks %>
 
-  const jexlCtx = {routeParams: params, user, page, store, data: query.isSuccess ? query.data : {}, mode: config.pageMode === "dialog" ? "dialogView" : "pageView"};
+  const jexlCtx: FormJexlContext = {routeParams: params, user, page, store, data: query.isSuccess ? query.data : {}, mode: config.pageMode === "dialog" ? "dialogView" : "pageView"};
 
   const uiSchema: UiSchema & TableUiSchema = normalizeUiSchema(merge(RuntimeInfo.uiSchema || {}, config.uiSchemaOverride || {}), jexlCtx, env);
   const uiOptions = getUiOptions(uiSchema);
