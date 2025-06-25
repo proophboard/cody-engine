@@ -231,7 +231,6 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     toggleColorMode,
     hasHistory: hasHistoryEntry(),
     undo: async () => {
-      debugger;
       const res = await undoLast(dispatch, (route: string) => navigate(route));
 
       addMessageIfDefined(fromCodyInstructionResponse(res));
@@ -370,7 +369,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
   const executeInstruction = async (instruction: Instruction, userInput: string) => {
     if(!instruction.notUndoable) {
-      await addHistoryEntry(userInput, config, syncedPageMatch.pathname);
+      await addHistoryEntry(userInput === '' ? instruction.text : userInput, config, syncedPageMatch.pathname);
     }
 
     const codyResponse = await instruction.execute(
