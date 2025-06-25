@@ -59,6 +59,20 @@ type FormViewProps = OwnProps;
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 let isInitialized = false;
 
+const formDataCache: Record<string, Record<string, any>> = {};
+
+const cacheKey = (voName: string, initialValues: Record<string, any>): string => {
+  return `${voName}::${JSON.stringify(initialValues)}`;
+}
+
+const updateCache = (key: string, formData: Record<string, any>) => {
+  formDataCache[key] = formData;
+}
+
+const getFormDataCache = (key: string): Record<string, any> | undefined => {
+  return formDataCache[key];
+}
+
 const FormView = (props: FormViewProps) => {
   const theme = useTheme();
   const formRef: any = useRef();
@@ -74,6 +88,7 @@ const FormView = (props: FormViewProps) => {
   const {t} = useTranslation();
   const env = useEnv();
   const [extraError, setExtraError] = useState<JSX.Element | undefined>();
+  const [formDataCacheKey, setFormDataCacheKey] = useState('');
 
   const jexlCtx: FormJexlContext = {
     user,
@@ -145,8 +160,12 @@ const FormView = (props: FormViewProps) => {
 
     const initialFormData = props.state || {};
 
-    console.log("Set form data", initialFormData);
-    setFormData({...initialFormData});
+    const cKey = cacheKey(desc.name, initialFormData);
+
+    const cachedData = getFormDataCache(cKey);
+
+    setFormData({ ...initialFormData, ...cachedData });
+    setFormDataCacheKey(cKey);
 
     refreshPageForm();
 
@@ -195,6 +214,7 @@ const FormView = (props: FormViewProps) => {
       if(formRef && !isFirstUpdate && !forceUpdate) {
         debounceTimer = null;
         setFormData(change);
+        updateCache(formDataCacheKey, change);
         refreshPageForm();
 
         if(props.onChange) {
@@ -205,6 +225,7 @@ const FormView = (props: FormViewProps) => {
 
     if(isFirstUpdate || forceUpdate) {
       setFormData(change);
+      updateCache(formDataCacheKey, change);
       refreshPageForm();
 
       if(props.onChange) {

@@ -35,6 +35,7 @@ const DirectCommandButton = (props: DirectCommandButtonProps) => {
   const {t} = useTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [submittedData, setSubmittedData] = useState<{[prop: string]: unknown}>({});
 
   const mutation = useMutation({
     mutationKey: [props.command.desc.name],
@@ -46,6 +47,7 @@ const DirectCommandButton = (props: DirectCommandButtonProps) => {
   }, [props.command.desc.name]);
 
   const handleSubmit = () => {
+    setSubmittedData(props.data);
     mutation.mutate(props.data);
   }
 
@@ -66,7 +68,7 @@ const DirectCommandButton = (props: DirectCommandButtonProps) => {
         page,
         store,
         routeParams,
-        data: props.data,
+        data: submittedData,
         mode: 'commandDialogForm'
       } as FormJexlContext, env.DEFAULT_SERVICE, env.PAGES);
 
@@ -83,6 +85,10 @@ const DirectCommandButton = (props: DirectCommandButtonProps) => {
           return;
         }
       }, 10);
+    }
+
+    return () => {
+      setSubmittedData({});
     }
   }, [mutation.isSuccess, mutation.isError])
 

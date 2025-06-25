@@ -7,7 +7,7 @@ import {
   StrictRJSFSchema,
   WidgetProps,
 } from '@rjsf/utils';
-import {Autocomplete, MenuItem, TextField, TextFieldProps} from "@mui/material";
+import {Autocomplete, Checkbox, ListItemText, MenuItem, TextField, TextFieldProps} from "@mui/material";
 import {types} from "@app/shared/types";
 import {
   isQueryableListDescription, isQueryableNotStoredStateListDescription,
@@ -213,6 +213,20 @@ export default function PlayDataSelectWidget<
 
   const AddItemCommand = parsedOptions.addItemCommand && playConfig.config.commands[parsedOptions.addItemCommand] ? playConfig.config.commands[parsedOptions.addItemCommand] : null;
 
+  const isOptionSelected = (optVal: any): boolean => {
+    if(multiple) {
+      if(Array.isArray(value)) {
+        return value.includes(optVal);
+      }
+
+      return false;
+    } else {
+      return optVal === value;
+    }
+  }
+
+  // put DataSelect on items level in VC and activate new option: checkbox: true
+
   return (
     <>
       {options.autocomplete ?
@@ -238,7 +252,8 @@ export default function PlayDataSelectWidget<
             placeholder={placeholder}
             error={rawErrors.length > 0}
             {...params}
-            label={labelValue(label, hideLabel || !label, false)} />
+            label={labelValue(label, hideLabel || !label, false)}
+          />
           }
           onFocus={_onFocus}
           onBlur={_onBlur}
@@ -269,6 +284,17 @@ export default function PlayDataSelectWidget<
         SelectProps={{
           ...textFieldProps.SelectProps,
           multiple,
+          renderValue: ((selected: any) => {
+            if(!Array.isArray(selectOptions)) {
+              return selected;
+            }
+
+            if(multiple && Array.isArray(selected) && Array.isArray(selectOptions)) {
+              return selected.map(val => (selectOptions.find(o => o.value === val) ?? {label: ''}).label).join(", ")
+            } else {
+              return (selectOptions.find(o => o.value === selected) ?? {label: ''}).label;
+            }
+          })
         }}
         aria-describedby={ariaDescribedByIds<T>(id)}
       >
@@ -276,7 +302,8 @@ export default function PlayDataSelectWidget<
           selectOptions.map(({ value, label, readonly }, i: number) => {
             return (
               <MenuItem key={i} value={value} disabled={readonly} sx={label === '- Empty -'? {color: theme => theme.palette.text.disabled} : {}}>
-                {label}
+                {options.checkbox && <Checkbox checked={isOptionSelected(value)} />}
+                <ListItemText primary={label} />
               </MenuItem>
             );
           })}
