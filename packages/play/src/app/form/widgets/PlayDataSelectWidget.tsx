@@ -225,8 +225,6 @@ export default function PlayDataSelectWidget<
     }
   }
 
-  // put DataSelect on items level in VC and activate new option: checkbox: true
-
   return (
     <>
       {options.autocomplete ?
