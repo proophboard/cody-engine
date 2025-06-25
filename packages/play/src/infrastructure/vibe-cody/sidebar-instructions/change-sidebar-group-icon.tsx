@@ -74,6 +74,7 @@ export const ChangeSidebarGroupIconProvider: InstructionProvider = {
           isActive: () => true,
           text: `Use icon `,
           icon: <HeartOutline />,
+          allowSubSuggestions: true,
           match: input => input === "Use icon ",
           execute: async (input, ctx, dispatch, config, navigateTo) => {
             const iconNameFromInput = getIconNameFromSearchStr(input);
