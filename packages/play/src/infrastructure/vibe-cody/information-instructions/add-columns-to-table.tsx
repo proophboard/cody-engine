@@ -230,7 +230,7 @@ export const getTableViewVO = (page: PlayPageDefinition, config: CodyPlayConfig)
   return null;
 }
 
-const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boolean, itemSchema: Schema, itemUiSchema: UiSchema, config: CodyPlayConfig, serviceNames: Names, ns: NamespaceNames, title?: string) => {
+const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boolean, itemSchema: Schema, itemUiSchema: UiSchema, config: CodyPlayConfig, serviceNames: Names, ns: NamespaceNames, title?: string, isList?: boolean) => {
   if (propSchema.isObject()) {
     propSchema.getObjectProperties().forEach(subProp => {
       const subPropSchema = propSchema.getObjectPropertySchema(subProp, new Schema({type: "string", title: camelCaseToTitle(subProp)}));
@@ -242,7 +242,8 @@ const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boole
     const listItemsSchema = propSchema.getListItemsSchema(new Schema({}));
     itemUiSchema[prop] = itemUiSchema[prop] || {};
     const doc = nlp(prop);
-    normalizePropSchema("items", listItemsSchema, true, tempItemsSchema, itemUiSchema[prop], config, serviceNames, ns, camelCaseToTitle(doc.nouns().toSingular().text()));
+    normalizePropSchema('items', listItemsSchema, true, tempItemsSchema, itemUiSchema[prop], config, serviceNames, ns, camelCaseToTitle(doc.nouns().toSingular().text()), true);
+
     propSchema.setListItemsSchema(tempItemsSchema.getObjectPropertySchema("items"));
   }
 
@@ -297,17 +298,31 @@ const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boole
             dropdownLabel = `data.${desc.identifier}`;
           }
 
-          itemUiSchema[prop] = merge(itemUiSchema[prop] || {}, {
-            'ui:widget': 'DataSelect',
-            'ui:options': {
+          if(isList && prop === 'items') {
+            itemUiSchema['ui:widget'] = 'DataSelect';
+            itemUiSchema['ui:options'] = {
               'data': registryIdToDataReference(firstMatch.desc.name),
               'label': `$> ${dropdownLabel}`,
-              'value': `$> data.${desc.identifier}`
-            }
-          })
+              'value': `$> data.${desc.identifier}`,
+              'checkbox': true
+            } as any;
 
-          if(!itemUiSchema[prop]['ui:title']) {
-            itemUiSchema[prop]['ui:title'] = title || camelCaseToTitle(prop);
+            if(!itemUiSchema['ui:title']) {
+              itemUiSchema['ui:title'] = title || camelCaseToTitle(prop);
+            }
+          } else {
+            itemUiSchema[prop] = merge(itemUiSchema[prop] || {}, {
+              'ui:widget': 'DataSelect',
+              'ui:options': {
+                'data': registryIdToDataReference(firstMatch.desc.name),
+                'label': `$> ${dropdownLabel}`,
+                'value': `$> data.${desc.identifier}`
+              }
+            })
+
+            if(!itemUiSchema[prop]['ui:title']) {
+              itemUiSchema[prop]['ui:title'] = title || camelCaseToTitle(prop);
+            }
           }
         }
       }

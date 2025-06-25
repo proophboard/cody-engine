@@ -7,7 +7,7 @@ import {
   StrictRJSFSchema,
   WidgetProps,
 } from '@rjsf/utils';
-import {Autocomplete, MenuItem, TextField, TextFieldProps} from "@mui/material";
+import {Autocomplete, Checkbox, MenuItem, TextField, TextFieldProps} from "@mui/material";
 import {useApiQuery} from "@frontend/queries/use-api-query";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {commands} from "@frontend/app/components/commands";
@@ -137,6 +137,20 @@ export default function DataSelectWidget<
 
   const AddItemCommand = parsedOptions.addItemCommand && commands[parsedOptions.addItemCommand] ? commands[parsedOptions.addItemCommand] : null;
 
+  const isOptionSelected = (optVal: any): boolean => {
+    if(multiple) {
+      if(Array.isArray(value)) {
+        return value.includes(optVal);
+      }
+
+      return false;
+    } else {
+      return optVal === value;
+    }
+  }
+
+  debugger;
+
   return (
     <>
       {options.autocomplete ?
@@ -200,7 +214,7 @@ export default function DataSelectWidget<
           selectOptions.map(({ value, label, readonly }, i: number) => {
             return (
               <MenuItem key={i} value={value} disabled={readonly} sx={label === '- Empty -'? {color: theme => theme.palette.text.disabled} : {}}>
-                {label}
+                {multiple && <Checkbox value={isOptionSelected(value)} />}{label}
               </MenuItem>
             );
           })}
