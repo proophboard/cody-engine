@@ -5,7 +5,7 @@ import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 export const translateUiSchema = (schema: UiSchema, key: string, t: TFunction): UiSchema => {
   const translatedSchema = cloneDeepJSON(schema);
 
-  if(typeof translatedSchema !== "object" || Array.isArray(translatedSchema)) {
+  if(typeof translatedSchema !== "object") {
     return translatedSchema;
   }
 
@@ -13,6 +13,10 @@ export const translateUiSchema = (schema: UiSchema, key: string, t: TFunction): 
     if(typeof schema[schemaKey] === "object") {
       schema[schemaKey] = translateUiSchema(schema[schemaKey], `${key}.${schemaKey}`, t);
     }
+  }
+
+  if(Array.isArray(translatedSchema)) {
+    return translatedSchema;
   }
 
   const translateUiOptions = (

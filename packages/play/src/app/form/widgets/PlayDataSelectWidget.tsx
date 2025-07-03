@@ -300,7 +300,7 @@ export default function PlayDataSelectWidget<
           selectOptions.map(({ value, label, readonly }, i: number) => {
             return (
               <MenuItem key={i} value={value} disabled={readonly} sx={label === '- Empty -'? {color: theme => theme.palette.text.disabled} : {}}>
-                {options.checkbox && <Checkbox checked={isOptionSelected(value)} />}
+                {options.checkbox && <Checkbox checked={isOptionSelected(value)} disabled={readonly} />}
                 <ListItemText primary={label} />
               </MenuItem>
             );
