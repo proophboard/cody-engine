@@ -7,7 +7,7 @@ import {
   StrictRJSFSchema,
   WidgetProps,
 } from '@rjsf/utils';
-import {Autocomplete, Checkbox, MenuItem, TextField, TextFieldProps} from "@mui/material";
+import {Autocomplete, Checkbox, ListItemText, MenuItem, TextField, TextFieldProps} from "@mui/material";
 import {useApiQuery} from "@frontend/queries/use-api-query";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {commands} from "@frontend/app/components/commands";
@@ -96,7 +96,7 @@ export default function DataSelectWidget<
         });
       })
 
-    if(!required) {
+    if(!required && !multiple) {
       selectOptions.push({
         label: "- Empty -",
         value: undefined,
@@ -148,8 +148,6 @@ export default function DataSelectWidget<
       return optVal === value;
     }
   }
-
-  debugger;
 
   return (
     <>
@@ -207,6 +205,17 @@ export default function DataSelectWidget<
         SelectProps={{
           ...textFieldProps.SelectProps,
           multiple,
+          renderValue: ((selected: any) => {
+            if(!Array.isArray(selectOptions)) {
+              return selected;
+            }
+
+            if(multiple && Array.isArray(selected) && Array.isArray(selectOptions)) {
+              return selected.map(val => (selectOptions.find(o => o.value === val) ?? {label: ''}).label).join(", ")
+            } else {
+              return (selectOptions.find(o => o.value === selected) ?? {label: ''}).label;
+            }
+          })
         }}
         aria-describedby={ariaDescribedByIds<T>(id)}
       >
@@ -214,7 +223,8 @@ export default function DataSelectWidget<
           selectOptions.map(({ value, label, readonly }, i: number) => {
             return (
               <MenuItem key={i} value={value} disabled={readonly} sx={label === '- Empty -'? {color: theme => theme.palette.text.disabled} : {}}>
-                {multiple && <Checkbox value={isOptionSelected(value)} />}{label}
+                {options.checkbox && <Checkbox checked={isOptionSelected(value)} disabled={readonly} />}
+                <ListItemText primary={label} />
               </MenuItem>
             );
           })}

@@ -2,7 +2,7 @@ import * as React from 'react';
 import {CommandRuntimeInfo} from "@event-engine/messaging/command";
 import {
   Field,
-  RJSFSchema,
+  RJSFSchema, UiSchema,
   Widget
 } from "@rjsf/utils";
 import {useEffect, useImperativeHandle, useRef, useState} from "react";
@@ -35,6 +35,7 @@ import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
 import {useEnv} from "@frontend/hooks/use-env";
 import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
 import DescriptionFieldTemplate from "@frontend/app/components/core/form/templates/DescriptionFieldTemplate";
+import {merge} from "lodash/fp";
 
 export type FormModeType = 'pageForm' | 'pageView' | 'dialogForm' | 'commandDialogForm' | 'dialogView';
 
@@ -195,7 +196,8 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
     ? translateUiSchema(props.command.uiSchema, `${props.command.desc.name}.uiSchema`, t)
     : undefined;
   const resolvedUiSchema = resolveUiSchema(props.command.schema as any, types, (s, k) => translateUiSchema(s, k, t));
-  const uiSchema = normalizeUiSchema({...resolvedUiSchema, ...mainUiSchema}, {form: formData, user, page: pageData}, env);
+  const mergedUiSchema: UiSchema = merge(resolvedUiSchema, mainUiSchema) as UiSchema;
+  const uiSchema = normalizeUiSchema(mergedUiSchema, {form: formData, user, page: pageData}, env);
 
   const schema = resolveRefs(
     translateSchema(props.command.schema as JSONSchema7, `${props.command.desc.name}.schema`, t) as any,
