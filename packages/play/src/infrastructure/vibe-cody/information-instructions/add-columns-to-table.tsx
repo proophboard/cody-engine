@@ -16,7 +16,7 @@ import {
   playServiceFromFQCN
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {TableColumn} from "mdi-material-ui";
-import {isMultilineText} from "@cody-play/infrastructure/vibe-cody/utils/is-multiline-text";
+import {isMultilineText} from "@cody-play/infrastructure/vibe-cody/utils/text/is-multiline-text";
 import {
   getSchemaFromNodeDescription
 } from "@cody-play/infrastructure/vibe-cody/utils/schema/get-schema-from-node-description";

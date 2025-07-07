@@ -43,6 +43,10 @@ import {
   hasHistoryEntry,
   undoLast
 } from "@cody-play/infrastructure/vibe-cody/utils/history";
+import {addNewLine} from "@cody-play/infrastructure/vibe-cody/utils/text/add-new-line";
+import {removeTab} from "@cody-play/infrastructure/vibe-cody/utils/text/remove-tab";
+import {getCursorPos, setCursorPos} from "@cody-play/infrastructure/vibe-cody/utils/text/cursor-position";
+import {addTab} from "@cody-play/infrastructure/vibe-cody/utils/text/add-tab";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
 
@@ -461,23 +465,43 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
            maxRows={10}
            placeholder={'Next instruction'}
            onKeyDown={e => {
+             // Handle up/down keys in multiline w/out active suggestions
              if((e.key === "ArrowUp" || e.key === "ArrowDown") && searchStr.includes("\n")) {
                e.stopPropagation();
              }
 
+             // Add a new line and prevent instruction handling
              if(e.shiftKey && e.key === "Enter") {
                lockChange = true;
+
+               setSearchStr(addNewLine(searchStr));
+               e.preventDefault();
              }
 
+             // Reset
              if(e.key === "Escape") {
                setFocusedElement(undefined);
                reset();
              }
 
+             // Undo last instruction
              if(e.ctrlKey && e.key === 'z') {
                e.stopPropagation();
                e.preventDefault();
                vibeCodyCtx.undo().catch(e => console.error(e))
+             }
+
+             // multi-line tab handling
+             if(e.key === 'Tab' && inputRef.current) {
+               const cursorPos = getCursorPos(inputRef.current);
+
+               const [newSearchStr, newCursorPos] = e.shiftKey ? removeTab(searchStr, cursorPos) : addTab(searchStr, cursorPos);
+
+               setSearchStr(newSearchStr);
+               if(newCursorPos.start) {
+                 setCursorPos(inputRef.current, newCursorPos.start);
+               }
+               e.preventDefault();
              }
            }}
            onKeyUp={() => {
