@@ -2,19 +2,19 @@ import {Event} from "@event-engine/messaging/event";
 import {EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {Filter} from "@event-engine/infrastructure/DocumentStore/Filter";
 
-interface AppendEventsTask {
+export interface AppendEventsTask {
   streamName: string;
   events: Event[],
   eventMatcher?: EventMatcher;
   expectedVersion?: number;
 }
 
-interface DeleteEventsTask {
+export interface DeleteEventsTask {
   streamName: string;
   eventMatcher: EventMatcher;
 }
 
-interface UpsertDocumentTask {
+export interface UpsertDocumentTask {
   collectionName: string;
   docId: string;
   doc: object;
@@ -22,16 +22,16 @@ interface UpsertDocumentTask {
   version?: number;
 }
 
-type InsertDocumentTask = UpsertDocumentTask;
-type UpdateDocumentTask = UpsertDocumentTask;
-type ReplaceDocumentTask = UpsertDocumentTask;
+export type InsertDocumentTask = UpsertDocumentTask;
+export type UpdateDocumentTask = UpsertDocumentTask;
+export type ReplaceDocumentTask = UpsertDocumentTask;
 
-interface DeleteDocumentTask {
+export interface DeleteDocumentTask {
   collectionName: string;
   docId: string;
 }
 
-interface UpdateManyDocumentsTask {
+export interface UpdateManyDocumentsTask {
   collectionName: string;
   filter: Filter;
   docOrSubset: object;
@@ -39,7 +39,7 @@ interface UpdateManyDocumentsTask {
   version?: number;
 }
 
-interface ReplaceManyDocumentsTask {
+export interface ReplaceManyDocumentsTask {
   collectionName: string;
   filter: Filter;
   doc: object;
@@ -47,7 +47,7 @@ interface ReplaceManyDocumentsTask {
   version?: number;
 }
 
-interface DeleteManyDocumentsTask {
+export interface DeleteManyDocumentsTask {
   collectionName: string;
   filter: Filter;
 }

@@ -27,16 +27,18 @@ interface Response {
   codyResponse: CodyResponse;
 }
 
+export interface PlayData {
+  streams: InMemoryStreamStore;
+  documents: Documents;
+  sequences?: Sequences;
+}
+
 export interface Playshot {
   playshotId: string;
   boardId: string;
   name: string;
   playConfig: CodyPlayConfig;
-  playData: {
-    streams: InMemoryStreamStore;
-    documents: Documents;
-    sequences?: Sequences;
-  }
+  playData: PlayData;
 }
 
 type SavePlayshotResolver = (success: boolean) => void;
