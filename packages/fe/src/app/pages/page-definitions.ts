@@ -97,6 +97,10 @@ export const isSubLevelPage = (page: PageDefinition): page is SubLevelPage => {
 }
 
 export const getPageTitle = (page: PageDefinition): string => {
+  if(!page.name) {
+    return '';
+  }
+
   return page.title || camelCaseToTitle(page.name.split(".").pop() as string);
 }
 
