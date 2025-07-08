@@ -41,8 +41,9 @@ const TEXT = 'Add the following columns to the table: ';
 export const AddColumnsToTable: Instruction = {
   text: TEXT,
   icon: <TableColumn />,
-  isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
+  isActive: (context, config) => !context.focusedElement && !context.selectedInstruction && !!getTableViewVO(context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
+  allowSubSuggestions: true,
   execute: withNavigateToProcessing(async (input, ctx, dispatch, config): Promise<CodyResponse> => {
 
     const pageConfig = ctx.page.handle.page;

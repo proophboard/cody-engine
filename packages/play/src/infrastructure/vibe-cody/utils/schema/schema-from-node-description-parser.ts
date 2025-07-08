@@ -140,6 +140,18 @@ export class SchemaFromNodeDescriptionParser {
       normalizedType = `string|format:${type}`;
     }
 
+    if(normalizedType && normalizedType.startsWith('uuid')) {
+      normalizedType = `string|format:${normalizedType}`;
+    }
+
+    if(normalizedType && normalizedType.startsWith('email')) {
+      normalizedType = `string|format:${normalizedType}`;
+    }
+
+    if(normalizedType && normalizedType.startsWith('link')) {
+      normalizedType = `string|format:${normalizedType.replace('link', 'uri')}`;
+    }
+
     const isSubSchema = prop.startsWith('  ');
     const normalizedPropName = prop.trim().replace(/^-/, '').trimStart();
     const propName = normalizedPropName === "$items" ? normalizedPropName : names(normalizedPropName).propertyName;
