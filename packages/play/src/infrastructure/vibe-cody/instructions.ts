@@ -57,6 +57,7 @@ import {AddPageWithTable} from "@cody-play/infrastructure/vibe-cody/page-instruc
 import {OpenRowOnDetailsPage} from "@cody-play/infrastructure/vibe-cody/page-instructions/open-row-on-details-page";
 import {AddANewTab} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-new-tab";
 import {UndoLastAction} from "@cody-play/infrastructure/vibe-cody/app-instructions/undo-last-action";
+import {ProvideTypeSuggestions} from "@cody-play/infrastructure/vibe-cody/information-instructions/suggest-types";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -76,6 +77,8 @@ export const instructions: InstructionOrProvider[] = [
   EditTableItem,
   RenameTableRowDataTypeProvider,
   RemoveColumnProvider,
+  /* Information Instructions */
+  ProvideTypeSuggestions,
   /* Page Instructions */
   AddAPageWithName,
   AddPageWithTable,

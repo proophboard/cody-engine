@@ -16,7 +16,7 @@ import {
   playServiceFromFQCN
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {TableColumn} from "mdi-material-ui";
-import {isMultilineText} from "@cody-play/infrastructure/vibe-cody/utils/is-multiline-text";
+import {isMultilineText} from "@cody-play/infrastructure/vibe-cody/utils/text/is-multiline-text";
 import {
   getSchemaFromNodeDescription
 } from "@cody-play/infrastructure/vibe-cody/utils/schema/get-schema-from-node-description";
@@ -41,8 +41,9 @@ const TEXT = 'Add the following columns to the table: ';
 export const AddColumnsToTable: Instruction = {
   text: TEXT,
   icon: <TableColumn />,
-  isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
+  isActive: (context, config) => !context.focusedElement && !context.selectedInstruction && !!getTableViewVO(context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
+  allowSubSuggestions: true,
   execute: withNavigateToProcessing(async (input, ctx, dispatch, config): Promise<CodyResponse> => {
 
     const pageConfig = ctx.page.handle.page;

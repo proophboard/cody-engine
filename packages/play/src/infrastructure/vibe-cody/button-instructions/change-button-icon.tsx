@@ -11,6 +11,7 @@ const makeChangeButtonIconInstruction = (icon: string): Instruction => {
 
   return {
     text: TEXT,
+    label: icon,
     noInputNeeded: true,
     icon: <MdiIcon icon={icon} />,
     isActive: context => !!context.focusedElement && context.focusedElement.type === "button",

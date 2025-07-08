@@ -43,6 +43,14 @@ import {
   hasHistoryEntry,
   undoLast
 } from "@cody-play/infrastructure/vibe-cody/utils/history";
+import {addNewLine} from "@cody-play/infrastructure/vibe-cody/utils/text/add-new-line";
+import {removeTab} from "@cody-play/infrastructure/vibe-cody/utils/text/remove-tab";
+import {
+  CursorPosition,
+  getCursorPos,
+  setCursorPos
+} from "@cody-play/infrastructure/vibe-cody/utils/text/cursor-position";
+import {addTab} from "@cody-play/infrastructure/vibe-cody/utils/text/add-tab";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
 
@@ -65,12 +73,13 @@ export type InstructionExecutionCallback = (input: string, ctx: VibeCodyContext,
 
 export interface Instruction {
   text: string,
+  label?: string,
   icon?: React.ReactNode,
   noInputNeeded?: boolean,
   allowSubSuggestions?: boolean,
   notUndoable?: boolean,
   isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
-  match: (input: string) => boolean,
+  match: (input: string, cursorPosition: CursorPosition) => boolean,
   execute: InstructionExecutionCallback,
 }
 
@@ -225,6 +234,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const vibeCodyCtx: VibeCodyContext = {
     page: syncedPageMatch,
     searchStr,
+    cursorPosition: inputRef.current ? getCursorPos(inputRef.current) : {start: null, end: null},
+    selectedInstruction,
     focusedElement,
     setFocusedElement,
     colorMode: mode,
@@ -315,7 +326,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       }
 
       if(!selectedInstruction) {
-        const possibleInstructions = suggestInstructions(vibeCodyCtx, config, env).filter(i => i.match(input));
+        const possibleInstructions = suggestInstructions(vibeCodyCtx, config, env).filter(i => i.match(input, vibeCodyCtx.cursorPosition));
 
         if(possibleInstructions.length) {
           setSelectedInstruction(possibleInstructions[0]);
@@ -461,23 +472,43 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
            maxRows={10}
            placeholder={'Next instruction'}
            onKeyDown={e => {
+             // Handle up/down keys in multiline w/out active suggestions
              if((e.key === "ArrowUp" || e.key === "ArrowDown") && searchStr.includes("\n")) {
                e.stopPropagation();
              }
 
+             // Add a new line and prevent instruction handling
              if(e.shiftKey && e.key === "Enter") {
                lockChange = true;
+
+               setSearchStr(addNewLine(searchStr));
+               e.preventDefault();
              }
 
+             // Reset
              if(e.key === "Escape") {
                setFocusedElement(undefined);
                reset();
              }
 
+             // Undo last instruction
              if(e.ctrlKey && e.key === 'z') {
                e.stopPropagation();
                e.preventDefault();
                vibeCodyCtx.undo().catch(e => console.error(e))
+             }
+
+             // multi-line tab handling
+             if(e.key === 'Tab' && inputRef.current) {
+               const cursorPos = getCursorPos(inputRef.current);
+
+               const [newSearchStr, newCursorPos] = e.shiftKey ? removeTab(searchStr, cursorPos) : addTab(searchStr, cursorPos);
+
+               setSearchStr(newSearchStr);
+               if(newCursorPos.start) {
+                 setCursorPos(inputRef.current, newCursorPos.start);
+               }
+               e.preventDefault();
              }
            }}
            onKeyUp={() => {
@@ -489,7 +520,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
          return (
            <ListItem {...props}>
              {option.icon && <ListItemIcon>{option.icon}</ListItemIcon>}
-             <ListItemText>{option.text}</ListItemText>
+             <ListItemText>{option.label || option.text}</ListItemText>
            </ListItem>
          );
        }}
