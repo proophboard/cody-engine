@@ -120,7 +120,7 @@ export const AddColumnsToTable: Instruction = {
         schema.getObjectProperties().forEach(prop => {
           if(!itemSchema.getObjectPropertySchema(prop)) {
             const propSchema = schema.getObjectPropertySchema(prop, new Schema({type: "string", title: camelCaseToTitle(prop)}));
-            normalizePropSchema(prop, propSchema, schema.isRequired(prop), itemSchema, itemUiSchema, config, serviceNames, ns);
+            normalizePropSchema(prop, propSchema, schema.isRequired(prop), itemFQCN, itemSchema, itemUiSchema, config, serviceNames, ns);
           }
 
           if(!existingColumnNames.includes(prop)) {
@@ -231,19 +231,18 @@ export const getTableViewVO = (page: PlayPageDefinition, config: CodyPlayConfig)
   return null;
 }
 
-const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boolean, itemSchema: Schema, itemUiSchema: UiSchema, config: CodyPlayConfig, serviceNames: Names, ns: NamespaceNames, title?: string, isList?: boolean) => {
+const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boolean, rootFQCN: string, itemSchema: Schema, itemUiSchema: UiSchema, config: CodyPlayConfig, serviceNames: Names, ns: NamespaceNames, title?: string, isList?: boolean) => {
   if (propSchema.isObject()) {
     propSchema.getObjectProperties().forEach(subProp => {
       const subPropSchema = propSchema.getObjectPropertySchema(subProp, new Schema({type: "string", title: camelCaseToTitle(subProp)}));
       itemUiSchema[prop] = itemUiSchema[prop] || {};
-      normalizePropSchema(subProp, subPropSchema, propSchema.isRequired(subProp), propSchema, itemUiSchema[prop], config, serviceNames, ns);
+      normalizePropSchema(subProp, subPropSchema, propSchema.isRequired(subProp), rootFQCN, propSchema, itemUiSchema[prop], config, serviceNames, ns);
     })
   } else if (propSchema.isList()) {
     const tempItemsSchema = new Schema({items: "string"})
     const listItemsSchema = propSchema.getListItemsSchema(new Schema({}));
     itemUiSchema[prop] = itemUiSchema[prop] || {};
-    const doc = nlp(prop);
-    normalizePropSchema('items', listItemsSchema, true, tempItemsSchema, itemUiSchema[prop], config, serviceNames, ns, camelCaseToTitle(doc.nouns().toSingular().text()), true);
+    normalizePropSchema('items', listItemsSchema, true, rootFQCN, tempItemsSchema, itemUiSchema[prop], config, serviceNames, ns, camelCaseToTitle(prop), true);
 
     propSchema.setListItemsSchema(tempItemsSchema.getObjectPropertySchema("items"));
   }
@@ -281,6 +280,13 @@ const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boole
     }
 
     const {desc} = propRefInfo;
+
+    if(desc.name === rootFQCN) {
+      throw new CodyResponseException({
+        cody: `Circular reference detected. You cannot reference the data type ${rootFQCN} in itself.`,
+        type: CodyResponseType.Error
+      })
+    }
 
     if(isStateDescription(desc)) {
       const matchingListVOs = Object.values(config.types)

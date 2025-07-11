@@ -4,7 +4,6 @@ import {ProophBoardDescription} from "@event-engine/descriptions/descriptions";
 import {CommandComponent, ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 import {camelCaseToTitle} from "@frontend/util/string";
 import {PageRegistry} from "@frontend/app/pages/index";
-import {camelCase} from "lodash";
 import {names} from "@event-engine/messaging/helpers";
 import {PropMapping} from "@app/shared/rule-engine/configuration";
 
