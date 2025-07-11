@@ -416,6 +416,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     }
   }, [messages]);
 
+  const suggestions = suggestInstructions(vibeCodyCtx, config, env, selectedInstruction);
+
   return <Drawer anchor={"right"}
                  open={props.open}
                  onClose={props.onClose}
@@ -474,7 +476,14 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
            onKeyDown={e => {
              // Handle up/down keys in multiline w/out active suggestions
              if((e.key === "ArrowUp" || e.key === "ArrowDown") && searchStr.includes("\n")) {
-               e.stopPropagation();
+
+               const filtered = suggestions.filter((item) =>
+                 includesAllWords(String(item.text).toLowerCase(), searchStr.toLowerCase().split(" "))
+               );
+
+               if(filtered.length === 0) {
+                 e.stopPropagation();
+               }
              }
 
              // Add a new line and prevent instruction handling
@@ -505,9 +514,12 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                const [newSearchStr, newCursorPos] = e.shiftKey ? removeTab(searchStr, cursorPos) : addTab(searchStr, cursorPos);
 
                setSearchStr(newSearchStr);
+
                if(newCursorPos.start) {
                  setCursorPos(inputRef.current, newCursorPos.start);
                }
+
+
                e.preventDefault();
              }
            }}
@@ -515,7 +527,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
              lockChange = false;
            }}
         />}
-       options={suggestInstructions(vibeCodyCtx, config, env, selectedInstruction)}
+       options={suggestions}
        renderOption={(props, option) => {
          return (
            <ListItem {...props}>
@@ -551,6 +563,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
        autoComplete={false}
        autoHighlight={true}
        inputValue={searchStr}
+       onOpen={() => console.log("opened")}
+       onClose={() => console.log("closed")}
        onChange={(e,v) => {
          e.stopPropagation();
 

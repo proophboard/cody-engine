@@ -14,6 +14,7 @@ const makeChangeSidebarGroupIconInstruction = (icon: string): Instruction => {
 
   return {
     text: TEXT,
+    label: icon,
     noInputNeeded: true,
     icon: <MdiIcon icon={icon}/>,
     isActive: context => context.focusedElement?.type === "sidebarItemGroup",
