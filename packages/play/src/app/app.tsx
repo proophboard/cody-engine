@@ -86,6 +86,9 @@ export function App() {
   };
 
   const { config } = useContext(configStore);
+
+  console.log("rerender app: ", config);
+
   document.title = config.appName;
 
   if (!messageBoxRef) {
@@ -167,19 +170,19 @@ export function App() {
     <QueryClientProvider client={queryClient!}>
       <EnvProvider env={{ UI_ENV: 'play', DEFAULT_SERVICE: 'App', PAGES: {} }}>
         <User>
-          <PlayConfigProvider>
-            <TypesProvider types={config.types as unknown as TypeRegistry}>
-              <PageDataProvider>
-                <CodyMessageServerInjection>
-                  <PendingChanges>
-                    <PlayVibeCodyDrawerProvider>
-                      <RouterProvider router={router} />
-                    </PlayVibeCodyDrawerProvider>
-                  </PendingChanges>
-                </CodyMessageServerInjection>
-              </PageDataProvider>
-            </TypesProvider>
-          </PlayConfigProvider>
+          <TypesProvider types={config.types as unknown as TypeRegistry}>
+            <PlayConfigProvider>
+                <PageDataProvider>
+                  <CodyMessageServerInjection>
+                    <PendingChanges>
+                      <PlayVibeCodyDrawerProvider>
+                        <RouterProvider router={router} />
+                      </PlayVibeCodyDrawerProvider>
+                    </PendingChanges>
+                  </CodyMessageServerInjection>
+                </PageDataProvider>
+            </PlayConfigProvider>
+          </TypesProvider>
         </User>
       </EnvProvider>
       <ReactQueryDevtools initialIsOpen={false} />

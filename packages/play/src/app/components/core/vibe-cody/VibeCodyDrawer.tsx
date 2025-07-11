@@ -118,7 +118,7 @@ const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: 
 // Persist messages across the lifetime of the session
 let globalMessages: Message[] = [];
 
-let pendingNavigateTo: string | undefined;
+let currentNavigateFunc = (route: string) => {};
 
 let lockChange = false;
 
@@ -190,13 +190,14 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const [selectedInstruction, setSelectedInstruction] = useState<Instruction|undefined>(undefined);
   const [value, setValue] = useState<string | Instruction | null>(null);
   const [searchStr, setSearchStr] = useState<string>('');
-  const [navigateTo, setNavigateTo] = useState<string|undefined>(pendingNavigateTo);
   const pageMatch = usePlayPageMatch();
   const navigate = useNavigate();
   const [focusedElement, setFocusedElement] = useVibeCodyFocusElement();
   const { dndEvent } = useContext(DragAndDropContext);
   const inputRef = useRef<HTMLInputElement>();
   const { mode, toggleColorMode } = useContext(ColorModeContext);
+
+  currentNavigateFunc = navigate;
 
   useEffect(() => {
     if(dndEvent) {
@@ -250,14 +251,6 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     }
   }
 
-  useEffect(() => {
-    if(navigateTo) {
-      navigate(navigateTo);
-      pendingNavigateTo = undefined;
-      setNavigateTo(undefined);
-    }
-  }, [navigateTo]);
-
   const addMessageIfDefined = (message: Message | undefined) => {
     if(!message) {
       return;
@@ -307,11 +300,9 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
           dispatch,
           config,
           (route: string) => {
-            pendingNavigateTo = route;
             window.setTimeout(() => {
-              pendingNavigateTo = undefined;
-              setNavigateTo(route);
-            }, 30);
+              currentNavigateFunc(route);
+            }, 100);
           });
 
         if(playIsCodyError(codyResponse)) {
@@ -375,7 +366,6 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     setSelectedInstruction(undefined);
     setSearchStr('');
     setValue(null);
-    setNavigateTo(undefined);
   }
 
   const executeInstruction = async (instruction: Instruction, userInput: string) => {
@@ -389,12 +379,9 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       dispatch,
       config,
       (route: string) => {
-        pendingNavigateTo = route;
-        console.log("Navigate to", route);
         window.setTimeout(() => {
-          pendingNavigateTo = undefined;
           console.log("navigate to cb: ", route);
-          setNavigateTo(route);
+          currentNavigateFunc(route);
         }, 30);
       });
 
@@ -563,8 +550,6 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
        autoComplete={false}
        autoHighlight={true}
        inputValue={searchStr}
-       onOpen={() => console.log("opened")}
-       onClose={() => console.log("closed")}
        onChange={(e,v) => {
          e.stopPropagation();
 

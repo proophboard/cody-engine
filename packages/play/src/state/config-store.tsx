@@ -62,6 +62,8 @@ import {Node} from "@proophboard/cody-types";
 import {LayoutType} from "@frontend/app/layout/layout-type";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import PlayVibeCodyProcessing from "@cody-play/app/components/core/PlayVibeCodyProcessing";
+import {useTypes} from "@frontend/hooks/use-types";
+import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -261,6 +263,7 @@ let currentDispatch: any;
 const PlayConfigProvider = (props: PropsWithChildren) => {
   const [user, ] = useUser();
   const {env, setEnv} = useContext(EnvContext);
+  const [, setTypes] = useTypes();
   const [config, dispatch] = useReducer((config: CodyPlayConfig, action: Action): CodyPlayConfig => {
     console.log(`[PlayConfigStore] Going to apply action: `, action);
 
@@ -435,6 +438,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
 
   useEffect(() => {
     console.log("[PlayConfigStore] trigger after dispatch: ", config);
+    setTypes(config.types as unknown as TypeRegistry);
     afterDispatchListeners.forEach(l => l(config));
   }, [config]);
 
