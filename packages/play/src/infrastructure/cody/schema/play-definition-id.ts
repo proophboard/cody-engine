@@ -47,25 +47,6 @@ export const playDefinitionIdFromFQCN = (fqcn: string): string => {
     .join("/");
 }
 
-export const playRefFromFQCN = (fqcn: string, defaultService: string): string => {
-  if(fqcn.startsWith(`${defaultService}.`)) {
-    fqcn = fqcn.replace(`${defaultService}.`, '');
-  }
-
-  // If service is removed, but FQCN still starts with default serivce
-  // it means that NS is similar to default service (CP default is: App.App.)
-  // so we also remove the NS and return the rest w/out a leading slash
-  if(fqcn.startsWith(`${defaultService}.`)) {
-    fqcn = fqcn.replace(`${defaultService}.`, '');
-
-    return fqcn;
-  }
-
-  return '/' + fqcn.split(".")
-    .map(r => names(r).className)
-    .join("/");
-}
-
 export const playNodeLabel = (nodeFQCN: string): string => {
   if(nodeFQCN === '') {
     return '';

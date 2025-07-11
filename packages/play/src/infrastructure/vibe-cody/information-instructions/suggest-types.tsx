@@ -13,8 +13,7 @@ import {
   LinkVariant,
   Numeric
 } from "mdi-material-ui";
-import {playNodeLabel, playRefFromFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
-import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
+import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
 const BASIC_TYPES = [
   'string',
