@@ -1,11 +1,11 @@
 import nlp from "compromise";
 
 export const toSingular = (words: string): string => {
-  const doc = nlp(words);
+  const doc = nlp(words + ' are great.');
 
   doc.nouns().toSingular();
 
-  return doc.text();
+  return doc.text().slice(0, -11);
 }
 
 export const toSingularItemName = (words: string): string => {

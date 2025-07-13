@@ -1,13 +1,11 @@
 import {
-  CodyInstructionResponse,
-  Instruction,
-  InstructionExecutionCallback
+  InstructionExecutionCallback, InstructionProvider
 } from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {getTableViewVO} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 import {CodyResponse, CodyResponseType, NodeType} from "@proophboard/cody-types";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {names} from "@event-engine/messaging/helpers";
-import {playDefinitionIdFromFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {playDefinitionIdFromFQCN, playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {UiSchema} from "@rjsf/utils";
 import {isQueryableStateListDescription, ListDescription} from "@event-engine/descriptions/descriptions";
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
@@ -23,11 +21,6 @@ import {convertNodeToJs} from "@cody-play/infrastructure/cody/node-traversing/co
 import {Action, CommandAction} from "@frontend/app/components/core/form/types/action";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 import {PlusBoxOutline} from "mdi-material-ui";
-import {renameFQCN} from "@cody-play/infrastructure/vibe-cody/utils/rename-fqcn";
-import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
-import {
-  renameTableRowDataType
-} from "@cody-play/infrastructure/vibe-cody/information-instructions/rename-table-row-data-type";
 import {isJsonSchemaArray} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/is-json-schema-array";
 import {
   playGetProophBoardInfoFromDescription
@@ -35,6 +28,12 @@ import {
 
 
 const TEXT = "Place a button above the table to add a new ";
+
+const makeAddTableItemFunc = (inputText: string): InstructionExecutionCallback => {
+  return (input, ctx, dispatch, config, navigateTo) => {
+    return addTableItemFunc(inputText, ctx, dispatch, config, navigateTo);
+  }
+}
 
 const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispatch, config, navigateTo): Promise<CodyResponse> => {
   const btnLabel = input.replace(TEXT, '').trim();
@@ -78,33 +77,6 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
     return {
       cody: `I can't add a button to the table. I found the information schema for the table ${tableVO.desc.name}, but not the schema for the rows. There should be a schema with name "${(tableVO.desc as ListDescription).itemType}" registered in the types section of the Cody Play Config, but there is none.`
     }
-  }
-
-  const itemFQCN = itemInfo.desc.name;
-  const newItemFQCN = renameFQCN(itemFQCN, btnLabel);
-
-  // Use the name of the add btn as row item type name
-  if(itemFQCN !== newItemFQCN) {
-    const newConfig = renameTableRowDataType(btnLabel, ctx, config);
-
-    if(playIsCodyError(newConfig)) {
-      return newConfig;
-    }
-
-    await withNavigateToProcessing(
-      async () => {
-        dispatch({
-          type: "INIT",
-          payload: newConfig,
-          ctx: getEditedContextFromConfig(newConfig),
-        })
-
-        return {
-          cody: `No problem, row type is renamed.`
-        }
-      })(btnLabel, ctx, dispatch, config, navigateTo);
-
-    return await addTableItemFunc(input, ctx, dispatch, newConfig, navigateTo);
   }
 
   const cmdSchema = {
@@ -269,10 +241,37 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
   }
 }
 
-export const AddTableItem: Instruction = {
-  text: TEXT,
-  icon: <PlusBoxOutline />,
+export const AddTableItemProvider: InstructionProvider = {
   isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
-  match: input => input.startsWith(TEXT),
-  execute: addTableItemFunc,
+  provide: (ctx, config, env) => {
+    const pageConfig = ctx.page.handle.page;
+
+    const tableVO = getTableViewVO(pageConfig, config);
+
+    if(!tableVO) {
+      return []
+    }
+
+    const itemInfo = config.types[(tableVO.desc as ListDescription).itemType];
+
+    if(!itemInfo) {
+      return [];
+    }
+
+    const itemFQCN = itemInfo.desc.name;
+
+    const text = `${TEXT} ${playNodeLabel(itemFQCN)}`;
+
+    return [
+      {
+        text,
+        icon: <PlusBoxOutline />,
+        noInputNeeded: true,
+        isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
+        match: input => input.startsWith(TEXT),
+        execute: makeAddTableItemFunc(text),
+      }
+    ]
+  }
 }
+

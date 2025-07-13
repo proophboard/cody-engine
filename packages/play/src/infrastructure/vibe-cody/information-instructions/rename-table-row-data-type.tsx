@@ -17,7 +17,7 @@ import {
   playFQCNFromDefinitionId,
   playNodeLabel,
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
-import {renameFQCN} from "@cody-play/infrastructure/vibe-cody/utils/rename-fqcn";
+import {playRenameFQCN} from "@cody-play/infrastructure/vibe-cody/utils/play-rename-f-q-c-n";
 import {renameType} from "@cody-play/infrastructure/vibe-cody/utils/types/rename-type";
 import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {isListDescription} from "@event-engine/descriptions/descriptions";
@@ -48,7 +48,7 @@ export const renameTableRowDataType = (newTypeName: string, ctx: VibeCodyContext
     itemFQCN = tableVO.desc.name + 'Item'
   }
 
-  const newItemFQCN = renameFQCN(itemFQCN, newTypeName);
+  const newItemFQCN = playRenameFQCN(itemFQCN, newTypeName);
   const newConfig = renameType(itemFQCN, newItemFQCN, config);
 
   if(!tableVoSchema.getListItemsSchema(emptySchema).isRef()) {

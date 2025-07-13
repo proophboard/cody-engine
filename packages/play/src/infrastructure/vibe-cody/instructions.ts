@@ -4,7 +4,9 @@ import {
   AddATableWithDefaults
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/add-a-table-with-defaults";
 import {AddColumnsToTable} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
-import {AddTableItem} from "@cody-play/infrastructure/vibe-cody/command-instructions/add-table-item";
+import {
+  AddTableItemProvider
+} from "@cody-play/infrastructure/vibe-cody/command-instructions/add-table-item";
 import {ChangeButtonLabel} from "@cody-play/infrastructure/vibe-cody/button-instructions/change-button-label";
 import {
   ChangeButtonVariantProvider
@@ -64,15 +66,13 @@ type InstructionOrProvider = Instruction | InstructionProvider;
 export const instructions: InstructionOrProvider[] = [
   /* App Settings */
   ChangeAppName,
-  /* Theme */
-  ChangeThemeProvider,
   /* View Instructions */
   ChangeViewTitleProvider,
   FocusOnViewTitleProvider,
   /* Table Instructions */
   AddATableWithDefaults,
   AddColumnsToTable,
-  AddTableItem,
+  AddTableItemProvider,
   BatchDeleteRows,
   EditTableItem,
   RenameTableRowDataTypeProvider,
@@ -104,6 +104,8 @@ export const instructions: InstructionOrProvider[] = [
   ChangeSidebarGroupLabel,
   MoveSidebarGroupItemProvider,
   FocusOnSidebarItemProvider,
+  /* Theme */
+  ChangeThemeProvider,
   /* Undo */
   UndoLastAction,
 ]

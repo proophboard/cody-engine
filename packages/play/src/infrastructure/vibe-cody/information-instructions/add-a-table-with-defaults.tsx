@@ -15,7 +15,7 @@ import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definiti
 import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
 import {getRouteParamsFromRoute} from "@cody-play/infrastructure/vibe-cody/utils/navigate/get-route-params-from-route";
 import {AndFilter, Filter} from "@app/shared/value-object/query/filter-types";
-import {toSingularItemName} from "@cody-play/infrastructure/vibe-cody/utils/nlp/to-singular";
+import {toSingularItemName} from "@event-engine/infrastructure/nlp/to-singular";
 
 const TEXT = "I'd like to see a table of ";
 

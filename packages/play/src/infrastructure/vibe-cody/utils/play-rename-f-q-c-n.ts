@@ -1,6 +1,6 @@
 import {names} from "@event-engine/messaging/helpers";
 
-export const renameFQCN = (fqcn: string, newTypeName: string): string => {
+export const playRenameFQCN = (fqcn: string, newTypeName: string): string => {
   const parts = fqcn.split(".");
 
   parts.pop();

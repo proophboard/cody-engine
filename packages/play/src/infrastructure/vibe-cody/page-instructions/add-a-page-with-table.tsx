@@ -11,7 +11,7 @@ import {
   playMakeNodeRecordWithDefaults
 } from "@cody-play/infrastructure/cody/node-traversing/play-make-node-record-with-defaults";
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
-import {toSingularItemName} from "@cody-play/infrastructure/vibe-cody/utils/nlp/to-singular";
+import {toSingularItemName} from "@event-engine/infrastructure/nlp/to-singular";
 
 const TEXT = "Add a new page with a table called ";
 

@@ -5,7 +5,7 @@ import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/confi
 import {
   isListDescription,
   isQueryableStateListDescription,
-  isStateDescription
+  isStateDescription, ListDescription
 } from "@event-engine/descriptions/descriptions";
 import {Names, names} from "@event-engine/messaging/helpers";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
@@ -67,8 +67,7 @@ export const AddColumnsToTable: Instruction = {
       itemFQCN = playFQCNFromDefinitionId(tableVoSchema.getListItemsSchema(itemSchema).getRef());
     } else {
       itemSchema = tableVoSchema.getListItemsSchema(itemSchema);
-      itemFQCN = tableVO.desc.name + 'Item'
-
+      itemFQCN = (tableVO.desc as ListDescription).itemType;
     }
 
     const itemInfo = config.types[itemFQCN];

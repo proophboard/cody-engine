@@ -13,7 +13,7 @@ import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/wit
 import {playService} from "@cody-play/infrastructure/cody/service/play-service";
 import {
   playDefinitionId, playDefinitionIdFromFQCN,
-  playFQCNFromDefinitionId,
+  playFQCNFromDefinitionId, playNodeLabel,
   playVoFQCN
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {
@@ -36,6 +36,8 @@ import {normalizeProjectionConfig, ProjectionConfig} from "@app/shared/rule-engi
 import {isRefSchema} from "@app/shared/utils/json-schema/is-ref-schema";
 import {isInlineItemsArraySchema, isListSchema} from "@app/shared/utils/schema-checks";
 import {ColumnSingleSelectValueOption} from "@cody-engine/cody/hooks/utils/value-object/types";
+import {playRenameFQCN} from "@cody-play/infrastructure/vibe-cody/utils/play-rename-f-q-c-n";
+import {toSingularItemName} from "@event-engine/infrastructure/nlp/to-singular";
 
 export interface PlayValueObjectMetadataRaw {
   identifier?: string;
@@ -252,7 +254,9 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
       convertedMeta.identifier = meta.identifier;
     }
 
-    convertedMeta.itemType = playFQCNFromDefinitionId(convertedMeta.schema['$id'] as string) + 'Item';
+    const listFQCN = playFQCNFromDefinitionId(convertedMeta.schema['$id'] as string);
+    const itemLabel = toSingularItemName(playNodeLabel(listFQCN));
+    convertedMeta.itemType = playRenameFQCN(listFQCN, itemLabel);
   }
 
   if(isQueryable) {

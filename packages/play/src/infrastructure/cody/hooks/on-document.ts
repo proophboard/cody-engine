@@ -25,7 +25,11 @@ import {
   playUpdateProophBoardInfo
 } from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
 import {namespaceToJSONPointer} from "@cody-engine/cody/hooks/utils/value-object/namespace";
-import {playDefinitionId, playDefinitionIdFromFQCN,} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {
+  playDefinitionId,
+  playDefinitionIdFromFQCN,
+  playNodeLabel,
+} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {JSONSchema7} from "json-schema";
 import {normalizePolicyRules} from "@cody-play/infrastructure/rule-engine/normalize-policy-rules";
 import {convertProjectionConfigCaseToRules} from "@app/shared/rule-engine/projection-config";
@@ -34,6 +38,9 @@ import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
 import {normalizeDependencies} from "@cody-play/infrastructure/rule-engine/normalize-dependencies";
 import {normalizeServerUiSchema} from "@frontend/util/schema/normalize-ui-schema";
+import {camelCaseToTitle} from "@cody-play/infrastructure/utils/string";
+import {playRenameFQCN} from "@cody-play/infrastructure/vibe-cody/utils/play-rename-f-q-c-n";
+import {toSingularItemName} from "@event-engine/infrastructure/nlp/to-singular";
 
 export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -82,7 +89,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
       const itemSchema = voMeta.schema.items || {};
       const itemUiSchema = normalizeServerUiSchema(voMeta.uiSchema?.items || {}, names(config.defaultService).className);
 
-      itemSchema.title = (voMeta.schema.title || '') + ' Item';
+      itemSchema.title = camelCaseToTitle(playNodeLabel(itemDesc.name));
       itemSchema.$id = playDefinitionIdFromFQCN(itemDesc.name);
 
       dispatch({
@@ -186,11 +193,13 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
 }
 
 const getInlineItemDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMetadata, desc: ValueObjectDescription): ValueObjectDescription | QueryableValueObjectDescription | StateDescription => {
+  const itemLabel = toSingularItemName(playNodeLabel(voName));
+
   return {
     ...playGetProophBoardInfoFromDescription(desc),
     isList: false,
     isQueryable: desc.isQueryable,
-    name: voName + 'Item',
+    name: playRenameFQCN(voName, itemLabel),
     hasIdentifier: desc.hasIdentifier,
     identifier: desc.hasIdentifier ? voMeta.identifier : undefined,
     isNotStored: desc.isNotStored,
