@@ -26,7 +26,7 @@ import { configStore } from '@cody-play/state/config-store';
 import { FocusedButton } from '@cody-play/state/focused-element';
 import moveButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/move-button-position';
 import updatePageButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-page-button-position';
-import updateTableButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-table-button-position';
+import updateViewButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-view-button-position';
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -78,18 +78,18 @@ const TopRightActions = (props: TopRightActionsProps) => {
       const prevContainerInfoType = active.data.current?.prevContainerInfo.type;
 
       // handle only the dropped elements in the top actions
-      if (dropzonePosition !== 'table-top' && dropzonePosition !== 'page-top') {
+      if (dropzonePosition !== 'page-top' && dropzonePosition !== 'view-top' && dropzonePosition !== "command-top") {
         return;
       }
 
-      // button was moved inside table view
+      // button was moved inside view
       if (
         prevContainerInfoType === 'view' &&
-        dropzonePosition === 'table-top' &&
+        dropzonePosition === 'view-top' &&
         containerInfo.type === 'view'
       ) {
         const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[over.id as string];
-        updateTableButtonPosition(
+        updateViewButtonPosition(
           config,
           dispatch,
           containerInfo,
@@ -100,7 +100,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
         return;
       }
 
-      // button was moved inside page view
+      // button was moved inside page
       if (
         prevContainerInfoType === 'page' &&
         dropzonePosition === 'page-top' &&
@@ -118,13 +118,13 @@ const TopRightActions = (props: TopRightActionsProps) => {
         return;
       }
 
-      // button was moved from page view to table view or vice versa
+      // button was moved from page to view or vice versa
       if (
         (prevContainerInfoType === 'view' &&
           dropzonePosition === 'page-top' &&
           containerInfo.type === 'page') ||
         (prevContainerInfoType === 'page' &&
-          dropzonePosition === 'table-top' &&
+          dropzonePosition === 'view-top' &&
           containerInfo.type === 'view')
       ) {
         const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[over.id as string];

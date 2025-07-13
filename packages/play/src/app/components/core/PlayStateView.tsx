@@ -67,6 +67,7 @@ const PlayStateView = (params: any, informationInfo: PlayInformationRuntimeInfo,
         widgets={{
           DataSelect: PlayDataSelectWidget,
         }}
+        showDropzone={true}
       />
     }
   </>

@@ -7,7 +7,7 @@ import {
   ObjectFieldTemplatePropertyType, UiSchema, ArrayFieldTemplateItemType, getTemplate, descriptionId, canExpand,
 } from '@rjsf/utils';
 import Grid2, {Grid2Props} from "@mui/material/Unstable_Grid2";
-import {CSSObject, IconButton, SxProps, Theme, Typography, useTheme} from "@mui/material";
+import {CSSObject, IconButton, Stack, SxProps, Theme, Typography, useTheme} from "@mui/material";
 import {PropsWithChildren} from "react";
 import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
@@ -21,6 +21,9 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import * as React from "react";
 import {FormModeType} from "@frontend/app/components/core/CommandForm";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
+import {ActionContainerInfo, ActionContainerInfoType} from "@frontend/app/components/core/form/types/action";
+import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
+import {mapFormModeTypeToContainerInfoType, mapFormModeTypeToDropzoneIdTopRight} from "@cody-play/app/utils/mappings";
 
 type HeadingVariant = "h2" | "h3" | "h4" | "h5" | "h6";
 
@@ -226,7 +229,7 @@ export default function ObjectFieldTemplate<
 
   return (<>
     <Grid2 container={nestingLevel === 1} className={nestingLevel === 1 ? 'CodyCommandFormContainer' : ''}>
-      {(isPageMode(mode) || nestingLevel > 1) && <Grid2 xs={12}>
+      {(isPageMode(mode) || nestingLevel > 1) && <Grid2 container={true} sx={{width: '100%'}}>
         <Grid2 xs>
           {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
                                 className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
@@ -240,9 +243,16 @@ export default function ObjectFieldTemplate<
           />}
         </Grid2>
         <TopRightActions uiOptions={uiOptions}
-                         containerInfo={nestingLevel === 1 ? {name: fqcn, type: "mixed"} : undefined}
+                         containerInfo={nestingLevel === 1
+                           ? {name: fqcn, type: mapFormModeTypeToContainerInfoType(mode)}
+                           : undefined}
                          defaultService={props.formContext!.defaultService}
-                         jexlCtx={jexlCtx}/>
+                         jexlCtx={jexlCtx}
+                         dropzoneId={nestingLevel === 1
+                           ? mapFormModeTypeToDropzoneIdTopRight(mode)
+                           : undefined}
+                         showDropzone={props.formContext!.showDropzone}
+        />
       </Grid2>}
       <Grid2 xs={12} {...gridConfig as Grid2Props}>
         {isDialogMode(mode) && mode !== 'commandDialogForm' /* Cmd Title + actions is already shown in CommandDialog */ && nestingLevel === 1 && <Grid2 xs={12}>
@@ -250,7 +260,18 @@ export default function ObjectFieldTemplate<
             {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
                          sx={getObjPropTitleStyle(headingVariant, theme, mode)}>{index}{title}</Typography>}
           </Grid2>
-          <TopRightActions uiOptions={uiOptions} defaultService={props.formContext!.defaultService} jexlCtx={jexlCtx}/>
+          <TopRightActions
+            uiOptions={uiOptions}
+            defaultService={props.formContext!.defaultService}
+            jexlCtx={jexlCtx}
+            containerInfo={nestingLevel === 1
+              ? {name: fqcn, type: mapFormModeTypeToContainerInfoType(mode)}
+              : undefined}
+            dropzoneId={nestingLevel === 1
+              ? mapFormModeTypeToDropzoneIdTopRight(mode)
+              : undefined}
+            showDropzone={props.formContext!.showDropzone}
+          />
         </Grid2>}
         {isDialogMode(mode) && nestingLevel === 1 && props.description && (
           <Grid2 xs={12} sx={{paddingLeft: theme.spacing(2)}}>

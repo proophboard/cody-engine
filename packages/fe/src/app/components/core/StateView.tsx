@@ -37,6 +37,7 @@ import {useEnv} from "@frontend/hooks/use-env";
 import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
 import {FormModeType} from "@frontend/app/components/core/CommandForm";
 import DescriptionFieldTemplate from "@frontend/app/components/core/form/templates/DescriptionFieldTemplate";
+import {EDropzoneId} from "@cody-play/app/types/enums/EDropzoneId";
 
 interface OwnProps {
   state?: any;
@@ -47,6 +48,7 @@ interface OwnProps {
   definitions?: {[id: string]: DeepReadonly<JSONSchema7>};
   hidden?: boolean;
   mode?: FormModeType;
+  showDropzone?: boolean;
 }
 
 type StateViewProps = OwnProps;
@@ -119,7 +121,13 @@ const StateView = (props: StateViewProps) => {
       validator={getRjsfValidator()}
       children={<></>}
       formData={props.state}
-      formContext={{data: props.state, information: informationRuntimeInfo, defaultService, mode: props.mode || "pageView"}}
+      formContext={{
+        data: props.state,
+        information: informationRuntimeInfo,
+        defaultService,
+        mode: props.mode || "pageView",
+        showDropzone: props.showDropzone
+      }}
       uiSchema={uiSchema}
       className="stateview"
       templates={
@@ -149,6 +157,12 @@ const StateView = (props: StateViewProps) => {
                      name: infoFQCN,
                      type: "view"
                    }}
+                   dropzoneId={{
+                     left: EDropzoneId.VIEW_BOTTOM_ACTIONS_LEFT,
+                     center: EDropzoneId.VIEW_BOTTOM_ACTIONS_CENTER,
+                     right: EDropzoneId.VIEW_BOTTOM_ACTIONS_RIGHT,
+                   }}
+                   showDropzone={props.showDropzone ? { left: true, center: true, right: true } : undefined}
                    uiOptions={uiOptions}
                    defaultService={defaultService}
                    jexlCtx={jexlCtx} />

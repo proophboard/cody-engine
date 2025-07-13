@@ -88,9 +88,11 @@ export type ActionConfig = LinkAction | CommandAction | RulesAction;
 
 export type TableActionConfig = (Omit<Omit<LinkAction, 'position'>, 'button'> | Omit<Omit<CommandAction, 'position'>, 'button'> | Omit<Omit<RulesAction, 'position'>, 'button'>) & {button: Partial<ButtonConfig>};
 
+export type ActionContainerInfoType = 'page' | 'view' | 'command' | 'mixed';
+
 export interface ActionContainerInfo {
   // Name can be a page name (type: page), information type name (type: view), command name (type: command)
   // or in case of "mixed" it is either an information type or command name, so both config registries have to be checked
   name: string;
-  type: 'page' | 'view' | 'command' | 'mixed'
+  type: ActionContainerInfoType
 }
