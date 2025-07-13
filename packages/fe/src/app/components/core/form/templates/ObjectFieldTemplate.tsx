@@ -8,7 +8,7 @@ import {
 } from '@rjsf/utils';
 import Grid2, {Grid2Props} from "@mui/material/Unstable_Grid2";
 import {CSSObject, IconButton, Stack, SxProps, Theme, Typography, useTheme} from "@mui/material";
-import {PropsWithChildren} from "react";
+import {PropsWithChildren, useContext} from "react";
 import {useUser} from "@frontend/hooks/use-user";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {useParams} from "react-router-dom";
@@ -24,6 +24,10 @@ import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {ActionContainerInfo, ActionContainerInfoType} from "@frontend/app/components/core/form/types/action";
 import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {mapFormModeTypeToContainerInfoType, mapFormModeTypeToDropzoneIdTopRight} from "@cody-play/app/utils/mappings";
+import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
+import {informationTitle} from "@frontend/util/information/titelize";
+import {Target} from "mdi-material-ui";
+import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 
 type HeadingVariant = "h2" | "h3" | "h4" | "h5" | "h6";
 
@@ -174,6 +178,8 @@ export default function ObjectFieldTemplate<
   const routeParams = useParams();
   const [store] = useGlobalStore();
   const {t} = useTranslation();
+  const { liveEditMode } = useContext(LiveEditModeContext);
+  const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
 
   const uiOptions = getUiOptions<T,S,F>(props.uiSchema);
 
@@ -198,6 +204,11 @@ export default function ObjectFieldTemplate<
   const headingVariant = headingNestingLevel(props.idSchema.$id);
 
   let title = props.uiSchema && props.uiSchema['ui:title'] ? props.uiSchema['ui:title'] : props.title;
+  let fallbackTitle = title;
+
+  if(!fallbackTitle) {
+    fallbackTitle = props.title || props.schema.title || '';
+  }
 
   if(props.uiSchema && props.uiSchema['ui:widget'] && props.uiSchema['ui:widget'] === 'hidden') {
     return <></>
@@ -227,13 +238,25 @@ export default function ObjectFieldTemplate<
     ButtonTemplates: { AddButton },
   } = props.registry.templates;
 
+  const isFocusedEle = focusedEle && focusedEle.type === "viewTitle" && focusedEle.id === fqcn;
+
   return (<>
     <Grid2 container={nestingLevel === 1} className={nestingLevel === 1 ? 'CodyCommandFormContainer' : ''}>
       {(isPageMode(mode) || nestingLevel > 1) && <Grid2 container={true} sx={{width: '100%'}}>
         <Grid2 xs>
-          {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+          {(title || (nestingLevel === 1 && liveEditMode)) && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
                                 className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
-                                sx={getObjPropTitleStyle(headingVariant, theme, mode)}>{index}{title}</Typography>}
+                                sx={ title
+                                  ? getObjPropTitleStyle(headingVariant, theme, mode)
+                                  : {...getObjPropTitleStyle(headingVariant, theme, mode), color: theme.palette.action.disabled, textDecoration: 'line-through'}}
+          >
+            {index}{fallbackTitle}
+            {liveEditMode && nestingLevel === 1 && <IconButton onClick={() => setFocusedEle({
+              id: fqcn,
+              name: fallbackTitle,
+              type: 'viewTitle',
+            })} color={isFocusedEle ? 'info' : undefined}><Target /></IconButton>}
+          </Typography>}
           {props.description && <DescriptionFieldTemplate
             id={descriptionId<T>(props.idSchema)}
             description={props.description}
