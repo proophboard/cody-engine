@@ -6,7 +6,6 @@ import {
 import {getTableViewVO} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 import {CodyResponse, CodyResponseType, NodeType} from "@proophboard/cody-types";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
-import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 import {names} from "@event-engine/messaging/helpers";
 import {playDefinitionIdFromFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {UiSchema} from "@rjsf/utils";
@@ -15,7 +14,7 @@ import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
 import {
   playMakeNodeRecordWithDefaults
 } from "@cody-play/infrastructure/cody/node-traversing/play-make-node-record-with-defaults";
-import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
+import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {RawCommandMeta} from "@cody-play/infrastructure/cody/command/play-command-metadata";
 import {EventMetaRaw} from "@cody-play/infrastructure/cody/event/play-event-metadata";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
