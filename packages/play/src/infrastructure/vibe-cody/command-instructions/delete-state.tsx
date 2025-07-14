@@ -1,15 +1,12 @@
 import {Instruction} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
-import {PencilPlusOutline} from "mdi-material-ui";
+import {TrashCanOutline} from "mdi-material-ui";
+import {isStateViewFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-state-view-focused";
 import {CodyResponseType, NodeType} from "@proophboard/cody-types";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
-import {
-  isQueryableStateDescription,
-  QueryableStateListDescription
-} from "@event-engine/descriptions/descriptions";
-import {names} from "@event-engine/messaging/helpers";
 import {playDefinitionIdFromFQCN, playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 import {UiSchema} from "@rjsf/utils";
+import {isQueryableStateDescription, QueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {EventMetaRaw} from "@cody-play/infrastructure/cody/event/play-event-metadata";
 import {
@@ -17,26 +14,32 @@ import {
 } from "@cody-play/infrastructure/cody/node-traversing/play-make-node-record-with-defaults";
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {findProjectionType} from "@cody-play/infrastructure/vibe-cody/utils/types/find-projection-type";
 import {
   playGetProophBoardInfoFromDescription
 } from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
+import {names} from "@event-engine/messaging/helpers";
 import {now} from "@cody-engine/cody/hooks/utils/time";
 import {RawCommandMeta} from "@cody-play/infrastructure/cody/command/play-command-metadata";
 import {convertNodeToJs} from "@cody-play/infrastructure/cody/node-traversing/convert-node-to-js";
-import {isStateViewFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-state-view-focused";
-import {findProjectionType} from "@cody-play/infrastructure/vibe-cody/utils/types/find-projection-type";
 import {CommandAction} from "@frontend/app/components/core/form/types/action";
 import {JSONSchema7} from "json-schema";
+import {isSubLevelPage, PageDefinition} from "@frontend/app/pages/page-definitions";
+import {playIsTopLevelPage} from "@cody-play/infrastructure/cody/ui/play-is-top-level-page";
+import {
+  getRedirectAfterDeletePage
+} from "@cody-play/infrastructure/vibe-cody/utils/navigate/get-redirect-after-delete-page";
 
-const TEXT = `Place an edit button above the view.`;
+const TEXT = `Place a delete button above the view.`;
 
-export const EditState: Instruction = {
+export const DeleteState: Instruction = {
   text: TEXT,
-  icon: <PencilPlusOutline />,
+  icon: <TrashCanOutline />,
   noInputNeeded: true,
   isActive: (context, config) => isStateViewFocused(context.focusedElement),
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config, navigateTo) => {
+    const page = ctx.page.handle.page;
 
     const stateVO = config.types[ctx.focusedElement!.id];
 
@@ -52,29 +55,36 @@ export const EditState: Instruction = {
     let stateVoUiSchema = cloneDeepJSON(stateVO.uiSchema);
     const stateLabel = playNodeLabel(stateVO.desc.name);
 
-    const cmdName = `Edit ${stateLabel}`;
-    const eventName = `${stateLabel} Edited`;
+    const cmdName = `Delete ${stateLabel}`;
+    const eventName = `${stateLabel} Deleted`;
 
-    const cmdSchema = {
-      $ref: registryIdToDataReference(stateVO.desc.name),
-    }
+
 
     const desc = stateVO.desc;
 
-    const cmdUiSchema: UiSchema = {
-      "ui:button": {
-        "label": "save",
-        "icon": "zip-disk"
-      }
-    };
+
 
     if(!isQueryableStateDescription(desc)) {
       return {
-        cody: `I can't install the possibility to edit a ${stateLabel}. The information shown on the page has no configured identifier.`,
+        cody: `I can't install the possibility to delete a ${stateLabel}. The information shown on the page has no configured identifier.`,
         type: CodyResponseType.Error,
         details: `Please switch to prooph board and design a command by hand.`
       }
     }
+
+    const cmdSchema: any = {};
+
+    cmdSchema[desc.identifier] = 'string|format:uuid'
+
+    const cmdUiSchema: UiSchema = {
+      "ui:button": {
+        "label": "Delete",
+        "icon": "trash-can-outline"
+      },
+      "ui:form": {
+        "successRedirect": getRedirectAfterDeletePage(page, config).name
+      }
+    };
 
     cmdUiSchema[desc.identifier] = {
       "ui:widget": "hidden"
@@ -103,7 +113,7 @@ export const EditState: Instruction = {
 
     if(!prjType) {
       return {
-        cody: `I can't add a projection case for handling edited events of state "${stateVO.desc.name}". I'm looking for a list type in the Cody Play type registry that has "${stateVO.desc.name}" defined as "itemType", but I can't find one.`,
+        cody: `I can't add a projection case for handling deleted events of state "${stateVO.desc.name}". I'm looking for a list type in the Cody Play type registry that has "${stateVO.desc.name}" defined as "itemType", but I can't find one.`,
         details: `Please check the Cody Play config in the App Settings dialog. If you can't solve the issue, please contact the prooph board team!`,
         type: CodyResponseType.Error
       }
@@ -130,10 +140,11 @@ export const EditState: Instruction = {
           {
             rule: "always",
             then: {
-              upsert: {
+              delete: {
                 information: prjType.desc.name,
-                id: `$> event.${(prjType.desc as QueryableStateListDescription).itemIdentifier}`,
-                set: "$> event"
+                filter: {
+                  docId: `$> event.${desc.identifier}`
+                }
               }
             }
           }
@@ -177,14 +188,15 @@ export const EditState: Instruction = {
       return cmdRes;
     }
 
-    const editAction: CommandAction = {
+    const deleteAction: CommandAction = {
       type: 'command',
       command: `${names(config.defaultService).className}.${names(cmdName).className}`,
-      data: `$> page|data('${registryIdToDataReference(stateVO.desc.name)}', {})`,
+      data: `$> page|data('${registryIdToDataReference(stateVO.desc.name)}', {})|pick('${desc.identifier}')`,
+      directSubmit: true,
       button: {
-        label: `Edit`,
-        icon: 'pencil',
-        color: 'default'
+        label: `Delete`,
+        icon: 'trash-can-outline',
+        color: 'error'
       },
       position: "top-right"
     }
@@ -201,7 +213,7 @@ export const EditState: Instruction = {
       stateVoUiSchema['ui:options']['actions'] = [];
     }
 
-    (stateVoUiSchema['ui:options']['actions'] as Array<CommandAction>).push(editAction)
+    (stateVoUiSchema['ui:options']['actions'] as Array<CommandAction>).push(deleteAction);
 
     // Update state VO
     dispatch({
@@ -219,7 +231,7 @@ export const EditState: Instruction = {
     });
 
     return {
-      cody: `I've added an edit button to the view.`
+      cody: `I've added a delete button to the view.`
     }
   }
 }

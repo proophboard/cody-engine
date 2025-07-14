@@ -5,6 +5,8 @@ import {UiSchema} from "@rjsf/utils";
 import {PlayViewComponentConfig} from "@cody-play/state/types";
 import {merge} from "lodash/fp";
 import {informationTitle} from "@frontend/util/information/titelize";
+import {isListDescription, isQueryableStateDescription} from "@event-engine/descriptions/descriptions";
+import {isFormView} from "@cody-play/infrastructure/vibe-cody/utils/view/is-form-view";
 
 
 export const FocusOnViewTitleProvider: InstructionProvider = {
@@ -45,7 +47,7 @@ export const FocusOnViewTitleProvider: InstructionProvider = {
               ctx.setFocusedElement({
                 id: information.desc.name,
                 name: title,
-                type: "viewTitle"
+                type: isQueryableStateDescription(information.desc) ? isFormView(comp) ? "formView" : "stateView" : "viewTitle"
               })
 
               return {

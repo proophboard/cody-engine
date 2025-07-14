@@ -4,7 +4,7 @@ import {FocusedButton} from "@cody-play/state/focused-element";
 import {setButtonProperty} from "@cody-play/infrastructure/vibe-cody/utils/set-button-property";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 
-const TEXT = "Convert to a rounded icon button";
+const TEXT = "Convert to a icon-only button";
 
 export const IconOnlyButton: Instruction = {
   text: TEXT,

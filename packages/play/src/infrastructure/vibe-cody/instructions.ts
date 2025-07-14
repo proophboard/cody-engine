@@ -61,6 +61,7 @@ import {AddANewTab} from "@cody-play/infrastructure/vibe-cody/page-instructions/
 import {UndoLastAction} from "@cody-play/infrastructure/vibe-cody/app-instructions/undo-last-action";
 import {ProvideTypeSuggestions} from "@cody-play/infrastructure/vibe-cody/information-instructions/suggest-types";
 import {EditState} from "@cody-play/infrastructure/vibe-cody/command-instructions/edit-state";
+import {DeleteState} from "@cody-play/infrastructure/vibe-cody/command-instructions/delete-state";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -71,6 +72,7 @@ export const instructions: InstructionOrProvider[] = [
   ChangeViewTitleProvider,
   FocusOnViewTitleProvider,
   EditState,
+  DeleteState,
   /* Table Instructions */
   AddATableWithDefaults,
   AddColumnsToTable,
