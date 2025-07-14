@@ -60,6 +60,7 @@ import {OpenRowOnDetailsPage} from "@cody-play/infrastructure/vibe-cody/page-ins
 import {AddANewTab} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-new-tab";
 import {UndoLastAction} from "@cody-play/infrastructure/vibe-cody/app-instructions/undo-last-action";
 import {ProvideTypeSuggestions} from "@cody-play/infrastructure/vibe-cody/information-instructions/suggest-types";
+import {EditState} from "@cody-play/infrastructure/vibe-cody/command-instructions/edit-state";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -69,6 +70,7 @@ export const instructions: InstructionOrProvider[] = [
   /* View Instructions */
   ChangeViewTitleProvider,
   FocusOnViewTitleProvider,
+  EditState,
   /* Table Instructions */
   AddATableWithDefaults,
   AddColumnsToTable,

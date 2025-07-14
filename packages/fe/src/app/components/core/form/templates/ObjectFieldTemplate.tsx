@@ -238,7 +238,7 @@ export default function ObjectFieldTemplate<
     ButtonTemplates: { AddButton },
   } = props.registry.templates;
 
-  const isFocusedEle = focusedEle && focusedEle.type === "viewTitle" && focusedEle.id === fqcn;
+  const isFocusedEle = focusedEle && (focusedEle.type === "stateView" || focusedEle.type === "formView") && focusedEle.id === fqcn;
 
   return (<>
     <Grid2 container={nestingLevel === 1} className={nestingLevel === 1 ? 'CodyCommandFormContainer' : ''}>
@@ -254,7 +254,7 @@ export default function ObjectFieldTemplate<
             {liveEditMode && nestingLevel === 1 && <IconButton onClick={() => setFocusedEle({
               id: fqcn,
               name: fallbackTitle,
-              type: 'viewTitle',
+              type: isWriteMode(mode) ? 'formView' : 'stateView',
             })} color={isFocusedEle ? 'info' : undefined}><Target /></IconButton>}
           </Typography>}
           {props.description && <DescriptionFieldTemplate

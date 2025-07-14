@@ -3,11 +3,11 @@ import {PlayPageDefinition, PlayViewComponentConfig} from "@cody-play/state/type
 import {PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
 import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {Eye, EyeOff, FormatText} from "mdi-material-ui";
-import {getPageTitle, PageDefinition} from "@frontend/app/pages/page-definitions";
 import {ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 import {showTitle} from "@frontend/util/schema/show-title";
 import {merge} from "lodash/fp";
 import {informationTitle} from "@frontend/util/information/titelize";
+import {FocusedElement} from "@cody-play/state/focused-element";
 
 const getViewName = (v: ViewComponent): string => {
   return typeof v === "string" ? v : v.view;
@@ -54,8 +54,16 @@ const changeViewTitle = (title: string, viewFQCN: string, page: PlayPageDefiniti
   })
 }
 
+const isActive = (focused?: FocusedElement): boolean => {
+  if(!focused) {
+    return false;
+  }
+
+  return focused.type === "viewTitle" || focused.type === "stateView" || focused.type === "formView";
+}
+
 export const ChangeViewTitleProvider: InstructionProvider = {
-  isActive: context => context.focusedElement?.type === "viewTitle",
+  isActive: context => isActive(context.focusedElement),
   provide: (context, config) => {
 
     const page = context.page.handle.page;
@@ -73,7 +81,7 @@ export const ChangeViewTitleProvider: InstructionProvider = {
     instructions.push({
       text: `Change label to `,
       icon: <FormatText />,
-      isActive: context => context.focusedElement?.type === "viewTitle",
+      isActive: context => isActive(context.focusedElement),
       match: input => input.startsWith('Change label to '),
       execute: async (input, ctx, dispatch, config1) => {
         const label = input.replace(`Change label to `, '').trim();
@@ -91,7 +99,7 @@ export const ChangeViewTitleProvider: InstructionProvider = {
         text: `Hide the title`,
         icon: <EyeOff />,
         noInputNeeded: true,
-        isActive: context => context.focusedElement?.type === "pageTitle",
+        isActive: context => isActive(context.focusedElement),
         match: input => input.startsWith(`Hide the title`),
         execute: async (input, ctx, dispatch, config1) => {
           changeViewTitle('', getViewName(informationViewComponent), page, dispatch, config1);
@@ -106,7 +114,7 @@ export const ChangeViewTitleProvider: InstructionProvider = {
         text: `Show the title again`,
         icon: <Eye />,
         noInputNeeded: true,
-        isActive: context => context.focusedElement?.type === "viewTitle",
+        isActive: context => isActive(context.focusedElement),
         match: input => input.startsWith(`Show the title`),
         execute: async (input, ctx, dispatch, config1) => {
           changeViewTitle(informationTitle(information, uiSchema), getViewName(informationViewComponent), page, dispatch, config1);

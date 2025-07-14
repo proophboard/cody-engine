@@ -22,7 +22,6 @@ import {
 import {now} from "@cody-engine/cody/hooks/utils/time";
 import {RawCommandMeta} from "@cody-play/infrastructure/cody/command/play-command-metadata";
 import {convertNodeToJs} from "@cody-play/infrastructure/cody/node-traversing/convert-node-to-js";
-import {CommandAction} from "@frontend/app/components/core/form/types/action";
 import {ActionTableColumn} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {PropMapping} from "@app/shared/rule-engine/configuration";
 import {isActionsColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/is-actions-column";
