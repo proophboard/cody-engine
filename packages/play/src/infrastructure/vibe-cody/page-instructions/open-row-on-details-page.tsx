@@ -1,6 +1,5 @@
 import {Instruction} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {PageNextOutline} from "mdi-material-ui";
-import {getTableViewVO} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import {CodyResponse, CodyResponseType, NodeType} from "@proophboard/cody-types";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
@@ -23,8 +22,11 @@ import {
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
-import {SubLevelPage} from "@frontend/app/pages/page-definitions";
 import {getRouteParamsFromRoute} from "@cody-play/infrastructure/vibe-cody/utils/navigate/get-route-params-from-route";
+import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-focused";
+import {
+  getFocusedQueryableStateListVo
+} from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
 
 const TEXT = `I want to open a row on a details page`;
 
@@ -32,18 +34,15 @@ export const OpenRowOnDetailsPage: Instruction = {
   text: TEXT,
   icon: <PageNextOutline />,
   noInputNeeded: true,
-  isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
+  isActive: (context, config) => isTableFocused(context.focusedElement, context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
   execute: withNavigateToProcessing(async (input: string, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
     const pageConfig = ctx.page.handle.page;
 
-    const tableVO = getTableViewVO(pageConfig, config);
+    const tableVO = getFocusedQueryableStateListVo(ctx.focusedElement, pageConfig, config);
 
-    if(!tableVO) {
-      return {
-        cody: `I can't find a table on the page ${pageConfig.name}`,
-        type: CodyResponseType.Error
-      }
+    if(playIsCodyError(tableVO)) {
+      return tableVO;
     }
 
     const tableVoSchema = cloneDeepJSON(tableVO.schema);

@@ -12,6 +12,7 @@ import {
 } from "@cody-play/infrastructure/cody/node-traversing/play-make-node-record-with-defaults";
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
 import {toSingularItemName} from "@event-engine/infrastructure/nlp/to-singular";
+import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
 
 const TEXT = "Add a new page with a table called ";
 
@@ -23,7 +24,7 @@ export const AddPageWithTable: Instruction = {
   execute: async (input: string, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
 
     // Add a new page
-    const pageName = input.replace(TEXT, "").trim();
+    const pageName = getLabelFromInstruction(input, TEXT);
     const pageFQCN = `${names(config.defaultService).className}.${names(pageName).className}`;
     const newPageRoute = `/${names(pageName).fileName}`;
 

@@ -8,6 +8,7 @@ import {showTitle} from "@frontend/util/schema/show-title";
 import {merge} from "lodash/fp";
 import {informationTitle} from "@frontend/util/information/titelize";
 import {FocusedElement} from "@cody-play/state/focused-element";
+import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
 
 const getViewName = (v: ViewComponent): string => {
   return typeof v === "string" ? v : v.view;
@@ -59,7 +60,7 @@ const isActive = (focused?: FocusedElement): boolean => {
     return false;
   }
 
-  return focused.type === "viewTitle" || focused.type === "stateView" || focused.type === "formView";
+  return focused.type === "viewTitle" || focused.type === "stateView" || focused.type === "formView" || focused.type === "table";
 }
 
 export const ChangeViewTitleProvider: InstructionProvider = {
@@ -79,12 +80,12 @@ export const ChangeViewTitleProvider: InstructionProvider = {
     const instructions: Instruction[] = [];
 
     instructions.push({
-      text: `Change label to `,
+      text: `Change title to `,
       icon: <FormatText />,
       isActive: context => isActive(context.focusedElement),
       match: input => input.startsWith('Change label to '),
       execute: async (input, ctx, dispatch, config1) => {
-        const label = input.replace(`Change label to `, '').trim();
+        const label = getLabelFromInstruction(input, `Change title to `);
 
         changeViewTitle(label, getViewName(informationViewComponent), page, dispatch, config1);
 

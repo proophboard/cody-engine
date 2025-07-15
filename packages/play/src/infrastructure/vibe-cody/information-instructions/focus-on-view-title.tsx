@@ -1,15 +1,17 @@
 import {Instruction, InstructionProvider} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
-import {getPageTitle, PageDefinition} from "@frontend/app/pages/page-definitions";
 import {Target} from "mdi-material-ui";
 import {UiSchema} from "@rjsf/utils";
 import {PlayViewComponentConfig} from "@cody-play/state/types";
 import {merge} from "lodash/fp";
 import {informationTitle} from "@frontend/util/information/titelize";
-import {isListDescription, isQueryableStateDescription} from "@event-engine/descriptions/descriptions";
+import {
+  isQueryableStateDescription,
+  isQueryableStateListDescription
+} from "@event-engine/descriptions/descriptions";
 import {isFormView} from "@cody-play/infrastructure/vibe-cody/utils/view/is-form-view";
 
 
-export const FocusOnViewTitleProvider: InstructionProvider = {
+export const FocusOnViewProvider: InstructionProvider = {
   isActive: context => !context.focusedElement,
   provide: (context, config) => {
     const instructions: Instruction[] = [];
@@ -34,7 +36,7 @@ export const FocusOnViewTitleProvider: InstructionProvider = {
           const uiSchema = merge(information.uiSchema || {}, uiSchemaOverride || {});
 
           const title = informationTitle(information, uiSchema);
-          const TEXT = `Focus on view title ${title}`;
+          const TEXT = `Focus on view ${title}`;
 
           instructions.push({
             text: TEXT,
@@ -47,7 +49,9 @@ export const FocusOnViewTitleProvider: InstructionProvider = {
               ctx.setFocusedElement({
                 id: information.desc.name,
                 name: title,
-                type: isQueryableStateDescription(information.desc) ? isFormView(comp) ? "formView" : "stateView" : "viewTitle"
+                type: isQueryableStateDescription(information.desc)
+                  ? isFormView(comp) ? "formView" : "stateView"
+                  : isQueryableStateListDescription(information.desc) ? "table" : "viewTitle"
               })
 
               return {

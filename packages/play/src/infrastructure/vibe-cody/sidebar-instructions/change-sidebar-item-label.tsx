@@ -5,6 +5,7 @@ import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {PlayTopLevelPage} from "@cody-play/state/types";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {FormatText} from "mdi-material-ui";
+import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
 
 const TEXT = "Change label to ";
 
@@ -14,7 +15,7 @@ export const ChangeSidebarItemLabel: Instruction = {
   isActive: context => context.focusedElement?.type === "sidebarItem",
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config) => {
-    const label = input.replace(TEXT, '').trim();
+    const label = getLabelFromInstruction(input, TEXT);
 
     const {focusedElement} = ctx;
 

@@ -29,6 +29,7 @@ import {playIsTopLevelPage} from "@cody-play/infrastructure/cody/ui/play-is-top-
 import {
   getRedirectAfterDeletePage
 } from "@cody-play/infrastructure/vibe-cody/utils/navigate/get-redirect-after-delete-page";
+import {getFocusedStateVO} from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-state-v-o";
 
 const TEXT = `Place a delete button above the view.`;
 
@@ -36,19 +37,15 @@ export const DeleteState: Instruction = {
   text: TEXT,
   icon: <TrashCanOutline />,
   noInputNeeded: true,
-  isActive: (context, config) => isStateViewFocused(context.focusedElement),
+  isActive: (context, config) => isStateViewFocused(context.focusedElement, context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config, navigateTo) => {
     const page = ctx.page.handle.page;
 
-    const stateVO = config.types[ctx.focusedElement!.id];
+    const stateVO = getFocusedStateVO(ctx.focusedElement, ctx.page.handle.page, config);
 
-    if(!stateVO) {
-      return {
-        cody: `I can't find the information ${ctx.focusedElement!.id} in the types registry.`,
-        details: `That seems to be a bug in Cody Play. Please contact the prooph board team!`,
-        type: CodyResponseType.Error
-      }
+    if(playIsCodyError(stateVO)) {
+      return stateVO;
     }
 
     const stateVoSchema = cloneDeepJSON(stateVO.schema);
@@ -58,11 +55,7 @@ export const DeleteState: Instruction = {
     const cmdName = `Delete ${stateLabel}`;
     const eventName = `${stateLabel} Deleted`;
 
-
-
     const desc = stateVO.desc;
-
-
 
     if(!isQueryableStateDescription(desc)) {
       return {
@@ -77,9 +70,11 @@ export const DeleteState: Instruction = {
     cmdSchema[desc.identifier] = 'string|format:uuid'
 
     const cmdUiSchema: UiSchema = {
+      "ui:description": `Do you really want to delete the ${playNodeLabel(stateVO.desc.name)}?`,
       "ui:button": {
-        "label": "Delete",
-        "icon": "trash-can-outline"
+        "label": "Yes",
+        "icon": "trash-can-outline",
+        "color": "error"
       },
       "ui:form": {
         "successRedirect": getRedirectAfterDeletePage(page, config).name
@@ -192,7 +187,6 @@ export const DeleteState: Instruction = {
       type: 'command',
       command: `${names(config.defaultService).className}.${names(cmdName).className}`,
       data: `$> page|data('${registryIdToDataReference(stateVO.desc.name)}', {})|pick('${desc.identifier}')`,
-      directSubmit: true,
       button: {
         label: `Delete`,
         icon: 'trash-can-outline',

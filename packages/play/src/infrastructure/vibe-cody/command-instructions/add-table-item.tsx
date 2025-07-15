@@ -1,7 +1,6 @@
 import {
   InstructionExecutionCallback, InstructionProvider
 } from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
-import {getTableViewVO} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 import {CodyResponse, CodyResponseType, NodeType} from "@proophboard/cody-types";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {names} from "@event-engine/messaging/helpers";
@@ -25,7 +24,10 @@ import {isJsonSchemaArray} from "@cody-play/infrastructure/vibe-cody/utils/json-
 import {
   playGetProophBoardInfoFromDescription
 } from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
-
+import {
+  getFocusedQueryableStateListVo
+} from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
+import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-focused";
 
 const TEXT = "Place a button above the table to add a new ";
 
@@ -51,13 +53,10 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
 
   const pageConfig = ctx.page.handle.page;
 
-  const tableVO = getTableViewVO(pageConfig, config);
+  const tableVO = getFocusedQueryableStateListVo(ctx.focusedElement, pageConfig, config);
 
-  if(!tableVO) {
-    return {
-      cody: `I can't find a table on the page ${pageConfig.name}`,
-      type: CodyResponseType.Error
-    }
+  if(playIsCodyError(tableVO)) {
+    return tableVO;
   }
 
   const tableVoSchema = cloneDeepJSON(tableVO.schema);
@@ -242,14 +241,14 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
 }
 
 export const AddTableItemProvider: InstructionProvider = {
-  isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
+  isActive: (context, config) => isTableFocused(context.focusedElement, context.page.handle.page, config),
   provide: (ctx, config, env) => {
     const pageConfig = ctx.page.handle.page;
 
-    const tableVO = getTableViewVO(pageConfig, config);
+    const tableVO = getFocusedQueryableStateListVo(ctx.focusedElement, pageConfig, config);
 
-    if(!tableVO) {
-      return []
+    if(playIsCodyError(tableVO)) {
+      return [];
     }
 
     const itemInfo = config.types[(tableVO.desc as ListDescription).itemType];
@@ -267,7 +266,7 @@ export const AddTableItemProvider: InstructionProvider = {
         text,
         icon: <PlusBoxOutline />,
         noInputNeeded: true,
-        isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
+        isActive: (context, config) => isTableFocused(context.focusedElement, context.page.handle.page, config),
         match: input => input.startsWith(TEXT),
         execute: makeAddTableItemFunc(text),
       }

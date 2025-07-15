@@ -53,7 +53,7 @@ import {ChangePageTitleProvider} from "@cody-play/infrastructure/vibe-cody/page-
 import {FocusOnPageTitleProvider} from "@cody-play/infrastructure/vibe-cody/page-instructions/focus-on-page-title";
 import {ChangeViewTitleProvider} from "@cody-play/infrastructure/vibe-cody/information-instructions/change-view-title";
 import {
-  FocusOnViewTitleProvider
+  FocusOnViewProvider
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/focus-on-view-title";
 import {AddPageWithTable} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-page-with-table";
 import {OpenRowOnDetailsPage} from "@cody-play/infrastructure/vibe-cody/page-instructions/open-row-on-details-page";
@@ -70,7 +70,7 @@ export const instructions: InstructionOrProvider[] = [
   ChangeAppName,
   /* View Instructions */
   ChangeViewTitleProvider,
-  FocusOnViewTitleProvider,
+  FocusOnViewProvider,
   EditState,
   DeleteState,
   /* Table Instructions */

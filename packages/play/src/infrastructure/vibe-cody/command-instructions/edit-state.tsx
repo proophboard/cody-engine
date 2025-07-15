@@ -27,6 +27,7 @@ import {isStateViewFocused} from "@cody-play/infrastructure/vibe-cody/utils/type
 import {findProjectionType} from "@cody-play/infrastructure/vibe-cody/utils/types/find-projection-type";
 import {CommandAction} from "@frontend/app/components/core/form/types/action";
 import {JSONSchema7} from "json-schema";
+import {getFocusedStateVO} from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-state-v-o";
 
 const TEXT = `Place an edit button above the view.`;
 
@@ -34,18 +35,14 @@ export const EditState: Instruction = {
   text: TEXT,
   icon: <PencilPlusOutline />,
   noInputNeeded: true,
-  isActive: (context, config) => isStateViewFocused(context.focusedElement),
+  isActive: (context, config) => isStateViewFocused(context.focusedElement, context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config, navigateTo) => {
 
-    const stateVO = config.types[ctx.focusedElement!.id];
+    const stateVO = getFocusedStateVO(ctx.focusedElement, ctx.page.handle.page, config);
 
-    if(!stateVO) {
-      return {
-        cody: `I can't find the information ${ctx.focusedElement!.id} in the types registry.`,
-        details: `That seems to be a bug in Cody Play. Please contact the prooph board team!`,
-        type: CodyResponseType.Error
-      }
+    if(playIsCodyError(stateVO)) {
+      return stateVO;
     }
 
     const stateVoSchema = cloneDeepJSON(stateVO.schema);

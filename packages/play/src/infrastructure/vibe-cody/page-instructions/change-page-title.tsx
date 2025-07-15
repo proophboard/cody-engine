@@ -4,6 +4,7 @@ import {PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-se
 import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {Eye, EyeOff, FormatText} from "mdi-material-ui";
 import {getPageTitle, PageDefinition} from "@frontend/app/pages/page-definitions";
+import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
 
 const changePageTitle = (title: string, page: PlayPageDefinition, dispatch: PlayConfigDispatch, config: CodyPlayConfig) => {
   dispatch({
@@ -32,7 +33,7 @@ export const ChangePageTitleProvider: InstructionProvider = {
       isActive: context => context.focusedElement?.type === "pageTitle",
       match: input => input.startsWith('Change label to '),
       execute: async (input, ctx, dispatch, config1) => {
-        const label = input.replace(`Change label to `, '').trim();
+        const label = getLabelFromInstruction(input, `Change label to `);
 
         changePageTitle(label, page, dispatch, config1);
 

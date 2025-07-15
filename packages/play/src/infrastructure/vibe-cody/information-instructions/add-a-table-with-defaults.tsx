@@ -16,6 +16,7 @@ import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/util
 import {getRouteParamsFromRoute} from "@cody-play/infrastructure/vibe-cody/utils/navigate/get-route-params-from-route";
 import {AndFilter, Filter} from "@app/shared/value-object/query/filter-types";
 import {toSingularItemName} from "@event-engine/infrastructure/nlp/to-singular";
+import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
 
 const TEXT = "I'd like to see a table of ";
 
@@ -26,7 +27,7 @@ export const AddATableWithDefaults: Instruction = {
   match: input => input.startsWith(TEXT),
   execute: withNavigateToProcessing(async (input, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyInstructionResponse> => {
     const pageConfig = ctx.page.handle.page;
-    const tableName = input.replace(TEXT, '').trim();
+    const tableName = getLabelFromInstruction(input, TEXT);
     const tableNameNames = names(tableName);
     const itemNames = names(toSingularItemName(tableName));
     const voIdentifier = itemNames.propertyName + 'Id';

@@ -1,5 +1,4 @@
 import {Instruction} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
-import {getTableViewVO} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 import {PencilPlusOutline} from "mdi-material-ui";
 import {CodyResponseType, NodeType} from "@proophboard/cody-types";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
@@ -25,6 +24,10 @@ import {convertNodeToJs} from "@cody-play/infrastructure/cody/node-traversing/co
 import {ActionTableColumn} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {PropMapping} from "@app/shared/rule-engine/configuration";
 import {isActionsColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/is-actions-column";
+import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-focused";
+import {
+  getFocusedQueryableStateListVo
+} from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
 
 const TEXT = `Place an edit button at the end of each table row`;
 
@@ -32,18 +35,15 @@ export const EditTableItem: Instruction = {
   text: TEXT,
   icon: <PencilPlusOutline />,
   noInputNeeded: true,
-  isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
+  isActive: (context, config) => isTableFocused(context.focusedElement, context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config, navigateTo) => {
     const pageConfig = ctx.page.handle.page;
 
-    const tableVO = getTableViewVO(pageConfig, config);
+    const tableVO = getFocusedQueryableStateListVo(ctx.focusedElement, pageConfig, config);
 
-    if(!tableVO) {
-      return {
-        cody: `I can't find a table on the page ${pageConfig.name}`,
-        type: CodyResponseType.Error
-      }
+    if(playIsCodyError(tableVO)) {
+      return tableVO;
     }
 
     const tableVoSchema = cloneDeepJSON(tableVO.schema);
