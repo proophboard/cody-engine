@@ -11,6 +11,7 @@ import {
 } from "@cody-play/infrastructure/vibe-cody/utils/navigate/remove-last-part-from-route-if-static";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {PlaySubLevelPage} from "@cody-play/state/types";
+import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
 
 const TEXT = `Add a new tab called `;
 
@@ -21,7 +22,7 @@ export const AddANewTab: Instruction = {
   match: input => input.startsWith(TEXT),
   execute: withNavigateToProcessing(async (input: string, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
     const pageConfig = ctx.page.handle.page;
-    const tabLabel = input.replace(TEXT, "").trim();
+    const tabLabel = getLabelFromInstruction(input, TEXT);
     const tabNames = names(tabLabel);
 
     let tabGroup = '';
@@ -58,12 +59,13 @@ export const AddANewTab: Instruction = {
 
     const page:PlaySubLevelPage = {
       name: `${service}.${tabNames.className}`,
+      title: pageConfig.title || playNodeLabel(pageConfig.name),
       service: service,
       route: `${baseRoute}/${tabNames.fileName}`,
       commands: [],
       components: [],
       topLevel: false,
-      breadcrumb: playNodeLabel(tabLabel),
+      breadcrumb: pageConfig.breadcrumb,
       routeParams: routeParams,
       tab: {
         group: tabGroup,
