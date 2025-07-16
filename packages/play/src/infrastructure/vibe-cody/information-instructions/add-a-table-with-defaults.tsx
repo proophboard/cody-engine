@@ -17,6 +17,13 @@ import {getRouteParamsFromRoute} from "@cody-play/infrastructure/vibe-cody/utils
 import {AndFilter, Filter} from "@app/shared/value-object/query/filter-types";
 import {toSingularItemName} from "@event-engine/infrastructure/nlp/to-singular";
 import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
+import {
+  findDataSelectTypeForRouteParam
+} from "@cody-play/infrastructure/vibe-cody/utils/types/find-data-select-type-for-route-param";
+import {uiReadOnly} from "@cody-play/infrastructure/vibe-cody/utils/ui-schema/ui-read-only";
+import {
+  makeDataSelectWidgetConfig
+} from "@cody-play/infrastructure/vibe-cody/utils/ui-schema/make-data-select-widget-config";
 
 const TEXT = "I'd like to see a table of ";
 
@@ -49,10 +56,21 @@ export const AddATableWithDefaults: Instruction = {
     }
     const query: Record<string, string> = {};
     let filter: Filter = {any: true};
+    let itemsUiSchema: Record<string, any> = {};
+    const columns: string[] = [];
 
     routeParams.forEach(p => {
+      const dataSelectType = findDataSelectTypeForRouteParam(p, pageConfig.route, config);
+
       items[p] = "string|format:uuid";
       query[p] = "string|format:uuid";
+      itemsUiSchema[p] = dataSelectType
+        ? uiReadOnly(makeDataSelectWidgetConfig(dataSelectType, config))
+        : {"ui:widget": "hidden"};
+
+      if(dataSelectType) {
+        columns.push(p);
+      }
     });
 
     if(routeParams.length === 1) {
@@ -74,10 +92,9 @@ export const AddATableWithDefaults: Instruction = {
       },
       uiSchema: {
         "ui:table": {
-          "columns": [
-
-          ]
-        }
+          "columns": columns
+        },
+        "items": itemsUiSchema,
       },
       querySchema: query,
       resolve: {
