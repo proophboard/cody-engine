@@ -51,8 +51,8 @@ export const AddATableWithDefaults: Instruction = {
     let filter: Filter = {any: true};
 
     routeParams.forEach(p => {
-      items[p] = "string";
-      query[p] = "string";
+      items[p] = "string|format:uuid";
+      query[p] = "string|format:uuid";
     });
 
     if(routeParams.length === 1) {

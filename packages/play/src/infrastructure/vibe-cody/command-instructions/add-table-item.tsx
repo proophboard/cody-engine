@@ -28,6 +28,7 @@ import {
   getFocusedQueryableStateListVo
 } from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
 import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-focused";
+import {getRouteParamsFromRoute} from "@cody-play/infrastructure/vibe-cody/utils/navigate/get-route-params-from-route";
 
 const TEXT = "Place a button above the table to add a new ";
 
@@ -52,6 +53,7 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
   const eventName = `${btnLabel} Added`;
 
   const pageConfig = ctx.page.handle.page;
+  const routeParams = getRouteParamsFromRoute(pageConfig.route);
 
   const tableVO = getFocusedQueryableStateListVo(ctx.focusedElement, pageConfig, config);
 
@@ -103,10 +105,17 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
     "ui:widget": "hidden"
   };
 
+  const initialData: Record<string, string> = {
+    [desc.itemIdentifier]: "$> uuid()"
+  };
+
+  routeParams.forEach(p => {
+    cmdUiSchema[p] = {"ui:widget": "hidden"};
+    initialData[p] = `$> routeParams.${p}`;
+  });
+
   cmdUiSchema["ui:form"] = {
-    "data": {
-      [desc.itemIdentifier]: "$> uuid()"
-    }
+    "data": initialData
   }
 
   const editedCtx = getEditedContextFromConfig(config);
