@@ -3,7 +3,7 @@ import {Action as AppAction, ActionContainerInfo} from "@frontend/app/components
 import {isSameAction} from "@cody-play/infrastructure/vibe-cody/utils/set-button-property";
 import {playDefinitionIdFromFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
-const updateTableButtonPosition = (
+const updateViewButtonPosition = (
   config: CodyPlayConfig,
   dispatch: (a: Action) => void,
   containerInfo: ActionContainerInfo,
@@ -48,4 +48,4 @@ const updateTableButtonPosition = (
     },
   });
 };
-export default updateTableButtonPosition;
+export default updateViewButtonPosition;

@@ -4,7 +4,9 @@ import {
   AddATableWithDefaults
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/add-a-table-with-defaults";
 import {AddColumnsToTable} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
-import {AddTableItem} from "@cody-play/infrastructure/vibe-cody/command-instructions/add-table-item";
+import {
+  AddTableItemProvider
+} from "@cody-play/infrastructure/vibe-cody/command-instructions/add-table-item";
 import {ChangeButtonLabel} from "@cody-play/infrastructure/vibe-cody/button-instructions/change-button-label";
 import {
   ChangeButtonVariantProvider
@@ -51,28 +53,30 @@ import {ChangePageTitleProvider} from "@cody-play/infrastructure/vibe-cody/page-
 import {FocusOnPageTitleProvider} from "@cody-play/infrastructure/vibe-cody/page-instructions/focus-on-page-title";
 import {ChangeViewTitleProvider} from "@cody-play/infrastructure/vibe-cody/information-instructions/change-view-title";
 import {
-  FocusOnViewTitleProvider
+  FocusOnViewProvider
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/focus-on-view-title";
 import {AddPageWithTable} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-page-with-table";
 import {OpenRowOnDetailsPage} from "@cody-play/infrastructure/vibe-cody/page-instructions/open-row-on-details-page";
 import {AddANewTab} from "@cody-play/infrastructure/vibe-cody/page-instructions/add-a-new-tab";
 import {UndoLastAction} from "@cody-play/infrastructure/vibe-cody/app-instructions/undo-last-action";
 import {ProvideTypeSuggestions} from "@cody-play/infrastructure/vibe-cody/information-instructions/suggest-types";
+import {EditState} from "@cody-play/infrastructure/vibe-cody/command-instructions/edit-state";
+import {DeleteState} from "@cody-play/infrastructure/vibe-cody/command-instructions/delete-state";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
 export const instructions: InstructionOrProvider[] = [
   /* App Settings */
   ChangeAppName,
-  /* Theme */
-  ChangeThemeProvider,
   /* View Instructions */
   ChangeViewTitleProvider,
-  FocusOnViewTitleProvider,
+  FocusOnViewProvider,
+  EditState,
+  DeleteState,
   /* Table Instructions */
   AddATableWithDefaults,
   AddColumnsToTable,
-  AddTableItem,
+  AddTableItemProvider,
   BatchDeleteRows,
   EditTableItem,
   RenameTableRowDataTypeProvider,
@@ -104,6 +108,8 @@ export const instructions: InstructionOrProvider[] = [
   ChangeSidebarGroupLabel,
   MoveSidebarGroupItemProvider,
   FocusOnSidebarItemProvider,
+  /* Theme */
+  ChangeThemeProvider,
   /* Undo */
   UndoLastAction,
 ]

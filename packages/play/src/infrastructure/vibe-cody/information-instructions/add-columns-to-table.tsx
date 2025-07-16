@@ -5,7 +5,7 @@ import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/confi
 import {
   isListDescription,
   isQueryableStateListDescription,
-  isStateDescription
+  isStateDescription, ListDescription
 } from "@event-engine/descriptions/descriptions";
 import {Names, names} from "@event-engine/messaging/helpers";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
@@ -28,33 +28,33 @@ import {
 import {JSONSchema7} from "json-schema";
 import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
 import {withId} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/with-id";
-import {CodyResponseException} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
+import {CodyResponseException, playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {merge} from "lodash/fp";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
 import {addNewColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/add-new-column";
 import {UiSchema} from "@rjsf/utils";
-import nlp from "compromise";
+import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-focused";
+import {
+  getFocusedQueryableStateListVo
+} from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
 
 const TEXT = 'Add the following columns to the table: ';
 
 export const AddColumnsToTable: Instruction = {
   text: TEXT,
   icon: <TableColumn />,
-  isActive: (context, config) => !context.focusedElement && !context.selectedInstruction && !!getTableViewVO(context.page.handle.page, config),
+  isActive: (context, config) => !context.selectedInstruction && isTableFocused(context.focusedElement, context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
   allowSubSuggestions: true,
   execute: withNavigateToProcessing(async (input, ctx, dispatch, config): Promise<CodyResponse> => {
 
     const pageConfig = ctx.page.handle.page;
 
-    const tableVO = getTableViewVO(pageConfig, config);
+    const tableVO = getFocusedQueryableStateListVo(ctx.focusedElement, pageConfig, config);
 
-    if(!tableVO) {
-      return {
-        cody: `I can't find a table on the page ${pageConfig.name}`,
-        type: CodyResponseType.Error
-      }
+    if(playIsCodyError(tableVO)) {
+      return tableVO;
     }
 
     const tableVoSchema = new Schema(cloneDeepJSON(tableVO.schema) as JSONSchema7, true);
@@ -67,8 +67,7 @@ export const AddColumnsToTable: Instruction = {
       itemFQCN = playFQCNFromDefinitionId(tableVoSchema.getListItemsSchema(itemSchema).getRef());
     } else {
       itemSchema = tableVoSchema.getListItemsSchema(itemSchema);
-      itemFQCN = tableVO.desc.name + 'Item'
-
+      itemFQCN = (tableVO.desc as ListDescription).itemType;
     }
 
     const itemInfo = config.types[itemFQCN];
@@ -197,38 +196,6 @@ export const AddColumnsToTable: Instruction = {
       cody: `Alright, I've added the columns.`
     }
   })
-}
-
-export const getTableViewVO = (page: PlayPageDefinition, config: CodyPlayConfig): PlayInformationRuntimeInfo | null => {
-  if(!page.components.length) {
-    return null;
-  }
-
-  const tables: PlayInformationRuntimeInfo[] = [];
-
-  for (const component of page.components) {
-    const viewName = typeof component === "string" ? component : component.view;
-
-    const view = config.views[viewName];
-
-    if(typeof view === "object" && view.information) {
-      if(!config.types[view.information]) {
-        return null;
-      }
-
-      const voRuntimeInfo = config.types[view.information];
-
-      if(isQueryableStateListDescription(voRuntimeInfo.desc)) {
-        tables.push(voRuntimeInfo)
-      }
-    }
-  }
-
-  if(tables.length === 1) {
-    return tables.pop() as PlayInformationRuntimeInfo;
-  }
-
-  return null;
 }
 
 const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boolean, rootFQCN: string, itemSchema: Schema, itemUiSchema: UiSchema, config: CodyPlayConfig, serviceNames: Names, ns: NamespaceNames, title?: string, isList?: boolean) => {

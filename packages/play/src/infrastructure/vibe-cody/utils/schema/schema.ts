@@ -268,6 +268,22 @@ export class Schema {
       return candidates;
     }
 
+    const titleCandidates = this.getObjectProperties().filter(prop => {
+      if(prop.toLowerCase().includes('title')) {
+        const propSchema = this.getObjectPropertySchema(prop, undefined);
+
+        if(!propSchema) {
+          return false;
+        }
+
+        return propSchema.isString() && !propSchema.isString('uuid');
+      }
+    })
+
+    if(titleCandidates.length) {
+      return titleCandidates;
+    }
+
     return this.getObjectProperties().filter(prop => {
       const propSchema = this.getObjectPropertySchema(prop, undefined);
 
@@ -275,8 +291,10 @@ export class Schema {
         return false;
       }
 
-      return propSchema.isString() && !propSchema.isString('uuid');
-    })
+      return propSchema.isString()
+        && !propSchema.isString('uuid')
+        && !propSchema.isString('data-url')
+    }).slice(0, 1);
   }
 
   public getObjectProperties(): string[] {

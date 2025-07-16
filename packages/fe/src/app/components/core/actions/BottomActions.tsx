@@ -26,7 +26,7 @@ import {
 } from '@cody-play/app/types/enums/EDropzoneId';
 import moveButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/move-button-position';
 import updatePageButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-page-button-position';
-import updateTableButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-table-button-position';
+import updateViewButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-view-button-position';
 import {FocusedButton} from "@cody-play/state/focused-element";
 
 interface OwnProps {
@@ -90,7 +90,8 @@ const BottomActions = (props: BottomActionsProps) => {
 
       // handle only the dropped elements in the bottom actions
       if (
-        dropzonePosition !== 'table-bottom' &&
+        dropzonePosition !== 'view-bottom' &&
+        dropzonePosition !== 'command-bottom' &&
         dropzonePosition !== 'page-bottom'
       ) {
         return;
@@ -99,11 +100,11 @@ const BottomActions = (props: BottomActionsProps) => {
       // button was moved inside table view
       if (
         prevContainerInfoType === 'view' &&
-        dropzonePosition === 'table-bottom' &&
+        dropzonePosition === 'view-bottom' &&
         containerInfo.type === 'view'
       ) {
         const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[over.id as string];
-        updateTableButtonPosition(
+        updateViewButtonPosition(
           config,
           dispatch,
           containerInfo,
@@ -138,7 +139,7 @@ const BottomActions = (props: BottomActionsProps) => {
           dropzonePosition === 'page-bottom' &&
           containerInfo.type === 'page') ||
         (prevContainerInfoType === 'page' &&
-          dropzonePosition === 'table-bottom' &&
+          dropzonePosition === 'view-bottom' &&
           containerInfo.type === 'view')
       ) {
         const buttonPosition = MAP_POSITION_TO_DROPZONE_ID[over.id as string];

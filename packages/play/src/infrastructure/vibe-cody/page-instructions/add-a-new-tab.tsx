@@ -11,6 +11,7 @@ import {
 } from "@cody-play/infrastructure/vibe-cody/utils/navigate/remove-last-part-from-route-if-static";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {PlaySubLevelPage} from "@cody-play/state/types";
+import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
 
 const TEXT = `Add a new tab called `;
 
@@ -21,7 +22,7 @@ export const AddANewTab: Instruction = {
   match: input => input.startsWith(TEXT),
   execute: withNavigateToProcessing(async (input: string, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
     const pageConfig = ctx.page.handle.page;
-    const tabLabel = input.replace(TEXT, "").trim();
+    const tabLabel = getLabelFromInstruction(input, TEXT);
     const tabNames = names(tabLabel);
 
     let tabGroup = '';
@@ -29,6 +30,16 @@ export const AddANewTab: Instruction = {
     let basePath = '';
     const routeParams = getRouteParamsFromRoute(pageConfig.route);
     const service = playServiceFromFQCN(pageConfig.name);
+    const hiddenViews = pageConfig.components.map(v => {
+      if(typeof v === "string") {
+        return {
+          view: v,
+          hidden: true
+        }
+      } else {
+        return {...v, hidden: true}
+      }
+    })
 
     const pageNames = names(playNodeLabel(pageConfig.name));
 
@@ -56,14 +67,23 @@ export const AddANewTab: Instruction = {
       basePath = removeLastPartFromRouteIfStatic(ctx.page.pathname);
     }
 
+    const titleOrTitleExpr: {title?: string, "title:expr"?: string} = {};
+
+    if(pageConfig['title:expr']) {
+      titleOrTitleExpr['title:expr'] = pageConfig['title:expr'];
+    } else {
+      titleOrTitleExpr['title'] = pageConfig.title || playNodeLabel(pageConfig.name);
+    }
+
     const page:PlaySubLevelPage = {
       name: `${service}.${tabNames.className}`,
+      ...titleOrTitleExpr,
       service: service,
       route: `${baseRoute}/${tabNames.fileName}`,
       commands: [],
-      components: [],
+      components: hiddenViews,
       topLevel: false,
-      breadcrumb: playNodeLabel(tabLabel),
+      breadcrumb: pageConfig.breadcrumb,
       routeParams: routeParams,
       tab: {
         group: tabGroup,

@@ -3,7 +3,13 @@ import {Context} from "../../context";
 import {isCodyError, parseJsonMetadata} from "@proophboard/cody-utils";
 import {ShorthandObject} from "@proophboard/schema-to-typescript/lib/jsonschema";
 import {detectService, getDefaultService} from "../detect-service";
-import {definitionId, definitionIdFromFQCN, FQCNFromDefinitionId, normalizeRefs} from "./definitions";
+import {
+  definitionId,
+  definitionIdFromFQCN,
+  FQCNFromDefinitionId,
+  nodeLabelFromFQCN,
+  normalizeRefs, renameFQCN
+} from "./definitions";
 import {names} from "@event-engine/messaging/helpers";
 import {
   isListDescription,
@@ -22,6 +28,7 @@ import {JSONSchema7} from "json-schema-to-ts";
 import {isInlineItemsArraySchema} from "@app/shared/utils/schema-checks";
 import {normalizeProjectionConfig} from "@app/shared/rule-engine/projection-config";
 import {normalizeServerUiSchema} from "@frontend/util/schema/normalize-ui-schema";
+import {toSingularItemName} from "@event-engine/infrastructure/nlp/to-singular";
 
 export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | CodyResponse => {
   const meta = parseJsonMetadata<ValueObjectMetadataRaw>(vo);
@@ -163,7 +170,10 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
       convertedMeta.identifier = meta.identifier;
     }
 
-    convertedMeta.itemType = FQCNFromDefinitionId((convertedMeta.schema as any)['$id'] as string) + 'Item';
+    const listFQCN = FQCNFromDefinitionId((convertedMeta.schema as any)['$id'] as string);
+    const itemLabel = toSingularItemName(nodeLabelFromFQCN(listFQCN));
+
+    convertedMeta.itemType =  renameFQCN(listFQCN, itemLabel);
   }
 
   if(isQueryable) {

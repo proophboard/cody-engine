@@ -3,7 +3,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {Context} from "../../context";
 import {CodyResponse, Node} from "@proophboard/cody-types";
 import {detectService} from "../detect-service";
-import {isCodyError} from "@proophboard/cody-utils";
+import {camelCaseToTitle, isCodyError} from "@proophboard/cody-utils";
 import {namespaceToFilePath, namespaceToJSONPointer} from "./namespace";
 import {ValueObjectMetadata} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {isPropertyRef, splitPropertyRef} from "@event-engine/messaging/resolve-refs";
@@ -46,6 +46,27 @@ export const definitionIdFromFQCN = (fqcn: string): string => {
     .split(".")
     .map(r => names(r).fileName)
     .join("/");
+}
+
+export const nodeLabelFromFQCN = (fqcn: string): string => {
+  const parts = fqcn.split(".");
+
+  const last = parts.pop();
+
+  if(!last) {
+    return '';
+  }
+
+  return camelCaseToTitle(last);
+}
+
+export const renameFQCN = (fqcn: string, newTypeName: string): string => {
+  const parts = fqcn.split(".");
+
+  parts.pop();
+  parts.push(names(newTypeName).className);
+
+  return parts.join(".");
 }
 
 export const splitVOFQCN = (fqcn: string): [string, string, string] => {

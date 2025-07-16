@@ -1,6 +1,5 @@
 import {Instruction, InstructionProvider} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {TrashCanOutline} from "mdi-material-ui";
-import {getTableViewVO} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 import {CodyResponseType} from "@proophboard/cody-types";
 import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
@@ -18,6 +17,11 @@ import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/util
 import {camelCaseToTitle} from "@cody-play/infrastructure/utils/string";
 import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-focused";
+import {
+  getFocusedQueryableStateListVo
+} from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
+import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 
 const makeRemoveColumn = (columnTitle: string, columnName: string): Instruction => {
   const TEXT = `Remove column ${columnTitle}`;
@@ -26,18 +30,15 @@ const makeRemoveColumn = (columnTitle: string, columnName: string): Instruction 
     text: TEXT,
     icon: <TrashCanOutline />,
     noInputNeeded: true,
-    isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
+    isActive: (context, config) => isTableFocused(context.focusedElement, context.page.handle.page, config),
     match: input => input.startsWith(TEXT),
     execute: withNavigateToProcessing(async (input, ctx, dispatch, config, navigateTo) => {
       const pageConfig = ctx.page.handle.page;
 
-      const tableVO = getTableViewVO(pageConfig, config);
+      const tableVO = getFocusedQueryableStateListVo(ctx.focusedElement, pageConfig, config);
 
-      if(!tableVO) {
-        return {
-          cody: `I can't find a table on the page ${pageConfig.name}`,
-          type: CodyResponseType.Error
-        }
+      if(playIsCodyError(tableVO)) {
+        return tableVO;
       }
 
       const tableVoSchema = new Schema(cloneDeepJSON(tableVO.schema) as JSONSchema7, true);
@@ -166,11 +167,11 @@ const getItemIdentifier = (tableVO: PlayInformationRuntimeInfo): string => {
 }
 
 export const RemoveColumnProvider: InstructionProvider = {
-  isActive: (context, config) => !context.focusedElement && !!getTableViewVO(context.page.handle.page, config),
+  isActive: (context, config) => isTableFocused(context.focusedElement, context.page.handle.page, config),
   provide: (context, config) => {
-    const tableVO = getTableViewVO(context.page.handle.page, config);
+    const tableVO = getFocusedQueryableStateListVo(context.focusedElement, context.page.handle.page, config);
 
-    if(!tableVO) {
+    if(playIsCodyError(tableVO)) {
       return [];
     }
 

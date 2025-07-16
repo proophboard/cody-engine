@@ -3,6 +3,7 @@ import {setButtonProperty} from "@cody-play/infrastructure/vibe-cody/utils/set-b
 import {FocusedButton} from "@cody-play/state/focused-element";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {FormatText} from "mdi-material-ui";
+import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
 
 const TEXT = "Change label to ";
 
@@ -12,7 +13,7 @@ export const ChangeButtonLabel: Instruction = {
   isActive: context => !!context.focusedElement && context.focusedElement.type === "button",
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx, dispatch, config) => {
-    const btnLabel = input.replace(TEXT, '').trim();
+    const btnLabel = getLabelFromInstruction(input, TEXT);
 
     const success = await setButtonProperty(
       ctx.focusedElement! as FocusedButton,

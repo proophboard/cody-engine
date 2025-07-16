@@ -5,6 +5,7 @@ import {PlayTopLevelPage} from "@cody-play/state/types";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import { PageNextOutline } from "mdi-material-ui";
+import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
 
 const TEXT = "Add a page called ";
 
@@ -14,7 +15,7 @@ export const AddAPageWithName: Instruction = {
   isActive: context => !context.focusedElement,
   match: input => input.startsWith(TEXT),
   execute: async (input: string, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyResponse> => {
-    const pageName = input.replace(TEXT, "").trim();
+    const pageName = getLabelFromInstruction(input, TEXT);
     const pageFQCN = `${names(config.defaultService).className}.${names(pageName).className}`;
     const newPageRoute = `/${names(pageName).fileName}`;
 

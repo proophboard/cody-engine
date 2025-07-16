@@ -15,6 +15,15 @@ import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definiti
 import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
 import {getRouteParamsFromRoute} from "@cody-play/infrastructure/vibe-cody/utils/navigate/get-route-params-from-route";
 import {AndFilter, Filter} from "@app/shared/value-object/query/filter-types";
+import {toSingularItemName} from "@event-engine/infrastructure/nlp/to-singular";
+import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
+import {
+  findDataSelectTypeForRouteParam
+} from "@cody-play/infrastructure/vibe-cody/utils/types/find-data-select-type-for-route-param";
+import {uiReadOnly} from "@cody-play/infrastructure/vibe-cody/utils/ui-schema/ui-read-only";
+import {
+  makeDataSelectWidgetConfig
+} from "@cody-play/infrastructure/vibe-cody/utils/ui-schema/make-data-select-widget-config";
 
 const TEXT = "I'd like to see a table of ";
 
@@ -25,9 +34,10 @@ export const AddATableWithDefaults: Instruction = {
   match: input => input.startsWith(TEXT),
   execute: withNavigateToProcessing(async (input, ctx: VibeCodyContext, dispatch, config, navigateTo): Promise<CodyInstructionResponse> => {
     const pageConfig = ctx.page.handle.page;
-    const tableName = input.replace(TEXT, '').trim();
+    const tableName = getLabelFromInstruction(input, TEXT);
     const tableNameNames = names(tableName);
-    const voIdentifier = tableNameNames.propertyName + 'ItemId';
+    const itemNames = names(toSingularItemName(tableName));
+    const voIdentifier = itemNames.propertyName + 'Id';
 
     const tableFQCN = `${names(config.defaultService).className}.App.${tableNameNames.className}`;
 
@@ -46,10 +56,21 @@ export const AddATableWithDefaults: Instruction = {
     }
     const query: Record<string, string> = {};
     let filter: Filter = {any: true};
+    let itemsUiSchema: Record<string, any> = {};
+    const columns: string[] = [];
 
     routeParams.forEach(p => {
-      items[p] = "string";
-      query[p] = "string";
+      const dataSelectType = findDataSelectTypeForRouteParam(p, pageConfig.route, config);
+
+      items[p] = "string|format:uuid";
+      query[p] = "string|format:uuid";
+      itemsUiSchema[p] = dataSelectType
+        ? uiReadOnly(makeDataSelectWidgetConfig(dataSelectType, config))
+        : {"ui:widget": "hidden"};
+
+      if(dataSelectType) {
+        columns.push(p);
+      }
     });
 
     if(routeParams.length === 1) {
@@ -71,10 +92,9 @@ export const AddATableWithDefaults: Instruction = {
       },
       uiSchema: {
         "ui:table": {
-          "columns": [
-
-          ]
-        }
+          "columns": columns
+        },
+        "items": itemsUiSchema,
       },
       querySchema: query,
       resolve: {

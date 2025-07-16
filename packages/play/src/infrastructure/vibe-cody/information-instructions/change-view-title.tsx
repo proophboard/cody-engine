@@ -3,11 +3,14 @@ import {PlayPageDefinition, PlayViewComponentConfig} from "@cody-play/state/type
 import {PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
 import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {Eye, EyeOff, FormatText} from "mdi-material-ui";
-import {getPageTitle, PageDefinition} from "@frontend/app/pages/page-definitions";
 import {ViewComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 import {showTitle} from "@frontend/util/schema/show-title";
 import {merge} from "lodash/fp";
 import {informationTitle} from "@frontend/util/information/titelize";
+import {FocusedElement} from "@cody-play/state/focused-element";
+import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
+import {isExpression} from "@cody-play/infrastructure/vibe-cody/utils/text/is-expression";
+import {omit} from "lodash";
 
 const getViewName = (v: ViewComponent): string => {
   return typeof v === "string" ? v : v.view;
@@ -26,18 +29,20 @@ const getInformationViewComponent = (infoFQCN: string, page: PlayPageDefinition,
 const changeViewTitle = (title: string, viewFQCN: string, page: PlayPageDefinition, dispatch: PlayConfigDispatch, config: CodyPlayConfig) => {
   let component = page.components.filter(v => getViewName(v) === viewFQCN).shift();
 
+  const prop = isExpression(title) ? 'ui:title:expr' : 'ui:title';
+
   if(!component || typeof component === "string") {
     component = {
       view: viewFQCN,
       uiSchema: {
-        'ui:title': title,
+        [prop]: title,
       }
     }
   } else {
     component = {
       ...component,
       uiSchema: {
-        ...(component.uiSchema || {}),
+        ...omit(component.uiSchema || {}, ['ui:title', 'ui:title:expr']),
         'ui:title': title
       }
     }
@@ -54,8 +59,16 @@ const changeViewTitle = (title: string, viewFQCN: string, page: PlayPageDefiniti
   })
 }
 
+const isActive = (focused?: FocusedElement): boolean => {
+  if(!focused) {
+    return false;
+  }
+
+  return focused.type === "viewTitle" || focused.type === "stateView" || focused.type === "formView" || focused.type === "table";
+}
+
 export const ChangeViewTitleProvider: InstructionProvider = {
-  isActive: context => context.focusedElement?.type === "viewTitle",
+  isActive: context => isActive(context.focusedElement),
   provide: (context, config) => {
 
     const page = context.page.handle.page;
@@ -71,12 +84,12 @@ export const ChangeViewTitleProvider: InstructionProvider = {
     const instructions: Instruction[] = [];
 
     instructions.push({
-      text: `Change label to `,
+      text: `Change title to `,
       icon: <FormatText />,
-      isActive: context => context.focusedElement?.type === "viewTitle",
+      isActive: context => isActive(context.focusedElement),
       match: input => input.startsWith('Change label to '),
       execute: async (input, ctx, dispatch, config1) => {
-        const label = input.replace(`Change label to `, '').trim();
+        const label = getLabelFromInstruction(input, `Change title to `);
 
         changeViewTitle(label, getViewName(informationViewComponent), page, dispatch, config1);
 
@@ -91,7 +104,7 @@ export const ChangeViewTitleProvider: InstructionProvider = {
         text: `Hide the title`,
         icon: <EyeOff />,
         noInputNeeded: true,
-        isActive: context => context.focusedElement?.type === "pageTitle",
+        isActive: context => isActive(context.focusedElement),
         match: input => input.startsWith(`Hide the title`),
         execute: async (input, ctx, dispatch, config1) => {
           changeViewTitle('', getViewName(informationViewComponent), page, dispatch, config1);
@@ -106,7 +119,7 @@ export const ChangeViewTitleProvider: InstructionProvider = {
         text: `Show the title again`,
         icon: <Eye />,
         noInputNeeded: true,
-        isActive: context => context.focusedElement?.type === "viewTitle",
+        isActive: context => isActive(context.focusedElement),
         match: input => input.startsWith(`Show the title`),
         execute: async (input, ctx, dispatch, config1) => {
           changeViewTitle(informationTitle(information, uiSchema), getViewName(informationViewComponent), page, dispatch, config1);

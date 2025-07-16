@@ -182,7 +182,7 @@ const PlayTableView = (
     type: 'view',
   };
 
-  const isFocusedEle = focusedEle && focusedEle.type === "viewTitle" && focusedEle.id === informationInfo.desc.name;
+  const isFocusedEle = focusedEle && focusedEle.type === "table" && focusedEle.id === informationInfo.desc.name;
 
   return (
     <Box component="div">
@@ -204,7 +204,7 @@ const PlayTableView = (
               {liveEditMode && <IconButton onClick={() => setFocusedEle({
                 id: informationInfo.desc.name,
                 name: informationTitle(informationInfo, uiSchema),
-                type: 'viewTitle',
+                type: 'table',
               })} color={isFocusedEle ? 'info' : undefined}><Target /></IconButton>}
             </Typography>
           )}
