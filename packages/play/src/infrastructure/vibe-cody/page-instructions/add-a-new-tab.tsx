@@ -30,6 +30,16 @@ export const AddANewTab: Instruction = {
     let basePath = '';
     const routeParams = getRouteParamsFromRoute(pageConfig.route);
     const service = playServiceFromFQCN(pageConfig.name);
+    const hiddenViews = pageConfig.components.map(v => {
+      if(typeof v === "string") {
+        return {
+          view: v,
+          hidden: true
+        }
+      } else {
+        return {...v, hidden: true}
+      }
+    })
 
     const pageNames = names(playNodeLabel(pageConfig.name));
 
@@ -57,13 +67,21 @@ export const AddANewTab: Instruction = {
       basePath = removeLastPartFromRouteIfStatic(ctx.page.pathname);
     }
 
+    const titleOrTitleExpr: {title?: string, "title:expr"?: string} = {};
+
+    if(pageConfig['title:expr']) {
+      titleOrTitleExpr['title:expr'] = pageConfig['title:expr'];
+    } else {
+      titleOrTitleExpr['title'] = pageConfig.title || playNodeLabel(pageConfig.name);
+    }
+
     const page:PlaySubLevelPage = {
       name: `${service}.${tabNames.className}`,
-      title: pageConfig.title || playNodeLabel(pageConfig.name),
+      ...titleOrTitleExpr,
       service: service,
       route: `${baseRoute}/${tabNames.fileName}`,
       commands: [],
-      components: [],
+      components: hiddenViews,
       topLevel: false,
       breadcrumb: pageConfig.breadcrumb,
       routeParams: routeParams,

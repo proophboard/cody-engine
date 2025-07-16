@@ -76,16 +76,16 @@ export const undoLast = async (dispatch: PlayConfigDispatch, navigateTo: (route:
         lastEntry.boardId
       );
 
+      resolve({
+        cody: `Reverted last change: `,
+        details: `"${lastEntry.name}"`,
+        type: CodyResponseType.Warning,
+      })
+
       setTimeout(() => {
         navigateTo(lastEntry.currentRoute);
-
-        resolve({
-          cody: `Reverted last change: `,
-          details: `"${lastEntry.name}"`,
-          type: CodyResponseType.Warning,
-        })
-      }, 200)
-    }, 500)
+      }, 250)
+    }, 250)
   })
 }
 

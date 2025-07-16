@@ -27,6 +27,9 @@ import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is
 import {
   getFocusedQueryableStateListVo
 } from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
+import {
+  makeDynamicPageTitleForStateType
+} from "@cody-play/infrastructure/vibe-cody/utils/page/make-dynamic-page-title-for-state-type";
 
 const TEXT = `I want to open a row on a details page`;
 
@@ -131,6 +134,7 @@ export const OpenRowOnDetailsPage: Instruction = {
       name: pageFQCN,
       service: config.defaultService,
       route: newPageRoute,
+      "title:expr": makeDynamicPageTitleForStateType(itemInfo),
       commands: [],
       components: [viewName],
       topLevel: false,

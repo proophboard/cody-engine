@@ -243,7 +243,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     toggleColorMode,
     hasHistory: hasHistoryEntry(),
     undo: async () => {
-      const res = await undoLast(dispatch, (route: string) => navigate(route));
+      const res = await undoLast(dispatch, (route: string) => currentNavigateFunc(route));
 
       addMessageIfDefined(fromCodyInstructionResponse(res));
 
