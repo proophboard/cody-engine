@@ -9,6 +9,8 @@ import {merge} from "lodash/fp";
 import {informationTitle} from "@frontend/util/information/titelize";
 import {FocusedElement} from "@cody-play/state/focused-element";
 import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
+import {isExpression} from "@cody-play/infrastructure/vibe-cody/utils/text/is-expression";
+import {omit} from "lodash";
 
 const getViewName = (v: ViewComponent): string => {
   return typeof v === "string" ? v : v.view;
@@ -27,18 +29,20 @@ const getInformationViewComponent = (infoFQCN: string, page: PlayPageDefinition,
 const changeViewTitle = (title: string, viewFQCN: string, page: PlayPageDefinition, dispatch: PlayConfigDispatch, config: CodyPlayConfig) => {
   let component = page.components.filter(v => getViewName(v) === viewFQCN).shift();
 
+  const prop = isExpression(title) ? 'ui:title:expr' : 'ui:title';
+
   if(!component || typeof component === "string") {
     component = {
       view: viewFQCN,
       uiSchema: {
-        'ui:title': title,
+        [prop]: title,
       }
     }
   } else {
     component = {
       ...component,
       uiSchema: {
-        ...(component.uiSchema || {}),
+        ...omit(component.uiSchema || {}, ['ui:title', 'ui:title:expr']),
         'ui:title': title
       }
     }

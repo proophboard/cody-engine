@@ -5,15 +5,19 @@ import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/confi
 import {Eye, EyeOff, FormatText} from "mdi-material-ui";
 import {getPageTitle, PageDefinition} from "@frontend/app/pages/page-definitions";
 import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
+import {isExpression} from "@cody-play/infrastructure/vibe-cody/utils/text/is-expression";
+import {omit} from "lodash";
+import {findTabsOfGroup} from "@cody-play/infrastructure/vibe-cody/utils/navigate/find-tabs-of-group";
 
 const changePageTitle = (title: string, page: PlayPageDefinition, dispatch: PlayConfigDispatch, config: CodyPlayConfig) => {
+  const prop = isExpression(title) ? 'title:expr' : 'title';
+
   dispatch({
     ctx: getEditedContextFromConfig(config),
     type: "ADD_PAGE",
     page: {
-      ...page,
-      title,
-      ["title:expr"]: undefined,
+      ...omit(page, ['title', 'title:expr']),
+      [prop]: title,
     },
     name: page.name
   })
@@ -36,6 +40,12 @@ export const ChangePageTitleProvider: InstructionProvider = {
         const label = getLabelFromInstruction(input, `Change label to `);
 
         changePageTitle(label, page, dispatch, config1);
+
+        if(page.tab) {
+          findTabsOfGroup(page, config.pages).forEach(tab => {
+            changePageTitle(label, tab, dispatch, config1);
+          })
+        }
 
         return {
           cody: `The label is changed.`
