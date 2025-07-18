@@ -62,6 +62,7 @@ import {UndoLastAction} from "@cody-play/infrastructure/vibe-cody/app-instructio
 import {ProvideTypeSuggestions} from "@cody-play/infrastructure/vibe-cody/information-instructions/suggest-types";
 import {EditState} from "@cody-play/infrastructure/vibe-cody/command-instructions/edit-state";
 import {DeleteState} from "@cody-play/infrastructure/vibe-cody/command-instructions/delete-state";
+import {AddStateAction} from "@cody-play/infrastructure/vibe-cody/command-instructions/add-state-action";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -73,6 +74,8 @@ export const instructions: InstructionOrProvider[] = [
   FocusOnViewProvider,
   EditState,
   DeleteState,
+  // Disabled until SystemPage is available
+  // AddStateAction,
   /* Table Instructions */
   AddATableWithDefaults,
   AddColumnsToTable,
