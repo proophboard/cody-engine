@@ -81,7 +81,7 @@ const makeRemoveColumn = (columnTitle: string, columnName: string): Instruction 
 
       if(!itemSchema.isObject()) {
         return {
-          cody: `I can't remove columns to the table, because the items schema of ${tableVO.desc.name} is not of type object and therefor no items properties can be defined.`,
+          cody: `I can't remove columns from the table, because the items schema of ${tableVO.desc.name} is not of type object and therefor no items properties can be defined.`,
           type: CodyResponseType.Error,
           details: `Either you change the schema by hand or you let me remove the entire table from the page and add another one.`
         }

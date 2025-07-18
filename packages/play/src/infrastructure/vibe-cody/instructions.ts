@@ -63,6 +63,7 @@ import {ProvideTypeSuggestions} from "@cody-play/infrastructure/vibe-cody/inform
 import {EditState} from "@cody-play/infrastructure/vibe-cody/command-instructions/edit-state";
 import {DeleteState} from "@cody-play/infrastructure/vibe-cody/command-instructions/delete-state";
 import {AddStateAction} from "@cody-play/infrastructure/vibe-cody/command-instructions/add-state-action";
+import {ChangeColumnLabel} from "@cody-play/infrastructure/vibe-cody/information-instructions/change-column-label";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -79,6 +80,7 @@ export const instructions: InstructionOrProvider[] = [
   /* Table Instructions */
   AddATableWithDefaults,
   AddColumnsToTable,
+  ChangeColumnLabel,
   AddTableItemProvider,
   BatchDeleteRows,
   EditTableItem,

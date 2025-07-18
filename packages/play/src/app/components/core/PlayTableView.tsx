@@ -162,7 +162,7 @@ const PlayTableView = (
     addQueryResult(registryIdToDataReference(informationInfo.desc.name), query);
   }, [params, query.dataUpdatedAt]);
 
-  const columns: GridColDef[] = compileTableColumns(
+  let columns: GridColDef[] = compileTableColumns(
     params,
     informationInfo,
     uiSchema,
@@ -172,6 +172,31 @@ const PlayTableView = (
     types,
     definitions
   );
+
+  if(liveEditMode) {
+    columns = columns.map(c => ({
+      ...c,
+      renderHeader: (colParams) => {
+
+        const columnName = colParams.colDef.headerName || colParams.field;
+        const focusedEleId = `${informationInfo.desc.name}:${colParams.field}`;
+
+        const isFocusedEle = focusedEle && focusedEle.type === "tableColumn" && focusedEle.id === focusedEleId;
+
+        return <Typography variant="h6">
+          {columnName}
+          <IconButton onClick={() => setFocusedEle({
+            id: focusedEleId,
+            name: columnName,
+            type: 'tableColumn',
+          })} color={isFocusedEle ? 'info' : undefined}><Target /></IconButton>
+        </Typography>
+      }
+    }))
+  } else {
+    // Workaround to reset custom column header rendering when live edit mode is turned off
+    columns = columns.map(c => ({...c, renderHeader: undefined}))
+  }
 
   if (isHidden) {
     return <></>;
@@ -228,7 +253,7 @@ const PlayTableView = (
           }
           sx={{ width: '100%' }}
           slots={{
-            toolbar: hideToolbar ? undefined : GridToolbar,
+            toolbar: hideToolbar || liveEditMode ? undefined : GridToolbar,
             noRowsOverlay: NoRowsOverlay,
           }}
           initialState={{
@@ -236,6 +261,7 @@ const PlayTableView = (
               paginationModel: { pageSize: pageSizeConfig.pageSize },
             },
           }}
+          disableColumnMenu={liveEditMode}
           pageSizeOptions={pageSizeConfig.pageSizeOptions}
           density={density}
           checkboxSelection={checkboxSelection}
