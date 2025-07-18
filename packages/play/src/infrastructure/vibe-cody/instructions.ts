@@ -74,7 +74,8 @@ export const instructions: InstructionOrProvider[] = [
   FocusOnViewProvider,
   EditState,
   DeleteState,
-  AddStateAction,
+  // Disabled until SystemPage is available
+  // AddStateAction,
   /* Table Instructions */
   AddATableWithDefaults,
   AddColumnsToTable,
