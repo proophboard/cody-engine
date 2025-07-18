@@ -18,6 +18,15 @@ export const playIsCodyWarning =(warning: any): warning is CodyResponse => {
   return false;
 }
 
+export const playIsCodyQuestion =(question: any): question is CodyResponse => {
+  if(question && typeof question === 'object') {
+    // eslint-disable-next-line no-prototype-builtins
+    return question.hasOwnProperty('cody') && question.hasOwnProperty('type') && question.type === CodyResponseType.Question;
+  }
+
+  return false;
+}
+
 export class CodyResponseException extends Error {
   public codyResponse: CodyResponse;
 

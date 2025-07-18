@@ -23,7 +23,7 @@ import {PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-se
 import {CodyResponse, CodyResponseType, ReplyCallback} from "@proophboard/cody-types";
 import {
   CodyResponseException,
-  playIsCodyError, playIsCodyWarning,
+  playIsCodyError, playIsCodyQuestion, playIsCodyWarning,
 } from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import {instructions} from "@cody-play/infrastructure/vibe-cody/instructions";
@@ -94,11 +94,29 @@ const isInstructionProvider = (i: Instruction | InstructionProvider): i is Instr
 
 export type HelpLink = {text: string, href: string};
 
-export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback, helpLink?: HelpLink};
+export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback, helpLink?: HelpLink, answers?: Instruction[]};
+
+// Persist messages across the lifetime of the session
+let globalMessages: Message[] = [];
+
+let currentNavigateFunc = (route: string) => {};
+
+let lockChange = false;
+
+let waitingReply: InstructionExecutionCallback | undefined;
+
+let answers: Instruction[] | undefined;
+
+let currentPage: string | undefined;
+
 
 const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment, selectedInstruction?: Instruction): Instruction[] => {
   if(selectedInstruction && !selectedInstruction.allowSubSuggestions) {
     return [];
+  }
+
+  if(answers) {
+    return answers;
   }
 
   const suggestions: Instruction[] = [];
@@ -115,16 +133,7 @@ const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: 
   return suggestions;
 }
 
-// Persist messages across the lifetime of the session
-let globalMessages: Message[] = [];
 
-let currentNavigateFunc = (route: string) => {};
-
-let lockChange = false;
-
-let waitingReply: InstructionExecutionCallback | undefined;
-
-let currentPage: string | undefined;
 
 const trimText = (text: string): string => {
   let lines = text.split(`\n`);
@@ -146,7 +155,7 @@ const fromCodyInstructionResponse = (codyResponse: CodyInstructionResponse): Mes
     text: codyResponse.cody + (codyResponse.details ? `\n\n${codyResponse.details}` : ''),
     author: "cody",
     error: playIsCodyError(codyResponse),
-    warning: playIsCodyWarning(codyResponse),
+    warning: playIsCodyWarning(codyResponse) || playIsCodyQuestion(codyResponse),
     helpLink: codyResponse.helpLink,
   }
 }
@@ -271,6 +280,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     if(input && typeof input === "object") {
       setSelectedInstruction(input);
       waitingReply = undefined;
+      answers = undefined;
 
       if(input.noInputNeeded) {
         addMessage({
@@ -392,7 +402,13 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     addMessageIfDefined(fromCodyInstructionResponse(codyResponse));
 
     if(codyResponse.type === CodyResponseType.Question) {
-      waitingReply = codyResponse.instructionReply;
+      if(codyResponse.instructionReply) {
+        waitingReply = codyResponse.instructionReply;
+      }
+
+      if(codyResponse.answers) {
+        answers = codyResponse.answers;
+      }
     }
   }
 
@@ -484,6 +500,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
              // Reset
              if(e.key === "Escape") {
                setFocusedElement(undefined);
+               waitingReply = undefined;
+               answers = undefined;
                reset();
              }
 
