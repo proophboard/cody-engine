@@ -155,7 +155,8 @@ export const convertShorthandStringToJsonSchema = (shorthand: string, namespace:
   if(parts[0].match(/^enum:/)) {
     const enumVals = parts[0].replace('enum:', '');
     return {
-      enum: enumVals.split(',').map(val => val.trim()),
+      type: "string",
+      enum: enumVals.split(',').map(val => val.trim())
     }
   }
 

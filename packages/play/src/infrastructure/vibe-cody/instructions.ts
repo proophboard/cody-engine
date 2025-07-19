@@ -68,7 +68,7 @@ import {
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/change-column-position";
 import {RemoveColumnQuestion} from "@cody-play/infrastructure/vibe-cody/information-instructions/remove-column";
 
-type InstructionOrProvider = Instruction | InstructionProvider;
+export type InstructionOrProvider = Instruction | InstructionProvider;
 
 export const instructions: InstructionOrProvider[] = [
   /* App Settings */
@@ -78,8 +78,7 @@ export const instructions: InstructionOrProvider[] = [
   FocusOnViewProvider,
   EditState,
   DeleteState,
-  // Disabled until SystemPage is available
-  // AddStateAction,
+  AddStateAction,
   /* Table Instructions */
   AddATableWithDefaults,
   AddColumnsToTable,

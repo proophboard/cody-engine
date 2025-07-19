@@ -564,6 +564,11 @@ const execUpdateInformationAsync = async (then: ThenUpdateInformation, ctx: Exec
   }
 
   const filter = makeFilter(then.update.filter, ctx);
+
+  if(then.update.loadDocIntoVariable) {
+    ctx[then.update.loadDocIntoVariable] = await infoService.findOne(then.update.information, filter);
+  }
+
   const data = await execMappingAsync(then.update.set, ctx);
   const metadata = then.update.meta? await execMappingAsync(then.update.meta, ctx) : undefined;
 
@@ -580,6 +585,11 @@ const execReplaceInformationAsync = async (then: ThenReplaceInformation, ctx: Ex
   }
 
   const filter = makeFilter(then.replace.filter, ctx);
+
+  if(then.replace.loadDocIntoVariable) {
+    ctx[then.replace.loadDocIntoVariable] = await infoService.findOne(then.replace.information, filter);
+  }
+
   const data = await execMappingAsync(then.replace.set, ctx);
   const metadata = then.replace.meta? await execMappingAsync(then.replace.meta, ctx) : undefined;
 

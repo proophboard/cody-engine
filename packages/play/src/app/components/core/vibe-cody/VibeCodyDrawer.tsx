@@ -26,7 +26,7 @@ import {
   playIsCodyError, playIsCodyQuestion, playIsCodyWarning,
 } from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
-import {instructions} from "@cody-play/infrastructure/vibe-cody/instructions";
+import {InstructionOrProvider, instructions} from "@cody-play/infrastructure/vibe-cody/instructions";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 import CodyEmoji from "@cody-play/app/components/core/vibe-cody/CodyEmoji";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
@@ -78,6 +78,7 @@ export interface Instruction {
   noInputNeeded?: boolean,
   allowSubSuggestions?: boolean,
   notUndoable?: boolean,
+  keepAnswers?: boolean,
   isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string, cursorPosition: CursorPosition) => boolean,
   execute: InstructionExecutionCallback,
@@ -94,7 +95,7 @@ const isInstructionProvider = (i: Instruction | InstructionProvider): i is Instr
 
 export type HelpLink = {text: string, href: string};
 
-export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback, helpLink?: HelpLink, answers?: Instruction[]};
+export type CodyInstructionResponse = CodyResponse & {instructionReply?: InstructionExecutionCallback, helpLink?: HelpLink, answers?: InstructionOrProvider[]};
 
 // Persist messages across the lifetime of the session
 let globalMessages: Message[] = [];
@@ -105,7 +106,7 @@ let lockChange = false;
 
 let waitingReply: InstructionExecutionCallback | undefined;
 
-let answers: Instruction[] | undefined;
+let answers: InstructionOrProvider[] | undefined;
 
 let currentPage: string | undefined;
 
@@ -115,13 +116,9 @@ const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: 
     return [];
   }
 
-  if(answers) {
-    return answers;
-  }
-
   const suggestions: Instruction[] = [];
 
-  instructions.filter(i => i.isActive(ctx, config, env))
+  (answers || instructions).filter(i => i.isActive(ctx, config, env))
     .forEach(i => {
       if(isInstructionProvider(i)) {
         suggestions.push(...i.provide(ctx, config, env));
@@ -280,7 +277,10 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
     if(input && typeof input === "object") {
       setSelectedInstruction(input);
       waitingReply = undefined;
-      answers = undefined;
+
+      if(!input.keepAnswers) {
+        answers = undefined;
+      }
 
       if(input.noInputNeeded) {
         addMessage({
@@ -409,6 +409,9 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
       if(codyResponse.answers) {
         answers = codyResponse.answers;
       }
+    } else {
+      waitingReply = undefined;
+      answers = undefined;
     }
   }
 
