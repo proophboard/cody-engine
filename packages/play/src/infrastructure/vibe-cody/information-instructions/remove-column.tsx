@@ -14,14 +14,8 @@ import {withId} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/with
 import {names} from "@event-engine/messaging/helpers";
 import {namespaceNames, valueObjectNamespaceFromFQCN} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
-import {camelCaseToTitle} from "@cody-play/infrastructure/utils/string";
 import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
 import {isQueryableStateListDescription, ListDescription} from "@event-engine/descriptions/descriptions";
-import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-focused";
-import {
-  getFocusedQueryableStateListVo
-} from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
-import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {get, set} from "lodash";
 import {StringOrTableColumnUiSchema} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 
