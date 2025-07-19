@@ -47,7 +47,6 @@ import {
   MoveSidebarGroupItemProvider
 } from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/move-sidebar-group-item";
 import {ChangeAppName} from "@cody-play/infrastructure/vibe-cody/app-instructions/change-app-name";
-import {RemoveColumnProvider} from "@cody-play/infrastructure/vibe-cody/information-instructions/remove-column";
 import {FocusOnSidebarItemProvider} from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/focus-sidebar-item";
 import {ChangePageTitleProvider} from "@cody-play/infrastructure/vibe-cody/page-instructions/change-page-title";
 import {FocusOnPageTitleProvider} from "@cody-play/infrastructure/vibe-cody/page-instructions/focus-on-page-title";
@@ -63,6 +62,11 @@ import {ProvideTypeSuggestions} from "@cody-play/infrastructure/vibe-cody/inform
 import {EditState} from "@cody-play/infrastructure/vibe-cody/command-instructions/edit-state";
 import {DeleteState} from "@cody-play/infrastructure/vibe-cody/command-instructions/delete-state";
 import {AddStateAction} from "@cody-play/infrastructure/vibe-cody/command-instructions/add-state-action";
+import {ChangeColumnLabel} from "@cody-play/infrastructure/vibe-cody/information-instructions/change-column-label";
+import {
+  ChangeColumnPositionProvider
+} from "@cody-play/infrastructure/vibe-cody/information-instructions/change-column-position";
+import {RemoveColumnQuestion} from "@cody-play/infrastructure/vibe-cody/information-instructions/remove-column";
 
 type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -79,11 +83,13 @@ export const instructions: InstructionOrProvider[] = [
   /* Table Instructions */
   AddATableWithDefaults,
   AddColumnsToTable,
+  ChangeColumnLabel,
+  ChangeColumnPositionProvider,
   AddTableItemProvider,
   BatchDeleteRows,
   EditTableItem,
   RenameTableRowDataTypeProvider,
-  RemoveColumnProvider,
+  RemoveColumnQuestion,
   /* Information Instructions */
   ProvideTypeSuggestions,
   /* Page Instructions */
