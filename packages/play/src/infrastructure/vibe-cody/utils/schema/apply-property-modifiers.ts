@@ -7,8 +7,9 @@ import {PropMapping} from "@app/shared/rule-engine/configuration";
 import {JSONSchema7} from "json-schema";
 import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
 import {get, set} from "lodash";
+import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 
-export const applyPropertyModifiers = (modifiers: PropModifier[], stateSchema: JSONSchema7, cmdSchema: JSONSchema7, evtSchema: JSONSchema7, eventMapping: PropMapping, prjSet: string): [JSONSchema7, JSONSchema7, PropMapping, string] => {
+export const applyPropertyModifiers = (modifiers: PropModifier[], stateFQCN: string, stateSchema: JSONSchema7, cmdSchema: JSONSchema7, evtSchema: JSONSchema7, eventMapping: PropMapping, prjSet: string, cmdFormDataInit: PropMapping, createsNewInformation?: boolean): [JSONSchema7, JSONSchema7, PropMapping, string, PropMapping] => {
 
   modifiers.forEach(modifier => {
 
@@ -34,6 +35,9 @@ export const applyPropertyModifiers = (modifiers: PropModifier[], stateSchema: J
         }
         eventMapping[prop] = `$> command.${prop}`;
         prjSet += `|set('${prop}', event.${prop})`;
+        if(!createsNewInformation) {
+          cmdFormDataInit[prop] = `$> page|data('${registryIdToDataReference(stateFQCN)}')|get('${prop}')`;
+        }
         break;
 
       case "set":
@@ -103,6 +107,6 @@ export const applyPropertyModifiers = (modifiers: PropModifier[], stateSchema: J
     }
   })
 
-  return [cmdSchema, evtSchema, eventMapping, prjSet];
+  return [cmdSchema, evtSchema, eventMapping, prjSet, cmdFormDataInit];
 }
 
