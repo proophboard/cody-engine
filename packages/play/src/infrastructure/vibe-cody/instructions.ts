@@ -70,6 +70,7 @@ import {RemoveColumnQuestion} from "@cody-play/infrastructure/vibe-cody/informat
 import {
   DefineAddTableItemActionProvider
 } from "@cody-play/infrastructure/vibe-cody/command-instructions/define-add-table-item-action";
+import {DisableButtonProvider} from "@cody-play/infrastructure/vibe-cody/button-instructions/disable-button";
 
 export type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -108,6 +109,7 @@ export const instructions: InstructionOrProvider[] = [
   ChangeButtonVariantProvider,
   ChangeButtonColorProvider,
   ChangeButtonIconProvider,
+  DisableButtonProvider,
   IconOnlyButton,
   /* Sidebar Instructions */
   ChangeSidebarItemLabel,

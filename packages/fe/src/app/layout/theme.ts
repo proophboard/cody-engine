@@ -74,8 +74,15 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
             WebkitTextFillColor: "inherit",
 
           },
+          "form.stateview .CodyTopRightActions .Mui-disabled": {
+            color: defaultTheme.palette.text.disabled,
+            WebkitTextFillColor: defaultTheme.palette.text.disabled,
+          },
           "form.stateview .MuiButton-root.Mui-disabled": {
             display: "none",
+          },
+          "form.stateview .CodyTopRightActions .MuiButton-root.Mui-disabled": {
+            display: "flex",
           },
           "form.stateview .MuiSelect-icon.Mui-disabled": {
             display: "none",
