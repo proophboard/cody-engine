@@ -102,6 +102,10 @@ const execute = async (cmdName: string, eventName: string, input: string, ctx: V
     }
   }
 
+  let cmdFormDataInit: PropMapping = {
+    [stateDesc.identifier]: `$> page|data('${registryIdToDataReference(stateVO.desc.name)}')|get('${stateDesc.identifier}')`
+  };
+
   let eventSchema = cloneDeepJSON(cmdSchema);
   let eventMapping: PropMapping = {
     [stateDesc.identifier]: `$> command.${stateDesc.identifier}`
@@ -109,7 +113,7 @@ const execute = async (cmdName: string, eventName: string, input: string, ctx: V
 
   let prjSet = "$> doc";
 
-  [cmdSchema, eventSchema, eventMapping, prjSet] = applyPropertyModifiers(modifiers, stateVoJsonSchema, cmdSchema, eventSchema, eventMapping, prjSet);
+  [cmdSchema, eventSchema, eventMapping, prjSet, cmdFormDataInit] = applyPropertyModifiers(modifiers, stateVO.desc.name, stateVoJsonSchema, cmdSchema, eventSchema, eventMapping, prjSet, cmdFormDataInit);
 
   const editedCtx = getEditedContextFromConfig(config);
 
@@ -214,9 +218,7 @@ const execute = async (cmdName: string, eventName: string, input: string, ctx: V
   const editAction: CommandAction = {
     type: 'command',
     command: `${names(config.defaultService).className}.${names(cmdName).className}`,
-    data: {
-      [stateDesc.identifier]: `$> page|data('${registryIdToDataReference(stateVO.desc.name)}')|get('${stateDesc.identifier}')`
-    },
+    data: cmdFormDataInit,
     button: {
       label: cmdName,
       icon: 'pencil',
