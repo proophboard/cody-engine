@@ -67,6 +67,9 @@ import {
   ChangeColumnPositionProvider
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/change-column-position";
 import {RemoveColumnQuestion} from "@cody-play/infrastructure/vibe-cody/information-instructions/remove-column";
+import {
+  DefineAddTableItemActionProvider
+} from "@cody-play/infrastructure/vibe-cody/command-instructions/define-add-table-item-action";
 
 export type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -85,6 +88,7 @@ export const instructions: InstructionOrProvider[] = [
   ChangeColumnLabel,
   ChangeColumnPositionProvider,
   AddTableItemProvider,
+  DefineAddTableItemActionProvider,
   BatchDeleteRows,
   EditTableItem,
   RenameTableRowDataTypeProvider,

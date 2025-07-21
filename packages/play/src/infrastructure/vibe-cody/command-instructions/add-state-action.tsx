@@ -1,10 +1,9 @@
 import {
   CodyInstructionResponse,
   Instruction,
-  InstructionExecutionCallback,
   InstructionProvider
 } from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
-import {ShieldEditOutline} from "mdi-material-ui";
+import {CogPlayOutline, ShieldEditOutline} from "mdi-material-ui";
 import {isStateViewFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-state-view-focused";
 import {getFocusedStateVO} from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-state-v-o";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
@@ -51,20 +50,16 @@ import {
   applyPropertyModifiers,
   hasOnlyBackendModifiers
 } from "@cody-play/infrastructure/vibe-cody/utils/schema/apply-property-modifiers";
+import {
+  getFocusedQueryableStateListVo
+} from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
+import {UiSchema} from "@rjsf/utils";
 
-const TEXT = `Add an action to `;
+export const TEXT = `Add an action to `;
 
+const execute = async (stateVO: PlayInformationRuntimeInfo, cmdName: string, eventName: string, input: string, ctx: VibeCodyContext, dispatch: PlayConfigDispatch, config: CodyPlayConfig, createsNewState?: boolean): Promise<CodyInstructionResponse> => {
 
-
-
-
-const execute = async (cmdName: string, eventName: string, input: string, ctx: VibeCodyContext, dispatch: PlayConfigDispatch, config: CodyPlayConfig): Promise<CodyInstructionResponse> => {
-  const stateVO = getFocusedStateVO(ctx.focusedElement, ctx.page.handle.page, config);
-
-  if(playIsCodyError(stateVO)) {
-    return stateVO;
-  }
-
+  const pageConfig = ctx.page.handle.page;
   let stateVoJsonSchema = cloneDeepJSON(stateVO.schema) as JSONSchema7;
   let stateVoUiSchema = cloneDeepJSON(stateVO.uiSchema);
   const stateDesc = stateVO.desc;
@@ -106,7 +101,7 @@ const execute = async (cmdName: string, eventName: string, input: string, ctx: V
   }
 
   let cmdFormDataInit: PropMapping = {
-    [stateDesc.identifier]: `$> page|data('${registryIdToDataReference(stateVO.desc.name)}')|get('${stateDesc.identifier}')`
+    [stateDesc.identifier]: createsNewState ? `$> uuid()` : `$> page|data('${registryIdToDataReference(stateVO.desc.name)}')|get('${stateDesc.identifier}')`
   };
 
   let eventSchema = cloneDeepJSON(cmdSchema);
@@ -116,7 +111,7 @@ const execute = async (cmdName: string, eventName: string, input: string, ctx: V
 
   let prjSet = "$> doc";
 
-  [cmdSchema, eventSchema, eventMapping, prjSet, cmdFormDataInit] = applyPropertyModifiers(modifiers, stateVO.desc.name, stateVoJsonSchema, cmdSchema, eventSchema, eventMapping, prjSet, cmdFormDataInit);
+  [cmdSchema, eventSchema, eventMapping, prjSet, cmdFormDataInit] = applyPropertyModifiers(modifiers, stateVO.desc.name, stateVoJsonSchema, cmdSchema, eventSchema, eventMapping, prjSet, cmdFormDataInit, createsNewState);
 
   const editedCtx = getEditedContextFromConfig(config);
 
@@ -137,9 +132,9 @@ const execute = async (cmdName: string, eventName: string, input: string, ctx: V
     return eventRes;
   }
 
-  const prjType = findProjectionType(stateVO, config);
+  const prjType = createsNewState ? getFocusedQueryableStateListVo(ctx.focusedElement, pageConfig, config) :  findProjectionType(stateVO, config);
 
-  if(!prjType) {
+  if(!prjType || playIsCodyError(prjType)) {
     return {
       cody: `I can't add a projection case for handling events of state "${stateVO.desc.name}". I'm looking for a list type in the Cody Play type registry that has "${stateVO.desc.name}" defined as "itemType", but I can't find one.`,
       details: `Please check the Cody Play config in the App Settings dialog. If you can't solve the issue, please contact the prooph board team!`,
@@ -165,17 +160,28 @@ const execute = async (cmdName: string, eventName: string, input: string, ctx: V
       _pbVersion: pbInfo._pbVersion + 1,
       name: prjName,
       rules: [
-        {
-          rule: "always",
-          then: {
-            replace: {
-              information: prjType.desc.name,
-              loadDocIntoVariable: "doc",
-              filter: {
-                docId: `$> event.${stateDesc.identifier}`
-              },
-              set: prjSet
+        createsNewState
+          ? {
+            rule: "always",
+            then: {
+              upsert: {
+                information: prjType.desc.name,
+                id: `$> event.${stateDesc.identifier}`,
+                set: `$> event`
+              }
             }
+          }
+          : {
+            rule: "always",
+            then: {
+              replace: {
+                information: prjType.desc.name,
+                loadDocIntoVariable: "doc",
+                filter: {
+                  docId: `$> event.${stateDesc.identifier}`
+                },
+                set: prjSet
+              }
           }
         }
       ],
@@ -225,40 +231,59 @@ const execute = async (cmdName: string, eventName: string, input: string, ctx: V
     directSubmit: hasOnlyBackendModifiers(modifiers),
     button: {
       label: cmdName,
-      icon: 'pencil',
+      icon: createsNewState ? 'plus' : 'pencil',
       color: 'default'
     },
     position: "top-right"
   }
 
-  if(!stateVoUiSchema) {
-    stateVoUiSchema = {}
+  let uiSchemaToAddAction: UiSchema | undefined = createsNewState ? cloneDeepJSON(prjType.uiSchema || {}) : stateVoUiSchema;
+
+  if(!uiSchemaToAddAction) {
+    uiSchemaToAddAction = {}
   }
 
-  if(!stateVoUiSchema['ui:options']) {
-    stateVoUiSchema['ui:options'] = {}
+  if(!uiSchemaToAddAction['ui:options']) {
+    uiSchemaToAddAction['ui:options'] = {}
   }
 
-  if(!stateVoUiSchema['ui:options']['actions'] || !Array.isArray(stateVoUiSchema['ui:options']['actions'])) {
-    stateVoUiSchema['ui:options']['actions'] = [];
+  if(!uiSchemaToAddAction['ui:options']['actions'] || !Array.isArray(uiSchemaToAddAction['ui:options']['actions'])) {
+    uiSchemaToAddAction['ui:options']['actions'] = [];
   }
 
-  (stateVoUiSchema['ui:options']['actions'] as Array<CommandAction>).push(editAction)
+  (uiSchemaToAddAction['ui:options']['actions'] as Array<CommandAction>).push(editAction)
 
-  // Update state VO
-  dispatch({
-    ctx: editedCtx,
-    type: "ADD_TYPE",
-    name: stateVO.desc.name,
-    information: {
-      ...stateVO,
-      uiSchema: stateVoUiSchema
-    },
-    definition: {
-      definitionId: playDefinitionIdFromFQCN(stateVO.desc.name),
-      schema: stateVoJsonSchema as JSONSchema7
-    }
-  });
+  if(createsNewState) {
+    // Update List VO
+    dispatch({
+      ctx: editedCtx,
+      type: "ADD_TYPE",
+      name: prjType.desc.name,
+      information: {
+        ...prjType,
+        uiSchema: uiSchemaToAddAction
+      },
+      definition: {
+        definitionId: playDefinitionIdFromFQCN(prjType.desc.name),
+        schema: prjType.schema as JSONSchema7
+      }
+    });
+  } else {
+    // Update state VO
+    dispatch({
+      ctx: editedCtx,
+      type: "ADD_TYPE",
+      name: stateVO.desc.name,
+      information: {
+        ...stateVO,
+        uiSchema: uiSchemaToAddAction
+      },
+      definition: {
+        definitionId: playDefinitionIdFromFQCN(stateVO.desc.name),
+        schema: stateVoJsonSchema as JSONSchema7
+      }
+    });
+  }
 
   return {
     cody: `I've added a button to "${cmdName}".`,
@@ -266,14 +291,16 @@ const execute = async (cmdName: string, eventName: string, input: string, ctx: V
   }
 }
 
-export const AddStateAction: Instruction = {
+export const AddStateAction: Instruction & {
+  execute: (input: string, ctx: VibeCodyContext, dispatch: PlayConfigDispatch, config: CodyPlayConfig, navigateTo: (route: string) => void, injectedStateVO?: PlayInformationRuntimeInfo, createsNewState?: boolean) => Promise<CodyInstructionResponse>
+} = {
   text: TEXT,
-  icon: <ShieldEditOutline />,
+  icon: <CogPlayOutline />,
   notUndoable: true,
   isActive: (context, config) => isStateViewFocused(context.focusedElement, context.page.handle.page, config),
   match: input => input.startsWith(TEXT),
-  execute: async (input, ctx, dispatch, config) => {
-    const stateVO = getFocusedStateVO(ctx.focusedElement, ctx.page.handle.page, config);
+  execute: async (input, ctx, dispatch, config, navigateTo, injectedStateVO?: PlayInformationRuntimeInfo, createsNewState?: boolean) => {
+    const stateVO = injectedStateVO || getFocusedStateVO(ctx.focusedElement, ctx.page.handle.page, config);
 
     if(playIsCodyError(stateVO)) {
       return stateVO;
@@ -305,9 +332,9 @@ export const AddStateAction: Instruction = {
     const cmdName = startCase(removeArticles(rawCmdLabel));
 
     return {
-      cody: `I'm going to add a command called "${cmdName}" that records an event "${eventName}".\n\nThe information "${playNodeLabel(stateDesc.name)}" is changed according to the data in the event.`,
+      cody: `I'm going to add a command called "${cmdName}" that records an event "${eventName}".\n\nThe information "${playNodeLabel(stateDesc.name)}" is ${createsNewState ? 'created' : 'changed'} according to the data in the event.`,
       details: [
-        `To specify what data is changed, write a list in the format:\n`,
+        `To specify how the data is entered, write a list in the format:\n`,
         `- requiredProperty: modifyFunction()`,
         `- optionalProperty?: modifyFunction()\n`,
         `Modify functions are:\n`,
@@ -321,12 +348,12 @@ export const AddStateAction: Instruction = {
         `- expr($> ) use an expression`
       ].join(`\n`),
       type: CodyResponseType.Question,
-      answers: [makeStateModifySuggestions(stateVO, cmdName, eventName)]
+      answers: [makeStateModifySuggestions(stateVO, cmdName, eventName, createsNewState)]
     }
   }
 }
 
-const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, commandName: string, eventName: string): InstructionProvider => {
+const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, commandName: string, eventName: string, createsNewState?: boolean): InstructionProvider => {
   return {
     isActive: context => true,
     provide: (context, config) => {
@@ -370,7 +397,7 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
 
         if(!currentLine.includes(":")) {
           lines[lineOfCursor] = `- ${prop}${stateVoObjectSchema.isRequired(prop) ? '' : '?' }: `;
-          suggestions.push(makeModifySuggestion(`${prop}`, lines.join(`\n`), stateVO, commandName, eventName, config));
+          suggestions.push(makeModifySuggestion(`${prop}`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState));
           return;
         }
 
@@ -390,7 +417,7 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
         if(currentLine !== INPUT) {
           lines[lineOfCursor] = INPUT;
 
-          suggestions.push(makeModifySuggestion(`input()`, lines.join(`\n`), stateVO, commandName, eventName, config))
+          suggestions.push(makeModifySuggestion(`input()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
         }
 
         // Set modifier
@@ -402,7 +429,7 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
               if(currentLine !== ENUM_OPTION_INPUT) {
                 lines[lineOfCursor] = ENUM_OPTION_INPUT;
 
-                suggestions.push(makeModifySuggestion(`set(${enumOption})`, lines.join(`\n`), stateVO, commandName, eventName, config))
+                suggestions.push(makeModifySuggestion(`set(${enumOption})`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
               }
             })
           } else if (propSchema.isString('uuid')) {
@@ -411,7 +438,7 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
             if(currentLine !== USER_ID_INPUT) {
               lines[lineOfCursor] = USER_ID_INPUT;
 
-              suggestions.push(makeModifySuggestion(`user()`, lines.join(`\n`), stateVO, commandName, eventName, config))
+              suggestions.push(makeModifySuggestion(`user()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
             }
           } else if (propSchema.isString('email')) {
             const USER_EMAIL_INPUT = `${propBulletPoint}: userEmail()`;
@@ -419,7 +446,7 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
             if(currentLine !== USER_EMAIL_INPUT) {
               lines[lineOfCursor] = USER_EMAIL_INPUT;
 
-              suggestions.push(makeModifySuggestion(`userEmail()`, lines.join(`\n`), stateVO, commandName, eventName, config))
+              suggestions.push(makeModifySuggestion(`userEmail()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
             }
           } else if (propSchema.isString('date') || propSchema.isString('datetime') || propSchema.isString('time')) {
             const NOW_INPUT = `${propBulletPoint}: now()`;
@@ -427,7 +454,7 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
             if(currentLine !== NOW_INPUT) {
               lines[lineOfCursor] = NOW_INPUT;
 
-              suggestions.push(makeModifySuggestion(`now()`, lines.join(`\n`), stateVO, commandName, eventName, config))
+              suggestions.push(makeModifySuggestion(`now()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
             }
           } else {
             const USER_NAME_INPUT = `${propBulletPoint}: userName()`;
@@ -435,7 +462,7 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
             if(currentLine !== USER_NAME_INPUT) {
               lines[lineOfCursor] = USER_NAME_INPUT;
 
-              suggestions.push(makeModifySuggestion(`userName()`, lines.join(`\n`), stateVO, commandName, eventName, config))
+              suggestions.push(makeModifySuggestion(`userName()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
             }
           }
         } else if (propJsonSchema.type === "boolean") {
@@ -445,13 +472,13 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
           if(currentLine !== TRUE_INPUT) {
             lines[lineOfCursor] = TRUE_INPUT;
 
-            suggestions.push(makeModifySuggestion(`set(true)`, lines.join(`\n`), stateVO, commandName, eventName, config))
+            suggestions.push(makeModifySuggestion(`set(true)`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
           }
 
           if(currentLine !== FALSE_INPUT) {
             lines[lineOfCursor] = FALSE_INPUT;
 
-            suggestions.push(makeModifySuggestion(`set(false)`, lines.join(`\n`), stateVO, commandName, eventName, config))
+            suggestions.push(makeModifySuggestion(`set(false)`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
           }
         } else {
           const SET_INPUT = `${propBulletPoint}: set()`;
@@ -459,7 +486,7 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
           if(!currentLine.startsWith(`${propBulletPoint}: set(`)) {
             lines[lineOfCursor] = SET_INPUT;
 
-            suggestions.push(makeModifySuggestion(`set()`, lines.join(`\n`), stateVO, commandName, eventName, config))
+            suggestions.push(makeModifySuggestion(`set()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
           }
         }
 
@@ -470,7 +497,7 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
           if(currentLine !== UNSET_MODIFIER) {
             lines[lineOfCursor] = UNSET_MODIFIER;
 
-            suggestions.push(makeModifySuggestion(`unset()`, lines.join(`\n`), stateVO, commandName, eventName, config))
+            suggestions.push(makeModifySuggestion(`unset()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
           }
         }
 
@@ -480,7 +507,7 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
         if(!currentLine.startsWith(`${propBulletPoint}: expr($> `) ) {
           lines[lineOfCursor] = EXPR_MODIFIER;
 
-          suggestions.push(makeModifySuggestion(`expr($> )`, lines.join(`\n`), stateVO, commandName, eventName, config))
+          suggestions.push(makeModifySuggestion(`expr($> )`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
         }
       })
 
@@ -489,7 +516,7 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
   }
 }
 
-const makeModifySuggestion = (label: string, text: string, stateVO: PlayInformationRuntimeInfo, commandName: string, eventName: string, config: CodyPlayConfig): Instruction => {
+const makeModifySuggestion = (label: string, text: string, stateVO: PlayInformationRuntimeInfo, commandName: string, eventName: string, config: CodyPlayConfig, createsNewState?: boolean): Instruction => {
   return {
     text,
     label,
@@ -499,7 +526,7 @@ const makeModifySuggestion = (label: string, text: string, stateVO: PlayInformat
     keepAnswers: true,
     match: (input, cursorPosition) => getCurrentLine(input, cursorPosition).startsWith(label),
     execute: async (input, ctx, dispatch, config1, navigateTo) => {
-      return await execute(commandName, eventName, input, ctx, dispatch, config1);
+      return await execute(stateVO, commandName, eventName, input, ctx, dispatch, config1, createsNewState);
     }
   }
 }

@@ -29,13 +29,6 @@ import {
 } from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
 import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-focused";
 import {getRouteParamsFromRoute} from "@cody-play/infrastructure/vibe-cody/utils/navigate/get-route-params-from-route";
-import {
-  findDataSelectTypeForRouteParam
-} from "@cody-play/infrastructure/vibe-cody/utils/types/find-data-select-type-for-route-param";
-import {
-  makeDataSelectWidgetConfig
-} from "@cody-play/infrastructure/vibe-cody/utils/ui-schema/make-data-select-widget-config";
-import {uiReadOnly} from "@cody-play/infrastructure/vibe-cody/utils/ui-schema/ui-read-only";
 
 const TEXT = "Place a button above the table to add a new ";
 
