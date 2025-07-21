@@ -47,7 +47,10 @@ import {PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-se
 import {parsePropModifiers} from "@cody-play/infrastructure/vibe-cody/utils/schema/property-modifiers";
 import {startCase} from "lodash";
 import {PropMapping} from "@app/shared/rule-engine/configuration";
-import {applyPropertyModifiers} from "@cody-play/infrastructure/vibe-cody/utils/schema/apply-property-modifiers";
+import {
+  applyPropertyModifiers,
+  hasOnlyBackendModifiers
+} from "@cody-play/infrastructure/vibe-cody/utils/schema/apply-property-modifiers";
 
 const TEXT = `Add an action to `;
 
@@ -219,6 +222,7 @@ const execute = async (cmdName: string, eventName: string, input: string, ctx: V
     type: 'command',
     command: `${names(config.defaultService).className}.${names(cmdName).className}`,
     data: cmdFormDataInit,
+    directSubmit: hasOnlyBackendModifiers(modifiers),
     button: {
       label: cmdName,
       icon: 'pencil',
