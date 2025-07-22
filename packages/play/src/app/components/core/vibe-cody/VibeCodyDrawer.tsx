@@ -558,8 +558,6 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
            if(filtered.length === 0) {
              const nouns = extractNouns(state.inputValue.toLowerCase());
 
-             console.log("nouns", nouns);
-
              if(nouns.length === 0) {
                return [];
              }

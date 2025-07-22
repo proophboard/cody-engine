@@ -444,14 +444,6 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
                 suggestions.push(makeModifySuggestion(`set(${enumOption})`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
               }
             })
-          } else if (propSchema.isString('uuid')) {
-            const USER_ID_INPUT = `${propBulletPoint}: user()`;
-
-            if(currentLine !== USER_ID_INPUT) {
-              lines[lineOfCursor] = USER_ID_INPUT;
-
-              suggestions.push(makeModifySuggestion(`user()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
-            }
           } else if (propSchema.isString('email')) {
             const USER_EMAIL_INPUT = `${propBulletPoint}: userEmail()`;
 
@@ -469,6 +461,14 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
               suggestions.push(makeModifySuggestion(`now()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
             }
           } else {
+            const USER_ID_INPUT = `${propBulletPoint}: user()`;
+
+            if(currentLine !== USER_ID_INPUT) {
+              lines[lineOfCursor] = USER_ID_INPUT;
+
+              suggestions.push(makeModifySuggestion(`user()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+            }
+
             const USER_NAME_INPUT = `${propBulletPoint}: userName()`;
 
             if(currentLine !== USER_NAME_INPUT) {

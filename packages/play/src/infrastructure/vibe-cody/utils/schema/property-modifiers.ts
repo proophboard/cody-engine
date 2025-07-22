@@ -72,7 +72,7 @@ export const parsePropModifier = (line: string): SetPropModifier<unknown> | Expr
 
   prop = prop.replace('- ', '').trim();
 
-  const match = modifier.match(/^(?<modifier>[a-z]+)\((?<value>.*)\)$/);
+  const match = modifier.match(/^(?<modifier>[a-zA-Z]+)\((?<value>.*)\)$/);
 
   if(!match) {
     return;
