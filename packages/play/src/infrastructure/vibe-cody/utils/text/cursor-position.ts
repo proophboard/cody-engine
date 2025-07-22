@@ -1,6 +1,6 @@
 export interface CursorPosition {
   start: number | null,
-  end: number | null
+  end?: number | null
 }
 
 export const getCursorPos = (input: HTMLInputElement): CursorPosition => {
@@ -28,13 +28,13 @@ export const moveCursor = (cursorPos: CursorPosition, delta: number): CursorPosi
   return newPos;
 }
 
-export const setCursorPos = (input: HTMLInputElement, start: number, end?: number | null): void => {
+export const setCursorPos = (input: HTMLInputElement, start: number, end?: number | null, timeout = 1): void => {
   if (typeof end === "undefined") end = start;
 
   if ("selectionStart" in input) {
     setTimeout(function() {
       input.selectionStart = start;
       input.selectionEnd = end as any;
-    }, 1);
+    }, timeout);
   }
 }

@@ -152,10 +152,11 @@ const TopRightActions = (props: TopRightActionsProps) => {
       direction="column"
       alignItems="center"
       justifyContent="flex-end"
+      className="CodyTopRightActions"
       sx={{
         '& .MuiButton-root ~.MuiButton-root': {
           marginLeft: (theme) => theme.spacing(1),
-        },
+        }
       }}
     >
       <PlayDroppable

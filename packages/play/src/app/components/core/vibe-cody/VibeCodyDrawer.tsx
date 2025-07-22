@@ -79,6 +79,7 @@ export interface Instruction {
   allowSubSuggestions?: boolean,
   notUndoable?: boolean,
   keepAnswers?: boolean,
+  cursorPosition?: CursorPosition,
   isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string, cursorPosition: CursorPosition) => boolean,
   execute: InstructionExecutionCallback,
@@ -290,6 +291,10 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
         await executeInstruction(input, '');
         reset();
+      } else if(input.cursorPosition) {
+        if(inputRef.current && input.cursorPosition.start) {
+          setCursorPos(inputRef.current, input.cursorPosition.start)
+        }
       }
 
       return;
