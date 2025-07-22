@@ -8,12 +8,25 @@ import {JSONSchema7} from "json-schema";
 import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
 import {get, set} from "lodash";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
+import {UiSchema} from "@rjsf/utils";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 
 export const hasOnlyBackendModifiers = (modifiers: PropModifier[]): boolean => {
   return modifiers.filter(m => m.type === "input").length === 0;
 }
 
-export const applyPropertyModifiers = (modifiers: PropModifier[], stateFQCN: string, stateSchema: JSONSchema7, cmdSchema: JSONSchema7, evtSchema: JSONSchema7, eventMapping: PropMapping, prjSet: string, cmdFormDataInit: PropMapping, createsNewInformation?: boolean): [JSONSchema7, JSONSchema7, PropMapping, string, PropMapping] => {
+export const applyPropertyModifiers = (
+  modifiers: PropModifier[],
+  stateFQCN: string,
+  stateSchema: JSONSchema7,
+  stateUiSchema: UiSchema,
+  cmdSchema: JSONSchema7,
+  cmdUiSchema: UiSchema,
+  evtSchema: JSONSchema7,
+  eventMapping: PropMapping,
+  prjSet: string,
+  cmdFormDataInit: PropMapping,
+  createsNewInformation?: boolean): [JSONSchema7, UiSchema, JSONSchema7, PropMapping, string, PropMapping] => {
 
   modifiers.forEach(modifier => {
 
@@ -41,6 +54,10 @@ export const applyPropertyModifiers = (modifiers: PropModifier[], stateFQCN: str
         prjSet += `|set('${prop}', event.${prop})`;
         if(!createsNewInformation) {
           cmdFormDataInit[prop] = `$> page|data('${registryIdToDataReference(stateFQCN)}')|get('${prop}')`;
+        }
+
+        if(stateUiSchema[prop]) {
+          cmdUiSchema[prop] = cloneDeepJSON(stateUiSchema[prop]);
         }
         break;
 
@@ -111,6 +128,6 @@ export const applyPropertyModifiers = (modifiers: PropModifier[], stateFQCN: str
     }
   })
 
-  return [cmdSchema, evtSchema, eventMapping, prjSet, cmdFormDataInit];
+  return [cmdSchema, cmdUiSchema, evtSchema, eventMapping, prjSet, cmdFormDataInit];
 }
 

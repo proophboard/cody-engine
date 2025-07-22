@@ -558,6 +558,8 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
            if(filtered.length === 0) {
              const nouns = extractNouns(state.inputValue.toLowerCase());
 
+             console.log("nouns", nouns);
+
              if(nouns.length === 0) {
                return [];
              }
@@ -581,6 +583,11 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
          if(!lockChange) {
            handleInstruction(v).catch(e => console.error(e));
+           // Prevent double enter submit
+           lockChange = true;
+           setTimeout(() => {
+             lockChange = false;
+           }, 800);
          }
        }}
        onInputChange={(e,v) => {

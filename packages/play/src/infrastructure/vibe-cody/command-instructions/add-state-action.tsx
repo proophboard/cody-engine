@@ -61,7 +61,7 @@ const execute = async (stateVO: PlayInformationRuntimeInfo, cmdName: string, eve
 
   const pageConfig = ctx.page.handle.page;
   let stateVoJsonSchema = cloneDeepJSON(stateVO.schema) as JSONSchema7;
-  let stateVoUiSchema = cloneDeepJSON(stateVO.uiSchema);
+  let stateVoUiSchema: UiSchema = cloneDeepJSON(stateVO.uiSchema || {});
   const stateDesc = stateVO.desc;
 
   let stateVoObjectSchema = new Schema(stateVoJsonSchema, true);
@@ -92,7 +92,7 @@ const execute = async (stateVO: PlayInformationRuntimeInfo, cmdName: string, eve
     additionalProperties: false
   };
 
-  const cmdUiSchema = {
+  let cmdUiSchema: UiSchema = {
     [stateDesc.identifier]: {'ui:widget': 'hidden'},
     "ui:button": {
       "label": "save",
@@ -111,7 +111,19 @@ const execute = async (stateVO: PlayInformationRuntimeInfo, cmdName: string, eve
 
   let prjSet = "$> doc";
 
-  [cmdSchema, eventSchema, eventMapping, prjSet, cmdFormDataInit] = applyPropertyModifiers(modifiers, stateVO.desc.name, stateVoJsonSchema, cmdSchema, eventSchema, eventMapping, prjSet, cmdFormDataInit, createsNewState);
+  [cmdSchema, cmdUiSchema, eventSchema, eventMapping, prjSet, cmdFormDataInit] = applyPropertyModifiers(
+    modifiers,
+    stateVO.desc.name,
+    stateVoJsonSchema,
+    stateVoUiSchema,
+    cmdSchema,
+    cmdUiSchema,
+    eventSchema,
+    eventMapping,
+    prjSet,
+    cmdFormDataInit,
+    createsNewState
+  );
 
   const editedCtx = getEditedContextFromConfig(config);
 
