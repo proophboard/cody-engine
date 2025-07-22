@@ -25,7 +25,7 @@ import {
   makeDataSelectWidgetConfig
 } from "@cody-play/infrastructure/vibe-cody/utils/ui-schema/make-data-select-widget-config";
 
-const TEXT = "I'd like to see a table of ";
+const TEXT = "Add a table of ";
 
 export const AddATableWithDefaults: Instruction = {
   text: TEXT,

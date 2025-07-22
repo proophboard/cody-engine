@@ -14,7 +14,7 @@ export const includesAllWords = (searchStr: string, words: string[]): boolean =>
 export const extractNouns = (sentence: string): string[] => {
   const doc = nlp(sentence);
 
-  return doc.nouns().out('array');
+  return doc.not('#Determiner').nouns().out('text').split(" ");
 }
 
 export const includesAllNouns = (searchStr: string, words: string[]): boolean => {
