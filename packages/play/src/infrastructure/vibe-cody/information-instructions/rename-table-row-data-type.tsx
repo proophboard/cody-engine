@@ -16,7 +16,7 @@ import {
 import {playRenameFQCN} from "@cody-play/infrastructure/vibe-cody/utils/play-rename-f-q-c-n";
 import {renameType} from "@cody-play/infrastructure/vibe-cody/utils/types/rename-type";
 import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
-import {isListDescription} from "@event-engine/descriptions/descriptions";
+import {isListDescription, QueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 import {WrenchCog} from "mdi-material-ui";
 import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
@@ -37,13 +37,7 @@ export const renameTableRowDataType = (newTypeName: string, ctx: VibeCodyContext
 
   const tableVoSchema = new Schema(cloneDeepJSON(tableVO.schema) as JSONSchema7, true);
   let emptySchema = new Schema({});
-  let itemFQCN = '';
-
-  if(tableVoSchema.getListItemsSchema(emptySchema).isRef()) {
-    itemFQCN = playFQCNFromDefinitionId(tableVoSchema.getListItemsSchema(emptySchema).getRef());
-  } else {
-    itemFQCN = tableVO.desc.name + 'Item'
-  }
+  const itemFQCN = (tableVO.desc as QueryableStateListDescription).itemType;
 
   const newItemFQCN = playRenameFQCN(itemFQCN, newTypeName);
   const newConfig = renameType(itemFQCN, newItemFQCN, config);

@@ -1,6 +1,10 @@
 import {isExpression} from "@cody-play/infrastructure/vibe-cody/utils/text/is-expression";
 
 export const getLabelFromInstruction = (instruction: string, fixedText: string): string => {
+  if(!instruction.startsWith(fixedText)) {
+    return '';
+  }
+
   const variablePart = instruction.replace(fixedText, '').trim();
 
   const normalizedInput = isExpression(variablePart, true)
