@@ -74,6 +74,9 @@ import {DisableButtonProvider} from "@cody-play/infrastructure/vibe-cody/button-
 import {
   ReferenceExistingInformationInTableProvider
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/reference-existing-information-in-table";
+import {
+  ApplyAFixedFilterToTheTableProvider
+} from "@cody-play/infrastructure/vibe-cody/information-instructions/apply-a-fixed-filter-to-the-table";
 
 export type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -97,6 +100,7 @@ export const instructions: InstructionOrProvider[] = [
   EditTableItem,
   RenameTableRowDataTypeProvider,
   ReferenceExistingInformationInTableProvider,
+  ApplyAFixedFilterToTheTableProvider,
   RemoveColumnQuestion,
   /* Information Instructions */
   ProvideTypeSuggestions,
