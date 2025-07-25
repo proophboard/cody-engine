@@ -71,6 +71,12 @@ import {
   DefineAddTableItemActionProvider
 } from "@cody-play/infrastructure/vibe-cody/command-instructions/define-add-table-item-action";
 import {DisableButtonProvider} from "@cody-play/infrastructure/vibe-cody/button-instructions/disable-button";
+import {
+  ReferenceExistingInformationInTableProvider
+} from "@cody-play/infrastructure/vibe-cody/information-instructions/reference-existing-information-in-table";
+import {
+  ApplyAFixedFilterToTheTable
+} from "@cody-play/infrastructure/vibe-cody/information-instructions/apply-a-fixed-filter-to-the-table";
 
 export type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -93,6 +99,8 @@ export const instructions: InstructionOrProvider[] = [
   BatchDeleteRows,
   EditTableItem,
   RenameTableRowDataTypeProvider,
+  ReferenceExistingInformationInTableProvider,
+  ApplyAFixedFilterToTheTable,
   RemoveColumnQuestion,
   /* Information Instructions */
   ProvideTypeSuggestions,

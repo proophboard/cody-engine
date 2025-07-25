@@ -74,7 +74,8 @@ export const AddColumnsToTable: Instruction = {
 
     if(!itemInfo) {
       return {
-        cody: `I can't add columns to the table. I found the information schema for the table ${tableVO.desc.name}, but not the schema for the column items. There should be a schema with name "${itemFQCN}" registered in the types section of the Cody Play Config, but there is none.`
+        cody: `I can't add columns to the table. I found the information schema for the table ${tableVO.desc.name}, but not the schema for the column items. There should be a schema with name "${itemFQCN}" registered in the types section of the Cody Play Config, but there is none.`,
+        type: CodyResponseType.Error
       }
     }
 
