@@ -9,7 +9,7 @@ import {
   Divider,
   Drawer,
   IconButton, Link, ListItem, ListItemIcon, ListItemText,
-  TextField, Typography,
+  TextField, Typography, useMediaQuery,
   useTheme
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
@@ -53,6 +53,7 @@ import {
 import {addTab} from "@cody-play/infrastructure/vibe-cody/utils/text/add-tab";
 
 export const VIBE_CODY_DRAWER_WIDTH = 540;
+export const VIBE_CODY_DRAWER_WIDTH_SMALL = 340;
 
 interface OwnProps {
   open: boolean;
@@ -203,6 +204,13 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
   const { dndEvent } = useContext(DragAndDropContext);
   const inputRef = useRef<HTMLInputElement>();
   const { mode, toggleColorMode } = useContext(ColorModeContext);
+  const sideDrawer = useMediaQuery(theme.breakpoints.up('md'), {
+    defaultMatches: true,
+  });
+
+  const largeDrawer = useMediaQuery(theme.breakpoints.up('xl'), {
+    defaultMatches: true,
+  });
 
   currentNavigateFunc = navigate;
 
@@ -434,9 +442,10 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                  onClose={props.onClose}
                  variant="persistent"
                  sx={{
-                   width: VIBE_CODY_DRAWER_WIDTH,
+                   width: sideDrawer ? largeDrawer ? VIBE_CODY_DRAWER_WIDTH : VIBE_CODY_DRAWER_WIDTH_SMALL : '100%',
+                   maxWidth: "100%",
                    overscrollBehavior: 'contain',
-                   [`& .MuiDrawer-paper`]: { width:  540, boxSizing: 'border-box', overflowX: "hidden" },
+                   [`& .MuiDrawer-paper`]: { width:  sideDrawer ? largeDrawer ? VIBE_CODY_DRAWER_WIDTH : VIBE_CODY_DRAWER_WIDTH_SMALL : '100%', maxWidth: "100%", boxSizing: 'border-box', overflowX: "hidden" },
                  }}
   >
     <DialogTitle>

@@ -25,7 +25,10 @@ import { LoginOutlined } from '@mui/icons-material';
 import UserAvatar from '@frontend/app/components/core/UserAvatar';
 import {Target, MonitorEdit} from 'mdi-material-ui';
 import { LiveEditModeContext } from '@cody-play/app/layout/PlayToggleLiveEditMode';
-import VibeCodyDrawer, {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
+import VibeCodyDrawer, {
+  VIBE_CODY_DRAWER_WIDTH,
+  VIBE_CODY_DRAWER_WIDTH_SMALL
+} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {useVibeCodyFocusElement, useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
 
 interface OwnProps {
@@ -45,6 +48,9 @@ const TopBar = (props: TopBarProps) => {
   const [vibeCodyOpen, setVibeCodyOpen] = useVibeCodyOpen();
   const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
+    defaultMatches: true,
+  });
+  const largeDrawer = useMediaQuery(theme.breakpoints.up('xl'), {
     defaultMatches: true,
   });
 
@@ -72,7 +78,7 @@ const TopBar = (props: TopBarProps) => {
       boxShadow: "none",
       backgroundColor: (theme) => theme.palette.primary.main,
       height: "64px",
-      width: `calc(100% - ${vibeCodyOpen? VIBE_CODY_DRAWER_WIDTH : 0}px)`,
+      width: `calc(100% - ${vibeCodyOpen? largeDrawer ? VIBE_CODY_DRAWER_WIDTH : VIBE_CODY_DRAWER_WIDTH_SMALL : 0}px)`,
       left: `${vibeCodyOpen? 0 : 'auto'}`,
       zIndex: theme.zIndex.drawer + 1
     }}>
