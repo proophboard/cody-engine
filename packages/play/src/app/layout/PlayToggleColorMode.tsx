@@ -6,16 +6,27 @@ import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 import {configStore} from "@cody-play/state/config-store";
 import {useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
 import {merge} from "lodash/fp";
-import {VIBE_CODY_DRAWER_WIDTH} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
+import {
+  VIBE_CODY_DRAWER_WIDTH,
+  VIBE_CODY_DRAWER_WIDTH_SMALL
+} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
+import {useMediaQuery} from "@mui/material";
 
 interface Props {
   children: ReactNode
 }
 
+const defaultTheme = createTheme({});
+
 const PlayToggleColorMode = ({children}: Props) => {
   const {config} = useContext(configStore);
   const [mode, setMode] = React.useState<'light' | 'dark'>('light');
   const [vibeCodyOpen] = useVibeCodyOpen();
+
+  const largeDrawer = useMediaQuery(defaultTheme.breakpoints.up('xl'), {
+    defaultMatches: true,
+  });
+
   const colorMode = {
     mode,
     toggleColorMode: () => {
@@ -28,9 +39,9 @@ const PlayToggleColorMode = ({children}: Props) => {
       MuiDialog: {
         styleOverrides: {
           root: {
-            width: `calc(100% - ${VIBE_CODY_DRAWER_WIDTH}px)`,
+            width: `calc(100% - ${largeDrawer ? VIBE_CODY_DRAWER_WIDTH : VIBE_CODY_DRAWER_WIDTH_SMALL}px)`,
             '& .MuiBackdrop-root': {
-              right: `${VIBE_CODY_DRAWER_WIDTH}px`
+              right: `${largeDrawer ? VIBE_CODY_DRAWER_WIDTH : VIBE_CODY_DRAWER_WIDTH_SMALL}px`
             }
           }
         }
@@ -49,7 +60,7 @@ const PlayToggleColorMode = ({children}: Props) => {
           mode,
         }
       }),
-    [mode, config.theme, vibeCodyOpen],
+    [mode, config.theme, vibeCodyOpen, largeDrawer],
   );
 
   return (
