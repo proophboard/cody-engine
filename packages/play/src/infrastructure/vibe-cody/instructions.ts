@@ -75,7 +75,7 @@ import {
   ReferenceExistingInformationInTableProvider
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/reference-existing-information-in-table";
 import {
-  ApplyAFixedFilterToTheTableProvider
+  ApplyAFixedFilterToTheTable
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/apply-a-fixed-filter-to-the-table";
 
 export type InstructionOrProvider = Instruction | InstructionProvider;
@@ -100,7 +100,7 @@ export const instructions: InstructionOrProvider[] = [
   EditTableItem,
   RenameTableRowDataTypeProvider,
   ReferenceExistingInformationInTableProvider,
-  ApplyAFixedFilterToTheTableProvider,
+  ApplyAFixedFilterToTheTable,
   RemoveColumnQuestion,
   /* Information Instructions */
   ProvideTypeSuggestions,
