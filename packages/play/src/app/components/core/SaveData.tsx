@@ -9,7 +9,7 @@ import {
   DialogTitle,
   IconButton,
   TextField,
-  Typography
+  Typography, useMediaQuery, useTheme
 } from "@mui/material";
 import {ContentSaveAlertOutline, ContentSaveCheckOutline, ContentSaveOutline, ZipDisk} from "mdi-material-ui";
 import {useContext, useEffect, useRef, useState} from "react";
@@ -44,6 +44,11 @@ const SaveData = (props: SaveDataProps) => {
   const [playshotName, setPlayshotName] = useState('');
   const inputRef = useRef<HTMLInputElement>();
   const {mode} = useContext(ColorModeContext);
+  const theme = useTheme();
+
+  const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
+    defaultMatches: true,
+  });
 
   const openDialog = () => {
     setSaveDialogOpen(true);
@@ -103,7 +108,7 @@ const SaveData = (props: SaveDataProps) => {
   }
 
   return <>
-      {pendingChanges && <Typography variant="subtitle2" sx={{display: "inline-block", color: props.color}}>You have unsaved changes!&nbsp;&nbsp;&nbsp;</Typography>}
+      {pendingChanges && sideBarPersistent && <Typography variant="subtitle2" sx={{display: "inline-block", color: props.color}}>You have unsaved changes!&nbsp;&nbsp;&nbsp;</Typography>}
       <IconButton
                        title="Save config and data"
                        disabled={saved}

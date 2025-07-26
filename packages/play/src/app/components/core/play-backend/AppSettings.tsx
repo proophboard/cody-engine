@@ -5,7 +5,7 @@ import {
   FormLabel,
   IconButton,
   MenuItem,
-  TextField, ThemeOptions,
+  TextField, ThemeOptions, useMediaQuery,
   useTheme
 } from "@mui/material";
 import {useContext, useEffect, useState} from "react";
@@ -21,6 +21,9 @@ import {JexlFlavouredJSON} from "@event-engine/infrastructure/code-editor/JexlFl
 import {merge} from "lodash/fp";
 import {createTheme} from "@frontend/app/layout/theme";
 import {LayoutType} from "@frontend/app/layout/layout-type";
+import LightModeIcon from "@mui/icons-material/LightMode";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import {ColorModeContext} from "@frontend/app/providers/ToggleColorMode";
 
 interface OwnProps {
   saveCallback: (cb: () => void) => void;
@@ -40,7 +43,11 @@ const AppSettings = (props: AppSettingsProps) => {
   const [invalidThemeOptionsError, setInvalidThemeOptionsError] = useState<string|undefined>();
   const [themeEditorHeight, setThemeEditorHeight] = useState(200);
   const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
+  const { mode, toggleColorMode } = useContext(ColorModeContext);
   const {setPendingChanges} = useContext(PendingChangesContext);
+  const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
+    defaultMatches: true,
+  });
 
   useEffect(() => {
     setAppName(config.appName);
@@ -244,6 +251,14 @@ const AppSettings = (props: AppSettingsProps) => {
 
           setThemeEditorHeight(newHeight);
         }} className={themeEditorHeight > 200 ? 'active' : ''}><MdiIcon icon="focus-field-horizontal" /></IconButton>
+        {!sideBarPersistent && <IconButton sx={{marginLeft: "auto"}} aria-label="Light mode" onClick={toggleColorMode} title="Toggle color mode">
+          {mode === 'light' && (
+            <LightModeIcon />
+          )}
+          {mode === 'dark' && (
+            <DarkModeIcon />
+          )}
+        </IconButton>}
       </Grid2>
       <Grid2 xs={12}>
       {invalidThemeOptions &&

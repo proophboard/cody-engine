@@ -7,7 +7,7 @@ import {
   DialogContent,
   DialogTitle, Drawer, FormLabel,
   IconButton, Tab, Tabs,
-  TextField,
+  TextField, useMediaQuery,
   useTheme
 } from "@mui/material";
 import {Close, Database as DatabaseIcon, DockLeft, DockRight, SendCircleOutline, ZipDisk} from "mdi-material-ui";
@@ -35,8 +35,8 @@ const drawerWidth = 540;
 
 export type DockMode = 'left' | 'right' | 'dialog';
 
-export const isDrawerMode = (mode: DockMode): mode is 'left' | 'right' => {
-  return mode === 'left' || mode === 'right';
+export const isDrawerMode = (mode: DockMode, isMobile: boolean): mode is 'left' | 'right' => {
+  return isMobile || mode === 'left' || mode === 'right';
 }
 
 const AppSettingsModal = (props: AppSettingsModalProps) => {
@@ -45,6 +45,9 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
   const [activeTab, setActiveTab] = useState(0);
   const [saveDisabled, setSavedDisabled] = useState(true);
   const [dockMode, setDockMode] = useState<DockMode>('dialog');
+  const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
+    defaultMatches: true,
+  });
 
   const handleClose = () => {
     props.onClose();
@@ -62,9 +65,10 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
         </Grid2>
         <TopRightActions  uiOptions={{}} defaultService={config.defaultService} jexlCtx={{} as any} additionalRightButtons={[
           <IconButton key={'app_settings_dock_right_btn'} title={'Dock right. Ctrl+Click to dock left.'} sx={{
-            color: isDrawerMode(dockMode) ? theme.palette.primary.main : theme.palette.grey[500],
-            marginLeft: 'auto'
-          }} onClick={(e) => e.ctrlKey ? setDockMode(dockMode === 'left' ? 'right' : 'left') : setDockMode(isDrawerMode(dockMode) ? 'dialog' : 'right') }>
+            color: isDrawerMode(dockMode, !sideBarPersistent) ? theme.palette.primary.main : theme.palette.grey[500],
+            marginLeft: 'auto',
+            ...(!sideBarPersistent ? {display: "none"} : {})
+          }} onClick={(e) => e.ctrlKey ? setDockMode(dockMode === 'left' ? 'right' : 'left') : setDockMode(isDrawerMode(dockMode, !sideBarPersistent) ? 'dialog' : 'right') }>
             {dockMode === 'left' ? <DockLeft/> : <DockRight/>}
           </IconButton>,
           <IconButton key={'app_settings_close_btn'} sx={{
@@ -77,10 +81,10 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
     </DialogTitle>
     <DialogContent sx={{padding: '24px 24px'}}>
       <Tabs value={activeTab} onChange={(e, val) => setActiveTab(val)} sx={{marginBottom: "30px"}}>
-        <Tab icon={<DatabaseIcon />} label="Database" iconPosition={isDrawerMode(dockMode) ? "bottom" : "start"} />
-        <Tab icon={<BuildCircleOutlined />} label="Play Config" iconPosition={isDrawerMode(dockMode) ? "bottom" : "start"} />
-        <Tab icon={<PaletteOutlined />} label="Appearance" iconPosition={isDrawerMode(dockMode) ? "bottom" : "start"} />
-        <Tab icon={<SendCircleOutline />} label="Messagebox" iconPosition={isDrawerMode(dockMode) ? "bottom" : "start"} />
+        <Tab icon={<DatabaseIcon />} label={sideBarPersistent ? "Database" : "DB"} iconPosition={isDrawerMode(dockMode, !sideBarPersistent) ? "bottom" : "start"} />
+        <Tab icon={<BuildCircleOutlined />} label={sideBarPersistent ? "Play Config" : "Config"} iconPosition={isDrawerMode(dockMode, !sideBarPersistent) ? "bottom" : "start"} />
+        <Tab icon={<PaletteOutlined />} label={sideBarPersistent ? "Appearance" : "Theme"} iconPosition={isDrawerMode(dockMode, !sideBarPersistent) ? "bottom" : "start"} />
+        <Tab icon={<SendCircleOutline />} label={sideBarPersistent ? "Messagebox" : "API"} iconPosition={isDrawerMode(dockMode, !sideBarPersistent) ? "bottom" : "start"} />
       </Tabs>
       {activeTab === 0 && <Database saveCallback={(saveCb) => currentSaveHandler = saveCb } onSaveDisabled={disabled => setSavedDisabled(disabled)} />}
       {activeTab === 1 && <PlayConfig saveCallback={(saveCb) => currentSaveHandler = saveCb } onSaveDisabled={disabled => setSavedDisabled(disabled)} />}
@@ -101,15 +105,16 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
     </DialogActions>
   </>
 
-  if(isDrawerMode(dockMode)) {
+  if(isDrawerMode(dockMode, !sideBarPersistent)) {
     return <Drawer anchor={dockMode}
             open={props.open}
             onClose={props.onClose}
             variant="persistent"
             sx={{
               width: drawerWidth,
+              maxWidth: "100%",
               overscrollBehavior: 'contain',
-              [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box', overflowX: "hidden" },
+              [`& .MuiDrawer-paper`]: { width: drawerWidth, maxWidth: "100%", boxSizing: 'border-box', overflowX: "hidden" },
             }}
     >
       {settings}
