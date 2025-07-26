@@ -122,14 +122,14 @@ const TopBar = (props: TopBarProps) => {
             sx={{ color: vibeCodyOpen ? theme.palette.primary.light : theme.palette.primary.contrastText }}
           />
         </IconButton>
-        <IconButton aria-label="Light mode" onClick={toggleColorMode} title="Toggle color mode">
+        {sideBarPersistent && <IconButton aria-label="Light mode" onClick={toggleColorMode} title="Toggle color mode">
           {mode === 'light' && (
-            <LightModeIcon sx={{ color: theme.palette.primary.contrastText }} />
+            <LightModeIcon sx={{color: theme.palette.primary.contrastText}}/>
           )}
           {mode === 'dark' && (
-            <DarkModeIcon sx={{ color: theme.palette.primary.contrastText }} />
+            <DarkModeIcon sx={{color: theme.palette.primary.contrastText}}/>
           )}
-        </IconButton>
+        </IconButton>}
         <IconButton
           aria-label="App Settings"
           onClick={openSettingsModal}

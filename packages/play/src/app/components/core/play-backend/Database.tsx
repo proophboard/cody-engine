@@ -15,7 +15,7 @@ import {
   FormLabel,
   IconButton,
   MenuItem,
-  TextField,
+  TextField, useMediaQuery,
   useTheme
 } from "@mui/material";
 import Editor, {Monaco} from "@monaco-editor/react";
@@ -79,6 +79,9 @@ const Database = (props: DatabaseProps) => {
   const [isRunningProjection, setIsRunningProjection] = useState(false);
   const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
   const [editorHeight, setEditorHeight] = useState(DEFAULT_EDITOR_HEIGHT);
+  const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
+    defaultMatches: true,
+  });
 
   useEffect(() => {
     setUpdatedDatabaseStr(databaseStr);
@@ -222,7 +225,7 @@ const Database = (props: DatabaseProps) => {
         value={republishEventId}
         helperText={<span>Republish an event to trigger policies. Leave empty to republish last recorded event.</span>}
         onChange={(e: any) => setRepublishEventId(e.target.value)}
-        sx={{width: '45%'}}
+        sx={{width: sideBarPersistent ? '45%' : '70%'}}
       />
       <Button
         children={isPublishing? 'Check Browser Console for logs' : 'Republish'}
@@ -241,7 +244,7 @@ const Database = (props: DatabaseProps) => {
         helperText={<span>Rerun first clears the collection and then feeds all events into the projection again.</span>}
         disabled={isRunningProjection}
         select={true}
-        sx={{width: '45%'}}
+        sx={{width: sideBarPersistent ? '45%' : '70%'}}
         onChange={(e: any) => setSelectedProjection(e.target.value)}
       >
         {Object.keys(projections).map(prj => <MenuItem key={prj} value={prj} selected={prj === selectedProjection}>

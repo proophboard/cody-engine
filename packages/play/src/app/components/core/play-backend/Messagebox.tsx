@@ -10,7 +10,7 @@ import {
   ListItemIcon,
   ListItemText,
   MenuItem,
-  TextField, useTheme
+  TextField, useMediaQuery, useTheme
 } from "@mui/material";
 import {StickyNote2} from "@mui/icons-material";
 import Editor from "@monaco-editor/react";
@@ -55,6 +55,9 @@ const Messagebox = (props: MessageboxProps) => {
   const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
   const [user,] = useUser();
   const queryClient = useQueryClient();
+  const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
+    defaultMatches: true,
+  });
 
   const resetContext = () => {
     setMessageContext(undefined);
@@ -133,7 +136,7 @@ const Messagebox = (props: MessageboxProps) => {
 
   return <div style={{marginLeft: "10px", marginRight: "10px"}}>
     <Grid2 container={true} spacing={4} sx={{paddingTop: 0}}>
-      <Grid2 xs={12} md={isDrawerMode(props.dockMode) ? 12 : 6}>
+      <Grid2 xs={12} md={isDrawerMode(props.dockMode, !sideBarPersistent) ? 12 : 6}>
         <Autocomplete<MessageOption>
           disablePortal={true}
           id="message"
@@ -161,7 +164,7 @@ const Messagebox = (props: MessageboxProps) => {
       </Grid2>
     </Grid2>
     <Grid2 container={true} spacing={4}>
-      <Grid2 xs={12} md={isDrawerMode(props.dockMode) ? 12 : 6}>
+      <Grid2 xs={12} md={isDrawerMode(props.dockMode, !sideBarPersistent) ? 12 : 6}>
         <FormLabel>Message Context</FormLabel>
         {invalidMessageContext &&
           <Alert variant="standard" severity="error">Invalid Message Context. Please check your input!</Alert>}
@@ -204,7 +207,7 @@ const Messagebox = (props: MessageboxProps) => {
           />
         </Box>
       </Grid2>
-      <Grid2 xs={12} md={isDrawerMode(props.dockMode) ? 12 : 6}>
+      <Grid2 xs={12} md={isDrawerMode(props.dockMode, !sideBarPersistent) ? 12 : 6}>
         <FormLabel>Result</FormLabel>
         <div style={{border: '1px solid #eee'}}>
           <Editor height="400px"
