@@ -41,6 +41,7 @@ import {normalizeServerUiSchema} from "@frontend/util/schema/normalize-ui-schema
 import {camelCaseToTitle} from "@cody-play/infrastructure/utils/string";
 import {playRenameFQCN} from "@cody-play/infrastructure/vibe-cody/utils/play-rename-f-q-c-n";
 import {toSingularItemName} from "@event-engine/infrastructure/nlp/to-singular";
+import shortUUID from "short-uuid";
 
 export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -197,6 +198,8 @@ const getInlineItemDesc = (vo: Node, voName: string, voMeta: PlayValueObjectMeta
 
   return {
     ...playGetProophBoardInfoFromDescription(desc),
+    // assign a unique _pbCardId to avoid sync issues with list VO card
+    _pbCardId: shortUUID.generate().toString(),
     isList: false,
     isQueryable: desc.isQueryable,
     name: playRenameFQCN(voName, itemLabel),

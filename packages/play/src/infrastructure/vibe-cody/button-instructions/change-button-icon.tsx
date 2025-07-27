@@ -5,6 +5,7 @@ import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/wit
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {HeartOutline} from "mdi-material-ui";
 import {getIconNameFromSearchStr, matchIcons} from "@cody-play/infrastructure/vibe-cody/utils/icons/mdi-icons";
+import {kebabCase} from "lodash";
 
 const makeChangeButtonIconInstruction = (icon: string): Instruction => {
   const TEXT = `Use icon ${icon}`;
@@ -20,7 +21,7 @@ const makeChangeButtonIconInstruction = (icon: string): Instruction => {
       const success = await setButtonProperty(
         ctx.focusedElement! as FocusedButton,
         'icon',
-        icon,
+        kebabCase(icon),
         config,
         dispatch
       )

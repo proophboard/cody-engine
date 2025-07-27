@@ -7,6 +7,7 @@ import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {PlayTopLevelPage} from "@cody-play/state/types";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {getIconNameFromSearchStr, matchIcons} from "@cody-play/infrastructure/vibe-cody/utils/icons/mdi-icons";
+import {kebabCase} from "lodash";
 
 const makeChangeSidebarIconInstruction = (icon: string): Instruction => {
   const TEXT = `Use icon ${icon}`;
@@ -41,7 +42,7 @@ const makeChangeSidebarIconInstruction = (icon: string): Instruction => {
 
       const pageCopy = cloneDeepJSON(page) as PlayTopLevelPage;
 
-      pageCopy.sidebar.icon = icon;
+      pageCopy.sidebar.icon = kebabCase(icon);
 
       dispatch({
         ctx: getEditedContextFromConfig(config),
