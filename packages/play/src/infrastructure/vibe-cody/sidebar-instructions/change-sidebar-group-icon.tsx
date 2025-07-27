@@ -8,6 +8,7 @@ import {isTopLevelPage, PageDefinition} from "@frontend/app/pages/page-definitio
 import {getGroup} from "@cody-play/infrastructure/vibe-cody/sidebar-instructions/move-sidebar-item";
 import {getIconNameFromSearchStr, matchIcons} from "@cody-play/infrastructure/vibe-cody/utils/icons/mdi-icons";
 import {HeartOutline} from "mdi-material-ui";
+import {kebabCase} from "lodash";
 
 const makeChangeSidebarGroupIconInstruction = (icon: string): Instruction => {
   const TEXT = `Use icon ${icon}`;
@@ -38,7 +39,7 @@ const makeChangeSidebarGroupIconInstruction = (icon: string): Instruction => {
         const copy = cloneDeepJSON(p) as PlayTopLevelPage;
         const group = getGroup(copy);
         if (group) {
-          group.icon = icon;
+          group.icon = kebabCase(icon);
         }
 
         copy.sidebar.group = group;

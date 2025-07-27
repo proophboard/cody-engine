@@ -1,7 +1,7 @@
 import {RawUiMetadata, UiMetadata} from "@cody-engine/cody/hooks/utils/ui/types";
 import {names} from "@event-engine/messaging/helpers";
 
-export const normalizeUiMetadata = (meta: RawUiMetadata): UiMetadata => {
+export const normalizeUiMetadata = (meta: RawUiMetadata, normalizeIconNames = true): UiMetadata => {
   if(meta && meta.tab) {
 
     if(typeof meta.tab.hidden === "boolean") {
@@ -27,13 +27,13 @@ export const normalizeUiMetadata = (meta: RawUiMetadata): UiMetadata => {
       delete meta.tab["style:expr"];
     }
 
-    if(meta.tab.icon) {
+    if(normalizeIconNames && meta.tab.icon) {
       meta.tab.icon = names(meta.tab.icon).className;
     }
   }
 
   if(meta && meta.sidebar) {
-    if(meta.sidebar.icon) {
+    if(normalizeIconNames && meta.sidebar.icon) {
       meta.sidebar.icon = names(meta.sidebar.icon).className;
     }
 
