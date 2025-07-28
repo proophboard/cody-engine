@@ -1,7 +1,7 @@
 import nlp from "compromise";
 
 export const verbToPastTense = (verb: string): string => {
-  const standardSentence = `You ${verb} it.`;
+  const standardSentence = `You ${verb.toLowerCase()} it.`;
 
   const doc = nlp(standardSentence);
 
