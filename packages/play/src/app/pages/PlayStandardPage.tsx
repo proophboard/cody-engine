@@ -175,7 +175,7 @@ export const PlayStandardPage = (props: Props) => {
   } else {
     topBar = tabs ? (
       <Grid2 xs={12} sx={headerGridSx}>
-        {renderTabs(tabs, user, pageData, theme, t, true)}
+        {renderTabs(tabs, user, pageData, theme, t, true, liveEditMode, focusedEle, setFocusedEle)}
       </Grid2>
     ) : (
       <></>

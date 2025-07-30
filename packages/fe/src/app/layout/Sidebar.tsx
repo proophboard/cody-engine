@@ -34,12 +34,13 @@ export const makeListItemSx = (theme: Theme): SxProps => {
   }
 }
 
-export const makeButtonSx = (theme: Theme): SxProps => {
+export const makeButtonSx = (theme: Theme, isLiveEditHidden?: boolean): SxProps => {
   return {
-    color: 'inherit',
+    color: isLiveEditHidden ? theme.palette.text.disabled :  'inherit',
     padding: '10px 8px',
     justifyContent: 'flex-start',
     textTransform: 'none',
+    textDecoration: isLiveEditHidden ? 'line-through' : undefined,
     letterSpacing: 0,
     width: '100%',
     fontWeight: theme.typography.fontWeightMedium,
