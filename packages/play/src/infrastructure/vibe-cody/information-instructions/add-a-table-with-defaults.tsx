@@ -6,12 +6,12 @@ import {
 import {PlayValueObjectMetadataRaw} from "@cody-play/infrastructure/cody/vo/play-vo-metadata";
 import {names} from "@event-engine/messaging/helpers";
 import {onNode} from "@cody-play/infrastructure/cody/hooks/on-node";
-import {getEditedContextFromConfig} from "@cody-play/state/config-store";
+import {cloneConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
 import {VibeCodyContext} from "@cody-play/infrastructure/vibe-cody/VibeCodyContext";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {AddColumnsToTable} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-columns-to-table";
 import {TableLarge} from "mdi-material-ui";
-import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {playDefinitionIdFromFQCN, playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {withNavigateToProcessing} from "@cody-play/infrastructure/vibe-cody/utils/navigate/with-navigate-to-processing";
 import {getRouteParamsFromRoute} from "@cody-play/infrastructure/vibe-cody/utils/navigate/get-route-params-from-route";
 import {AndFilter, Filter} from "@app/shared/value-object/query/filter-types";
@@ -24,6 +24,8 @@ import {uiReadOnly} from "@cody-play/infrastructure/vibe-cody/utils/ui-schema/ui
 import {
   makeDataSelectWidgetConfig
 } from "@cody-play/infrastructure/vibe-cody/utils/ui-schema/make-data-select-widget-config";
+import {playUpdateProophBoardInfo} from "@cody-play/infrastructure/cody/pb-info/play-update-prooph-board-info";
+import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
 
 const TEXT = "Add a table of ";
 
@@ -38,21 +40,35 @@ export const AddATableWithDefaults: Instruction = {
     const tableNameNames = names(tableName);
     const itemNames = names(toSingularItemName(tableName));
     const voIdentifier = itemNames.propertyName + 'Id';
+    const configCopy = cloneConfig(config);
 
     const tableFQCN = `${names(config.defaultService).className}.App.${tableNameNames.className}`;
+    const itemFQCN = `${names(config.defaultService).className}.App.${itemNames.className}`;
 
     if(config.types[tableFQCN]) {
       return {
         cody: `Can't add a new table called "${tableName}", because the data type name "${tableFQCN}" would conflict with an existing data type name.`,
-        details: `If you want to reuse the existing data type, give the table another name and reference the existing data type in the "Information Flow" view, that you can access from the level dropdown in the top right corner of the page.`,
+        details: `If you want to reuse the existing data type, give the table another name and reference the existing data type.\n\nFocus on the table and start your prompt with "reference" to get prompt suggestion.`,
+        type: CodyResponseType.Error
+      }
+    }
+
+    if(config.types[itemFQCN]) {
+      return {
+        cody: `Can't add a new table called "${tableName}", because the row data type name "${itemFQCN}" would conflict with an existing data type name.`,
+        details: `If you want to reuse the existing data type, give the table another name and reference the existing data type.\n\nFocus on the table and start your prompt with "reference" to get prompt suggestion.`,
         type: CodyResponseType.Error
       }
     }
 
     const routeParams = getRouteParamsFromRoute(pageConfig.route);
 
-    const items: Record<string, string> = {
+    const itemSchema = {
       [voIdentifier]: "string|format:uuid"
+    }
+
+    const items: Record<string, string> = {
+      $items: `/App/${itemNames.className}`
     }
     const query: Record<string, string> = {};
     let filter: Filter = {any: true};
@@ -62,7 +78,7 @@ export const AddATableWithDefaults: Instruction = {
     routeParams.forEach(p => {
       const dataSelectType = findDataSelectTypeForRouteParam(p, pageConfig.route, config);
 
-      items[p] = "string|format:uuid";
+      itemSchema[p] = "string|format:uuid";
       query[p] = "string|format:uuid";
       itemsUiSchema[p] = dataSelectType
         ? uiReadOnly(makeDataSelectWidgetConfig(dataSelectType, config))
@@ -83,18 +99,61 @@ export const AddATableWithDefaults: Instruction = {
       })
     }
 
+    const itemMetadata: PlayValueObjectMetadataRaw = {
+      identifier: voIdentifier,
+      hasIdentifier: true,
+      ns: "App",
+      schema: itemSchema,
+      uiSchema: itemsUiSchema,
+      querySchema: {
+        [voIdentifier]: "string|format:uuid"
+      },
+      collection: `${tableNameNames.constantName.toLowerCase()}_collection`,
+    }
+
+    const itemNode = playMakeNodeRecordWithDefaults(
+      {
+        name: itemNames.className,
+        type: NodeType.document,
+        metadata: JSON.stringify(itemMetadata),
+      },
+      config
+    )
+
+    const itemRes = await onNode(itemNode, dispatch, getEditedContextFromConfig(config), config);
+
+    if(playIsCodyError(itemRes)) {
+      return itemRes;
+    }
+
+    // Register the item type in the config, so that the reference can be resolved
+    configCopy.types[itemFQCN] = {
+      desc: {
+        name: itemFQCN,
+        query: `App.Get${itemNames.className}`,
+        identifier: voIdentifier,
+        collection: itemMetadata.collection as string,
+        isList: false,
+        hasIdentifier: true,
+        isQueryable: true,
+        ...playUpdateProophBoardInfo(itemNode, getEditedContextFromConfig(config), undefined)
+      },
+      schema: (new Schema(itemSchema)).toJsonSchema(),
+      uiSchema: itemsUiSchema,
+      factory: []
+    }
+
+    configCopy.definitions[playDefinitionIdFromFQCN(itemFQCN)] = (new Schema(itemSchema)).toJsonSchema()
+
     const metadata: PlayValueObjectMetadataRaw = {
       identifier: voIdentifier,
       hasIdentifier: true,
       ns: "App",
-      schema: {
-        "$items": items
-      },
+      schema: items,
       uiSchema: {
         "ui:table": {
           "columns": columns
-        },
-        "items": itemsUiSchema,
+        }
       },
       querySchema: query,
       resolve: {
@@ -122,7 +181,7 @@ export const AddATableWithDefaults: Instruction = {
       config
     )
 
-    const res = await onNode(node, dispatch, getEditedContextFromConfig(config), config);
+    const res = await onNode(node, dispatch, getEditedContextFromConfig(config), configCopy);
 
     if(playIsCodyError(res)) {
       return res;

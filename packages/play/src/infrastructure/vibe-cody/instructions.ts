@@ -82,12 +82,14 @@ import {TabInstructionsProvider} from "@cody-play/infrastructure/vibe-cody/page-
 import {
   AddPropertiesToInformation
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/add-properties-to-information";
+import {UsePersonasAsUsers} from "@cody-play/infrastructure/vibe-cody/app-instructions/use-personas-as-users";
 
 export type InstructionOrProvider = Instruction | InstructionProvider;
 
 export const instructions: InstructionOrProvider[] = [
   /* App Settings */
   ChangeAppName,
+  UsePersonasAsUsers,
   /* View Instructions */
   ChangeViewTitleProvider,
   FocusOnViewProvider,
