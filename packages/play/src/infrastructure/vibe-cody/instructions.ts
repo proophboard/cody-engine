@@ -123,7 +123,7 @@ export const instructions: InstructionOrProvider[] = [
   AddANewTab,
   TabInstructionsProvider,
   /* Policy Instructions */
-  RunActionOnEventProvider,
+  // RunActionOnEventProvider,
   /* Button Instructions */
   FocusOnButtonProvider,
   ChangeButtonLabel,

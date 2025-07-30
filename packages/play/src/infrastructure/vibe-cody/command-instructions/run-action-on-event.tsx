@@ -37,6 +37,8 @@ export const RunActionOnEventProvider: InstructionProvider = {
           execute: async (input, ctx, dispatch, config1) => {
             const eventName = getLabelFromInstruction(input, TEXT);
 
+
+
             return {
               cody: `"${playNodeLabel(action.command)}" will now run automatically whenever an event of type "${eventName}" occurs.`,
               details: `The "Message Box" in the Play Backend dialog can be used to trigger events manually. This is useful for testing.\n\nIt's also recommended to keep an eye on the browser console. The Cody Play environment provides detailed logs, so that you can monitor and debug your process automations.`
@@ -45,6 +47,8 @@ export const RunActionOnEventProvider: InstructionProvider = {
         }
       ]
     }
+
+
 
     return [];
   }
