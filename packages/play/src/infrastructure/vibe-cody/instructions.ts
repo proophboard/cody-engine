@@ -83,6 +83,7 @@ import {
   AddPropertiesToInformation
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/add-properties-to-information";
 import {UsePersonasAsUsers} from "@cody-play/infrastructure/vibe-cody/app-instructions/use-personas-as-users";
+import {RunActionOnEventProvider} from "@cody-play/infrastructure/vibe-cody/command-instructions/run-action-on-event";
 
 export type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -121,6 +122,8 @@ export const instructions: InstructionOrProvider[] = [
   OpenRowOnDetailsPage,
   AddANewTab,
   TabInstructionsProvider,
+  /* Policy Instructions */
+  RunActionOnEventProvider,
   /* Button Instructions */
   FocusOnButtonProvider,
   ChangeButtonLabel,

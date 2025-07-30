@@ -80,6 +80,7 @@ export interface Instruction {
   allowSubSuggestions?: boolean,
   notUndoable?: boolean,
   keepAnswers?: boolean,
+  doNotSuggest?: boolean,
   cursorPosition?: CursorPosition,
   isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string, cursorPosition: CursorPosition) => boolean,
@@ -549,8 +550,12 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
        }}
        filterOptions={(options, state) => {
          if (state.inputValue.length >= 1) {
-           const filtered = options.filter((item) =>
-             includesAllWords(String(item.text).toLowerCase(), state.inputValue.toLowerCase().split(" "))
+           const filtered = options.filter((item) => {
+               if (item.doNotSuggest) {
+                 return false;
+               }
+               return includesAllWords(String(item.text).toLowerCase(), state.inputValue.toLowerCase().split(" "))
+             }
            );
 
            if(filtered.length === 0) {
@@ -560,8 +565,13 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                return [];
              }
 
-             return options.filter((item) =>
-               includesAllWords(String(item.text).toLowerCase(), nouns)
+             return options.filter((item) => {
+                 if(item.doNotSuggest) {
+                   return false;
+                 }
+
+                 return includesAllWords(String(item.text).toLowerCase(), nouns)
+               }
              )
            }
 

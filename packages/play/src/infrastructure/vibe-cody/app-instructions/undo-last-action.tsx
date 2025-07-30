@@ -9,7 +9,7 @@ export const UndoLastAction: Instruction = {
   icon: <UndoVariant />,
   noInputNeeded: true,
   notUndoable: true,
-  isActive: context => context.hasHistory,
+  isActive: context => context.hasHistory && !context.selectedInstruction,
   match: input => input.startsWith(TEXT),
   execute: async (input, ctx) => {
     await ctx.undo();

@@ -225,7 +225,15 @@ const makeFilterSuggestions = (tableVO: PlayInformationRuntimeInfo): Instruction
       const currentLine = lines[lineOfCursor];
 
       if(currentLine === '') {
-        return [];
+        return [
+          {
+            text: `Fallback Instruction`,
+            doNotSuggest: true,
+            isActive: () => true,
+            match: input => true,
+            execute: withNavigateToProcessing(execute)
+          }
+        ];
       }
 
       const cursorPosStartLine = lines.slice(0, lineOfCursor - 1).join(`\n`).length;

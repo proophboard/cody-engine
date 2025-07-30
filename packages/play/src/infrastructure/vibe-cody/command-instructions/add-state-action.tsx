@@ -398,6 +398,8 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
         return [];
       }
 
+      let fullMatch = false;
+
       properties.forEach(prop => {
         if(isPropertyModified(prop, lines, currentLine)) {
           return;
@@ -423,7 +425,6 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
         let propSchema = stateVoObjectSchema.getObjectPropertySchema(prop, new Schema({}));
 
         if(propSchema.isRef()) {
-          debugger;
           propSchema = propSchema.resolveRef(playServiceFromFQCN(stateDesc.name), config.types);
         }
 
@@ -436,6 +437,8 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
           lines[lineOfCursor] = INPUT;
 
           suggestions.push(makeModifySuggestion(`input()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+        } else {
+          fullMatch = true;
         }
 
         // Set modifier
@@ -448,6 +451,8 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
                 lines[lineOfCursor] = ENUM_OPTION_INPUT;
 
                 suggestions.push(makeModifySuggestion(`set(${enumOption})`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+              } else {
+                fullMatch = true;
               }
             })
           } else if (propSchema.isString('email')) {
@@ -457,6 +462,8 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
               lines[lineOfCursor] = USER_EMAIL_INPUT;
 
               suggestions.push(makeModifySuggestion(`userEmail()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+            } else {
+              fullMatch = true;
             }
           } else if (propSchema.isString('date') || propSchema.isString('datetime') || propSchema.isString('time')) {
             const NOW_INPUT = `${propBulletPoint}: now()`;
@@ -465,6 +472,8 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
               lines[lineOfCursor] = NOW_INPUT;
 
               suggestions.push(makeModifySuggestion(`now()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+            } else {
+              fullMatch = true;
             }
           } else {
             const USER_ID_INPUT = `${propBulletPoint}: user()`;
@@ -473,6 +482,8 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
               lines[lineOfCursor] = USER_ID_INPUT;
 
               suggestions.push(makeModifySuggestion(`user()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+            } else {
+              fullMatch = true;
             }
 
             const USER_NAME_INPUT = `${propBulletPoint}: userName()`;
@@ -481,6 +492,8 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
               lines[lineOfCursor] = USER_NAME_INPUT;
 
               suggestions.push(makeModifySuggestion(`userName()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+            } else {
+              fullMatch = true;
             }
           }
         } else if (propJsonSchema.type === "boolean") {
@@ -491,12 +504,16 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
             lines[lineOfCursor] = TRUE_INPUT;
 
             suggestions.push(makeModifySuggestion(`set(true)`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+          } else {
+            fullMatch = true;
           }
 
           if(currentLine !== FALSE_INPUT) {
             lines[lineOfCursor] = FALSE_INPUT;
 
             suggestions.push(makeModifySuggestion(`set(false)`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+          } else {
+            fullMatch = true;
           }
         } else {
           const SET_INPUT = `${propBulletPoint}: set()`;
@@ -505,6 +522,8 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
             lines[lineOfCursor] = SET_INPUT;
 
             suggestions.push(makeModifySuggestion(`set()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+          } else {
+            fullMatch = true;
           }
         }
 
@@ -516,6 +535,8 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
             lines[lineOfCursor] = UNSET_MODIFIER;
 
             suggestions.push(makeModifySuggestion(`unset()`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+          } else {
+            fullMatch = true;
           }
         }
 
@@ -526,8 +547,25 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
           lines[lineOfCursor] = EXPR_MODIFIER;
 
           suggestions.push(makeModifySuggestion(`expr($> )`, lines.join(`\n`), stateVO, commandName, eventName, config, createsNewState))
+        } else {
+          fullMatch = true;
         }
       })
+
+      if(fullMatch) {
+        return [
+          {
+            text: 'Fallback Instruction',
+            doNotSuggest: true,
+            noInputNeeded: true,
+            isActive: () => true,
+            match: input => true,
+            execute: async (input, ctx, dispatch, config1, navigateTo) => {
+              return await execute(stateVO, commandName, eventName, input, ctx, dispatch, config1, createsNewState);
+            }
+          }
+        ];
+      }
 
       return suggestions;
     }
