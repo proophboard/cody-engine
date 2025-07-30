@@ -149,9 +149,9 @@ export class Schema {
       return;
     }
 
-    if(this.shorthand) {
-      const [refWithoutProp, prop] = splitPropertyRef(this.getRef());
+    const [refWithoutProp, prop] = splitPropertyRef(this.getRef());
 
+    if(this.shorthand) {
       try {
         return playGetVoRuntimeInfoFromDataReference(refWithoutProp, sourceService, types);
       } catch (e) {
@@ -161,7 +161,7 @@ export class Schema {
     }
 
     if(this.jsonSchema) {
-      const jsonSchemaRefVo = types[playFQCNFromDefinitionId(this.getRef())];
+      const jsonSchemaRefVo = types[playFQCNFromDefinitionId(refWithoutProp)];
 
       if(!jsonSchemaRefVo) {
         console.warn(`Could not resolve ref: ${this.getRef()} to a type registered in the cody play config`);
@@ -181,8 +181,16 @@ export class Schema {
 
     const refInfo = this.getRefRuntimeInfo(sourceService, types);
 
+    const [, property] = splitPropertyRef(this.getRef());
+
     if(refInfo) {
-      return new Schema(refInfo.schema as JSONSchema7, true);
+      const refSchema = new Schema(refInfo.schema as JSONSchema7, true);
+
+      if(property) {
+        return refSchema.getObjectPropertySchema(property, emptySchema);
+      }
+
+      return refSchema;
     }
 
     return emptySchema;

@@ -420,7 +420,13 @@ const makeStateModifySuggestions = (stateVO: PlayInformationRuntimeInfo, command
           return;
         }
 
-        const propSchema = stateVoObjectSchema.getObjectPropertySchema(prop, new Schema({}));
+        let propSchema = stateVoObjectSchema.getObjectPropertySchema(prop, new Schema({}));
+
+        if(propSchema.isRef()) {
+          debugger;
+          propSchema = propSchema.resolveRef(playServiceFromFQCN(stateDesc.name), config.types);
+        }
+
         const propJsonSchema = propSchema.toJsonSchema();
 
         // Input modifier
