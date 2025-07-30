@@ -14,6 +14,12 @@ import {
   Numeric
 } from "mdi-material-ui";
 import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-focused";
+import {context} from "esbuild";
+import {
+  AddPropertiesToInformation
+} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-properties-to-information";
+import {isStateViewFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-state-view-focused";
 
 const BASIC_TYPES = [
   'string',
@@ -65,13 +71,21 @@ const makeSuggestType = (propType: string, text: string): Instruction => {
     noInputNeeded: false,
     match: (input, cursorPosition) => getCurrentLine(input, cursorPosition).startsWith(propType),
     execute: async (input, ctx, dispatch, config, navigateTo) => {
-      return await AddColumnsToTable.execute(input, ctx, dispatch, config, navigateTo);
+      const page = ctx.page.handle.page;
+
+      return isTableFocused(ctx.focusedElement, page, config)
+        ? await AddColumnsToTable.execute(input, ctx, dispatch, config, navigateTo)
+        : await AddPropertiesToInformation.execute(input, ctx, dispatch, config, navigateTo);
     }
   }
 }
 
 export const ProvideTypeSuggestions: InstructionProvider = {
-  isActive: context => isMultilineText(context.searchStr),
+  isActive: (context, config) => {
+    const page = context.page.handle.page;
+
+    return isMultilineText(context.searchStr) && (isTableFocused(context.focusedElement, page, config) || isStateViewFocused(context.focusedElement, page, config))
+  },
   provide: (context, config, env) => {
     let lineOfCursor = 0;
     const cursorPos = context.cursorPosition;

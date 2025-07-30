@@ -29,7 +29,7 @@ const makeRemoveColumn = (columnName: string): Instruction => {
     execute: withNavigateToProcessing(async (input, ctx, dispatch, config, navigateTo) => {
       const [tableVoFQCN, field] = ctx.focusedElement!.id.split(':');
 
-      const tableVO = config.types[tableVoFQCN];
+      const tableVO = config.types[tableVoFQCN] as PlayInformationRuntimeInfo;
 
       if(!tableVO) {
         return {
@@ -155,7 +155,7 @@ const makeRemoveColumn = (columnName: string): Instruction => {
   }
 }
 
-const makeHideColumn = (columnName: string): Instruction => {
+export const makeHideColumn = (columnName: string): Instruction => {
   return {
     text: `Hide column`,
     icon: <EyeOff />,

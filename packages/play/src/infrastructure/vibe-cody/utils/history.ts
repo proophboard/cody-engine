@@ -78,7 +78,7 @@ export const undoLast = async (dispatch: PlayConfigDispatch, navigateTo: (route:
 
       resolve({
         cody: `Reverted last change: `,
-        details: `"${lastEntry.name}"`,
+        details: `${lastEntry.name}`,
         type: CodyResponseType.Warning,
       })
 

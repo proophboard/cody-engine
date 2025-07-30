@@ -80,6 +80,7 @@ export interface Instruction {
   allowSubSuggestions?: boolean,
   notUndoable?: boolean,
   keepAnswers?: boolean,
+  doNotSuggest?: boolean,
   cursorPosition?: CursorPosition,
   isActive: (context: VibeCodyContext, config: CodyPlayConfig, env: RuntimeEnvironment) => boolean,
   match: (input: string, cursorPosition: CursorPosition) => boolean,
@@ -106,6 +107,8 @@ let currentNavigateFunc = (route: string) => {};
 
 let lockChange = false;
 
+let doubleEnterLock = false;
+
 let waitingReply: InstructionExecutionCallback | undefined;
 
 let answers: InstructionOrProvider[] | undefined;
@@ -130,19 +133,6 @@ const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: 
     })
 
   return suggestions;
-}
-
-
-
-const trimText = (text: string): string => {
-  let lines = text.split(`\n`);
-
-  if(lines.length > 5) {
-    lines = lines.slice(0, 5);
-    lines.push(`...`);
-  }
-
-  return lines.join(`\n`);
 }
 
 const fromCodyInstructionResponse = (codyResponse: CodyInstructionResponse): Message | undefined => {
@@ -293,7 +283,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
       if(input.noInputNeeded) {
         addMessage({
-          text: trimText(input.text),
+          text: input.text,
           author: "user"
         })
 
@@ -310,7 +300,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
     if(typeof input === "string") {
       addMessage({
-        text: trimText(input),
+        text: input,
         author: "user"
       })
 
@@ -560,8 +550,12 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
        }}
        filterOptions={(options, state) => {
          if (state.inputValue.length >= 1) {
-           const filtered = options.filter((item) =>
-             includesAllWords(String(item.text).toLowerCase(), state.inputValue.toLowerCase().split(" "))
+           const filtered = options.filter((item) => {
+               if (item.doNotSuggest) {
+                 return false;
+               }
+               return includesAllWords(String(item.text).toLowerCase(), state.inputValue.toLowerCase().split(" "))
+             }
            );
 
            if(filtered.length === 0) {
@@ -571,8 +565,13 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
                return [];
              }
 
-             return options.filter((item) =>
-               includesAllWords(String(item.text).toLowerCase(), nouns)
+             return options.filter((item) => {
+                 if(item.doNotSuggest) {
+                   return false;
+                 }
+
+                 return includesAllWords(String(item.text).toLowerCase(), nouns)
+               }
              )
            }
 
@@ -588,12 +587,12 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
        onChange={(e,v) => {
          e.stopPropagation();
 
-         if(!lockChange) {
+         if(!lockChange && !doubleEnterLock) {
            handleInstruction(v).catch(e => console.error(e));
            // Prevent double enter submit
-           lockChange = true;
+           doubleEnterLock = true;
            setTimeout(() => {
-             lockChange = false;
+             doubleEnterLock = false;
            }, 800);
          }
        }}

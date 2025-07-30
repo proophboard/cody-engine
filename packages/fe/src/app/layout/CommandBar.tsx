@@ -1,6 +1,18 @@
 import * as React from 'react';
-import {PropsWithChildren, useEffect, useState} from "react";
-import {Box, Button, Card, CardActions, CardHeader, Divider, SxProps, Theme, useTheme} from "@mui/material";
+import {PropsWithChildren, useContext, useEffect, useState} from "react";
+import {
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardHeader,
+  Divider,
+  IconButton,
+  Stack,
+  SxProps,
+  Theme,
+  useTheme
+} from "@mui/material";
 import {User} from "@app/shared/types/core/user/user";
 import {PageData} from "@app/shared/types/core/page-data/page-data";
 import jexl from "@app/shared/jexl/get-configured-jexl";
@@ -12,6 +24,11 @@ import {makeButtonSx} from "@frontend/app/layout/Sidebar";
 import {Tab} from "@frontend/app/pages/page-definitions";
 import {useTranslation} from "react-i18next";
 import {TFunction} from "i18next";
+import {Target} from "mdi-material-ui";
+import {isWriteMode} from "@frontend/app/components/core/form/templates/ObjectFieldTemplate";
+import {FocusedElement} from "@cody-play/state/focused-element";
+import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
+import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 
 
 
@@ -48,12 +65,22 @@ const determineTabConfig = (tab: Tab, user: User, page: PageData): TabConfig => 
   }
 }
 
-export const renderTabs = (tabs: Tab[], user: User, page: PageData, theme: Theme, t: TFunction, taskBasedUiLayout?: boolean) => {
+export const renderTabs = (
+  tabs: Tab[],
+  user: User,
+  page: PageData,
+  theme: Theme,
+  t: TFunction,
+  taskBasedUiLayout?: boolean,
+  liveEditMode?: boolean,
+  focusedEle?: FocusedElement,
+  setFocusedEle?: (ele: FocusedElement | undefined) => void
+) => {
   const tabComponents = tabs.map(tab => {
     const config = determineTabConfig(tab, user, page);
 
     const style = taskBasedUiLayout ? {
-      ...makeButtonSx(theme),
+      ...makeButtonSx(theme, liveEditMode && config.hidden),
       ["&.active"]: {
         borderBottom: "2px solid " + theme.palette.primary.main,
         borderRadius: 0,
@@ -63,13 +90,33 @@ export const renderTabs = (tabs: Tab[], user: User, page: PageData, theme: Theme
       justifyContent: 'center',
       ...config.style} as SxProps
       : {
-        ...makeButtonSx(theme),
+        ...makeButtonSx(theme, liveEditMode && config.hidden),
         width: 'auto',
         minWidth: '150px',
         justifyContent: 'center',
         ...config.style} as SxProps;
 
-    return config.hidden ? <></> : <Button
+    const label = tab['label:t'] ? t(tab['label:t']) : tab.label;
+    const isFocusedEle = !!focusedEle && focusedEle.type === "tab" && focusedEle.id === tab.route;
+
+    return config.hidden && !liveEditMode ? <></> : liveEditMode && setFocusedEle
+      ? <Stack direction="row" spacing={1} sx={{display: 'inline-flex'}}>
+        <Button
+          sx={style}
+          disabled={config.disabled}
+          startIcon={tab.icon? <MdiIcon icon={tab.icon} /> : undefined}
+          children={label}
+          key={tab.route}
+          component={NavLink}
+          to={tab.route}
+        />
+        <IconButton onClick={() => setFocusedEle({
+          id: tab.route,
+          name: label,
+          type: 'tab',
+        })} color={isFocusedEle ? 'info' : undefined}><Target /></IconButton>
+      </Stack>
+      : <Button
       sx={style}
       disabled={config.disabled}
       startIcon={tab.icon? <MdiIcon icon={tab.icon} /> : undefined}
@@ -90,6 +137,8 @@ const CommandBar = (props: CommandBarProps) => {
   const theme = useTheme();
   const hasCommands = Array.isArray(props.children) && props.children.length;
   const {t} = useTranslation();
+  const { liveEditMode } = useContext(LiveEditModeContext);
+  const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
 
   useEffect(() => {
     const listener = () => {
@@ -142,12 +191,12 @@ const CommandBar = (props: CommandBarProps) => {
     } : {
       width: 'auto',
     }}>
-      {!fixed && (props.tabs ? renderTabs(props.tabs, user, pageData, theme, t) : <CardHeader title="Actions"/>)}
+      {!fixed && (props.tabs ? renderTabs(props.tabs, user, pageData, theme, t, false, liveEditMode, focusedEle, setFocusedEle) : <CardHeader title="Actions"/>)}
       {!fixed && <Divider/>}
       {cardActions}
     </Box>
     {fixed && /* Mirror card to keep same space in the DOM */ <Box>
-      {props.tabs? renderTabs(props.tabs, user, pageData, theme, t) : <CardHeader title="Actions"/>}
+      {props.tabs? renderTabs(props.tabs, user, pageData, theme, t, false, liveEditMode, focusedEle, setFocusedEle) : <CardHeader title="Actions"/>}
       <Divider/>
       {cardActions}
     </Box>}

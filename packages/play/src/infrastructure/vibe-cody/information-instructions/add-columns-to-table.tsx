@@ -38,6 +38,7 @@ import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is
 import {
   getFocusedQueryableStateListVo
 } from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
+import {resetRjsfValidator} from "@frontend/util/rjsf-validator";
 
 const TEXT = 'Add the following columns to the table: ';
 
@@ -193,13 +194,16 @@ export const AddColumnsToTable: Instruction = {
       }
     });
 
+    // Reset resolved refs cache to avoid validation failures due to changed schema
+    resetRjsfValidator();
+
     return {
       cody: `Alright, I've added the columns.`
     }
   })
 }
 
-const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boolean, rootFQCN: string, itemSchema: Schema, itemUiSchema: UiSchema, config: CodyPlayConfig, serviceNames: Names, ns: NamespaceNames, title?: string, isList?: boolean) => {
+export const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boolean, rootFQCN: string, itemSchema: Schema, itemUiSchema: UiSchema, config: CodyPlayConfig, serviceNames: Names, ns: NamespaceNames, title?: string, isList?: boolean) => {
   if (propSchema.isObject()) {
     propSchema.getObjectProperties().forEach(subProp => {
       const subPropSchema = propSchema.getObjectPropertySchema(subProp, new Schema({type: "string", title: camelCaseToTitle(subProp)}));

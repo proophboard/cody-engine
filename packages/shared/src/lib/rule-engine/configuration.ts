@@ -102,12 +102,12 @@ export const isTriggerCommand = (then: any): then is ThenTriggerCommand => typeo
 export interface ThenCallService {
   call: {
     service: string;
-    arguments?: string | PropMapping;
+    arguments?: string | string[] | PropMapping | PropMapping[];
     method?: string;
     async?: boolean;
     result?: {
       variable: string;
-      mapping?: string | PropMapping;
+      mapping?: string | string[] | PropMapping | PropMapping[];
     }
   }
 }

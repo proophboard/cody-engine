@@ -77,12 +77,20 @@ import {
 import {
   ApplyAFixedFilterToTheTable
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/apply-a-fixed-filter-to-the-table";
+import {HideColumnProvider} from "@cody-play/infrastructure/vibe-cody/information-instructions/hide-column";
+import {TabInstructionsProvider} from "@cody-play/infrastructure/vibe-cody/page-instructions/tab-instructions-provider";
+import {
+  AddPropertiesToInformation
+} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-properties-to-information";
+import {UsePersonasAsUsers} from "@cody-play/infrastructure/vibe-cody/app-instructions/use-personas-as-users";
+import {RunActionOnEventProvider} from "@cody-play/infrastructure/vibe-cody/command-instructions/run-action-on-event";
 
 export type InstructionOrProvider = Instruction | InstructionProvider;
 
 export const instructions: InstructionOrProvider[] = [
   /* App Settings */
   ChangeAppName,
+  UsePersonasAsUsers,
   /* View Instructions */
   ChangeViewTitleProvider,
   FocusOnViewProvider,
@@ -102,7 +110,9 @@ export const instructions: InstructionOrProvider[] = [
   ReferenceExistingInformationInTableProvider,
   ApplyAFixedFilterToTheTable,
   RemoveColumnQuestion,
+  HideColumnProvider,
   /* Information Instructions */
+  AddPropertiesToInformation,
   ProvideTypeSuggestions,
   /* Page Instructions */
   AddAPageWithName,
@@ -111,6 +121,9 @@ export const instructions: InstructionOrProvider[] = [
   FocusOnPageTitleProvider,
   OpenRowOnDetailsPage,
   AddANewTab,
+  TabInstructionsProvider,
+  /* Policy Instructions */
+  // RunActionOnEventProvider,
   /* Button Instructions */
   FocusOnButtonProvider,
   ChangeButtonLabel,
