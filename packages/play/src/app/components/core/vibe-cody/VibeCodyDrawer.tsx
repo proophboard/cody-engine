@@ -106,6 +106,8 @@ let currentNavigateFunc = (route: string) => {};
 
 let lockChange = false;
 
+let doubleEnterLock = false;
+
 let waitingReply: InstructionExecutionCallback | undefined;
 
 let answers: InstructionOrProvider[] | undefined;
@@ -588,12 +590,12 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
        onChange={(e,v) => {
          e.stopPropagation();
 
-         if(!lockChange) {
+         if(!lockChange && !doubleEnterLock) {
            handleInstruction(v).catch(e => console.error(e));
            // Prevent double enter submit
-           lockChange = true;
+           doubleEnterLock = true;
            setTimeout(() => {
-             lockChange = false;
+             doubleEnterLock = false;
            }, 800);
          }
        }}

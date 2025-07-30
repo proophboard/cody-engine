@@ -38,6 +38,7 @@ import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is
 import {
   getFocusedQueryableStateListVo
 } from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
+import {resetRjsfValidator} from "@frontend/util/rjsf-validator";
 
 const TEXT = 'Add the following columns to the table: ';
 
@@ -192,6 +193,9 @@ export const AddColumnsToTable: Instruction = {
         schema: withId(itemSchema.toJsonSchema(`/${serviceNames.fileName}/${ns.fileName}`), itemInfo.desc.name),
       }
     });
+
+    // Reset resolved refs cache to avoid validation failures due to changed schema
+    resetRjsfValidator();
 
     return {
       cody: `Alright, I've added the columns.`
