@@ -77,6 +77,7 @@ import {
 import {
   ApplyAFixedFilterToTheTable
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/apply-a-fixed-filter-to-the-table";
+import {HideColumnProvider} from "@cody-play/infrastructure/vibe-cody/information-instructions/hide-column";
 
 export type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -102,6 +103,7 @@ export const instructions: InstructionOrProvider[] = [
   ReferenceExistingInformationInTableProvider,
   ApplyAFixedFilterToTheTable,
   RemoveColumnQuestion,
+  HideColumnProvider,
   /* Information Instructions */
   ProvideTypeSuggestions,
   /* Page Instructions */
