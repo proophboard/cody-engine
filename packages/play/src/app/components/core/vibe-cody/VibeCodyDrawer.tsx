@@ -134,19 +134,6 @@ const suggestInstructions = (ctx: VibeCodyContext, config: CodyPlayConfig, env: 
   return suggestions;
 }
 
-
-
-const trimText = (text: string): string => {
-  let lines = text.split(`\n`);
-
-  if(lines.length > 5) {
-    lines = lines.slice(0, 5);
-    lines.push(`...`);
-  }
-
-  return lines.join(`\n`);
-}
-
 const fromCodyInstructionResponse = (codyResponse: CodyInstructionResponse): Message | undefined => {
   if(codyResponse.type === "Empty") {
     return undefined;
@@ -295,7 +282,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
       if(input.noInputNeeded) {
         addMessage({
-          text: trimText(input.text),
+          text: input.text,
           author: "user"
         })
 
@@ -312,7 +299,7 @@ const VibeCodyDrawer = (props: VibeCodyDrawerProps) => {
 
     if(typeof input === "string") {
       addMessage({
-        text: trimText(input),
+        text: input,
         author: "user"
       })
 
