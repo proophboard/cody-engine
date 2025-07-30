@@ -203,7 +203,7 @@ export const AddColumnsToTable: Instruction = {
   })
 }
 
-const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boolean, rootFQCN: string, itemSchema: Schema, itemUiSchema: UiSchema, config: CodyPlayConfig, serviceNames: Names, ns: NamespaceNames, title?: string, isList?: boolean) => {
+export const normalizePropSchema = (prop: string, propSchema: Schema, isRequired: boolean, rootFQCN: string, itemSchema: Schema, itemUiSchema: UiSchema, config: CodyPlayConfig, serviceNames: Names, ns: NamespaceNames, title?: string, isList?: boolean) => {
   if (propSchema.isObject()) {
     propSchema.getObjectProperties().forEach(subProp => {
       const subPropSchema = propSchema.getObjectPropertySchema(subProp, new Schema({type: "string", title: camelCaseToTitle(subProp)}));

@@ -5,7 +5,6 @@ import {PlayPageDefinition} from "@cody-play/state/types";
 import {FormatText} from "mdi-material-ui";
 import {getLabelFromInstruction} from "@cody-play/infrastructure/vibe-cody/utils/text/get-label-from-instruction";
 import {getEditedContextFromConfig} from "@cody-play/state/config-store";
-import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 
 export const TabInstructionsProvider: InstructionProvider = {
   isActive: context => !!context.focusedElement && context.focusedElement.type === "tab",

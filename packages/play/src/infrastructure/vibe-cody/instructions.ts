@@ -79,6 +79,9 @@ import {
 } from "@cody-play/infrastructure/vibe-cody/information-instructions/apply-a-fixed-filter-to-the-table";
 import {HideColumnProvider} from "@cody-play/infrastructure/vibe-cody/information-instructions/hide-column";
 import {TabInstructionsProvider} from "@cody-play/infrastructure/vibe-cody/page-instructions/tab-instructions-provider";
+import {
+  AddPropertiesToInformation
+} from "@cody-play/infrastructure/vibe-cody/information-instructions/add-properties-to-information";
 
 export type InstructionOrProvider = Instruction | InstructionProvider;
 
@@ -106,6 +109,7 @@ export const instructions: InstructionOrProvider[] = [
   RemoveColumnQuestion,
   HideColumnProvider,
   /* Information Instructions */
+  AddPropertiesToInformation,
   ProvideTypeSuggestions,
   /* Page Instructions */
   AddAPageWithName,
