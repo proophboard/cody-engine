@@ -37,7 +37,7 @@ import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/A
 import DescriptionFieldTemplate from "@frontend/app/components/core/form/templates/DescriptionFieldTemplate";
 import {merge} from "lodash/fp";
 
-export type FormModeType = 'pageForm' | 'pageView' | 'dialogForm' | 'commandDialogForm' | 'dialogView';
+export type FormModeType = 'pageForm' | 'pageView' | 'dialogForm' | 'commandDialogForm' | 'dialogView' | 'listView';
 
 interface OwnProps {
   command: CommandRuntimeInfo;

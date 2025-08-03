@@ -42,7 +42,7 @@ const PlayStaticView = (params: any, informationInfo: PlayInformationRuntimeInfo
   const result = injectedInitialValues || exec({});
 
   return <StateView
-    mode={pageMode === "dialog" ? "dialogView" : "pageView"}
+    mode={pageMode === "dialog" ? "dialogView" : pageMode === "list" ? "listView" : "pageView"}
     state={result}
     description={{...informationInfo, uiSchema, factory: makeInformationFactory(informationInfo.factory)}}
     definitions={definitions}

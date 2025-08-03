@@ -8,7 +8,7 @@ export interface DynamicBreadcrumbMetadata {
   label: Rule[] | string;
 }
 
-export type ViewComponentType = 'auto' | 'state' | 'form' | 'table';
+export type ViewComponentType = 'auto' | 'state' | 'form' | 'table' | 'list';
 
 export type ViewComponent = string | {
   view: string,

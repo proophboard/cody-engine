@@ -47,8 +47,9 @@ import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {FocusedSidebarItem} from "@cody-play/state/focused-element";
 import {Target} from "mdi-material-ui";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
+import PlayListView from "@cody-play/app/components/core/PlayListView";
 
-export type PageMode = 'standard' | 'dialog' | 'drawer';
+export type PageMode = 'standard' | 'dialog' | 'drawer' | 'list';
 
 interface Props {
   page: string;
@@ -404,14 +405,23 @@ const getViewComponent = (
       isQueryableNotStoredStateListDescription(information.desc)
     ) {
       return (params: any) => {
-        return PlayTableView(
-          params,
-          information,
-          pageMode,
-          isHiddenView,
-          uiSchemaOverride,
-          injectedInitialValues
-        );
+        return viewType === "list"
+          ? PlayListView(
+            params,
+            information,
+            pageMode,
+            isHiddenView,
+            uiSchemaOverride,
+            injectedInitialValues
+          )
+          : PlayTableView(
+            params,
+            information,
+            pageMode,
+            isHiddenView,
+            uiSchemaOverride,
+            injectedInitialValues
+          );
       };
     } else if (isQueryableDescription(information.desc) && loadState) {
       return (params: any) => {
