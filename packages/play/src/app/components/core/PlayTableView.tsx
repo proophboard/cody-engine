@@ -184,12 +184,12 @@ const PlayTableView = (
         const isFocusedEle = focusedEle && focusedEle.type === "tableColumn" && focusedEle.id === focusedEleId;
 
         return <Typography variant="h6">
-          {columnName}
           <IconButton onClick={() => setFocusedEle({
             id: focusedEleId,
             name: columnName,
             type: 'tableColumn',
           })} color={isFocusedEle ? 'info' : undefined}><Target /></IconButton>
+          {columnName}
         </Typography>
       }
     }))

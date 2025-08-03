@@ -56,6 +56,10 @@ export const isPageMode = (mode: FormModeType): boolean => {
   return !isDialogMode(mode);
 }
 
+export const isListMode = (mode: FormModeType): boolean => {
+  return mode === "listView";
+}
+
 export const getNestingLevel = (idSchema: string): number => {
   return idSchema.split("_").length;
 }
@@ -87,8 +91,8 @@ export const getObjPropTitleStyle = (heading: HeadingVariant, theme: Theme, mode
     case "h2":
       return {
         padding: theme.spacing(4),
-        paddingLeft: isDialogMode(mode) ? theme.spacing(2) : 0,
-        paddingRight: isDialogMode(mode) ? theme.spacing(2) : 0
+        paddingLeft: isDialogMode(mode) || isListMode(mode) ? theme.spacing(2) : 0,
+        paddingRight: isDialogMode(mode) || isListMode(mode) ? theme.spacing(2) : 0
       };
     case "h3":
       return {
@@ -242,7 +246,7 @@ export default function ObjectFieldTemplate<
 
   return (<>
     <Grid2 container={nestingLevel === 1} className={nestingLevel === 1 ? 'CodyCommandFormContainer' : ''}>
-      {(isPageMode(mode) || nestingLevel > 1) && <Grid2 container={true} sx={{width: '100%'}}>
+      {((isPageMode(mode) && !isListMode(mode)) || nestingLevel > 1) && <Grid2 container={true} sx={{width: '100%'}}>
         <Grid2 xs>
           {(title || (nestingLevel === 1 && liveEditMode)) && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
                                 className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
@@ -278,7 +282,25 @@ export default function ObjectFieldTemplate<
         />
       </Grid2>}
       <Grid2 xs={12} {...gridConfig as Grid2Props}>
-        {isDialogMode(mode) && mode !== 'commandDialogForm' /* Cmd Title + actions is already shown in CommandDialog */ && nestingLevel === 1 && <Grid2 xs={12}>
+        {isListMode(mode) && nestingLevel === 1 && <Grid2 container={true}>
+          <Grid2 xs>
+            {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+                                  sx={getObjPropTitleStyle(headingVariant, theme, mode)}>{index}{title}</Typography>}
+          </Grid2>
+          <TopRightActions
+            uiOptions={uiOptions}
+            defaultService={props.formContext!.defaultService}
+            jexlCtx={jexlCtx}
+            containerInfo={nestingLevel === 1
+              ? {name: fqcn, type: mapFormModeTypeToContainerInfoType(mode)}
+              : undefined}
+            dropzoneId={nestingLevel === 1
+              ? mapFormModeTypeToDropzoneIdTopRight(mode)
+              : undefined}
+            showDropzone={props.formContext!.showDropzone}
+          />
+        </Grid2>}
+        {isDialogMode(mode) && !isListMode(mode) && mode !== 'commandDialogForm' /* Cmd Title + actions is already shown in CommandDialog */ && nestingLevel === 1 && <Grid2 xs={12}>
           <Grid2 xs>
             {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
                          sx={getObjPropTitleStyle(headingVariant, theme, mode)}>{index}{title}</Typography>}
@@ -314,6 +336,24 @@ export default function ObjectFieldTemplate<
               ) :
               <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}>{element.content}</Grid2>)
         }
+        {((isListMode(mode)) && nestingLevel === 1) && <BottomActions
+          sx={{padding: nestingLevel === 1 ? `0 ${theme.spacing(2)}` : 0}}
+          uiOptions={uiOptions}
+          containerInfo={nestingLevel === 1 ? {name: fqcn, type: "mixed"} : undefined}
+          defaultService={props.formContext!.defaultService}
+          jexlCtx={jexlCtx}
+          additionalRightButtons={
+            isWriteMode(mode) && canExpand<T, S, F>(props.schema, props.uiSchema, props.formData) ? [
+              <AddButton
+                className='object-property-expand'
+                key={'object_field_' + props.idSchema.$id + '_object_property_expand'}
+                onClick={props.onAddClick(props.schema)}
+                disabled={props.disabled || props.readonly}
+                uiSchema={props.uiSchema}
+                registry={props.registry}
+              />
+            ] : undefined
+          }/>}
       </Grid2>
       {isPageMode(mode) && isWriteMode(mode) && nestingLevel === 1 &&  canExpand<T, S, F>(props.schema, props.uiSchema, props.formData) && <Grid2 container justifyContent='flex-end'>
         <Grid2>
@@ -327,7 +367,7 @@ export default function ObjectFieldTemplate<
         </Grid2>
       </Grid2>}
     </Grid2>
-    {(isDialogMode(mode) || nestingLevel > 1) && <BottomActions
+    {((isDialogMode(mode) && !isListMode(mode)) || nestingLevel > 1) && <BottomActions
       sx={{padding: nestingLevel === 1 ? `0 ${theme.spacing(2)}` : 0}}
       uiOptions={uiOptions}
       containerInfo={nestingLevel === 1 ? {name: fqcn, type: "mixed"} : undefined}
