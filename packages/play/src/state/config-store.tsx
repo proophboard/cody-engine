@@ -41,7 +41,7 @@ import {
   PlayUpdatePersona,
   PlayViewRegistry
 } from '@cody-play/state/types';
-import {createContext, PropsWithChildren, useContext, useEffect, useReducer} from "react";
+import {createContext, PropsWithChildren, useContext, useEffect, useReducer, useState} from "react";
 import {injectCustomApiQuery} from "@frontend/queries/use-api-query";
 import {makeLocalApiQuery} from "@cody-play/queries/local-api-query";
 import {useUser} from "@frontend/hooks/use-user";
@@ -56,7 +56,7 @@ import {playDefinitionIdFromFQCN,} from "@cody-play/infrastructure/cody/schema/p
 import {directSetEnv, EnvContext} from "@frontend/app/providers/UseEnvironment";
 import {names} from "@event-engine/messaging/helpers";
 import {PageRegistry} from "@frontend/app/pages";
-import {ElementEditedContext} from "@cody-play/infrastructure/cody/cody-message-server";
+import {ElementEditedContext, Playshot} from "@cody-play/infrastructure/cody/cody-message-server";
 import {Map} from "immutable";
 import {Node} from "@proophboard/cody-types";
 import {LayoutType} from "@frontend/app/layout/layout-type";
@@ -64,6 +64,8 @@ import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import PlayVibeCodyProcessing from "@cody-play/app/components/core/PlayVibeCodyProcessing";
 import {useTypes} from "@frontend/hooks/use-types";
 import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
+import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
+import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-model-store/configured-document-store";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -237,7 +239,7 @@ console.log(`[PlayConfigStore] Initializing with config: `, defaultPlayConfig);
 
 directSetEnv({UI_ENV: "play", DEFAULT_SERVICE: defaultPlayConfig.defaultService, PAGES: defaultPlayConfig.pages as unknown as PageRegistry});
 
-const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action) => void}>({config: defaultPlayConfig, dispatch: (action: Action) => {return;}});
+const configStore = createContext<{config: CodyPlayConfig, dispatch: (a: Action) => void, lastPlayshot?: Playshot}>({config: defaultPlayConfig, dispatch: (action: Action) => {return;}});
 
 const { Provider } = configStore;
 
@@ -259,6 +261,20 @@ const clearAfterDispatchListener = (): void => {
 }
 
 let currentDispatch: any;
+
+const es = getConfiguredPlayEventStore();
+const ds = getConfiguredPlayDocumentStore();
+
+const lastPlayshot = {
+  playConfig: cloneDeepJSON(defaultPlayConfig),
+  playData: {
+    streams: cloneDeepJSON(es.syncExportStreams()),
+    ...cloneDeepJSON(ds.syncExportBackup())
+  },
+  name: "Last Playshot",
+  boardId: defaultPlayConfig.boardId,
+  playshotId: "____default____"
+};
 
 const PlayConfigProvider = (props: PropsWithChildren) => {
   const [user, ] = useUser();
@@ -454,7 +470,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
     currentDispatch(action);
   }
 
-  return <Provider value={{ config, dispatch }}>{props.children}</Provider>;
+  return <Provider value={{ config, dispatch, lastPlayshot }}>{props.children}</Provider>;
 }
 
 export {configStore, PlayConfigProvider, Action, addAfterDispatchListener, clearAfterDispatchListener};
