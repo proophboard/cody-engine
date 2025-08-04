@@ -22,6 +22,7 @@ import {ResolveConfig, TableUiSchema} from "@cody-engine/cody/hooks/utils/value-
 import {ThemeOptions} from "@mui/material";
 import {Persona} from "@app/shared/extensions/personas";
 import {LayoutType} from "@frontend/app/layout/layout-type";
+import {Playshot} from "@cody-play/infrastructure/cody/cody-message-server";
 
 /* UI */
 export type PlayPageDefinition = Omit<PageDefinition, 'breadcrumb'> & {breadcrumb?: string | DynamicBreadcrumbMetadata, service: string};
