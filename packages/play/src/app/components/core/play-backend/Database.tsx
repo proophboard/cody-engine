@@ -69,7 +69,11 @@ type DatabaseSnapshot = {
 
 let diffView = false;
 
+let currentOnSaveDisabled: (disabled: boolean) => void = () => {};
+
 const Database = (props: DatabaseProps) => {
+
+  currentOnSaveDisabled = props.onSaveDisabled;
 
   const database: DatabaseSnapshot = {
     eventStore: es.syncExportStreams(),
@@ -180,6 +184,10 @@ const Database = (props: DatabaseProps) => {
       window.setTimeout(() => {
         setRepublishEventId('');
         setIsPublishing(false);
+
+        window.setTimeout(() => {
+          currentOnSaveDisabled(false);
+        }, 300);
       }, 3000);
     })().catch((e: any) => {throw e});
   }
@@ -200,7 +208,9 @@ const Database = (props: DatabaseProps) => {
         window.setTimeout(() => {
           setSelectedProjection('');
           setIsRunningProjection(false);
-          props.onSaveDisabled(false);
+          window.setTimeout(() => {
+            currentOnSaveDisabled(false);
+          }, 300);
         }, 3000);
       })().catch((e: any) => {throw e})
     }
