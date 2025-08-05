@@ -259,7 +259,6 @@ const Database = (props: DatabaseProps) => {
   }
 
   const applyDefaultEditorFolding = (editorInstance: IStandaloneCodeEditor): void => {
-    console.log("applyDefaultEditorFolding")
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     editorInstance.getAction('editor.foldAll').run();
