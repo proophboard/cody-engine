@@ -19,10 +19,14 @@ const ErrorBoundary = (props: ErrorBoundaryProps) => {
     window.location.reload();
   }
 
+  console.error(error);
+
   return <>
     {error instanceof Error
       ? <Alert severity="error">{error.name + ': ' + error.message}</Alert>
-      : <Alert severity="error">{'Something went wrong!' + (error && error.toString())}</Alert>}
+      : typeof error === "object" && (error as any).status && (error as any).statusText && (error as any).data
+        ? <Alert severity="error">{`[${(error as any).status} - ${(error as any).statusText}] ${(error as any).data}`}</Alert>
+        : <Alert severity="error">{'Something went wrong!' + (error && error.toString())}</Alert>}
     <Box sx={{height: '50px'}} />
     {!props.codyEngine && <Alert severity="info">Try to reload the app first. In case the error remains check your prooph board configuration. You can load an older Playshot or start a blank session from the prooph board Cody Play menu (prooph board &#8594; Top Menu &#8594; Cody Play).</Alert>}
     {props.codyEngine && <Alert severity="info">Try to reload the app first. In case the error remains please contact the support team.</Alert>}
