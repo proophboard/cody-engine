@@ -92,6 +92,7 @@ const Database = (props: DatabaseProps) => {
   const [projections, setProjections] = useState<ProjectionRegistry>({});
   const [selectedProjection, setSelectedProjection] = useState<string>('');
   const [isRunningProjection, setIsRunningProjection] = useState(false);
+  const [projectionSetupError, setProjectionSetupError] = useState<string|undefined>();
   const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
   const [editorHeight, setEditorHeight] = useState(DEFAULT_EDITOR_HEIGHT);
   const editor = useRef<IStandaloneCodeEditor>();
@@ -110,7 +111,12 @@ const Database = (props: DatabaseProps) => {
 
   useEffect(() => {
     const infoService = new DocumentStoreInformationService(ds, config.types as unknown as TypeRegistry);
-    setProjections(getProjections(config, infoService));
+    try {
+      setProjections(getProjections(config, infoService));
+    } catch (e: any) {
+      setProjectionSetupError(e.toString());
+    }
+
   }, [config.types]);
 
   useEffect(() => {
@@ -281,7 +287,8 @@ const Database = (props: DatabaseProps) => {
         sx={{marginLeft: (theme) => theme.spacing(2)}}
         />
     </Box>
-    <Box sx={{display: 'flex', marginBottom: "20px"}}>
+    {projectionSetupError && <Alert severity="error">{projectionSetupError}</Alert>}
+    {!projectionSetupError && <Box sx={{display: 'flex', marginBottom: "20px"}}>
       <TextField
         id="rerun_projection"
         label="PROJECTION"
@@ -298,13 +305,13 @@ const Database = (props: DatabaseProps) => {
         </MenuItem>)}
       </TextField>
       <Button
-        children={isRunningProjection? 'Check Browser Console for logs' : 'Rerun'}
-        startIcon={isRunningProjection? <CircularProgress size={20}/> : <Videocam/>}
+        children={isRunningProjection ? 'Check Browser Console for logs' : 'Rerun'}
+        startIcon={isRunningProjection ? <CircularProgress size={20}/> : <Videocam/>}
         disabled={isRunningProjection || !selectedProjection}
         onClick={handleRerunProjection}
         sx={{marginLeft: (theme) => theme.spacing(2)}}
       />
-    </Box>
+    </Box>}
     <Box sx={{display: 'flex'}}>
       <FormLabel sx={{paddingTop: "10px"}}>Data</FormLabel>
       <IconButton title={'Click to expand editor. Ctrl+Click to double expand.'} color={editorHeight > DEFAULT_EDITOR_HEIGHT ? 'primary' : 'default'} onClick={e => {
