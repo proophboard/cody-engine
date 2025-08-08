@@ -9,7 +9,9 @@ import {getEditedContextFromConfig} from "@cody-play/state/config-store";
 export const TabInstructionsProvider: InstructionProvider = {
   isActive: context => !!context.focusedElement && context.focusedElement.type === "tab",
   provide: (context, config) => {
-    const page = findPageByRoute(context.focusedElement!.id, config);
+    const route = context.focusedElement!.id;
+    console.log(route);
+    const page = findPageByRoute(route, config);
 
     if(playIsCodyError(page)) {
       return [];

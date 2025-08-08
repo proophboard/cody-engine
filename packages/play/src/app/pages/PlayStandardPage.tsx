@@ -68,6 +68,7 @@ const findTabGroup = (
       return {
         ...p.tab!,
         route: generatePath(p.route, routeParams),
+        routeTemplate: p.route
       };
     });
 };

@@ -97,7 +97,7 @@ export const renderTabs = (
         ...config.style} as SxProps;
 
     const label = tab['label:t'] ? t(tab['label:t']) : tab.label;
-    const isFocusedEle = !!focusedEle && focusedEle.type === "tab" && focusedEle.id === tab.route;
+    const isFocusedEle = !!focusedEle && focusedEle.type === "tab" && focusedEle.id === tab.routeTemplate;
 
     return config.hidden && !liveEditMode ? <></> : liveEditMode && setFocusedEle
       ? <Stack direction="row" spacing={1} sx={{display: 'inline-flex'}}>
@@ -111,7 +111,7 @@ export const renderTabs = (
           to={tab.route}
         />
         <IconButton onClick={() => setFocusedEle({
-          id: tab.route,
+          id: tab.routeTemplate,
           name: label,
           type: 'tab',
         })} color={isFocusedEle ? 'info' : undefined}><Target /></IconButton>

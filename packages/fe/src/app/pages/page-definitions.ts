@@ -23,7 +23,7 @@ export interface PageDefinition {
   'breadcrumb:t'?: string;
   components: ViewComponent[];
   commands: CommandComponent[];
-  tab?: Omit<Tab, "route">;
+  tab?: Omit<Tab, "route" | 'routeTemplate'>;
   service?: string;
   props?: Record<string, any>,
   'props:expr'?: PropMapping,
@@ -59,6 +59,7 @@ export interface Tab {
   label: string;
   'label:t'?: string;
   route: string;
+  routeTemplate: string;
   icon?: string;
   style?: SxProps;
   styleExpr?: string;
