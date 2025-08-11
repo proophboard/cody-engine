@@ -74,6 +74,7 @@ const PlayStateFormView = (params: any, informationInfo: PlayInformationRuntimeI
         DataSelect: PlayDataSelectWidget
       }}
       onSubmitted={() => query.refetch()}
+      showDropzone={true}
     />
     }
   </>

@@ -251,22 +251,25 @@ const CommandDialog = (props: CommandDialogProps) => {
         scrollbarGutter: "stable both-edges"
       }}>
         <Grid2 container>
-          <Grid2 xs sx={{padding: theme.spacing(2)}}>
+          <Grid2 xs sx={{padding: `${theme.spacing(2)} ${theme.spacing(1)}`}}>
             {title && <Typography variant={"h2"}>{title}</Typography>}
           </Grid2>
-          <TopRightActions uiOptions={uiOptions}
-                           containerInfo={containerInfo}
-                           defaultService={env.DEFAULT_SERVICE}
-                           jexlCtx={jexlCtx}
-                           additionalRightButtons={[
-                            <IconButton onClick={handleCancel} sx={{color: theme.palette.grey[500]}}>
-                              <Close />
-                            </IconButton>
-                          ]} />
+          <Grid2 xs
+                 display="flex"
+                 direction="column"
+                 alignItems="center"
+                 justifyContent="flex-end">
+            <IconButton sx={{
+              color: theme.palette.grey[500],
+            }} onClick={handleCancel}>
+              <Close />
+            </IconButton>
+          </Grid2>
         </Grid2>
       </DialogTitle>
       <DialogContent sx={{
-        scrollbarGutter: "stable both-edges"
+        scrollbarGutter: "stable both-edges",
+        padding: theme.spacing(4)
       }}>
         {props.slots?.beforeForm}
         <CommandForm
@@ -310,7 +313,7 @@ const CommandDialog = (props: CommandDialogProps) => {
           variant={buttonProps.variant || 'contained'}
           color={(buttonProps.color === 'default' ? undefined : buttonProps.color) || 'primary'}
           startIcon={transactionState.isSubmitting ? <CircularProgress size={20}/> : buttonProps.icon || <Send/>}
-          sx={{textTransform: 'none', margin: '5px', ...buttonProps.style}}
+          sx={{textTransform: 'none', ...buttonProps.style}}
           onClick={handleExecuteCommand}
           disabled={transactionState.isSubmitting}
         >
