@@ -4,7 +4,7 @@ import {
   Action,
   CommandAction,
   getActionButtonName,
-  getActionId,
+  getActionId, isButtonAction,
 } from "@frontend/app/components/core/form/types/action";
 import {PlayPageDefinition, PlayViewComponentConfig} from "@cody-play/state/types";
 import {FocusedButton} from "@cody-play/state/focused-element";
@@ -59,13 +59,13 @@ export const FocusOnButtonProvider: InstructionProvider = {
 
 const getAllFocusableButtonsOnPage = (page: PlayPageDefinition, config: CodyPlayConfig): FocusedButton[] => {
   return page.commands.map(c => {
-    const action = typeof c === "string"
+    return typeof c === "string"
       ? {
         type: "command",
         command: c
       } as CommandAction
       : c;
-
+  }).filter(isButtonAction).map(action => {
     return {
       name: getActionButtonName(action),
       type: "button",

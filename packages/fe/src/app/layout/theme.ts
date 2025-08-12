@@ -12,6 +12,9 @@ declare module '@mui/material/styles' {
     }
     stateView: {
       "styleOverrides": SxProps;
+    },
+    formAction: {
+      "styleOverrides": SxProps;
     }
   }
   // allow configuration using `createTheme`
@@ -23,6 +26,9 @@ declare module '@mui/material/styles' {
       "styleOverrides": SxProps;
     }
     stateView?: {
+      "styleOverrides": SxProps;
+    },
+    formAction?: {
       "styleOverrides": SxProps;
     }
   }
@@ -67,6 +73,10 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
 
   options = merge(
     {
+      formAction: {
+        styleOverrides: {
+        }
+      },
       stateView: {
         styleOverrides: {
           "form.stateview .Mui-disabled": {

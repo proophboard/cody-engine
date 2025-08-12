@@ -116,3 +116,47 @@ export const getInitialValuesFromUiSchema = (uiSchema: UiSchema, schema: JSONSch
 
   return values;
 }
+
+export const getInitialValuesFromUiSchemaForFormAction = (uiSchema: UiSchema, schema: JSONSchema7, ctx: any): unknown => {
+  let values: {[prop: string]: any} = {};
+
+  if(!uiSchema || !uiSchema['ui:form'] || typeof uiSchema['ui:form'] !== "object") {
+    return values;
+  }
+
+  const uiForm = {...uiSchema['ui:form']};
+
+  if(uiForm.data) {
+    uiForm['data:expr'] = uiForm.data;
+  }
+
+  if(uiForm['data:expr']) {
+    values = execMappingSync(uiForm['data:expr'], ctx);
+  }
+
+  // Data is not yet available, but user has not provided a fallback
+  if(typeof values === "undefined") {
+    return {}
+  }
+
+  if(typeof values !== "object") {
+    return values;
+  }
+
+  if(schema.type === "object") {
+    const schemaProps = schema.properties || {};
+    const schemaPropKeys = Object.keys(schemaProps);
+
+    const filteredValues: {[prop: string]: any} = {};
+
+    for (const valProp in values) {
+      if(schemaPropKeys.includes(valProp)) {
+        filteredValues[valProp] = values[valProp];
+      }
+    }
+
+    return filteredValues;
+  }
+
+  return values;
+}

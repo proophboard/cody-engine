@@ -183,7 +183,7 @@ const getPageData = (pageData: PageData | undefined, name: string, defaultValue:
     return defaultValue;
   }
 
-  if(!pageData[name]) {
+  if(typeof pageData[name] === "undefined") {
     return defaultValue;
   }
 

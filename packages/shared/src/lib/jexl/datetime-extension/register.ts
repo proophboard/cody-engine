@@ -1,5 +1,17 @@
 import {Jexl} from "@event-engine/infrastructure/jexl/jexl";
 
+const twoDigit = (numberOrStr: number | string): string => {
+  if(typeof numberOrStr === 'string') {
+    numberOrStr = parseInt(numberOrStr);
+  }
+
+  if(numberOrStr < 10) {
+    return '0' + numberOrStr;
+  } else {
+    return ''+numberOrStr;
+  }
+}
+
 export const registerDateTimeExtensions = (jexl: Jexl) => {
   jexl.addFunction('now', () => (new Date()));
 
@@ -14,11 +26,18 @@ export const registerDateTimeExtensions = (jexl: Jexl) => {
   jexl.addTransform('year', d => (new Date(d)).getFullYear());
   jexl.addTransform('utcYear', d => (new Date(d)).getUTCFullYear());
   jexl.addTransform('month', d => (new Date(d)).getMonth());
+  jexl.addTransform('isoMonth', d => twoDigit((new Date(d)).getMonth() + 1));
   jexl.addTransform('utcMonth', d => (new Date(d)).getUTCMonth());
   jexl.addTransform('day', d => (new Date(d)).getDate());
+  jexl.addTransform('isoDay', d => twoDigit((new Date(d)).getDate()));
   jexl.addTransform('utcDay', d => (new Date(d)).getUTCDate());
   jexl.addTransform('weekDay', d => (new Date(d)).getDay());
   jexl.addTransform('utcWeekDay', d => (new Date(d)).getUTCDay());
+  jexl.addTransform('lastDayOfMonth', d => {
+    const dO = new Date(d);
+    const lastDay = new Date(dO.getFullYear(), dO.getMonth()+1, 0);
+    return lastDay.getDate();
+  })
   jexl.addTransform('hours', d => (new Date(d)).getHours());
   jexl.addTransform('utcHours', d => (new Date(d)).getUTCHours());
   jexl.addTransform('minutes', d => (new Date(d)).getMinutes());
@@ -42,15 +61,5 @@ export const registerDateTimeExtensions = (jexl: Jexl) => {
   jexl.addTransform('addWeeks', (d, weeks: number) => (new Date(d)).getTime() + (weeks * 7 * 24 * 60 * 60 * 1000))
   jexl.addTransform('subWeeks', (d, weeks: number) => (new Date(d)).getTime() - (weeks * 7 * 24 * 60 * 60 * 1000))
 
-  jexl.addTransform('twoDigit', numberOrStr => {
-    if(typeof numberOrStr === 'string') {
-      numberOrStr = parseInt(numberOrStr);
-    }
-
-    if(numberOrStr < 10) {
-      return '0' + numberOrStr;
-    } else {
-      return ''+numberOrStr;
-    }
-  })
+  jexl.addTransform('twoDigit', twoDigit)
 }

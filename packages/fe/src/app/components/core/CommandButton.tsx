@@ -78,7 +78,7 @@ const CommandButton = (props: CommandButtonProps) => {
   const [store] = useGlobalStore();
   const {t} = useTranslation();
 
-  const { variant, color, disabled, style, hidden, icon, label, asGridActionsCellItem, showInMenu } =
+  const { variant, color, disabled, style, hidden, icon, label, asGridActionsCellItem, showInMenu, className } =
     determineButtonConfig(props, props.command.uiSchema || {}, {
       user,
       page,
@@ -102,6 +102,7 @@ const CommandButton = (props: CommandButtonProps) => {
       disabled={disabled}
       color={color === 'default' ? undefined : color}
       sx={{ ...style }}
+      className={className}
     />
   }
 
@@ -113,6 +114,7 @@ const CommandButton = (props: CommandButtonProps) => {
         color={color === 'default' ? undefined : color}
         onClick={props.onClick}
         disabled={disabled}
+        className={className}
       >
         {icon}
       </IconButton>
@@ -131,6 +133,7 @@ const CommandButton = (props: CommandButtonProps) => {
       children={props.label || label || commandTitle(props.command, t)}
       onClick={props.onClick}
       disabled={disabled}
+      className={className}
     />
   );
 };

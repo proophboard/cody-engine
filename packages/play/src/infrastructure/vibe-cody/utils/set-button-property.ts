@@ -3,7 +3,13 @@ import {ButtonConfig} from "@frontend/app/components/core/button/button-config";
 import {PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
 import {CodyInstructionResponse} from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {CodyPlayConfig, getEditedContextFromConfig} from "@cody-play/state/config-store";
-import {Action, isCommandAction, isLinkAction, LinkAction} from "@frontend/app/components/core/form/types/action";
+import {
+  Action, ButtonAction, CommandAction, isButtonAction,
+  isCommandAction,
+  isFormAction,
+  isLinkAction,
+  LinkAction
+} from "@frontend/app/components/core/form/types/action";
 import {playDefinitionIdFromFQCN} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {CodyResponseType} from "@proophboard/cody-types";
 import {isSameCommand} from "@cody-play/infrastructure/vibe-cody/utils/move-button-position";
@@ -26,6 +32,14 @@ export const isSameAction = (a: Action, b: Action): boolean => {
       } else {
         return pageLink(a) === pageLink(b);
       }
+    } else {
+      return false;
+    }
+  }
+
+  if(isFormAction(a)) {
+    if(isFormAction(b)) {
+      return a.name === b.name;
     } else {
       return false;
     }
@@ -84,9 +98,12 @@ const setButtonPropertyForPageButton = async (
     commands: pageDefinition.commands.map(c => {
       if(isSameCommand(c, action)) {
         const modifiedAction = typeof c === "string"? action : c;
-        const button: ButtonConfig = modifiedAction.button || {};
-        button[property] = value;
-        modifiedAction.button = button;
+        if(isButtonAction(modifiedAction)) {
+          const button: ButtonConfig = modifiedAction.button || {};
+          button[property] = value;
+          modifiedAction.button = button;
+        }
+
         return modifiedAction;
       }
 
@@ -121,7 +138,7 @@ const setButtonPropertyForViewButton = async (
   const actions = uiOptionsActions
     ?
     uiOptionsActions.map((a) => {
-      if (isSameAction(a, action)) {
+      if (isSameAction(a, action) && isButtonAction(a)) {
         const copyOfButton = {...a.button};
         if(typeof value === "undefined") {
           delete copyOfButton[property];

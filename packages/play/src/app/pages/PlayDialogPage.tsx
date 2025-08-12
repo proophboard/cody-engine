@@ -20,7 +20,7 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
-import {ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
+import {ActionContainerInfo, isButtonAction} from "@frontend/app/components/core/form/types/action";
 import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
 
 interface OwnProps {
@@ -61,7 +61,7 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
   const page = config.pages[props.page];
   const mainPage = getMainPage(page as unknown as PageDefinition, config.pages as unknown as PageRegistry, defaultService);
 
-  const actionBtns = parseActionsFromPageCommands(page.commands, jexlCtx, t, env).filter(a => !a.button.hidden);
+  const actionBtns = parseActionsFromPageCommands(page.commands, jexlCtx, t, env).filter(a => !isButtonAction(a) || !a.button.hidden);
 
   const bottomActions = actionBtns.filter(a => a.position !== "top-right")
   const topRightActions = actionBtns.filter(a => a.position === "top-right")

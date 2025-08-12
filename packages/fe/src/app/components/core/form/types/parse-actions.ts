@@ -1,7 +1,7 @@
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
-import {Action} from "@frontend/app/components/core/form/types/action";
+import {Action, isButtonAction} from "@frontend/app/components/core/form/types/action";
 import {CommandComponent} from "@cody-engine/cody/hooks/utils/ui/types";
 import {TFunction} from "i18next";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
@@ -61,10 +61,18 @@ export const parseActionsFromPageCommands = (commands: CommandComponent[], jexlC
         button: determineButtonConfig({}, {}, jexlCtx, env)
       }
     } else {
+      if(isButtonAction(c)) {
+        return {
+          ...c,
+          type: c.type || "command",
+          button: c.button || determineButtonConfig({}, {}, jexlCtx, env),
+          position: c.position || "bottom-right",
+        }
+      }
+
       return {
         ...c,
-        type: c.type || "command",
-        button: c.button || determineButtonConfig({}, {}, jexlCtx, env),
+        type: c.type || "form",
         position: c.position || "bottom-right",
       }
     }

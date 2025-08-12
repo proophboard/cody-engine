@@ -107,6 +107,7 @@ const HtmlWidget = (props: HtmlWidgetProps) => {
       label={label}
       style={options.style}
       disabled={disabled || readonly}
+      required={required}
       hideLabel={!!(options.hideLabel || hideLabel)}
       hidden={options.hidden as boolean}
       jexlCtx={jexlCtx}
@@ -120,6 +121,7 @@ const HtmlWidget = (props: HtmlWidgetProps) => {
     label={label}
     style={options.style}
     disabled={disabled || readonly}
+    required={required}
     hideLabel={!!(options.hideLabel || hideLabel)}
     hidden={options.hidden as boolean}
     jexlCtx={jexlCtx}

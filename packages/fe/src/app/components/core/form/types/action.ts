@@ -1,16 +1,24 @@
 import {AnyRule, PropMapping} from "@app/shared/rule-engine/configuration";
 import {UiSchema} from "@rjsf/utils";
 import {ButtonConfig} from "@frontend/app/components/core/button/button-config";
-import {playNodeLabel} from "@cody-play/infrastructure/cody/schema/play-definition-id";
+import {JSONSchema7} from "json-schema";
+import {nodeLabel} from "@app/shared/utils/node-label";
 
 export type ButtonPosition = "top-right" | "bottom-left" | "bottom-center" | "bottom-right";
 
 export interface Action {
-  type: "command" | "link" | "rules";
+  type: "command" | "link" | "rules" | "form";
   description?: string;
   position: ButtonPosition;
+}
+
+export interface ButtonAction extends Action {
   button: ButtonConfig;
 }
+
+const ButtonActionTypes = [
+  "command", "link", "rules",
+]
 
 export const getActionId = (action: Action): string => {
   if(isCommandAction(action)) {
@@ -27,12 +35,16 @@ export const getActionId = (action: Action): string => {
     }
   }
 
+  if(isFormAction(action)) {
+    return action.name;
+  }
+
   return JSON.stringify(action);
 }
 
 export const getActionName = (action: Action): string => {
   if(isCommandAction(action)) {
-    return playNodeLabel(action.command);
+    return nodeLabel(action.command);
   }
 
   if(isLinkAction(action)) {
@@ -42,16 +54,28 @@ export const getActionName = (action: Action): string => {
 
     if(action.pageLink) {
       const pageName = typeof action.pageLink === "string" ? action.pageLink : action.pageLink.page;
-      return `Page Link to ${playNodeLabel(pageName)}`;
+      return `Page Link to ${nodeLabel(pageName)}`;
     }
+  }
+
+  if(isFormAction(action)) {
+    return action.name;
   }
 
   return 'Rules Action';
 }
 
 export const getActionButtonName = (action: Action): string => {
-  return action.button?.label || (typeof action.button?.icon === "string" ? `${action.button?.icon} icon` : undefined)
-    || getActionName(action);
+  if(isButtonAction(action)) {
+    return action.button?.label || (typeof action.button?.icon === "string" ? `${action.button?.icon} icon` : undefined)
+      || getActionName(action);
+  }
+
+  return getActionName(action);
+}
+
+export const isButtonAction = (action: Action): action is ButtonAction => {
+  return ButtonActionTypes.includes(action.type);
 }
 
 export const isLinkAction = (action: Action): action is LinkAction => {
@@ -66,12 +90,16 @@ export const isRulesAction = (action: Action): action is RulesAction => {
   return action.type === "rules";
 }
 
-export interface LinkAction extends Action {
+export const isFormAction = (action: Action): action is FormAction => {
+  return action.type === "form";
+}
+
+export interface LinkAction extends ButtonAction {
   pageLink?: string | {page: string; mapping: Record<string, string>};
   href?: string;
 }
 
-export interface CommandAction extends Action {
+export interface CommandAction extends ButtonAction {
   command: string;
   uiSchema?: UiSchema,
   connectTo?: string,
@@ -80,11 +108,20 @@ export interface CommandAction extends Action {
   data?: string | string[] | PropMapping | PropMapping[];
 }
 
-export interface RulesAction extends Action {
+export interface RulesAction extends ButtonAction {
   rules: AnyRule[];
 }
 
-export type ActionConfig = LinkAction | CommandAction | RulesAction;
+export type FormActionScope = 'page' | 'global';
+
+export interface FormAction extends Action {
+  name: string;
+  schema: JSONSchema7,
+  uiSchema?: UiSchema,
+  scope?: FormActionScope
+}
+
+export type ActionConfig = LinkAction | CommandAction | RulesAction | FormAction;
 
 export type TableActionConfig = (Omit<Omit<LinkAction, 'position'>, 'button'> | Omit<Omit<CommandAction, 'position'>, 'button'> | Omit<Omit<RulesAction, 'position'>, 'button'>) & {button: Partial<ButtonConfig>};
 

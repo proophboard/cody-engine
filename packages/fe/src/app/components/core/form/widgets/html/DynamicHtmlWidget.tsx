@@ -31,6 +31,7 @@ interface OwnProps {
   hideLabel?: boolean;
   hidden?: boolean;
   disabled?: boolean;
+  required?: boolean;
   style?: React.StyleHTMLAttributes<unknown>;
   jexlCtx: FormJexlContextV2;
 }
@@ -86,6 +87,7 @@ const DynamicHtmlWidget = (props: DynamicHtmlWidgetProps) => {
       disabled={props.disabled}
       hideLabel={props.hideLabel}
       hidden={props.hidden}
+      required={props.required}
       jexlCtx={props.jexlCtx}
     />
   }

@@ -1,5 +1,10 @@
 import * as React from 'react';
-import {Action, isCommandAction, isLinkAction, isRulesAction} from "@frontend/app/components/core/form/types/action";
+import {
+  ButtonAction,
+  isCommandAction,
+  isLinkAction,
+  isRulesAction
+} from "@frontend/app/components/core/form/types/action";
 import {MouseEvent, PropsWithChildren, useContext} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import {Alert, Button, IconButton} from '@mui/material';
@@ -23,7 +28,7 @@ import {GridActionsCellItem} from "@mui/x-data-grid";
 import {commandTitle} from "@frontend/app/components/core/CommandButton";
 
 interface OwnProps {
-  action: Action;
+  action: ButtonAction;
   defaultService: string;
   jexlCtx: FormJexlContext | TableRowJexlContext;
   onDialogClose?: () => void;
@@ -100,7 +105,7 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose, asGridAc
   const { config } = useContext(configStore);
   const [, setGlobalStore] = useGlobalStore();
   const params = useParams();
-  const buttonProps = determineButtonConfig(action.button, {}, jexlCtx, env);
+  const buttonProps = determineButtonConfig({...action.button, className: 'CodyAction-root'}, {}, jexlCtx, env);
   const navigate = useNavigate();
 
   if(asGridActionsCellItem) {

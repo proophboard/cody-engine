@@ -8,7 +8,7 @@ import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {jsx} from "@emotion/react";
 import JSX = jsx.JSX;
 import {v4} from "uuid";
-import {Button, Stack, Typography, useTheme} from "@mui/material";
+import {Button, FormControlLabel, Stack, Switch, Typography, useTheme} from "@mui/material";
 import {ThemeProvider} from "@mui/material/styles";
 import {FormJexlContextV2} from "@frontend/app/components/core/form/types/form-jexl-context";
 
@@ -19,6 +19,7 @@ interface OwnProps {
   hideLabel?: boolean;
   hidden?: boolean;
   disabled?: boolean;
+  required?: boolean;
   style?: React.StyleHTMLAttributes<unknown>;
   jexlCtx: FormJexlContextV2
 }
@@ -111,7 +112,14 @@ const convertToJSX = (config: HtmlConfig, props: StaticHtmlWidgetProps): JSX.Ele
     return <Typography {...attributes}>{children}</Typography>
   }
 
-
+  if(Tag === "switch") {
+    if(props.label && !props.hideLabel) {
+      return <FormControlLabel control={<Switch {...attributes} onChange={e => props.onChange(!!e.target.checked)} />}
+                               label={props.label} disabled={props.disabled}
+                               required={props.required}
+      />
+    }
+  }
 
   if(children) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment

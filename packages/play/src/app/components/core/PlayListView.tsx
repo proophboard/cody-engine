@@ -32,7 +32,6 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import {EDropzoneId} from "@cody-play/app/types/enums/EDropzoneId";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {get} from "lodash";
-import PlayStateView from "@cody-play/app/components/core/PlayStateView";
 import {ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 import PlayStaticView from "@cody-play/app/components/core/PlayStaticView";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
@@ -73,7 +72,22 @@ const PlayListView = (
   const { liveEditMode } = useContext(LiveEditModeContext);
   const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
 
-  const query = useApiQuery(informationInfo.desc.query, params);
+  const jexlQueryCtx = {
+    routeParams: params,
+    user,
+    page,
+    store,
+    data: {}
+  };
+
+  const mergedUiSchema = merge(informationInfo.uiSchema || {}, uiSchemaOverride || {});
+  // Get items UI schema from original (not normalized) ui schema, so that expr tags can be evaluated in the context of each item
+  const itemsUiSchema = get(mergedUiSchema, 'ui:list.items', {});
+
+  const queryParams = get(mergedUiSchema, 'ui:query', params);
+
+  const query = useApiQuery(informationInfo.desc.query, normalizeUiSchema(queryParams, jexlQueryCtx, env));
+
   const jexlCtx = {
     routeParams: params,
     user,
@@ -83,10 +97,8 @@ const PlayListView = (
     data: query.isSuccess ? query.data : {},
   };
 
-  const mergedUiSchema = merge(informationInfo.uiSchema || {}, uiSchemaOverride || {});
-
   const uiSchema: UiSchema = normalizeUiSchema(
-    cloneDeepJSON(mergedUiSchema),
+    mergedUiSchema,
     jexlCtx,
     env
   );
@@ -94,8 +106,6 @@ const PlayListView = (
   const uiOptions = getUiOptions(uiSchema);
 
   const listGridProps = get(uiSchema, 'ui:list.ui:options.container.props', {});
-  // Get items UI schema from original (not normalized) ui schema, so that expr tags can be evaluated in the context of each item
-  const itemsUiSchema = get(mergedUiSchema, 'ui:list.items', {});
   const itemGridProps = normalizeUiSchema(
     get(cloneDeepJSON(itemsUiSchema), 'ui:options.grid.props', {xs: 12}),
     jexlCtx,
