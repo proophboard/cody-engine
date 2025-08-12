@@ -122,7 +122,7 @@ const loadQueryDependency = (queryName: string, message: Message, options: any, 
 
 const loadServiceDependency = (serviceName: string, message: Message, options?: any): any => {
   if(!services[serviceName]) {
-    throw new Error(`Service factory for service with name "${serviceName}" not found in service registry. In Cody Play you can only use built-in services like the AuthService. The service is configured as dependency for "${message.name}".`);
+    throw new Error(`Service factory for service with name "${serviceName}" not found in service registry. The service is configured as dependency for "${message.name}".`);
   }
 
   const serviceFactory = services[serviceName];
