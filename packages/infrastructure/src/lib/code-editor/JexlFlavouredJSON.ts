@@ -21,7 +21,7 @@ export const JexlFlavouredJSON = {
     'nextval',
     // Datetime Extension
     'now', 'date', 'utc', 'isoDate', 'isoTime', 'isoDateTime', 'localDate', 'localTime', 'localDateTime',
-    'year', 'utcYear', 'month', 'utcMonth', 'day', 'utcDay', 'weekDay', 'utcWeekDay', 'hours', 'utcHours',
+    'year', 'utcYear', 'month', 'isoMonth', 'utcMonth', 'day', 'isoDay', 'utcDay', 'weekDay', 'utcWeekDay', 'lastDayOfMonth', 'hours', 'utcHours',
     'minutes', 'utcMinutes', 'seconds', 'utcSeconds', 'milliseconds', 'utcMilliseconds', 'timezoneOffset',
     'timestamp', 'addMilliseconds', 'subMilliseconds', 'addSeconds', 'subSeconds', 'addMinutes', 'subMinutes',
     'addHours', 'subHours', 'addDays', 'subDays', 'addWeeks', 'subWeeks', 'twoDigit',

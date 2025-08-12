@@ -112,13 +112,13 @@ export interface RulesAction extends ButtonAction {
   rules: AnyRule[];
 }
 
-export type FormActionContext = 'page' | 'global';
+export type FormActionScope = 'page' | 'global';
 
 export interface FormAction extends Action {
   name: string;
   schema: JSONSchema7,
   uiSchema?: UiSchema,
-  context?: FormActionContext
+  scope?: FormActionScope
 }
 
 export type ActionConfig = LinkAction | CommandAction | RulesAction | FormAction;

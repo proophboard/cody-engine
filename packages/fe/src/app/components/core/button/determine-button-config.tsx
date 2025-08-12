@@ -19,6 +19,8 @@ export interface ButtonProps {
   disabled?: boolean;
   hidden?: boolean;
   variant?: "text" | "outlined" | "contained";
+  className?: string;
+  'className:expr'?: string,
   'variant:expr'?: string,
   'color:expr'?: string,
   'disabled:expr'?: string,
@@ -67,6 +69,11 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
     uiButtonConfig['icon'] = jexl.evalSync(uiButtonConfig['icon:expr'], jexlCtx);
   }
 
+  if(uiButtonConfig['className:expr']) {
+    uiButtonConfig['className'] = jexl.evalSync(uiButtonConfig['className:expr'], jexlCtx);
+  }
+
+
   // @TODO: Fix that uiSchema is altered
   if(uiButtonConfig['icon']) {
     uiConfigIcon = typeof uiButtonConfig['icon'] === "string" ? <MdiIcon icon={uiButtonConfig['icon']} /> : uiButtonConfig['icon'];
@@ -81,6 +88,8 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
   const style = props.style || uiButtonConfig['style'] || undefined;
   const icon = props.startIcon === false ? undefined : props.startIcon || props.icon || uiConfigIcon;
   const label = props.label || (!props.icon && !props["icon:expr"] ? uiButtonConfig['label'] : undefined) || undefined;
+  const className = props.className || uiButtonConfig['className'] || undefined;
+
 
   let disabled: boolean | undefined = undefined;
 
@@ -125,5 +134,6 @@ export const determineButtonConfig = (props: ButtonProps, uiSchema: UiSchema, je
     endIcon: makeIcon(endIcon),
     asGridActionsCellItem: props.asGridActionsCellItem,
     showInMenu: props.showInMenu,
+    className,
   }
 }

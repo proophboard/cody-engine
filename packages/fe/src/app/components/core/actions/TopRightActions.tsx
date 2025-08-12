@@ -156,7 +156,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
       justifyContent="flex-end"
       className="CodyTopRightActions"
       sx={{
-        '& .MuiButton-root ~.MuiButton-root': {
+        '& .CodyAction-root ~.CodyAction-root': {
           marginLeft: (theme) => theme.spacing(1),
         }
       }}

@@ -4,6 +4,7 @@ import * as React from "react";
 export interface ButtonConfig {
   variant?: "text" | "outlined" | "contained",
   color?: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning' | 'default',
+  className?: string,
   disabled?: boolean,
   style?: SxProps,
   hidden?: boolean,

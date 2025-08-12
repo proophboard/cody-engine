@@ -105,7 +105,7 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose, asGridAc
   const { config } = useContext(configStore);
   const [, setGlobalStore] = useGlobalStore();
   const params = useParams();
-  const buttonProps = determineButtonConfig(action.button, {}, jexlCtx, env);
+  const buttonProps = determineButtonConfig({...action.button, className: 'CodyAction-root'}, {}, jexlCtx, env);
   const navigate = useNavigate();
 
   if(asGridActionsCellItem) {

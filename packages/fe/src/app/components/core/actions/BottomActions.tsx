@@ -188,7 +188,7 @@ const BottomActions = (props: BottomActionsProps) => {
           alignItems="center"
           justifyContent="flex-start"
           sx={{
-            '& .MuiButton-root ~.MuiButton-root': {
+            '& .CodyAction-root ~.CodyAction-root': {
               marginLeft: (theme) => theme.spacing(1),
             },
           }}
@@ -235,7 +235,7 @@ const BottomActions = (props: BottomActionsProps) => {
           alignItems="center"
           justifyContent="center"
           sx={{
-            '& .MuiButton-root ~.MuiButton-root': {
+            '& .CodyAction-root ~.CodyAction-root': {
               marginLeft: (theme) => theme.spacing(1),
             },
           }}
@@ -288,7 +288,7 @@ const BottomActions = (props: BottomActionsProps) => {
           alignItems="center"
           justifyContent="flex-end"
           sx={{
-            '& .MuiButton-root ~.MuiButton-root': {
+            '& .CodyAction-root ~.CodyAction-root': {
               marginLeft: (theme) => theme.spacing(1),
             },
           }}
