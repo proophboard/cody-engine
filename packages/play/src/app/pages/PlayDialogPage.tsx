@@ -7,7 +7,7 @@ import {names} from "@event-engine/messaging/helpers";
 import {getMainPage, getPageTitle, PageDefinition} from "@frontend/app/pages/page-definitions";
 import {PageRegistry} from "@frontend/app/pages";
 import {PlayStandardPage} from "@cody-play/app/pages/PlayStandardPage";
-import {Dialog, DialogContent, DialogTitle, IconButton, useTheme} from "@mui/material";
+import {Dialog, DialogContent, DialogTitle, IconButton, Typography, useTheme} from "@mui/material";
 import {Close} from "mdi-material-ui";
 import {generatePageLink} from "@frontend/app/components/core/PageLink";
 import {useEnv} from "@frontend/hooks/use-env";
@@ -75,6 +75,8 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
     type: "page"
   }
 
+  const title = getPageTitle(page as unknown as PageDefinition);
+
   return <>
       <PlayStandardPage page={mainPage.name} />
       <Dialog open={true}
@@ -86,8 +88,8 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
       >
         <DialogTitle>
           <Grid2 container={true}>
-            <Grid2 xs>
-              {getPageTitle(page as unknown as PageDefinition)}
+            <Grid2 xs sx={{padding: `${theme.spacing(2)} ${theme.spacing(1)}`}}>
+              {title && <Typography variant={"h2"}>{title}</Typography>}
             </Grid2>
             {topRightActions.length
               ? <TopRightActions actions={topRightActions}
@@ -101,7 +103,6 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
                        alignItems="center"
                        justifyContent="flex-end">
                 <IconButton sx={{
-                    marginRight: `-${theme.spacing(2)}`,
                     color: theme.palette.grey[500],
                   }} onClick={handleClose}>
                 <Close />
@@ -110,7 +111,7 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
             }
           </Grid2>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{padding: theme.spacing(4)}}>
           <PlayStandardPage page={page.name} mode="dialog" />
         </DialogContent>
         {bottomActions.length > 0 && <BottomActions sx={{padding: theme.spacing(3)}}

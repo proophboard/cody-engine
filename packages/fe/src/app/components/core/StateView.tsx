@@ -152,20 +152,6 @@ const StateView = (props: StateViewProps) => {
         ...props.fields
       }}
     />
-    {props.mode !== "listView" && <BottomActions sx={{padding: `${theme.spacing(4)} 0`}}
-                    containerInfo={{
-                      name: infoFQCN,
-                      type: "view"
-                    }}
-                    dropzoneId={{
-                      left: EDropzoneId.VIEW_BOTTOM_ACTIONS_LEFT,
-                      center: EDropzoneId.VIEW_BOTTOM_ACTIONS_CENTER,
-                      right: EDropzoneId.VIEW_BOTTOM_ACTIONS_RIGHT,
-                    }}
-                    showDropzone={props.showDropzone ? {left: true, center: true, right: true} : undefined}
-                    uiOptions={uiOptions}
-                    defaultService={defaultService}
-                    jexlCtx={jexlCtx}/>}
   </Box>;
 };
 

@@ -52,6 +52,7 @@ interface OwnProps {
   templates?: {[name: string]: React.FunctionComponent<any>};
   definitions?: {[id: string]: DeepReadonly<JSONSchema7>};
   hidden?: boolean;
+  showDropzone?: boolean;
 }
 
 type FormViewProps = OwnProps;
@@ -265,7 +266,13 @@ const FormView = (props: FormViewProps) => {
       // @ts-ignore
       ref={formRef}
       formData={formData}
-      formContext={{data: formData, updateForm: handleUpdateFormFromContext, defaultService, mode: props.pageMode === "dialog" ? "dialogForm" : "pageForm"}}
+      formContext={{
+        data: formData,
+        updateForm: handleUpdateFormFromContext,
+        defaultService,
+        mode: props.pageMode === "dialog" ? "dialogForm" : "pageForm",
+        showDropzone: props.showDropzone
+      }}
       uiSchema={normalizedUiSchema}
       liveValidate={liveValidate}
       showErrorList={false}
@@ -296,15 +303,6 @@ const FormView = (props: FormViewProps) => {
       }}
     />
     {extraError && <Box sx={{paddingTop: `${theme.spacing(4)}`}} id={extraErrorId()}>{extraError}</Box>}
-    <BottomActions sx={{padding:  `${theme.spacing(4)} 0`}}
-                   containerInfo={{
-                     name: infoFQCN,
-                     type: "view"
-                   }}
-                   uiOptions={uiOptions}
-                   defaultService={defaultService}
-                   jexlCtx={jexlCtx}
-    />
   </Box>;
 };
 
