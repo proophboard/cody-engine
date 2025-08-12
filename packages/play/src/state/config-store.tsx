@@ -8,7 +8,7 @@ import {
   PlayAddPageAction,
   PlayAddPersona,
   PlayAddPureEventAction,
-  PlayAddQueryAction,
+  PlayAddQueryAction, PlayAddServiceAction,
   PlayAddTypeAction,
   PlayAddViewAction,
   PlayAggregateRegistry,
@@ -29,13 +29,13 @@ import {
   PlayRemoveEventPolicyAction,
   PlayRemovePageAction,
   PlayRemovePureEventAction,
-  PlayRemoveQueryAction,
+  PlayRemoveQueryAction, PlayRemoveServiceAction,
   PlayRemoveTypeAction,
   PlayRemoveViewAction,
   PlayRenameApp,
   PlayRenameDefaultService,
   PlayResolverRegistry,
-  PlaySchemaDefinitions,
+  PlaySchemaDefinitions, PlayServiceRegistry,
   PlaySetPersonas,
   PlayTopLevelPage,
   PlayUpdatePersona,
@@ -66,6 +66,8 @@ import {useTypes} from "@frontend/hooks/use-types";
 import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
 import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-model-store/configured-document-store";
+import {services} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
+import {makePlayRulesServiceFactory} from "@cody-play/infrastructure/services/make-play-rules-service-factory";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -89,6 +91,7 @@ export interface CodyPlayConfig {
   resolvers: PlayResolverRegistry,
   types: PlayInformationRegistry,
   definitions: PlaySchemaDefinitions,
+  services: PlayServiceRegistry,
 }
 
 const initialPlayConfig: CodyPlayConfig = {
@@ -166,6 +169,9 @@ const initialPlayConfig: CodyPlayConfig = {
   definitions: {
   },
   eventPolicies: {
+  },
+  services: {
+
   }
 }
 
@@ -175,6 +181,12 @@ const syncTypesWithSharedRegistry = (config: CodyPlayConfig): void => {
   // Sync types, so that DataSelect, breadcrumbs, ... can resolve references
   for (const typeName in config.types) {
     sharedTypes[typeName] = config.types[typeName] as any;
+  }
+}
+
+const syncServices = (config: CodyPlayConfig): void => {
+  for (const service in config.services) {
+    services[service] = makePlayRulesServiceFactory(service, config.services[service]);
   }
 }
 
@@ -234,6 +246,7 @@ const storedConfigStr = localStorage.getItem(CONFIG_STORE_LOCAL_STORAGE_KEY + cu
 const defaultPlayConfig = storedConfigStr ? enhanceConfigWithDefaults(JSON.parse(storedConfigStr) as CodyPlayConfig) : initialPlayConfig;
 
 syncTypesWithSharedRegistry(defaultPlayConfig);
+syncServices(defaultPlayConfig);
 
 console.log(`[PlayConfigStore] Initializing with config: `, defaultPlayConfig);
 
@@ -246,7 +259,8 @@ const { Provider } = configStore;
 type Action = {ctx: ElementEditedContext} & (PlayInitAction | PlayRenameApp | PlayRenameDefaultService | ChangeLayout | PlayChangeTheme | PlaySetPersonas | PlayAddPersona | PlayUpdatePersona| PlayAddPageAction | PlayRemovePageAction
   | PlayAddCommandAction | PlayRemoveCommandAction | PlayAddCommandHandlerAction | PlayRemoveCommandHandlerAction | PlayAddTypeAction | PlayRemoveTypeAction
   | PlayAddQueryAction | PlayRemoveQueryAction | PlayAddViewAction | PlayRemoveViewAction | PlayAddAggregateAction | PlayRemoveAggregateAction
-  | PlayAddAggregateEventAction | PlayRemoveAggregateEventAction | PlayAddPureEventAction | PlayRemovePureEventAction | PlayAddEventPolicyAction | PlayRemoveEventPolicyAction);
+  | PlayAddAggregateEventAction | PlayRemoveAggregateEventAction | PlayAddPureEventAction | PlayRemovePureEventAction | PlayAddEventPolicyAction | PlayRemoveEventPolicyAction
+  | PlayAddServiceAction | PlayRemoveServiceAction);
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
 
@@ -293,6 +307,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
       case "INIT":
         const newConfig = _.isEmpty(action.payload)? initialPlayConfig : enhanceConfigWithDefaults(action.payload);
         syncTypesWithSharedRegistry(newConfig);
+        syncServices(newConfig);
         window.setTimeout(() => {
           setEnv({...env, DEFAULT_SERVICE: names(config.defaultService).className, PAGES: config.pages as unknown as PageRegistry});
         }, 50);
@@ -446,6 +461,15 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         config.eventPolicies[action.event] = {...config.eventPolicies[action.event]};
 
         delete config.eventPolicies[action.event][action.name];
+        return {...config};
+      case "ADD_SERVICE":
+        config.services = {...config.services};
+        config.services[action.name] = action.config;
+        syncServices(config);
+        return {...config};
+      case "REMOVE_SERVICE":
+        config.services = {...config.services};
+        delete config.services[action.name];
         return {...config};
       default:
         return config;

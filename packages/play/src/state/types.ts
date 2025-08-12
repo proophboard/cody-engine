@@ -204,6 +204,17 @@ export interface PlayRemoveEventPolicyAction {
   event: string,
 }
 
+export interface PlayAddServiceAction {
+  type: 'ADD_SERVICE',
+  name: string,
+  config: PlayServiceConfig,
+}
+
+export interface PlayRemoveServiceAction {
+  type: 'REMOVE_SERVICE',
+  name: string,
+}
+
 /* Commands */
 export type PlayCommandRegistry = {
   [commandName: string]: PlayCommandRuntimeInfo;
@@ -283,4 +294,21 @@ export type PlayApplyRulesRegistry = {
 /* Definitions */
 export type PlaySchemaDefinitions = {
   [definitionId: string]: JSONSchema7;
+}
+
+/* Services */
+export type PlayServiceRules = {
+  rules: AnyRule[];
+  async?: boolean;
+}
+
+export type PlayServiceConfig = {
+  func?: PlayServiceRules;
+  methods?: {
+    [methodName: string]: PlayServiceRules;
+  }
+}
+
+export type PlayServiceRegistry = {
+  [serviceName: string]: PlayServiceConfig;
 }

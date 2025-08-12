@@ -1,4 +1,4 @@
-import {CodyResponse, CodyResponseType, Node, NodeType} from "@proophboard/cody-types";
+import {CodyResponse, Node, NodeType} from "@proophboard/cody-types";
 import {ElementEditedContext, PlayConfigDispatch} from "@cody-play/infrastructure/cody/cody-message-server";
 import {onUi} from "@cody-play/infrastructure/cody/hooks/on-ui";
 import {CodyPlayConfig} from "@cody-play/state/config-store";
@@ -8,6 +8,7 @@ import {onAggregate} from "@cody-play/infrastructure/cody/hooks/on-aggregate";
 import {onEvent} from "@cody-play/infrastructure/cody/hooks/on-event";
 import {onPolicy} from "@cody-play/infrastructure/cody/hooks/on-policy";
 import {onRole} from "@cody-play/infrastructure/cody/hooks/on-role";
+import {onExternalService} from "@cody-play/infrastructure/cody/hooks/on-external-service";
 
 export const onNode = async (node: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   switch (node.getType()) {
@@ -25,6 +26,8 @@ export const onNode = async (node: Node, dispatch: PlayConfigDispatch, ctx: Elem
       return onPolicy(node, dispatch, ctx, config);
     case NodeType.role:
       return onRole(node, dispatch, ctx, config);
+    case NodeType.externalSystem:
+      return onExternalService(node, dispatch, ctx, config);
   }
 
   return {

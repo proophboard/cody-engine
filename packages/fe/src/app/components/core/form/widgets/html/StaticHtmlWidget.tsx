@@ -3,7 +3,7 @@ import {HtmlConfig} from "@frontend/app/components/core/form/widgets/HtmlWidget"
 import {useNavigate} from "react-router-dom";
 import {useEffect, useRef} from "react";
 import {WidgetProps} from "@rjsf/utils";
-import {createRoot} from "react-dom/client";
+import {createRoot, Root} from "react-dom/client";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {jsx} from "@emotion/react";
 import JSX = jsx.JSX;
@@ -29,6 +29,7 @@ type StaticHtmlWidgetProps = OwnProps & WidgetProps;
 const StaticHtmlWidget = (props: StaticHtmlWidgetProps) => {
   const navigate = useNavigate();
   const divRef = useRef<HTMLDivElement>(null);
+  const reactRootRef = useRef<Root>(null);
   const theme = useTheme();
 
   const style = props.style || {};
@@ -36,9 +37,12 @@ const StaticHtmlWidget = (props: StaticHtmlWidgetProps) => {
   useEffect(() => {
     if(divRef.current) {
 
-      divRef.current.innerHTML = '';
+      if(!reactRootRef.current) {
+        // @ts-ignore
+        reactRootRef.current = createRoot(divRef.current);
+      }
 
-      createRoot(divRef.current).render(<ThemeProvider  theme={theme}>{convertToJSX(props.config, props)}</ThemeProvider>);
+      reactRootRef.current.render(<ThemeProvider  theme={theme}>{convertToJSX(props.config, props)}</ThemeProvider>);
 
       window.setTimeout(() => {
         if(divRef.current) {
@@ -55,7 +59,7 @@ const StaticHtmlWidget = (props: StaticHtmlWidgetProps) => {
       }, 100);
 
     }
-  }, [divRef.current, JSON.stringify(props.config)]);
+  }, [JSON.stringify(props.config)]);
 
   if(props.hidden) {
     return <></>;
