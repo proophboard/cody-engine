@@ -3,6 +3,7 @@ import {DataGrid, GridColDef, GridToolbar} from "@mui/x-data-grid";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import {useEffect} from "react";
 import {merge} from "lodash/fp";
+import {get} from "lodash";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
@@ -17,6 +18,7 @@ import {<%= serviceNames.className %><%= nsClassName %><%= className %>VORuntime
 import NoRowsOverlay from "@frontend/app/components/core/table/NoRowsOverlay";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
+import StateView from "@frontend/app/components/core/StateView";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {showTitle} from "@frontend/util/schema/show-title";
 import {informationTitle} from "@frontend/util/information/titelize";
@@ -30,15 +32,33 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
   const theme = useTheme();
   const [user] = useUser();
   const [page,addQueryResult] = usePageData();
-  const query = useGet<%= className %>(params);
   const [store, setStore] = useGlobalStore();
   const normalizedDefaultService = names(env.DEFAULT_SERVICE).className;
+
+  const mergedUiSchema = merge(RuntimeInfo.uiSchema || {}, config.uiSchemaOverride || {});
+  // Get items UI schema from original (not normalized) ui schema, so that expr tags can be evaluated in the context of each item
+  const itemsUiSchema = get(mergedUiSchema, 'ui:list.items', {});
+
+  // Prepare the main query
+  const queryParams = get(mergedUiSchema, 'ui:query', params);
+  const jexlQueryCtx = {routeParams: params, user, page, store, data: {}};
+  const query = useGet<%= className %>(normalizeUiSchema(queryParams, jexlQueryCtx, env));
+
   <%- hooks %>
 
   const jexlCtx: FormJexlContext = {routeParams: params, user, page, store, data: query.isSuccess ? query.data : {}, mode: config.pageMode === "dialog" ? "dialogView" : "pageView"};
 
-  const uiSchema: UiSchema & TableUiSchema = normalizeUiSchema(merge(RuntimeInfo.uiSchema || {}, config.uiSchemaOverride || {}), jexlCtx, env);
+  const uiSchema: UiSchema & TableUiSchema = normalizeUiSchema(mergedUiSchema, jexlCtx, env);
   const uiOptions = getUiOptions(uiSchema);
+
+  // Prepare infos for list view
+  const listGridProps = get(uiSchema, 'ui:list.ui:options.container.props', {});
+  const itemGridProps = normalizeUiSchema(
+    get(cloneDeepJSON(itemsUiSchema), 'ui:options.grid.props', {xs: 12}),
+    jexlCtx,
+    env
+  );
+  const itemInfo = types[RuntimeInfo.desc.itemType];
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
@@ -48,6 +68,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
     addQueryResult('<%= dataReference %>', query);
   }, [query.dataUpdatedAt])
 
+  // Prepare columns for table view
   const columns: GridColDef[] = [
     <%- columns %>
   ];
@@ -56,6 +77,42 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
     return <></>
   }
 
+  if(config.viewType === 'list') {
+    return (
+      <Box component="div">
+        <Grid2 container={true}>
+          <Grid2 xs>
+            {showTitle(uiSchema) && (
+              <Typography
+                variant="h2"
+                className="sidebar-anchor"
+                id={"component-<%= serviceNames.fileName %>-<%= fileName %>"}
+                sx={{ padding: (theme) => theme.spacing(4), paddingLeft: 0 }}
+              >
+                {informationTitle(RuntimeInfo, uiSchema)}
+              </Typography>
+            )}
+          </Grid2>
+          <TopRightActions uiOptions={uiOptions} defaultService={normalizedDefaultService} jexlCtx={jexlCtx} />
+        </Grid2>
+        {query.isLoading && <CircularProgress />}
+        {query.isSuccess && (
+          <Grid2 container={true} className="CodyListView-grid" {...listGridProps}>
+            {query.data.map((item: any) => <Grid2 key={item['<%= identifier %>']} {...itemGridProps}>
+              <StateView
+                mode={"listView"}
+                description={{...itemInfo, itemsUiSchema}}
+                state={item}
+              />
+            </Grid2>)}
+          </Grid2>
+        )}
+        <BottomActions uiOptions={uiOptions} defaultService={normalizedDefaultService} jexlCtx={jexlCtx} sx={{marginTop: theme.spacing(2)}} />
+      </Box>
+    );
+  }
+
+  // Return default table view
   return (
     <Box component="div">
       <Grid2 container={true}>

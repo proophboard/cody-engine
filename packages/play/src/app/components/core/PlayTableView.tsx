@@ -81,6 +81,7 @@ import {isActionsColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/i
 import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 import {Target} from "mdi-material-ui";
+import {get} from "lodash";
 
 const PlayTableView = (
   params: any,
@@ -112,7 +113,20 @@ const PlayTableView = (
   const { liveEditMode } = useContext(LiveEditModeContext);
   const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
 
-  const query = useApiQuery(informationInfo.desc.query, params);
+  const jexlQueryCtx = {
+    routeParams: params,
+    user,
+    page,
+    store,
+    data: {}
+  };
+
+  const mergedUiSchema = merge(informationInfo.uiSchema || {}, uiSchemaOverride || {});
+
+  const queryParams = get(mergedUiSchema, 'ui:query', params);
+
+  const query = useApiQuery(informationInfo.desc.query, normalizeUiSchema(queryParams, jexlQueryCtx, env));
+
   const jexlCtx = {
     routeParams: params,
     user,
@@ -122,7 +136,7 @@ const PlayTableView = (
   };
 
   const uiSchema: UiSchema & TableUiSchema = normalizeUiSchema(
-    merge(informationInfo.uiSchema || {}, uiSchemaOverride || {}),
+    mergedUiSchema,
     jexlCtx,
     env
   );
