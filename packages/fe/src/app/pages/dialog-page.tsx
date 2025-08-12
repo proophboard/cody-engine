@@ -18,6 +18,7 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
 import {StandardPage} from "@frontend/app/pages/standard-page";
+import {isButtonAction} from "@frontend/app/components/core/form/types/action";
 
 interface OwnProps {
   page: PageDefinition;
@@ -55,7 +56,7 @@ const DialogPage = (props: DialogPageProps) => {
   const page = props.page;
   const mainPage = getMainPage(page, pages, defaultService);
 
-  const actionBtns = parseActionsFromPageCommands(page.commands, jexlCtx, t, env).filter(a => !a.button.hidden);
+  const actionBtns = parseActionsFromPageCommands(page.commands, jexlCtx, t, env).filter(a => !isButtonAction(a) || !a.button.hidden);
 
   const bottomActions = actionBtns.filter(a => a.position !== "top-right")
   const topRightActions = actionBtns.filter(a => a.position === "top-right")

@@ -2,8 +2,7 @@ import Grid2 from "@mui/material/Unstable_Grid2";
 import {generatePath, useParams} from "react-router-dom";
 import CommandBar, {renderTabs} from "@frontend/app/layout/CommandBar";
 import React, {useContext, useEffect, useMemo} from "react";
-import {CodyPlayConfig, configStore} from "@cody-play/state/config-store";
-import PlayCommand from "@cody-play/app/components/core/PlayCommand";
+import {configStore} from "@cody-play/state/config-store";
 import {
   PlayInformationRegistry,
   PlayPageRegistry,
@@ -32,7 +31,7 @@ import {useTranslation} from "react-i18next";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
-import {Action, ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
+import {Action, ActionContainerInfo, FormAction as FormActionType, isButtonAction} from "@frontend/app/components/core/form/types/action";
 import {useEnv} from "@frontend/hooks/use-env";
 import ActionButton from "@frontend/app/components/core/ActionButton";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
@@ -48,6 +47,7 @@ import {FocusedSidebarItem} from "@cody-play/state/focused-element";
 import {Target} from "mdi-material-ui";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 import PlayListView from "@cody-play/app/components/core/PlayListView";
+import FormAction from "@frontend/app/components/core/FormAction";
 
 export type PageMode = 'standard' | 'dialog' | 'drawer' | 'list';
 
@@ -153,7 +153,7 @@ export const PlayStandardPage = (props: Props) => {
     props.mode === 'dialog' || props.mode === 'drawer'
       ? []
       : parseActionsFromPageCommands(page.commands, jexlCtx, t, env).filter(
-          (a) => !a.button.hidden
+          (a) => !isButtonAction(a) || !a.button.hidden
         );
 
   if (config.layout === 'prototype') {
@@ -162,12 +162,13 @@ export const PlayStandardPage = (props: Props) => {
         <Grid2 xs={12}>
           <CommandBar tabs={tabs}>
             {cmdBtns.map((a, index) => (
-              <ActionButton
+              isButtonAction(a) ? <ActionButton
                 key={`${page.name}_action_${index}`}
                 action={a}
                 defaultService={defaultService}
                 jexlCtx={jexlCtx}
               />
+              : <FormAction action={a as FormActionType} defaultService={defaultService} jexlCtx={jexlCtx} />
             ))}
           </CommandBar>
         </Grid2>

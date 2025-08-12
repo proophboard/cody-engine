@@ -14,7 +14,7 @@ import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {execMappingSync} from "@app/shared/rule-engine/exec-mapping";
-import {Action} from "@frontend/app/components/core/form/types/action";
+import {Action, isButtonAction, FormAction as FormActionType} from "@frontend/app/components/core/form/types/action";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
 import {useEnv} from "@frontend/hooks/use-env";
 import ActionButton from "@frontend/app/components/core/ActionButton";
@@ -27,6 +27,7 @@ import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import Breadcrumbs from "@frontend/app/layout/Breadcrumbs";
 import {omit, merge} from "lodash";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+import FormAction from "@frontend/app/components/core/FormAction";
 
 interface Props {
   page: PageDefinition;
@@ -38,7 +39,8 @@ const findTabGroup = (groupName: string, pages: PageRegistry, routeParams: Reado
   return Object.values(pages).filter(p => p.tab && p.tab.group === groupName).map(p => {
     return {
       ...p.tab!,
-      route: generatePath(p.route, routeParams)
+      route: generatePath(p.route, routeParams),
+      routeTemplate: p.route,
     }
   });
 }
@@ -108,11 +110,14 @@ export const StandardPage = (props: Props) => {
 
   // Cmd Buttons are handled in the dialog component if mode is "dialog"
   const cmdBtns = pageMode === "dialog" || pageMode === "drawer" ? [] : parseActionsFromPageCommands(page.commands, jexlCtx, t, env)
-    .filter(a => !a.button.hidden);
+    .filter(a => !isButtonAction(a) || !a.button.hidden);
 
   if(environment.layout === "prototype") {
     topBar = cmdBtns.length > 0 || tabs ? <Grid2 xs={12}><CommandBar tabs={tabs}>
-      {cmdBtns.map((a, index) => <ActionButton key={`${page.name}_action_${index}`} action={a} defaultService={env.DEFAULT_SERVICE} jexlCtx={jexlCtx} />)}
+      {cmdBtns.map((a, index) => isButtonAction(a)
+        ? <ActionButton key={`${page.name}_action_${index}`} action={a} defaultService={env.DEFAULT_SERVICE} jexlCtx={jexlCtx} />
+        : <FormAction key={`${page.name}_action_${index}`} action={a as FormActionType} defaultService={env.DEFAULT_SERVICE} jexlCtx={jexlCtx} />
+      )}
     </CommandBar></Grid2> : <></>;
   } else {
     topBar = tabs ? <Grid2 xs={12} sx={headerGridSx}>{renderTabs(tabs, user, pageData, theme, t, true)}</Grid2> : <></>;

@@ -6,7 +6,8 @@ import {
   ActionContainerInfo,
   ButtonPosition,
   getActionButtonName,
-  getActionId,
+  getActionId, isButtonAction,
+  FormAction as FormActionType
 } from '@frontend/app/components/core/form/types/action';
 import Grid2 from '@mui/material/Unstable_Grid2';
 import ActionButton from '@frontend/app/components/core/ActionButton';
@@ -28,6 +29,7 @@ import moveButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/move-b
 import updatePageButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-page-button-position';
 import updateViewButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-view-button-position';
 import {FocusedButton} from "@cody-play/state/focused-element";
+import FormAction from "@frontend/app/components/core/FormAction";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -203,7 +205,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 focusableElement={{
                   id: getActionId(action),
                   name: getActionButtonName(action),
-                  type: 'button',
+                  type: isButtonAction(action) ? 'button' : 'formAction',
                   action,
                   containerInfo: props.containerInfo!,
                 } as FocusedButton}
@@ -212,11 +214,11 @@ const BottomActions = (props: BottomActionsProps) => {
                   prevContainerInfo: props.containerInfo,
                 }}
               >
-                <ActionButton
+                {isButtonAction(action) ? <ActionButton
                   action={action}
                   defaultService={props.defaultService}
                   jexlCtx={props.jexlCtx}
-                />
+                /> : <FormAction action={action as FormActionType} defaultService={props.defaultService} jexlCtx={props.jexlCtx} />}
               </PlayDraggable>
             ))}
             {props.additionalLeftButtons}
@@ -253,7 +255,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 focusableElement={{
                   id: getActionId(action),
                   name: getActionButtonName(action),
-                  type: 'button',
+                  type: isButtonAction(action) ? 'button' : 'formAction',
                   action,
                   containerInfo: props.containerInfo!,
                 } as FocusedButton}
@@ -262,11 +264,11 @@ const BottomActions = (props: BottomActionsProps) => {
                   prevContainerInfo: props.containerInfo,
                 }}
               >
-                <ActionButton
+                {isButtonAction(action) ? <ActionButton
                   action={action}
                   defaultService={props.defaultService}
                   jexlCtx={props.jexlCtx}
-                />
+                /> : <FormAction action={action as FormActionType} defaultService={props.defaultService} jexlCtx={props.jexlCtx} />}
               </PlayDraggable>
             ))}
             {props.additionalCenterButtons}
@@ -304,7 +306,7 @@ const BottomActions = (props: BottomActionsProps) => {
                 focusableElement={{
                   id: getActionId(action),
                   name: getActionButtonName(action),
-                  type: 'button',
+                  type: isButtonAction(action) ? 'button' : 'formAction',
                   action,
                   containerInfo: props.containerInfo!,
                 } as FocusedButton}
@@ -313,11 +315,11 @@ const BottomActions = (props: BottomActionsProps) => {
                   prevContainerInfo: props.containerInfo,
                 }}
               >
-                <ActionButton
+                {isButtonAction(action) ? <ActionButton
                   action={action}
                   defaultService={props.defaultService}
                   jexlCtx={props.jexlCtx}
-                />
+                /> : <FormAction action={action as FormActionType} defaultService={props.defaultService} jexlCtx={props.jexlCtx} />}
               </PlayDraggable>
             ))}
             {props.additionalRightButtons}

@@ -5,7 +5,7 @@ import {DependencyRegistry, ValueObjectDescriptionFlags} from "@event-engine/des
 import {JSONSchema7} from "json-schema-to-ts";
 import {UiSchema} from "@rjsf/utils";
 import {ProjectionConfig} from "@app/shared/rule-engine/projection-config";
-import {Action} from "@frontend/app/components/core/form/types/action";
+import {Action, ButtonAction} from "@frontend/app/components/core/form/types/action";
 
 export interface ValueObjectMetadataRaw {
   identifier?: string;
@@ -41,7 +41,7 @@ export interface PageLinkTableColumn {
   'page:expr'?: string;
 }
 
-export type ActionTableColumn = Omit<Action, 'position'> & {showInMenu?: boolean};
+export type ActionTableColumn = Omit<ButtonAction, 'position'> & {showInMenu?: boolean};
 
 export type ColumnSingleSelectValueOption = string | {label: string, value: string};
 

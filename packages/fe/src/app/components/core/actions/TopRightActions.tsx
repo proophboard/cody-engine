@@ -5,7 +5,8 @@ import {
   ActionContainerInfo,
   ButtonPosition,
   getActionButtonName,
-  getActionId,
+  getActionId, isButtonAction,
+  FormAction as FormActionType
 } from '@frontend/app/components/core/form/types/action';
 import { FormJexlContext } from '@frontend/app/components/core/form/types/form-jexl-context';
 import Grid2 from '@mui/material/Unstable_Grid2';
@@ -27,6 +28,7 @@ import { FocusedButton } from '@cody-play/state/focused-element';
 import moveButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/move-button-position';
 import updatePageButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-page-button-position';
 import updateViewButtonPosition from '@cody-play/infrastructure/vibe-cody/utils/update-view-button-position';
+import FormAction from "@frontend/app/components/core/FormAction";
 
 interface OwnProps {
   uiOptions: Record<string, any>;
@@ -173,7 +175,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
               {
                 id: getActionId(action),
                 name: getActionButtonName(action),
-                type: 'button',
+                type: isButtonAction(action) ? 'button' : 'formAction',
                 action,
                 containerInfo: props.containerInfo!,
               } as FocusedButton
@@ -183,11 +185,11 @@ const TopRightActions = (props: TopRightActionsProps) => {
               prevContainerInfo: props.containerInfo,
             }}
           >
-            <ActionButton
+            {isButtonAction(action) ? <ActionButton
               action={action}
               defaultService={props.defaultService}
               jexlCtx={props.jexlCtx}
-            />
+            /> : <FormAction action={action as FormActionType} defaultService={props.defaultService} jexlCtx={props.jexlCtx} />}
           </PlayDraggable>
         ))}
         {props.additionalRightButtons}
