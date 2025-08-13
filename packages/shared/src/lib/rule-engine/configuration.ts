@@ -37,6 +37,7 @@ export const isIfNotConditionRule = (rule: any): rule is IfNotConditionRule => {
 export type ThenType = ThenRecordEvent | ThenThrowError | ThenAssignVariable | ThenTriggerCommand | ThenCallService
   | ThenExecuteRules
   | ThenForEach
+  | ThenTryCatch
   | ThenFilter
   | ThenFindInformation | ThenFindPartialInformation | ThenFindOneInformation | ThenFindOnePartialInformation
   | ThenFindInformationById | ThenFindPartialInformationById
@@ -113,6 +114,20 @@ export interface ThenCallService {
 }
 
 export const isCallService = (then: any): then is ThenCallService => typeof then.call !== 'undefined';
+
+export interface ThenTryCatch {
+  try: {
+    then: ThenType,
+    catch?: {
+      then: ThenType,
+    },
+    finally?: {
+      then: ThenType
+    }
+  }
+}
+
+export const isTryCatch = (then: any): then is ThenTryCatch => typeof then.try !== "undefined";
 
 export interface ThenFindInformation {
   find: {

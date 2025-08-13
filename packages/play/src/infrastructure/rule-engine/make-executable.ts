@@ -20,7 +20,7 @@ import {
   isRecordEvent,
   isReplaceInformation,
   isThrowError,
-  isTriggerCommand,
+  isTriggerCommand, isTryCatch,
   isUpdateInformation,
   isUpsertInformation,
   PropMapping,
@@ -43,7 +43,7 @@ import {
   ThenRecordEvent,
   ThenReplaceInformation,
   ThenThrowError,
-  ThenTriggerCommand,
+  ThenTriggerCommand, ThenTryCatch,
   ThenType,
   ThenUpdateInformation,
   ThenUpsertInformation
@@ -181,6 +181,8 @@ const execThenSync = (then: ThenType, ctx: ExecutionContext): ExecutionContext =
       return execTriggerCommandSync(then as ThenTriggerCommand, ctx);
     case isCallService(then):
       return execCallServiceSync(then as ThenCallService, ctx);
+    case isTryCatch(then):
+      return execTryCatchSync(then as ThenTryCatch, ctx);
     case isLookupUser(then):
     case isLookupUsers(then):
       throw new Error(`User lookup rules can only be used in asynchronous contexts like query resolvers, automations, services or projections`);
@@ -223,6 +225,8 @@ const execThenAsync = async (then: ThenType, ctx: ExecutionContext): Promise<Exe
       return await execTriggerCommandAsync(then as ThenTriggerCommand, ctx);
     case isCallService(then):
       return await execCallServiceAsync(then as ThenCallService, ctx);
+    case isTryCatch(then):
+      return await execTryCatchAsync(then as ThenTryCatch, ctx);
     case isLookupUsers(then):
       return await execLookupUsers(then as ThenLookupUsers, ctx);
     case isLookupUser(then):
@@ -300,6 +304,72 @@ const execForEachAsync = async (then: ThenForEach, ctx: ExecutionContext): Promi
   }
 
   return ctx;
+}
+
+const execTryCatchSync = (then: ThenTryCatch, ctx: ExecutionContext): ExecutionContext => {
+  switch (true) {
+    case !!then.try.catch && !!then.try.finally:
+      try {
+        ctx = execThenSync(then.try.then, ctx);
+      } catch (error: any) {
+        ctx['error'] = error;
+        ctx = execThenSync(then.try.catch!.then, ctx);
+      } finally {
+        ctx = execThenSync(then.try.finally!.then, ctx);
+      }
+
+      return ctx;
+    case !!then.try.catch:
+      try {
+        ctx = execThenSync(then.try.then, ctx);
+      } catch (error: any) {
+        ctx['error'] = error;
+        ctx = execThenSync(then.try.catch!.then, ctx);
+      }
+      return ctx;
+    case !!then.try.finally:
+      try {
+        ctx = execThenSync(then.try.then, ctx);
+      } finally {
+        ctx = execThenSync(then.try.finally!.then, ctx);
+      }
+      return ctx;
+    default:
+      throw new Error(`Unable to execute Try-Catch-Finally-Rule. The rule must either define a catch or a finally case. Non is given: ${JSON.stringify(then)}`)
+  }
+}
+
+const execTryCatchAsync = async (then: ThenTryCatch, ctx: ExecutionContext): Promise<ExecutionContext> => {
+  switch (true) {
+    case !!then.try.catch && !!then.try.finally:
+      try {
+        ctx = await execThenAsync(then.try.then, ctx);
+      } catch (error: any) {
+        ctx['error'] = error;
+        ctx = await execThenAsync(then.try.catch!.then, ctx);
+      } finally {
+        ctx = await execThenAsync(then.try.finally!.then, ctx);
+      }
+
+      return ctx;
+    case !!then.try.catch:
+      try {
+        ctx = await execThenAsync(then.try.then, ctx);
+      } catch (error: any) {
+        ctx['error'] = error;
+        ctx = await execThenAsync(then.try.catch!.then, ctx);
+      }
+      return ctx;
+    case !!then.try.finally:
+      try {
+        ctx = await execThenAsync(then.try.then, ctx);
+      } finally {
+        ctx = await execThenAsync(then.try.finally!.then, ctx);
+      }
+      return ctx;
+    default:
+      throw new Error(`Unable to execute Try-Catch-Finally-Rule. The rule must either define a catch or a finally case. Non is given: ${JSON.stringify(then)}`)
+  }
 }
 
 const argsToArrayOrUndefined = (args?: any): any[] | undefined => {
