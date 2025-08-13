@@ -13,6 +13,7 @@ import {registerTypeCastExtensions} from "@app/shared/jexl/type-cast/register";
 import {registerMathExtension} from "@app/shared/jexl/math-extension/register";
 import {cloneDeep, merge as deepMerge} from "lodash";
 import {registerSequenceExtension} from "@app/shared/jexl/sequence-extension/register";
+import {registerMixedExtensions} from "@app/shared/jexl/mixed-extension/register";
 
 
 let configuredJexl: Jexl;
@@ -32,9 +33,8 @@ const getConfiguredJexl = (): Jexl => {
       return evalSync.call(configuredJexl, expression.replace(/^\$>/, ''), context);
     }
 
-    configuredJexl.addFunction('count', count);
-    configuredJexl.addFunction('merge', merge);
-    configuredJexl.addFunction('deepMerge', deepMerge);
+
+
     configuredJexl.addFunction('uuid', generateUuuid);
     configuredJexl.addFunction('isRole', isRole);
     configuredJexl.addFunction('userAttr', getAttribute);
@@ -45,13 +45,11 @@ const getConfiguredJexl = (): Jexl => {
     configuredJexl.addTransform('companyRole', isCompanyRole);
     configuredJexl.addTransform('setCompanyRole', setCompanyRole);
     configuredJexl.addTransform('attr', getAttribute);
-    configuredJexl.addTransform('count', count);
-    configuredJexl.addTransform('merge', merge);
-    configuredJexl.addTransform('deepMerge', deepMerge);
-    configuredJexl.addTransform('typeof', isTypeof);
 
-    configuredJexl.addTransform('default', getValOrDefault)
 
+
+
+    registerMixedExtensions(configuredJexl);
     registerStringExtensions(configuredJexl);
     registerTypeCastExtensions(configuredJexl);
     registerMathExtension(configuredJexl);
@@ -66,43 +64,7 @@ const getConfiguredJexl = (): Jexl => {
   return configuredJexl;
 }
 
-const count = (val: any): number => {
-  if(Array.isArray(val)) {
-    return val.length;
-  }
 
-  if(typeof val === "string") {
-    return val.length;
-  }
-
-  if(typeof val === "object") {
-    return Object.keys(val).length;
-  }
-
-  if(typeof val === "number") {
-    return count(''+val);
-  }
-
-  return val ? 1 : 0;
-}
-
-const merge = (val1: any, val2: any) => {
-  if(Array.isArray(val1)) {
-    if(!Array.isArray(val2)) {
-      val2 = [val2];
-    }
-    return [...val1, ...val2];
-  }
-
-  if(typeof val1 === "object") {
-    if(typeof val2 !== "object") {
-      val2 = {merged: val2};
-    }
-    return {...val1, ...val2};
-  }
-
-  return val1.toString() + val2.toString();
-}
 
 const generateUuuid = () => {
   return v4();
@@ -202,29 +164,6 @@ const getPageData = (pageData: PageData | undefined, name: string, defaultValue:
   }
 
   return result;
-}
-
-const getValOrDefault = (val: any, notSetVal: any, strict?: boolean) => {
-  if(strict) {
-    return typeof val === "undefined" ? notSetVal : val;
-  } else {
-    switch (typeof val) {
-      case "object":
-        if(Array.isArray(val)) {
-          return val.length ? val : notSetVal;
-        } else {
-          return JSON.stringify(val) === "{}" ? notSetVal : val;
-        }
-      case "boolean":
-        return val;
-      default:
-        return val ? val : notSetVal;
-    }
-  }
-};
-
-const isTypeof = (val: any, type: string): boolean => {
-  return typeof val === type;
 }
 
 export default getConfiguredJexl();
