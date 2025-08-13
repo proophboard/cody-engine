@@ -10,7 +10,8 @@ import {
   isFindInformationById,
   isFindOneInformation,
   isFindOnePartialInformation,
-  isFindPartialInformation, isFindPartialInformationById,
+  isFindPartialInformation,
+  isFindPartialInformationById,
   isForEach,
   isIfConditionRule,
   isIfNotConditionRule,
@@ -22,6 +23,7 @@ import {
   isReplaceInformation,
   isThrowError,
   isTriggerCommand,
+  isTryCatch,
   isUpdateInformation,
   isUpsertInformation,
   PropMapping,
@@ -35,7 +37,8 @@ import {
   ThenFindInformationById,
   ThenFindOneInformation,
   ThenFindOnePartialInformation,
-  ThenFindPartialInformation, ThenFindPartialInformationById,
+  ThenFindPartialInformation,
+  ThenFindPartialInformationById,
   ThenForEach,
   ThenInsertInformation,
   ThenLogMessage,
@@ -45,6 +48,7 @@ import {
   ThenReplaceInformation,
   ThenThrowError,
   ThenTriggerCommand,
+  ThenTryCatch,
   ThenType,
   ThenUpdateInformation,
   ThenUpsertInformation
@@ -349,6 +353,8 @@ const convertThen = (node: Node, ctx: Context, then: ThenType, rule: Rule, lines
       return convertThenForEach(node, ctx, then as ThenForEach, rule, lines, indent, evalSync);
     case isCallService(then):
       return convertThenCallService(node, ctx, then as ThenCallService, rule, lines, indent, evalSync);
+    case isTryCatch(then):
+      return convertThenTryCatch(node, ctx, then as ThenTryCatch, rule, lines, indent, evalSync);
     case isLookupUsers(then):
       return convertThenLookupUsers(node, ctx, then as ThenLookupUsers, rule, lines, indent, evalSync);
     case isLookupUser(then):
@@ -531,6 +537,49 @@ const convertThenCallService = (node: Node, ctx: Context, then: ThenCallService,
     lines.push(`${indent}${invokeService}`)
   }
 
+  return true;
+}
+
+const convertThenTryCatch = (node: Node, ctx: Context, then: ThenTryCatch, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
+  if(!then.try.catch && !then.try.finally) {
+    return {
+      cody: `A Try-Catch-Finally-Rule must either define a catch or a finally case. Non is given for rule: ${JSON.stringify(rule)}`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  lines.push(`${indent}try {`);
+
+  const tryThen = convertThen(node, ctx, then.try.then, rule, lines, indent + '  ', evalSync);
+
+  if(isCodyError(tryThen)) {
+    return tryThen;
+  }
+
+  if(then.try.catch) {
+    lines.push(`${indent}} catch (error: any) {`);
+    lines.push(`${indent}  ctx['error'] = error;`);
+
+    const catchThen = convertThen(node, ctx, then.try.catch.then, rule, lines, indent + '  ', evalSync);
+
+    if(isCodyError(catchThen)) {
+      return catchThen;
+    }
+  }
+
+
+  if(then.try.finally) {
+    lines.push(`${indent}} finally {`);
+
+    const finallyThen = convertThen(node, ctx, then.try.finally!.then, rule, lines, indent + '  ', evalSync);
+
+    if(isCodyError(finallyThen)) {
+      return finallyThen;
+    }
+  }
+
+
+  lines.push(`${indent}}`)
   return true;
 }
 
