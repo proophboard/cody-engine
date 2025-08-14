@@ -280,9 +280,10 @@ const validateTriggerCommandContext = (then: ThenTriggerCommand, ctx: ExecutionC
 
 const execForEachSync = (then: ThenForEach, ctx: ExecutionContext): ExecutionContext => {
   if(ctx[then.forEach.variable] && Array.isArray(ctx[then.forEach.variable])) {
+    const item = then.forEach.of || 'item';
     for (const itemIndex in ctx[then.forEach.variable]) {
-      ctx['item'] = ctx[then.forEach.variable][itemIndex];
-      ctx['_'] = ctx['item'];
+      ctx[item] = ctx[then.forEach.variable][itemIndex];
+      ctx['_'] = ctx[item];
       ctx['itemIndex'] = itemIndex;
 
       ctx = execThenSync(then.forEach.then, ctx);
@@ -294,9 +295,11 @@ const execForEachSync = (then: ThenForEach, ctx: ExecutionContext): ExecutionCon
 
 const execForEachAsync = async (then: ThenForEach, ctx: ExecutionContext): Promise<ExecutionContext> => {
   if(ctx[then.forEach.variable] && Array.isArray(ctx[then.forEach.variable])) {
+    const item = then.forEach.of || 'item';
+
     for (const itemIndex in ctx[then.forEach.variable]) {
-      ctx['item'] = ctx[then.forEach.variable][itemIndex];
-      ctx['_'] = ctx['item'];
+      ctx[item] = ctx[then.forEach.variable][itemIndex];
+      ctx['_'] = ctx[item];
       ctx['itemIndex'] = itemIndex;
 
       ctx = await execThenAsync(then.forEach.then, ctx);

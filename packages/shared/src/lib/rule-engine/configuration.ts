@@ -57,6 +57,7 @@ export const isFilter = (then: ThenType & {filter?: Filter}): then is ThenFilter
 export interface ThenForEach {
   forEach: {
     variable: string;
+    of?: string;
     then: ThenType;
   }
 }
