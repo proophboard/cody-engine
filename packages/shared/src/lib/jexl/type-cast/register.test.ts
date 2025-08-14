@@ -7,6 +7,13 @@ describe("jexl type cast transforms", () => {
     expect(val).toEqual("1");
   })
 
+  test("it casts Error to string", () => {
+    const error = Error('Failed to do something');
+    const val = jexl.evalSync(`error|toStr()`, {error});
+
+    expect(val).toEqual("Failed to do something");
+  });
+
   test("it casts to integer", () => {
     const val = jexl.evalSync("'1 day'|toInt()");
 
