@@ -502,9 +502,11 @@ const convertThenLogMessage = (node: Node, ctx: Context, then: ThenLogMessage, r
 
 const convertThenForEach = (node: Node, ctx: Context, then: ThenForEach, rule: Rule, lines: string[], indent = '', evalSync = false): boolean | CodyResponse => {
 
+  const item = then.forEach.of || 'item';
+
   lines.push(`${indent}for (const itemIndex in ctx['${then.forEach.variable}']) {`);
-  lines.push(`${indent}  ctx['item'] = ctx['${then.forEach.variable}'][itemIndex];`);
-  lines.push(`${indent}  ctx['_'] = ctx['item'];`);
+  lines.push(`${indent}  ctx['${item}'] = ctx['${then.forEach.variable}'][itemIndex];`);
+  lines.push(`${indent}  ctx['_'] = ctx['${item}'];`);
   lines.push(`${indent}  ctx['itemIndex'] = itemIndex;`);
 
   const result = convertThen(node, ctx, then.forEach.then, rule, lines, indent + '  ', evalSync);
