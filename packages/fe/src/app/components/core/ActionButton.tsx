@@ -79,6 +79,7 @@ const makeButton = (config: ButtonConfig, additionalProps: object) => {
         sx={config.style}
         color={config.color === 'default' ? undefined : config.color}
         disabled={config.disabled}
+        className={config.className}
         {...additionalProps}
       >
         {config.icon}
@@ -94,6 +95,7 @@ const makeButton = (config: ButtonConfig, additionalProps: object) => {
         endIcon={config.endIcon}
         children={config.label ? config.label : 'change'}
         disabled={config.disabled}
+        className={config.className}
         {...additionalProps}
       />
     );
@@ -166,7 +168,7 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose, asGridAc
     if (action.href) {
       return buttonProps.asGridActionsCellItem
         ? makeGridActionsCellItemLink(buttonProps, action.href, true, navigate)
-        : makeButton({...action.button, asGridActionsCellItem, showInMenu}, { component: 'a', href: action.href });
+        : makeButton({...action.button, asGridActionsCellItem, showInMenu, className: 'CodyAction-root'}, { component: 'a', href: action.href });
     } else if (action.pageLink) {
       const paramsMapping: Record<string, any> = {};
       const pageLink = typeof action.pageLink === "string" ? {page: action.pageLink, mapping: undefined} : action.pageLink;
