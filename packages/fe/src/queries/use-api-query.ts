@@ -1,7 +1,7 @@
 import {AxiosResponse} from "axios";
 import {Api} from "@frontend/api";
 import {QueryError} from "@frontend/queries/error/query-error";
-import {useQuery, UseQueryResult} from "@tanstack/react-query";
+import {useQuery, UseQueryOptions, UseQueryResult} from "@tanstack/react-query";
 
 export type ApiQuery = (queryName: string, params: any) => Promise<any>;
 
@@ -25,11 +25,12 @@ export const getApiQuery = (): ApiQuery => {
   return internalApiQuery;
 }
 
-export const useApiQuery = (queryName: string, params: any) => {
+export const useApiQuery = (queryName: string, params: any, options?: {staleTime?: number}) => {
   return useQuery({
     queryKey: [queryName, params],
     queryFn: () => {
       return internalApiQuery(queryName, params);
-    }
+    },
+    ...options
   })
 }

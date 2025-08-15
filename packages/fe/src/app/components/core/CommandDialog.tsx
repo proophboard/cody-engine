@@ -34,7 +34,6 @@ import {useTranslation} from "react-i18next";
 import {determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
 import {useEnv} from "@frontend/hooks/use-env";
 import Grid2 from "@mui/material/Unstable_Grid2";
-import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import {ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
 
