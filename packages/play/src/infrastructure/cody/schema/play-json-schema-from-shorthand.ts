@@ -70,14 +70,11 @@ export const convertShorthandObjectToJsonSchema = (shorthand: ShorthandObject, n
         "$ref": `#/definitions${namespace}${reference}`
       };
     } else if (property === '$items') {
-      if(Object.keys(shorthand).length > 1) {
-        // Allow title as the only alternative property
-        if(!Object.keys(shorthand).includes('$title')) {
-          return {
-            cody: `Shorthand ${JSON.stringify(shorthand)} contains a top level array property "$items", but it is not the only property!`,
-            details: 'A top level array cannot have other properties then "$items".',
-            type: CodyResponseType.Error
-          }
+      if(Object.keys(shorthand).filter(k => k[0] !== '$').length > 0) {
+        return {
+          cody: `Shorthand ${JSON.stringify(shorthand)} contains a top level array property "$items", but it is not the only property!`,
+          details: 'A top level array cannot have other properties than "$items".',
+          type: CodyResponseType.Error
         }
       }
 
@@ -96,6 +93,14 @@ export const convertShorthandObjectToJsonSchema = (shorthand: ShorthandObject, n
 
       if(!playIsCodyError(arraySchema) && Object.keys(shorthand).includes('$title')) {
         arraySchema.title = shorthand['$title'] as string;
+      }
+
+      if(!playIsCodyError(arraySchema) && Object.keys(shorthand).includes('$description')) {
+        arraySchema.description = shorthand['$description'] as string;
+      }
+
+      if(!playIsCodyError(arraySchema) && Object.keys(shorthand).includes('$default')) {
+        arraySchema.default = shorthand['$default'] as string;
       }
 
       return arraySchema;
