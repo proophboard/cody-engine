@@ -27,7 +27,7 @@ export const makePlayRulesServiceFactory = (name: string, config: PlayServiceCon
 const makeCallable = (rules: PlayServiceRules, options?: any): (...args: any[]) => any => {
   if(rules.async) {
     return async (...args: any[]) => {
-      const ctx = {args, options, INFORMATION_SERVICE_NAME: playInformationServiceFactory()};
+      const ctx = {args, options, [INFORMATION_SERVICE_NAME]: playInformationServiceFactory()};
 
       const exec = makeAsyncExecutable(rules.rules);
 
@@ -37,7 +37,7 @@ const makeCallable = (rules: PlayServiceRules, options?: any): (...args: any[]) 
     }
   } else {
     return (...args: any[]) => {
-      const ctx = {args, options, INFORMATION_SERVICE_NAME: playInformationServiceFactory()};
+      const ctx = {args, options, [INFORMATION_SERVICE_NAME]: playInformationServiceFactory()};
 
       const exec = makeSyncExecutable(rules.rules);
 
