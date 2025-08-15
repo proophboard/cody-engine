@@ -26,7 +26,9 @@ type PlayExistingStateCommandDialogProps = OwnProps;
 
 const PlayExistingStateCommandDialog = (props: PlayExistingStateCommandDialogProps) => {
   const params = useParams();
-  const query = useApiQuery((props.stateInfo.desc as QueryableStateDescription).query, params);
+
+
+  const query = useApiQuery((props.stateInfo.desc as QueryableStateDescription).query, params, {staleTime: 60000});
 
   return <CommandDialog
     open={props.open}
