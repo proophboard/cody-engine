@@ -1,6 +1,10 @@
 import {PlayServiceConfig, PlayServiceRules} from "@cody-play/state/types";
 import {makeAsyncExecutable, makeSyncExecutable} from "@cody-play/infrastructure/rule-engine/make-executable";
 import {get} from "lodash";
+import {INFORMATION_SERVICE_NAME} from "@event-engine/infrastructure/information-service/information-service";
+import {
+  playInformationServiceFactory
+} from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
 
 export const makePlayRulesServiceFactory = (name: string, config: PlayServiceConfig): (options?: any) => any => {
   return (options?: any): any => {
@@ -23,7 +27,7 @@ export const makePlayRulesServiceFactory = (name: string, config: PlayServiceCon
 const makeCallable = (rules: PlayServiceRules, options?: any): (...args: any[]) => any => {
   if(rules.async) {
     return async (...args: any[]) => {
-      const ctx = {args, options};
+      const ctx = {args, options, INFORMATION_SERVICE_NAME: playInformationServiceFactory()};
 
       const exec = makeAsyncExecutable(rules.rules);
 
@@ -33,7 +37,7 @@ const makeCallable = (rules: PlayServiceRules, options?: any): (...args: any[]) 
     }
   } else {
     return (...args: any[]) => {
-      const ctx = {args, options};
+      const ctx = {args, options, INFORMATION_SERVICE_NAME: playInformationServiceFactory()};
 
       const exec = makeSyncExecutable(rules.rules);
 
