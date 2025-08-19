@@ -28,6 +28,8 @@ import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is
 import {
   getFocusedQueryableStateListVo
 } from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
+import {isTableDescription} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-description";
+import {findProjectionTypeOfList} from "@cody-play/infrastructure/vibe-cody/utils/types/find-projection-type";
 
 const TEXT = `Place an edit button at the end of each table row`;
 
@@ -83,7 +85,7 @@ export const EditTableItem: Instruction = {
       }
     };
 
-    if(!isQueryableStateListDescription(desc)) {
+    if(!isTableDescription(desc)) {
       return {
         cody: `I can't install the possibility to edit a ${itemLabelNames.name}. The information shown in the table is not a list of objects with a configured identifier.`,
         type: CodyResponseType.Error,
@@ -114,9 +116,19 @@ export const EditTableItem: Instruction = {
       return eventRes;
     }
 
-    const prjName = tableVO.desc.projection || `${tableVO.desc.name.split('.').pop()}Projection`;
+    const prjType = findProjectionTypeOfList(tableVO, config);
 
-    const pbInfo = playGetProophBoardInfoFromDescription(tableVO.desc);
+    if(!prjType) {
+      return {
+        cody: `Can't install projection handling for the edited event. The list type "${tableVO.desc.name}" has no projection configuration.`,
+        details: `Check the Cody Play config or ask the prooph board team for help!`,
+        type: CodyResponseType.Error
+      }
+    }
+
+    const prjName = prjType.desc.projection || `${prjType.desc.name.split('.').pop()}Projection`;
+
+    const pbInfo = playGetProophBoardInfoFromDescription(prjType.desc);
 
     // Add event projection case
     dispatch({
@@ -135,7 +147,7 @@ export const EditTableItem: Instruction = {
             rule: "always",
             then: {
               upsert: {
-                information: tableVO.desc.name,
+                information: prjType.desc.name,
                 id: `$> event.${desc.itemIdentifier}`,
                 set: "$> event"
               }

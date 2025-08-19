@@ -6,12 +6,10 @@ import {
   getFocusedQueryableStateListVo
 } from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
-import {Schema} from "@cody-play/infrastructure/vibe-cody/utils/schema/schema";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {JSONSchema7} from "json-schema";
 import {
   playDefinitionIdFromFQCN,
-  playFQCNFromDefinitionId,
   playNodeLabel
 } from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import {PlayInformationRuntimeInfo} from "@cody-play/state/types";
@@ -60,6 +58,7 @@ const makeReferenceExistingInformation = (label: string, information: PlayInform
       const desc = cloneDeepJSON(tableVO.desc) as QueryableNotStoredStateListDescription;
 
       delete (desc as any).collection;
+      delete (desc as any).projection;
       desc.isNotStored = true;
       desc.itemType = information.desc.name;
       desc.itemIdentifier = (information.desc as QueryableStateDescription).identifier;

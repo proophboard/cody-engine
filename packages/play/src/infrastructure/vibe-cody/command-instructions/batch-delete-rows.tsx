@@ -25,6 +25,7 @@ import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is
 import {
   getFocusedQueryableStateListVo
 } from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
+import {findProjectionTypeOfList} from "@cody-play/infrastructure/vibe-cody/utils/types/find-projection-type";
 
 const TEXT = `I want to select rows and delete them.`;
 
@@ -100,9 +101,19 @@ export const BatchDeleteRows: Instruction = {
       return eventRes;
     }
 
-    const prjName = tableVO.desc.projection || `${tableVO.desc.name.split('.').pop()}Projection`;
+    const prjType = findProjectionTypeOfList(tableVO, config);
 
-    const pbInfo = playGetProophBoardInfoFromDescription(tableVO.desc);
+    if(!prjType) {
+      return {
+        cody: `Can't install projection handling for the deleted event. The list type "${tableVO.desc.name}" has no projection configuration.`,
+        details: `Check the Cody Play config or ask the prooph board team for help!`,
+        type: CodyResponseType.Error
+      }
+    }
+
+    const prjName = prjType.desc.projection || `${prjType.desc.name.split('.').pop()}Projection`;
+
+    const pbInfo = playGetProophBoardInfoFromDescription(prjType.desc);
 
     // Add event projection case
     dispatch({
@@ -121,7 +132,7 @@ export const BatchDeleteRows: Instruction = {
             rule: "always",
             then: {
               delete: {
-                information: tableVO.desc.name,
+                information: prjType.desc.name,
                 filter: {
                   anyOfDocId: `$> event.${tableLabelNames.propertyName}`
                 }
