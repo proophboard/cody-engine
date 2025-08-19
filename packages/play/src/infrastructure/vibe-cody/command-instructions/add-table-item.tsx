@@ -29,6 +29,8 @@ import {
 } from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
 import {isTableFocused} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-focused";
 import {getRouteParamsFromRoute} from "@cody-play/infrastructure/vibe-cody/utils/navigate/get-route-params-from-route";
+import {isTableDescription} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-description";
+import {findProjectionTypeOfList} from "@cody-play/infrastructure/vibe-cody/utils/types/find-projection-type";
 
 const TEXT = "Place a button above the table to add a new ";
 
@@ -93,7 +95,7 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
     }
   };
 
-  if(!isQueryableStateListDescription(desc)) {
+  if(!isTableDescription(desc)) {
     return {
       cody: `I can't install the possibility to add a ${btnLabel}. The information shown in the table is not a list of objects with a configured identifier.`,
       type: CodyResponseType.Error,
@@ -137,9 +139,19 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
     return eventRes;
   }
 
-  const prjName = tableVO.desc.projection || `${tableVO.desc.name.split('.').pop()}Projection`;
+  const prjType = findProjectionTypeOfList(tableVO, config);
 
-  const pbInfo = playGetProophBoardInfoFromDescription(tableVO.desc);
+  if(!prjType) {
+    return {
+      cody: `Can't install projection handling for the added event. The list type "${tableVO.desc.name}" has no projection configuration.`,
+      details: `Check the Cody Play config or ask the prooph board team for help!`,
+      type: CodyResponseType.Error
+    }
+  }
+
+  const prjName = prjType.desc.projection || `${prjType.desc.name.split('.').pop()}Projection`;
+
+  const pbInfo = playGetProophBoardInfoFromDescription(prjType.desc);
 
   // Add event projection case
   dispatch({
@@ -158,7 +170,7 @@ const addTableItemFunc: InstructionExecutionCallback = async (input, ctx, dispat
           rule: "always",
           then: {
             upsert: {
-              information: tableVO.desc.name,
+              information: prjType.desc.name,
               id: `$> event.${desc.itemIdentifier}`,
               set: "$> event"
             }

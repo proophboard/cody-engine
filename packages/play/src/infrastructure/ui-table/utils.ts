@@ -117,6 +117,11 @@ export const enrichColumnConfigFromSchema = (columnConfig: TableColumnUiSchema, 
       columnConfig.type = "boolean";
     }
 
+    if(schema.type === "number") {
+      columnConfig.value = `$> (row.${columnConfig.field})|toLocal()`;
+      columnConfig.type = "number";
+    }
+
     if(schema.enum) {
       columnConfig.type = 'singleSelect';
       columnConfig.valueOptions = getValueOptions(schema.enum as string[], (schema as any).enumNames)
