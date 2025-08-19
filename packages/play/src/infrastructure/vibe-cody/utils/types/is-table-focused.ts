@@ -6,6 +6,7 @@ import {
 } from "@cody-play/infrastructure/vibe-cody/utils/types/get-focused-queryable-state-list-vo";
 import {playIsCodyError} from "@cody-play/infrastructure/cody/error-handling/with-error-check";
 import {isQueryableStateListDescription} from "@event-engine/descriptions/descriptions";
+import {isTableDescription} from "@cody-play/infrastructure/vibe-cody/utils/types/is-table-description";
 
 export const isTableFocused = (focusedElement: FocusedElement | undefined, page: PlayPageDefinition, config: CodyPlayConfig): boolean => {
   const tableVO = getFocusedQueryableStateListVo(focusedElement, page, config);
@@ -13,6 +14,5 @@ export const isTableFocused = (focusedElement: FocusedElement | undefined, page:
   if(playIsCodyError(tableVO)) {
     return false;
   }
-
-  return isQueryableStateListDescription(tableVO.desc);
+  return isTableDescription(tableVO.desc);
 }
