@@ -118,7 +118,7 @@ export const enrichColumnConfigFromSchema = (columnConfig: TableColumnUiSchema, 
     }
 
     if(schema.type === "number") {
-      columnConfig.value = `$> (row.${columnConfig.field})|toLocal()`;
+      columnConfig.value = `$> row.${columnConfig.field}`;
       columnConfig.type = "number";
     }
 
