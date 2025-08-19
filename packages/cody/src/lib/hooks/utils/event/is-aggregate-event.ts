@@ -19,7 +19,7 @@ export const isAggregateEvent = (event: Node, ctx: Context): Success | Error => 
   const command = getSingleSource(event, NodeType.command);
 
   if(isCodyError(command)) {
-    return command;
+    return false;
   }
 
   const commandMeta = getCommandMetadata(command, ctx);
