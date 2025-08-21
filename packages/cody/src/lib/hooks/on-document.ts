@@ -12,7 +12,7 @@ import {
   isQueryableListDescription,
   isQueryableNotStoredStateDescription,
   isQueryableNotStoredStateListDescription,
-  isQueryableNotStoredValueObjectDescription,
+  isQueryableNotStoredValueObjectDescription, isQueryableStateDescriptionWithRules,
   isQueryableStateListDescription,
   isQueryableValueObjectDescription,
 } from "@event-engine/descriptions/descriptions";
@@ -192,7 +192,10 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
           itemUiSchema = types[voMeta.itemType].uiSchema || {};
         }
 
-      } else if (isQueryableValueObjectDescription(voMeta) || isQueryableNotStoredStateDescription(voMeta) || isQueryableNotStoredValueObjectDescription(voMeta)) {
+      } else if (isQueryableValueObjectDescription(voMeta)
+        || isQueryableNotStoredStateDescription(voMeta)
+        || isQueryableNotStoredValueObjectDescription(voMeta)
+        || isQueryableStateDescriptionWithRules(voMeta)) {
         isSingleVOQuery = true;
       }
 
