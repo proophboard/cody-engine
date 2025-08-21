@@ -1,4 +1,5 @@
 import {retrieveSchema} from "@rjsf/utils";
+import {AnyRule} from "@app/shared/rule-engine/configuration";
 
 export interface ProophBoardDescription {
   _pbBoardId: string;
@@ -103,6 +104,7 @@ export interface ValueObjectDescriptionFlags {
   hasIdentifier: boolean;
   isQueryable: boolean;
   isNotStored?: boolean;
+  resolve?: {rules?: AnyRule[]};
 }
 
 export interface ValueObjectDescription extends ProophBoardDescription, ValueObjectDescriptionFlags {
@@ -165,6 +167,16 @@ export interface QueryableStateDescription extends StateDescription {
 
 export const isQueryableStateDescription = (desc: ValueObjectDescriptionFlags): desc is QueryableStateDescription => {
   return isStateDescription(desc) && desc.isQueryable;
+}
+
+export interface QueryableStateDescriptionWithRules extends QueryableStateDescription {
+  resolve: {
+    rules: AnyRule[];
+  }
+}
+
+export const isQueryableStateDescriptionWithRules = (desc: ValueObjectDescriptionFlags): desc is QueryableStateDescriptionWithRules => {
+  return isQueryableStateDescription(desc) && !!desc.resolve && !!desc.resolve.rules && Array.isArray(desc.resolve.rules);
 }
 
 

@@ -4,7 +4,7 @@ import {
   isQueryableListDescription,
   isQueryableNotStoredStateDescription, isQueryableNotStoredStateListDescription,
   isQueryableNotStoredValueObjectDescription,
-  isQueryableStateDescription,
+  isQueryableStateDescription, isQueryableStateDescriptionWithRules,
   isQueryableStateListDescription,
   isQueryableValueObjectDescription,
   QueryableListDescription,
@@ -68,6 +68,10 @@ export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Co
   }
 
   if(isQueryableStateDescription(voMeta)) {
+    if(isQueryableStateDescriptionWithRules(voMeta)) {
+      return makeSingleValueObjectQueryResolver(vo, voMeta, ctx);
+    }
+
     return makeStateQueryResolver(vo, voMeta, ctx);
   }
 
