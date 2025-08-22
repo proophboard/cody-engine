@@ -104,7 +104,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
             {query.data.map((item: any) => <Grid2 key={item['<%= identifier %>']} {...itemGridProps}>
               <StateView
                 mode={"listView"}
-                description={{...itemInfo, itemsUiSchema}}
+                description={{...itemInfo, uiSchema: itemsUiSchema}}
                 state={item}
               />
             </Grid2>)}
