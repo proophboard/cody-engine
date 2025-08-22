@@ -55,7 +55,6 @@ export const upsertCommandComponent = async (command: Node, ctx: Context, tree: 
         stateNsNames,
         identifier,
         newAggregate: commandMeta.newAggregate,
-        buttonIcon,
         ...commandNames,
         uiDisableFetchState: commandMeta.uiDisableFetchState || !commandMeta.aggregateCommand,
       });
