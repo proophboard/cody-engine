@@ -42,7 +42,7 @@ export interface PageLinkTableColumn {
   'page:expr'?: string;
 }
 
-export type ActionTableColumn = ButtonAction & {showInMenu?: boolean};
+export type ActionTableColumn = Omit<ButtonAction, 'position'> & {showInMenu?: boolean, position?: string};
 
 export type ColumnSingleSelectValueOption = string | {label: string, value: string};
 
