@@ -52,7 +52,7 @@ const normalizeThemeOptions = (themeOptions: ThemeOptions & {[key: string]: any}
 
 const defaultMuiTheme = createMuiTheme({});
 
-export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiTheme> => {
+const normalizePalette = (options: ThemeOptions): ThemeOptions => {
   options = cloneDeepJSON(options);
 
   const vars = options.vars || {};
@@ -67,7 +67,11 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
 
   options.palette = merge(modePalette.palette, {...options.palette, mode}) as PaletteOptions;
 
-  options = normalizeThemeOptions(options, {vars, theme: muiThemeWithModePalette}) as ThemeOptions;
+  return normalizeThemeOptions(options, {vars, theme: muiThemeWithModePalette}) as ThemeOptions;
+}
+
+export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiTheme> => {
+  options = normalizePalette(options);
 
   const defaultTheme = createMuiTheme(options);
 
@@ -185,7 +189,7 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
 
   const codyEngineTheme = createMuiTheme(defaultTheme, options);
 
-  options = merge(options, overwriteTheme(codyEngineTheme));
+  options = normalizePalette(merge(options, overwriteTheme(codyEngineTheme)));
 
   return createMuiTheme(options);
 }
