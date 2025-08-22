@@ -17,7 +17,6 @@ import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {merge} from "lodash/fp";
 import DirectCommandButton from "@frontend/app/components/core/DirectCommandButton";
 import ConnectedCommandButton from "@frontend/app/components/core/ConnectedCommandButton";
-<% if (buttonIcon) { %>import {<%= buttonIcon %>} from "mdi-material-ui";<% } %>
 
 interface OwnProps {
 <% if (!newAggregate && !uiDisableFetchState && identifier) { %>
@@ -81,7 +80,7 @@ const <%= className %> = (props: <%= className %>Props) => {
 
 
   return <>
-    <CommandButton command={modifiedRuntimeInfo} onClick={handleOpenDialog} {...{<% if (buttonIcon) { %>startIcon: <<%= buttonIcon %> />, <% } %>...props.buttonProps}} />
+    <CommandButton command={modifiedRuntimeInfo} onClick={handleOpenDialog} {...props.buttonProps} />
     <CommandDialog
       open={dialogOpen}
       onClose={handleCloseDialog}
