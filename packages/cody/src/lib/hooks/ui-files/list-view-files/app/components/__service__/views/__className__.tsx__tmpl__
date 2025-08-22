@@ -61,7 +61,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
     jexlCtx,
     env
   );
-  const itemInfo = types[(RuntimeInfo.desc as StateListDescription).itemType];
+  const itemInfo = types[(RuntimeInfo.desc as QueryableStateListDescription).itemType];
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
