@@ -5,7 +5,7 @@ import {Action, isCommandAction} from "@frontend/app/components/core/form/types/
 import {normalizeCommandName} from "@cody-play/infrastructure/rule-engine/normalize-command-name";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 
-export const normalizeServerUiSchema = (uiSchema: UiSchema, defaultService: string): UiSchema => {
+export const normalizeServerUiSchema = (uiSchema: UiSchema, defaultService: string, isInTableUiSchema?: false): UiSchema => {
   const schema = cloneDeepJSON(uiSchema);
 
   if(typeof schema['ui:title'] === "boolean") {
@@ -14,13 +14,14 @@ export const normalizeServerUiSchema = (uiSchema: UiSchema, defaultService: stri
 
   if(schema.actions && Array.isArray(schema.actions)) {
     schema.actions.forEach((a: Action) => {
-      normalizeAction(a, defaultService);
+      normalizeAction(a, defaultService, isInTableUiSchema);
     })
   }
 
   for (const schemaKey in schema) {
     if(typeof schema[schemaKey] === "object") {
-      schema[schemaKey] = normalizeServerUiSchema(schema[schemaKey], defaultService);
+      const isTableUiSchema = isInTableUiSchema || schemaKey === 'ui:table';
+      schema[schemaKey] = normalizeServerUiSchema(schema[schemaKey], defaultService, isInTableUiSchema);
     }
   }
 
@@ -47,12 +48,12 @@ export const normalizeActions = (uiSchema: UiSchema, defaultService: string): Ui
   return schema;
 }
 
-export const normalizeAction = (a: Action, defaultService: string): Action => {
+export const normalizeAction = (a: Action, defaultService: string, isTableAction?: boolean): Action => {
   if(isCommandAction(a)) {
     a.command = normalizeCommandName(a.command, defaultService);
   }
 
-  if(!a.position) {
+  if(!a.position && !isTableAction) {
     a.position = "bottom-right";
   }
 
