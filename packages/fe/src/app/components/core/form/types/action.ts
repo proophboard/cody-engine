@@ -123,7 +123,7 @@ export interface FormAction extends Action {
 
 export type ActionConfig = LinkAction | CommandAction | RulesAction | FormAction;
 
-export type TableActionConfig = (Omit<LinkAction, 'button'> | Omit<CommandAction, 'button'> | Omit<RulesAction, 'button'>) & {button: Partial<ButtonConfig>};
+export type TableActionConfig = (Omit<Omit<LinkAction, 'position'>, 'button'> | Omit<Omit<CommandAction, 'position'>, 'button'> | Omit<Omit<RulesAction, 'position'>, 'button'>) & {button: Partial<ButtonConfig>};
 
 export type ActionContainerInfoType = 'page' | 'view' | 'command' | 'mixed';
 
