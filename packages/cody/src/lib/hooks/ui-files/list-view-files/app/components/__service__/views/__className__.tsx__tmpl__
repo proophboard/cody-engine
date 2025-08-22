@@ -25,6 +25,9 @@ import {informationTitle} from "@frontend/util/information/titelize";
 import {getUiOptions, UiSchema} from "@rjsf/utils";
 import {TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {names} from "@event-engine/messaging/helpers";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+import {types} from "@app/shared/types";
+import {QueryableStateListDescription} from "@event-engine/descriptions/descriptions";
 <%- imports %>
 
 const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, config: ViewRuntimeConfig) => {
@@ -58,7 +61,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
     jexlCtx,
     env
   );
-  const itemInfo = types[RuntimeInfo.desc.itemType];
+  const itemInfo = types[(RuntimeInfo.desc as StateListDescription).itemType];
 
   useEffect(() => {
     triggerSideBarAnchorsRendered();
