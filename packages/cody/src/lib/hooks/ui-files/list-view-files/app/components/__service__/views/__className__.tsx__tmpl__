@@ -45,7 +45,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
   // Prepare the main query
   const queryParams = get(mergedUiSchema, 'ui:query', params);
   const jexlQueryCtx = {routeParams: params, user, page, store, data: {}};
-  const query = useGet<%= className %>(normalizeUiSchema(queryParams, jexlQueryCtx, env));
+  const query = useGet<%= className %>(normalizeUiSchema(queryParams, jexlQueryCtx, env) as Get<%= className %>);
 
   <%- hooks %>
 
