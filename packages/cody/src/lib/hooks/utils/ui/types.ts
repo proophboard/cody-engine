@@ -1,7 +1,13 @@
 import {AnyRule, PropMapping, Rule} from "@app/shared/rule-engine/configuration";
 import {DynamicSidebar, PageType, Tab, TopLevelGroup} from "@frontend/app/pages/page-definitions";
 import {UiSchema} from "@rjsf/utils";
-import {Action, CommandAction, LinkAction, RulesAction} from "@frontend/app/components/core/form/types/action";
+import {
+  Action,
+  CommandAction,
+  FormAction,
+  LinkAction,
+  RulesAction
+} from "@frontend/app/components/core/form/types/action";
 
 export interface DynamicBreadcrumbMetadata {
   data: string;
@@ -23,7 +29,7 @@ export type ViewComponent = string | {
   data?: string | string[] | PropMapping | PropMapping[];
 }
 
-export type CommandComponent = string | Action | LinkAction | CommandAction | RulesAction;
+export type CommandComponent = string | Action | LinkAction | CommandAction | RulesAction | FormAction;
 
 export interface UiMetadata {
   route?: string;
