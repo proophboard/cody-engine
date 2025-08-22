@@ -5,7 +5,7 @@ import {Action, isCommandAction} from "@frontend/app/components/core/form/types/
 import {normalizeCommandName} from "@cody-play/infrastructure/rule-engine/normalize-command-name";
 import {RuntimeEnvironment} from "@frontend/app/providers/runtime-environment";
 
-export const normalizeServerUiSchema = (uiSchema: UiSchema, defaultService: string, isInTableUiSchema?: false): UiSchema => {
+export const normalizeServerUiSchema = (uiSchema: UiSchema, defaultService: string, isInTableUiSchema?: boolean): UiSchema => {
   const schema = cloneDeepJSON(uiSchema);
 
   if(typeof schema['ui:title'] === "boolean") {
@@ -20,8 +20,8 @@ export const normalizeServerUiSchema = (uiSchema: UiSchema, defaultService: stri
 
   for (const schemaKey in schema) {
     if(typeof schema[schemaKey] === "object") {
-      const isTableUiSchema = isInTableUiSchema || schemaKey === 'ui:table';
-      schema[schemaKey] = normalizeServerUiSchema(schema[schemaKey], defaultService, isInTableUiSchema);
+      const isTableUiSchema = !!isInTableUiSchema || schemaKey === 'ui:table';
+      schema[schemaKey] = normalizeServerUiSchema(schema[schemaKey], defaultService, isTableUiSchema);
     }
   }
 
