@@ -44,7 +44,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
 
   // Prepare the main query
   const queryParams = get(mergedUiSchema, 'ui:query', params);
-  const jexlQueryCtx = {routeParams: params, user, page, store, data: {}};
+  const jexlQueryCtx = {theme, routeParams: params, user, page, store, data: {}};
   const query = useGet<%= className %>(normalizeUiSchema(queryParams, jexlQueryCtx, env) as Get<%= className %>);
 
   <%- hooks %>
@@ -104,7 +104,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
             {query.data.map((item: any) => <Grid2 key={item['<%= identifier %>']} {...itemGridProps}>
               <StateView
                 mode={"listView"}
-                description={{...itemInfo, uiSchema: itemsUiSchema}}
+                description={{...itemInfo, uiSchema: merge(itemInfo.uiSchema || {}, itemsUiSchema) }}
                 state={item}
               />
             </Grid2>)}
