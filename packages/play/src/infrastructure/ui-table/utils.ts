@@ -1,4 +1,3 @@
-import {GridDensity} from "@mui/x-data-grid";
 import {isObjectSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-object-schema";
 import {camelCaseToTitle} from "@frontend/util/string";
 import {names} from "@event-engine/messaging/helpers";
@@ -13,12 +12,13 @@ import {JSONSchema7} from "json-schema";
 import {isScalarSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-scalar-schema";
 import {getUiOptions, UiSchema} from "@rjsf/utils";
 import {isJsonSchemaArray} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/is-json-schema-array";
-import {deepClone} from "@mui/x-data-grid/utils/utils";
 import {isJsonSchemaObject} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/is-json-schema-object";
 import {isJsonSchemaString} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/is-json-schema-string";
-import {isJsonSchema} from "@cody-play/infrastructure/vibe-cody/utils/json-schema/is-json-schema";
-import {get, zip} from "lodash";
+import {zip} from "lodash";
 import {isActionsColumn} from "@cody-play/infrastructure/vibe-cody/utils/table/is-actions-column";
+import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
+
+type GridDensity = 'compact' | 'standard' | 'comfortable';
 
 export const getTablePageSizeConfig = (uiSchema: TableUiSchema): {pageSize: number, pageSizeOptions: number[]} => {
   let pageSize: number, pageSizeOptions: number[];
@@ -83,7 +83,7 @@ const deriveColumnsFromSchema = (information: PlayInformationRuntimeInfo, itemSc
 }
 
 export const enrichColumnConfigFromSchema = (columnConfig: TableColumnUiSchema, schema: JSONSchema7, uiSchema: UiSchema, isRequired: boolean): TableColumnUiSchema => {
-  columnConfig = deepClone(columnConfig);
+  columnConfig = cloneDeepJSON(columnConfig);
 
   if(!columnConfig.headerName && !columnConfig.action && !isActionsColumn(columnConfig)) {
     columnConfig.headerName = uiSchema['ui:title'] || uiSchema['ui:options']?.title || schema.title;

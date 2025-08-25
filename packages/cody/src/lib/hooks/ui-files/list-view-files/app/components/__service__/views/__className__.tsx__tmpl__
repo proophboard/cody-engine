@@ -23,7 +23,7 @@ import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {showTitle} from "@frontend/util/schema/show-title";
 import {informationTitle} from "@frontend/util/information/titelize";
 import {getUiOptions, UiSchema} from "@rjsf/utils";
-import {TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/types";
+import {ActionTableColumn, TableUiSchema} from "@cody-engine/cody/hooks/utils/value-object/types";
 import {names} from "@event-engine/messaging/helpers";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {types} from "@app/shared/types";

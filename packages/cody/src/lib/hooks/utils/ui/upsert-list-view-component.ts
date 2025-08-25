@@ -33,6 +33,7 @@ import {isScalarSchema} from "@cody-engine/cody/hooks/utils/json-schema/is-scala
 import {namespaceNames} from "@cody-engine/cody/hooks/utils/value-object/namespace";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
 import {UiSchema} from "@rjsf/utils";
+import {enrichColumnConfigFromSchema} from "@cody-play/infrastructure/ui-table/utils";
 
 export const upsertListViewComponent = async (vo: Node, voMeta: ValueObjectMetadata, ctx: Context, tree: FsTree, itemFQCN: string, itemSchema: JSONSchema7, itemUiSchema: UiSchema): Promise<boolean|CodyResponse> => {
   const service = detectService(vo, ctx);
@@ -151,6 +152,18 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVOFQCN: 
       }
     }
 
+    if(isObjectSchema(itemVOSchema) && column.field) {
+      const propSchema: JSONSchema7 & {title?: string} = itemVOSchema.properties[column.field];
+
+      if(propSchema) {
+        const propUiSchema: UiSchema = itemVOUiSchema[column.field] || {};
+        const isRequired = !!itemVOSchema.required && itemVOSchema.required.includes(column.field);
+
+        column = enrichColumnConfigFromSchema(column, propSchema as any, propUiSchema, isRequired);
+      }
+    }
+
+
     if(!column['headerName']) {
       column['headerName'] = camelCaseToTitle(column['field']);
     }
@@ -180,14 +193,25 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVOFQCN: 
           objStr += `${indent}},`
           break;
         case "actions":
-          imports = addImport('import {TableActionConfig} from "@frontend/app/components/core/form/types/action"', imports);
-          imports = addImport('import {environment} from "@frontend/environments/environment"', imports);
-          imports = addImport('import ColumnActionsMenu from "@frontend/app/components/core/table/ColumnActionsMenu"', imports);
+          if(column.type && column.type === 'actions') {
+            imports = addImport('import ColumnAction from "@frontend/app/components/core/table/ColumnAction"', imports);
+            imports = addImport('import {environment} from "@frontend/environments/environment"', imports);
 
-          objStr += `${indent}renderCell: (rowParams) => {\n`;
-          objStr += `${indent}  const actions = ${JSON.stringify(cValue, null, 2)} as TableActionConfig[];\n`;
-          objStr += `${indent}  return <ColumnActionsMenu actions={actions} row={rowParams.row} defaultService={environment.defaultService} />\n`;
-          objStr += `${indent}},`
+            objStr += `${indent}getActions: (rowParams) => {\n`;
+            objStr += `${indent}  const actions = ${JSON.stringify(cValue, null, 2)} as unknown as ActionTableColumn[];\n`;
+            objStr += `${indent}  return actions.map(aConfig => <ColumnAction action={aConfig} row={rowParams.row} defaultService={environment.defaultService} asGridActionsCellItem={true} showInMenu={aConfig.showInMenu} />);\n`;
+            objStr += `${indent}},`
+          } else {
+            imports = addImport('import {TableActionConfig} from "@frontend/app/components/core/form/types/action"', imports);
+            imports = addImport('import {environment} from "@frontend/environments/environment"', imports);
+            imports = addImport('import ColumnActionsMenu from "@frontend/app/components/core/table/ColumnActionsMenu"', imports);
+
+            objStr += `${indent}renderCell: (rowParams) => {\n`;
+            objStr += `${indent}  const actions = ${JSON.stringify(cValue, null, 2)} as TableActionConfig[];\n`;
+            objStr += `${indent}  return <ColumnActionsMenu actions={actions} row={rowParams.row} defaultService={environment.defaultService} />\n`;
+            objStr += `${indent}},`
+          }
+
           break;
         case "pageLink":
           const pageLinkConfig: PageLinkTableColumn = typeof cValue === "string" ? {page: cValue, mapping: {}} : cValue as PageLinkTableColumn;
@@ -269,12 +293,12 @@ const deriveColumnsFromSchema = (vo: Node, voMeta: ValueObjectMetadata, itemVOFQ
 
   if(isScalarSchema(itemSchema)) {
     const name = itemSchema.title || voClassNameFromFQCN(itemVOFQCN);
-    columns.push({
+    columns.push(enrichColumnConfigFromSchema({
       field: name,
       headerName: camelCaseToTitle(name),
       flex: 1,
       value: [{rule: "always", then: {assign: {variable: "value", value: "row"}}}]
-    })
+    }, itemSchema, itemVOUISchema, true))
 
     return columns;
   }
@@ -289,12 +313,13 @@ const deriveColumnsFromSchema = (vo: Node, voMeta: ValueObjectMetadata, itemVOFQ
 
   for (const propertyName in itemSchema.properties) {
     const propSchema: JSONSchema7 & {title?: string} = itemSchema.properties[propertyName];
+    const propUiSchema: UiSchema = itemVOUISchema[propertyName] || {};
 
-    columns.push({
+    columns.push(enrichColumnConfigFromSchema({
       field: propertyName,
       headerName: propSchema.title || camelCaseToTitle(propertyName),
       flex: 1,
-    })
+    }, propSchema as any, propUiSchema, itemSchema.required && itemSchema.required.includes(propertyName)))
   }
 
   return columns;
