@@ -59,7 +59,7 @@ const User = (props: UserProps) => {
         sessionStorage.setItem(LAST_LOGIN_KEY, newUser.userId);
 
         if(lastLogin && lastLogin !== newUser.userId) {
-          window.location.href = '/dashboard';
+          window.location.href = '/';
         }
       });
 
