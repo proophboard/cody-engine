@@ -15,6 +15,7 @@ import {UserRole, UserRoles} from "@app/shared/types/core/user/user-role";
 import {AndFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AndFilter";
 import {EqFilter} from "@event-engine/infrastructure/DocumentStore/Filter/EqFilter";
 import {InArrayFilter} from "@event-engine/infrastructure/DocumentStore/Filter/InArrayFilter";
+import {AnyFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AnyFilter";
 
 export interface AdminCredentials {
   username: string;
@@ -204,7 +205,7 @@ export class KeycloakAuthService implements AuthService {
     let displayName = user.firstName || '';
 
     if(user.lastName) {
-      displayName = user.firstName ? ' ' + user.lastName : user.lastName;
+      displayName = user.firstName ? displayName + ' ' + user.lastName : user.lastName;
     }
 
     const attributes = user.attributes || {};
@@ -233,8 +234,13 @@ export class KeycloakAuthService implements AuthService {
     }
   }
 
-  private convertFilterToUserQuery (filter: Filter): {q: string} {
+  private convertFilterToUserQuery (filter: Filter): {q?: string} {
     let q = '';
+
+    if(filter instanceof AnyFilter) {
+      return {};
+    }
+
     if(filter instanceof AndFilter) {
       q = filter.internalFilters.map(f => this.convertFilterToUserQuery(f).q).join(" ");
 
