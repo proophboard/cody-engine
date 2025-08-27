@@ -21,6 +21,9 @@ import jexl from "@app/shared/jexl/get-configured-jexl";
 import {IChangeEvent} from "@rjsf/core";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidget";
+import {useTranslation} from "react-i18next";
+import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
+import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
 
 interface OwnProps {
   action: FormActionType;
@@ -39,6 +42,7 @@ const FormAction = ({action, defaultService, jexlCtx}: FormActionProps) => {
   const formRef: any = useRef();
   const [pageData, setPageData] = usePageData();
   const [store, setStore, setGlobalStoreKey] = useGlobalStore();
+  const {t} = useTranslation();
 
   const initialData = getInitialValuesFromUiSchemaForFormAction(action.uiSchema || {}, action.schema, jexlCtx);
 
@@ -105,6 +109,11 @@ const FormAction = ({action, defaultService, jexlCtx}: FormActionProps) => {
     }
   }
 
+  const uiSchema = translateUiSchema(normalizeUiSchema(action.uiSchema || {}, {
+    ...jexlCtx,
+    theme
+  } as FormJexlContext, env), `${action.name}.uiSchema`, t);
+
   const playWidgets: WidgetRegistry = env.UI_ENV === "play" ? {
     DataSelect: PlayDataSelectWidget
   } : {};
@@ -129,7 +138,7 @@ const FormAction = ({action, defaultService, jexlCtx}: FormActionProps) => {
         updateForm: handleUpdateFormFromContext,
         showDropzone: false
       }}
-      uiSchema={action.uiSchema}
+      uiSchema={uiSchema}
       className="CodyFormAction-root"
       templates={
         {
