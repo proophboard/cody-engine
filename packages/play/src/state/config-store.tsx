@@ -68,6 +68,9 @@ import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model
 import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-model-store/configured-document-store";
 import {services} from "@cody-play/infrastructure/cody/dependencies/play-load-dependencies";
 import {makePlayRulesServiceFactory} from "@cody-play/infrastructure/services/make-play-rules-service-factory";
+import {
+  playInformationServiceFactory
+} from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -186,7 +189,7 @@ const syncTypesWithSharedRegistry = (config: CodyPlayConfig): void => {
 
 const syncServices = (config: CodyPlayConfig): void => {
   for (const service in config.services) {
-    services[service] = makePlayRulesServiceFactory(service, config.services[service]);
+    services[service] = makePlayRulesServiceFactory(service, config.services[service], playInformationServiceFactory);
   }
 }
 

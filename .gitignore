@@ -45,6 +45,9 @@ data/*
 # docker env
 !env/docker/pgadmin/tmp/.gitkeep
 
+# playshots
+packages/be/src/playconfig/playshot.ts
+
 # Environment
 .env
 packages/fe/src/environments/environment.ts

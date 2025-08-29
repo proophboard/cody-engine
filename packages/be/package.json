@@ -9,6 +9,7 @@
         "@event-engine/infrastructure": "file:packages/infrastructure",
         "@event-engine/messaging": "file:packages/messaging",
         "@event-engine/descriptions": "file:packages/descriptions",
+        "@cody-play/package": "file:packages/play",
         "express": "~4.18.1",
         "express-async-errors": "^3.1.1",
         "express-jwt": "^8.4.1",

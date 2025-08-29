@@ -11,19 +11,28 @@ export const makeAggregateCommandHandler = (
   commandHandlerRules: AnyRule[],
   eventRegistry: PlayEventRegistry,
   schemaDefinitions: PlaySchemaDefinitions,
-  aggregateDescription: AggregateDescription
+  aggregateDescription: AggregateDescription,
+  verbose = true
 ): AggregateProcessingFunctionWithDeps => {
   return async function* (state: any, command: Command, dependencies: Record<string, any>): AsyncGenerator<Event> {
     let ctx = {information: state, command: command.payload, meta: command.meta, ...dependencies, eventRegistry, schemaDefinitions};
 
-    console.log(
-      `%c[CommandBus] Executing business rules of aggregate command %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
-      aggregateDescription._pbLink,
-      {
-        ctx,
-        rules: commandHandlerRules
-      }
-    )
+    if(verbose) {
+      console.log(
+        `%c[CommandBus] Executing business rules of aggregate command %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
+        aggregateDescription._pbLink,
+        {
+          ctx,
+          rules: commandHandlerRules
+        }
+      )
+    } else {
+      console.log(
+        `%c[CommandBus] Executing business rules of aggregate command %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
+        aggregateDescription._pbLink,
+      )
+    }
+
 
     for (const rule of commandHandlerRules) {
       const [result, nextRule] = await execRuleAsync(rule, ctx);
