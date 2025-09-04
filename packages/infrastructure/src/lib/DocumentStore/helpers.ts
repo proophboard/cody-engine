@@ -80,7 +80,7 @@ export const transformPartialDoc = (partialSelect: Array<FieldName|AliasFieldNam
             continue;
         }
 
-        const value = doc[alias] || null;
+        const value = typeof doc[alias] === "undefined" ? null : doc[alias];
 
         if(isOptional && value === null) {
             continue;
