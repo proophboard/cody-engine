@@ -118,6 +118,11 @@ export class PostgresFilterProcessor implements FilterProcessor {
       options.push(`$${argumentRef}`);
     });
 
+    // Empty IN() query causes syntax error, so we force the query to return an empty resultset instead
+    if(options.length === 0) {
+      return `1 = 0`
+    }
+
     return `${filter.collection}.id IN(${options.join(',')})`;
   }
 
