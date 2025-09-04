@@ -7,7 +7,9 @@ if(typeof queryClient === "undefined") {
     defaultOptions: {
       queries: {
         // Attention: if you enable this option, command dialogs close on window focus
-        refetchOnWindowFocus: false
+        refetchOnWindowFocus: false,
+        // Refetch queries always on mount ignoring the stale time by default
+        refetchOnMount: "always"
       }
     }
   });
