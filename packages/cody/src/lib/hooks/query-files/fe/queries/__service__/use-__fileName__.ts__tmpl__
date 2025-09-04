@@ -26,7 +26,7 @@ export const use<%= className %> = (params: <%= className %>, disabled?: boolean
 
       return <%= propertyName %>(params);
     },
-    // Default cache time: 1 min
-    staleTime: 60000
+    // Default cache time: 1 hour
+    staleTime: 3600000,
   })
 }
