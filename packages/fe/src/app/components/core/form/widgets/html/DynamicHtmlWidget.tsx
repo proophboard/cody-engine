@@ -69,6 +69,8 @@ const DynamicHtmlWidget = (props: DynamicHtmlWidgetProps) => {
   let config = props.config;
 
   if(query.isSuccess) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
     jexlCtx.result = query.data;
 
     config = normalizeUiSchema(config, jexlCtx, env);

@@ -47,6 +47,7 @@ data/*
 
 # playshots
 packages/be/src/playconfig/playshot.ts
+packages/fe/src/playconfig/playshot.ts
 
 # Environment
 .env

@@ -199,7 +199,7 @@ const PlayListView = (
       {query.isLoading && <CircularProgress />}
       {query.isSuccess && (
         <Grid2 container={true} className="CodyListView-grid" {...listGridProps}>
-          {query.data.map((item: any) => <Grid2 key={item[itemIdentifier]} {...itemGridProps}>{PlayStaticView(params, itemInfo, itemPageMode, false, itemsUiSchema, item)}</Grid2>)}
+          {Array.isArray(query.data) && query.data.map((item: any) => <Grid2 key={item[itemIdentifier]} {...itemGridProps}>{PlayStaticView(params, itemInfo, itemPageMode, false, itemsUiSchema, item)}</Grid2>)}
         </Grid2>
       )}
       <BottomActions
