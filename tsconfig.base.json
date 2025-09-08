@@ -23,6 +23,7 @@
       "@cody-engine/contribution": ["packages/contribution/src"],
       "@cody-engine/contribution/*": ["packages/contribution/src/*"],
       "@cody-play/*": ["packages/play/src/*"],
+      "@cody-play/package/*": ["packages/play/src/*"],
       "@event-engine/descriptions/*": ["packages/descriptions/src/lib/*"],
       "@event-engine/infrastructure/*": ["packages/infrastructure/src/lib/*"],
       "@event-engine/messaging/*": ["packages/messaging/src/lib/*"],

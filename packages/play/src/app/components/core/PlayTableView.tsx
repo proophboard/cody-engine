@@ -184,7 +184,8 @@ const PlayTableView = (
     pages,
     user,
     types,
-    definitions
+    definitions,
+    names(defaultService).className
   );
 
   if(liveEditMode) {
@@ -261,7 +262,7 @@ const PlayTableView = (
       {query.isSuccess && (
         <DataGrid
           columns={columns}
-          rows={query.data}
+          rows={Array.isArray(query.data) ? query.data : [] }
           getRowId={(row) =>
             itemIdentifier ? row[itemIdentifier] : JSON.stringify(row)
           }
@@ -308,7 +309,7 @@ export default PlayTableView;
 
 type RefQueryMap = { [column: string]: UseQueryResult };
 
-const compileTableColumns = (
+export const compileTableColumns = (
   params: any,
   information: PlayInformationRuntimeInfo,
   uiSchema: TableUiSchema,
@@ -316,11 +317,10 @@ const compileTableColumns = (
   pages: PlayPageRegistry,
   user: User,
   types: PlayInformationRegistry,
-  schemaDefinitions: PlaySchemaDefinitions
+  schemaDefinitions: PlaySchemaDefinitions,
+  defaultService: string
 ): GridColDef[] => {
-  const { config } = useContext(configStore);
   const schema = information.schema;
-  const defaultService = names(config.defaultService).className;
 
   if (!isListSchema(schema) && !isInlineItemsArraySchema(schema)) {
     throw new Error(

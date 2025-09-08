@@ -25,10 +25,14 @@ export const getApiQuery = (): ApiQuery => {
   return internalApiQuery;
 }
 
-export const useApiQuery = (queryName: string, params: any, options?: {staleTime?: number}) => {
+export const useApiQuery = (queryName: string, params: any, options?: {staleTime?: number}, disabled?: boolean) => {
   return useQuery({
     queryKey: [queryName, params],
     queryFn: () => {
+      if(disabled) {
+        return {};
+      }
+
       return internalApiQuery(queryName, params);
     },
     ...options

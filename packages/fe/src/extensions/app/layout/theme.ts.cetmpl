@@ -1,4 +1,5 @@
 import {Theme, ThemeOptions} from "@mui/material";
+import {playshot} from "@frontend/playconfig/playshot";
 
 /**
  * Theme configuration variables are:
@@ -14,9 +15,10 @@ import {Theme, ThemeOptions} from "@mui/material";
 // @ts-ignore
 const overwriteThemeOptions = (theme: Theme): ThemeOptions => {
   return {
-
+    ...playshot.theme,
   } as ThemeOptions;
 };
 
 
 export default overwriteThemeOptions;
+

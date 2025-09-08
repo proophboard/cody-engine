@@ -15,6 +15,7 @@ import {AuthService} from "@event-engine/infrastructure/auth-service/auth-servic
 import { expressjwt } from 'express-jwt';
 import { env } from '@server/environments/environment.current';
 import * as util from "node:util";
+import {bootstrapPlayBackend} from "@server/playconfig/bootstrap-play-backend";
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 4100;
@@ -130,6 +131,8 @@ app.get('/api/health', (req, res) => {
 });
 
 app.use(errorHandler);
+
+bootstrapPlayBackend();
 
 app.listen(port, host, async () => {
   console.log(`[ ready ] http://${host}:${port}`);

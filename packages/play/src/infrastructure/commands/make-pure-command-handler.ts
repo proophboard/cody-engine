@@ -12,18 +12,26 @@ export const makePureCommandHandler = (
   eventRegistry: PlayEventRegistry,
   schemaDefinitions: PlaySchemaDefinitions,
   commandDescription: CommandDescription,
+  verbose = true
 ): ProcessingFunctionWithDeps => {
   return async function* (command: Command, dependencies: Record<string, any>): AsyncGenerator<Event> {
     let ctx = {command: command.payload, meta: command.meta, ...dependencies, eventRegistry, schemaDefinitions};
 
-    console.log(
-      `%c[CommandBus] Executing business rules of %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
-      commandDescription._pbLink,
-      {
-        ctx,
-        rules: commandHandlerRules
-      }
-    )
+    if(verbose) {
+      console.log(
+        `%c[CommandBus] Executing business rules of %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
+        commandDescription._pbLink,
+        {
+          ctx,
+          rules: commandHandlerRules
+        }
+      )
+    } else {
+      console.log(
+        `%c[CommandBus] Executing business rules of %c${command.name}`, Palette.cColor(Palette.stickyColors.command), Palette.cColorBold(Palette.stickyColors.command),
+        commandDescription._pbLink,
+      )
+    }
 
     for (const rule of commandHandlerRules) {
       const [result, nextRule] = await execRuleAsync(rule, ctx);

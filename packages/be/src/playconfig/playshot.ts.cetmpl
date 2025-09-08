@@ -1,0 +1,16 @@
+import {BePlayConfig} from "@server/playconfig/be-play-config";
+
+export const playshot = {
+  "defaultService": "App",
+  "commands": {},
+  "commandHandlers": {},
+  "aggregates": {},
+  "events": {},
+  "eventReducers": {},
+  "queries": {},
+  "resolvers": {},
+  "types": {},
+  "definitions": {},
+  "eventPolicies": {},
+  "services": {}
+} as unknown as BePlayConfig;

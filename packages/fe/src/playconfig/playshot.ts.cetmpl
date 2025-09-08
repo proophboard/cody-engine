@@ -1,0 +1,12 @@
+import {FePlayConfig} from "@frontend/playconfig/fe-play-config";
+
+export const playshot = {
+  "theme": {},
+  "personas": [],
+  "pages": {},
+  "views": {},
+  "commands": {},
+  "queries": {},
+  "types": {},
+  "definitions": {},
+} as unknown as FePlayConfig;

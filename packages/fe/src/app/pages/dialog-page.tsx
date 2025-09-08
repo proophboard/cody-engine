@@ -81,7 +81,6 @@ const DialogPage = (props: DialogPageProps) => {
                      alignItems="center"
                      justifyContent="flex-end">
               <IconButton sx={{
-                marginRight: `-${theme.spacing(2)}`,
                 color: theme.palette.grey[500],
               }} onClick={handleClose}>
                 <Close />
