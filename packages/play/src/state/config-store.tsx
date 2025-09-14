@@ -71,6 +71,7 @@ import {makePlayRulesServiceFactory} from "@cody-play/infrastructure/services/ma
 import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
+import {useVibeCodyAi} from "@cody-play/hooks/use-vibe-cody-ai";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -297,6 +298,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
   const [user, ] = useUser();
   const {env, setEnv} = useContext(EnvContext);
   const [, setTypes] = useTypes();
+  const [isVibeCodyAiMode, setVibeCodyAiMode] = useVibeCodyAi();
   const [config, dispatch] = useReducer((config: CodyPlayConfig, action: Action): CodyPlayConfig => {
     console.log(`[PlayConfigStore] Going to apply action: `, action);
 
@@ -315,6 +317,12 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
           setEnv({...env, DEFAULT_SERVICE: names(config.defaultService).className, PAGES: config.pages as unknown as PageRegistry});
         }, 50);
 
+        if(action.ctx.origin === "vibe-cody.ai" && !isVibeCodyAiMode) {
+          setVibeCodyAiMode(true);
+        } else if(isVibeCodyAiMode) {
+          setVibeCodyAiMode(false);
+        }
+        
         return newConfig;
       case "RENAME_APP":
         return {...config, appName: action.name};
