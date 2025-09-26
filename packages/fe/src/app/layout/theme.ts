@@ -83,20 +83,13 @@ export const createTheme = (options: ThemeOptions): ReturnType<typeof createMuiT
       },
       stateView: {
         styleOverrides: {
-          "form.stateview .Mui-disabled": {
+          "form.stateview .Mui-disabled:not(.CodyTopRightActions .Mui-disabled)": {
             color: "inherit",
             WebkitTextFillColor: "inherit",
 
           },
-          "form.stateview .CodyTopRightActions .Mui-disabled": {
-            color: defaultTheme.palette.text.disabled,
-            WebkitTextFillColor: defaultTheme.palette.text.disabled,
-          },
-          "form.stateview .MuiButton-root.Mui-disabled": {
+          "form.stateview .MuiButton-root.Mui-disabled:not(.CodyTopRightActions .Mui-disabled)": {
             display: "none",
-          },
-          "form.stateview .CodyTopRightActions .MuiButton-root.Mui-disabled": {
-            display: "flex",
           },
           "form.stateview .MuiSelect-icon.Mui-disabled": {
             display: "none",
