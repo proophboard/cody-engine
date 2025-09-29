@@ -450,6 +450,219 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         }
       }
     },
+    "page-commands": {
+      type: "array",
+      title: "Commands",
+      description: "Action buttons visible on the page.",
+      items: {
+        oneOf: [
+          {
+            type: "string",
+            title: "Command Name",
+            description: "Full qualified command name in the format: [Service].[CommandName]"
+          },
+          {
+            $ref: "#/definitions/action"
+          }
+        ]
+      }
+    },
+    "action": {
+      title: "Action",
+      description: "Defines an action triggered from the UI (button or form).",
+      oneOf: [
+        { $ref: "#/definitions/link-action" },
+        { $ref: "#/definitions/command-action" },
+        { $ref: "#/definitions/rules-action" },
+        { $ref: "#/definitions/form-action" }
+      ]
+    },
+
+    "button-position": {
+      type: "string",
+      title: "Button Position",
+      description: "Defines the button placement in the UI.",
+      enum: ["top-right", "bottom-left", "bottom-center", "bottom-right"],
+      default: "top-right"
+    },
+
+    "base-action": {
+      type: "object",
+      title: "Base Action",
+      description: "Base properties shared by all actions.",
+      required: ["type", "position"],
+      properties: {
+        type: {
+          type: "string",
+          enum: ["command", "link", "rules", "form"],
+          title: "Action Type"
+        },
+        description: {
+          type: "string",
+          title: "Description",
+          description: "Optional description of the action."
+        },
+        position: { $ref: "#/definitions/button-position" }
+      }
+    },
+    "button-action": {
+      allOf: [
+        { $ref: "#/definitions/base-action" },
+        {
+          type: "object",
+          title: "Button Action",
+          description: "Base action extended with button configuration.",
+          required: ["button"],
+          properties: {
+            // @TODO: add button config
+            button: { $ref: "#/definitions/button-config" }
+          }
+        }
+      ]
+    },
+    "link-action": {
+      allOf: [
+        { $ref: "#/definitions/button-action" },
+        {
+          type: "object",
+          title: "Link Action",
+          description: "Action that navigates to another page or URL.",
+          properties: {
+            type: { const: "link" },
+            pageLink: {
+              oneOf: [
+                { type: "string", title: "Page Name" },
+                {
+                  type: "object",
+                  required: ["page", "mapping"],
+                  properties: {
+                    page: { type: "string" },
+                    mapping: {
+                      type: "object",
+                      additionalProperties: { $ref: "#/definitions/jexl-expr" }
+                    }
+                  }
+                }
+              ]
+            },
+            href: { type: "string", format: "uri", title: "External Link" }
+          }
+        }
+      ],
+      examples: [
+        {
+          type: "link",
+          position: "top-right",
+          button: { label: "Go to Customers" },
+          pageLink: "Crm.Customers"
+        },
+        {
+          type: "link",
+          position: "bottom-right",
+          button: { label: "Open Docs" },
+          href: "https://example.com/docs"
+        }
+      ]
+    },
+    "command-action": {
+      allOf: [
+        { $ref: "#/definitions/button-action" },
+        {
+          type: "object",
+          title: "Command Action",
+          description: "Action that triggers a command.",
+          required: ["command"],
+          properties: {
+            type: { const: "command" },
+            command: { type: "string", title: "Command Name", description: "Full qualified command name in the format: [Service].[CommandName]" },
+            // @TODO: Add UI Schema definition
+            uiSchema: { $ref: "#/definitions/ui-schema" },
+            // @TODO: describe these settings
+            connectTo: { type: "string" },
+            directSubmit: { type: "boolean" },
+            forceSchema: { type: "boolean" },
+            data: {
+              $ref: "#/definitions/prop-mapping",
+              title: "Initial Data",
+              // @TODO: extract definition of JEXL Form context to constant
+              description: "Use property mapping to set the initial command form data when the command button is clicked. In the Jexl context you have access to: 'page', 'store', 'user', 'theme', 'routeParams'"
+            }
+          }
+        }
+      ],
+      examples: [
+        {
+          type: "command",
+          position: "bottom-right",
+          button: { label: "Add Customer" },
+          command: "Crm.AddCustomer"
+        }
+      ]
+    },
+    "rules-action": {
+      allOf: [
+        { $ref: "#/definitions/button-action" },
+        {
+          type: "object",
+          title: "Rules Action",
+          description: "Action that executes a ruleset.",
+          required: ["rules"],
+          properties: {
+            type: { const: "rules" },
+            rules: {
+              type: "array",
+              items: { $ref: "#/definitions/rule" }
+            }
+          }
+        }
+      ],
+      examples: [
+        {
+          type: "rules",
+          position: "bottom-center",
+          button: { label: "Run Check" },
+          rules: [
+            {
+              rule: "always",
+              then: { log: { msg: "Check executed" } }
+            }
+          ]
+        }
+      ]
+    },
+    "form-action": {
+      allOf: [
+        { $ref: "#/definitions/base-action" },
+        {
+          type: "object",
+          title: "Form Action",
+          description: "Action that displays a form.",
+          required: ["name", "schema"],
+          properties: {
+            type: { const: "form" },
+            name: { type: "string" },
+            schema: { $ref: "#/definitions/json-schema7" },
+            uiSchema: { $ref: "#/definitions/ui-schema" },
+            scope: { enum: ["page", "global"], default: "page" }
+          }
+        }
+      ],
+      examples: [
+        {
+          type: "form",
+          position: "top-right",
+          name: "CustomerFeedback",
+          schema: {
+            type: "object",
+            required: ["feedback"],
+            properties: {
+              feedback: { type: "string" }
+            }
+          },
+          scope: "global"
+        }
+      ]
+    },
     "mdi-icon": {
       type: "string",
       title: "Icon",
@@ -1606,6 +1819,164 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
           }
         }
       }
+    },
+    "json-schema7": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "$id": "http://json-schema.org/draft-07/schema#",
+      "title": "Core schema meta-schema",
+      "type": ["object", "boolean"],
+      "properties": {
+        "$id": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "$schema": {
+          "type": "string",
+          "format": "uri"
+        },
+        "$ref": {
+          "type": "string",
+          "format": "uri-reference"
+        },
+        "$comment": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "default": true,
+        "examples": {
+          "type": "array",
+          "items": true
+        },
+        "multipleOf": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "maximum": {
+          "type": "number"
+        },
+        "exclusiveMaximum": {
+          "type": "number"
+        },
+        "minimum": {
+          "type": "number"
+        },
+        "exclusiveMinimum": {
+          "type": "number"
+        },
+        "maxLength": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minLength": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "pattern": {
+          "type": "string",
+          "format": "regex"
+        },
+        "additionalItems": { "$ref": "#" },
+        "items": {
+          "anyOf": [
+            { "$ref": "#" },
+            {
+              "type": "array",
+              "items": { "$ref": "#" },
+              "minItems": 1
+            }
+          ],
+          "default": true
+        },
+        "maxItems": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minItems": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "uniqueItems": {
+          "type": "boolean",
+          "default": false
+        },
+        "contains": { "$ref": "#" },
+        "maxProperties": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minProperties": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0
+        },
+        "required": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "default": []
+        },
+        "additionalProperties": { "$ref": "#" },
+        "definitions": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#" },
+          "default": {}
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#" },
+          "default": {}
+        },
+        "patternProperties": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#" },
+          "propertyNames": { "format": "regex" },
+          "default": {}
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              { "$ref": "#" },
+              {
+                "type": "array",
+                "items": { "type": "string" },
+                "uniqueItems": true,
+                "minItems": 1
+              }
+            ]
+          }
+        },
+        "propertyNames": { "$ref": "#" },
+        "const": true,
+        "enum": {
+          "type": "array",
+          "items": true,
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "type": {
+          "anyOf": [
+            { "enum": ["array", "boolean", "integer", "null", "number", "object", "string"] },
+            {
+              "type": "array",
+              "items": { "enum": ["array", "boolean", "integer", "null", "number", "object", "string"] },
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          ]
+        },
+        "format": { "type": "string" },
+        "contentMediaType": { "type": "string" },
+        "contentEncoding": { "type": "string" }
+      },
+      "default": true
     }
   },
 };
