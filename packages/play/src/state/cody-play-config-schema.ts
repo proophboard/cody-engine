@@ -13,162 +13,466 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
       description: "Map of page name to page configuration. A page name has the format: [Service].[Name]. The default service is \"App\". Two types of pages exist. 1) Top-Level Page: has a sidebar configuration and is therefor accessible from the app sidebar. 2) Sub-Level Page: is accessible from a top-level page and usually has a dynamic route part e.g. the id of an entity.",
       patternProperties: {
         "^[A-Z][A-Za-z0-9]+.[A-Z][A-Za-z0-9]+$": {
-          type: "object",
           title: "Page Configuration",
-          description: "Each page is a container for a collection of commands and views, accessible in the app via its route.",
-          additionalProperties: false,
-          required: ["name", "route", "topLevel"],
-          if: {
-            properties: {
-              type: {
-                enum: ["dialog", "drawer"]
-              }
-            }
-          },
-          then: {
-            required: ["mainPage"]
-          },
-          properties: {
-            service: {
-              type: "string",
-              title: "Module/Service",
-              description: "A Cody Play app can be organized in multiple modules or services. The default service is \"App\" which is ok for small apps. It's recommended to organize larger applications in modules that align with the business contexts.",
-              examples: [
-                "Crm",
-                "OnlineShop",
-                "Admin",
-                "BackOffice",
-                "Payments",
-                "Shipping",
-                "Accounting"
-              ]
-            },
-            name: {
-              type: "string",
-              title: "Page Name",
-              description: "Name of the page incl. service prefix. This should be identical to the property name of the pages map",
-              examples: [
-                "App.Dashboard",
-                "Crm.Customers",
-                "Admin.ProjectDetails",
-                "Shipping.OrderOverview"
-              ]
-            },
-            route: {
-              type: "string",
-              title: "Route",
-              description: "Each route should start with a \"/\". The slash separates route parts. Sub-level pages can have dynamic route parts of the format /:[paramter] If a parameter is followed by a question mark, the parameter is optional. It is recommended to use the service of the page as the first route part to avoid conflicts of similar routes in different services.",
-              examples: [
-                "/app/customers",
-                "/app/customers/:customerId",
-                "/app/customers/:customerId/projects",
-                "/app/customers/:customerId/projects/:projectId",
-                "/app/customers/:customerId/projects/:projectId/:finished?"
-              ]
-            },
-            title: {
-              type: "string",
-              title: "Page Title",
-              description: "Appears as main heading (H1) on the page in the app. If not set, \"name\" is titleized and displayed instead."
-            },
-            "title:expr": {
-              type: "string",
-              title: "Dynamic Page Title",
-              description: "Similar to \"title\", but uses Jexl to evaluate the given expression before displaying the result. In the Jexl Context you have access to: page, store, user, theme. See prooph board wiki for details about expressions: https://wiki.prooph-board.com/board_workspace/Expressions.html",
-              examples: [
-                "$> (user|role('Admin')) ? 'Hello Admin' : 'Hello User'",
-                "$> page|data('/Crm/Customer')|get('name')"
-              ]
-            },
-            type: {
-              type: "string",
-              title: "Page Type",
-              description: "Type of the page. If type is \"dialog\" or \"drawer\", the \"mainPage\" property should be set to the full qualified page name (Service.PageName) of the page where the dialog or drawer should appear.",
-              enum: ["standard", "dialog", "drawer"],
-              default: "standard"
-            },
-            mainPage: {
-              type: "string",
-              title: "Main Page",
-              description: "Full qualified name of the page (Service.PageName) where a dialog or drawer should appear. See \"type\" property for details."
-            },
-            topLevel: {
-              type: "boolean",
-              title: "Is this a Top-Level Page?"
-            },
-            breadcrumb: {
-              oneOf: [
-                {
-                  type: "string",
-                  title: "Fixed Breadcrumb Label",
-                  description: "A fixed text that represents the page in the breadcrumbs of the app."
+          description: "Each page is a container for a collection of commands and views, accessible in the app via its route. Top",
+          oneOf: [
+            {
+              type: "object",
+              title: "Top-Level Page",
+              description: "Top-Level pages are accessible from the app sidebar. They usually don't have dynamic route parameters.",
+              additionalProperties: false,
+              required: ["name", "route", "topLevel", "sidebar"],
+              if: {
+                properties: {
+                  type: {
+                    enum: ["dialog", "drawer"]
+                  }
+                }
+              },
+              then: {
+                required: ["mainPage"]
+              },
+              properties: {
+                topLevel: {
+                  type: "boolean",
+                  const: true,
+                  title: "This is a Top-Level Page"
                 },
-                {
+                service: {
+                  $ref: "#/definitions/service"
+                },
+                name: {
+                  $ref: "#/definitions/page-name"
+                },
+                route: {
+                  $ref: "#/definitions/page-route"
+                },
+                sidebar: {
                   type: "object",
-                  title: "Dynamic Breadcrumb Label",
-                  description: "A dynamic breadcrumb label derived from data using rules.",
+                  title: "Sidebar",
+                  description: "Defines the sidebar menu item of the page",
                   additionalProperties: false,
-                  required: ["data", "label"],
+                  required: ["label", "icon"],
                   properties: {
-                    data: {
-                      $ref: "#/definitions/data-reference",
-                      title: "Data Reference",
-                      description: "The data reference is loaded from the server. The query schema configured for the data reference should only require properties that are available as route parameters in the current route."
-                    },
                     label: {
+                      type: "string",
+                      title: "Label",
+                      description: "Menu item label",
+                      minLength: 1
+                    },
+                    "label:t": {
+                      $ref: "#/definitions/t-key"
+                    },
+                    icon: {
+                      $ref: "#/definitions/mdi-icon",
+                      title: "Menu item icon"
+                    },
+                    group: {
+                      title: "Group",
+                      description: "Sidebar items can be organized in collapsable sidebar groups. Items with same group name belong together. The first item in the group defines the group position within the sidebar. Sidebar and group position depends either on the position in the page registry configuration and/or the optional 'position' property of each sidebar item.",
                       oneOf: [
                         {
-                          $ref: "#/definitions/jexl-expr",
-                          title: "Jexl Expression",
-                          description: "The Jexl expression has access to the 'data' reference and should evaluate to a string value that is used as label of the breadcrumb."
+                          type: "string",
+                          title: "Group Name",
+                          description: "Name of the group where this item belongs to."
                         },
                         {
-                          type: "array",
-                          title: "Ruleset",
-                          description: "List of rules to provide a label for the breadcrumb. The rules have access to the 'data' reference, and should assign a variable 'value', which should be of type string. Value is then used as the label of the breadcrumb.",
-                          items: {
-                            $ref: "#/definitions/rule"
+                          type: "object",
+                          title: "Group Configuration",
+                          description: "Detailed sidebar group configuration. It's enough when one of the pages of the group provides the detailed group configuration.",
+                          additionalProperties: false,
+                          required: ["label", "icon"],
+                          properties: {
+                            label: {
+                              type: "string",
+                              minLength: 1,
+                              title: "Group Name",
+                              description: "Name of the group."
+                            },
+                            "label:t": {
+                              $ref: "#/definitions/t-key"
+                            },
+                            icon: {
+                              $ref: "#/definitions/mdi-icon",
+                              title: "Group Icon"
+                            }
                           }
                         }
                       ]
-                    }
-                  },
-                  examples: [
-                    {
-                      data: "/App/Customer",
-                      label: "$> data.name"
                     },
-                    {
-                      data: "/App/Customer",
-                      label: [
+                    invisible: {
+                      title: "Hidden?",
+                      description: "Set to true, to always hide the menu item in the sidebar (e.g. when multiple top-level pages belong to the same tab group), or use a Jexl expression to dynamically show/hide the menu item. The latter is especially useful when different user roles have access to different parts of the app.",
+                      oneOf: [
                         {
-                          rule: "condition",
-                          if: "$> data.firstName",
-                          then: {
-                            assign: {
-                              variable: "value",
-                              value: "$> data.firstName + ' ' + data.lastName"
-                            }
-                          },
-                          else: {
-                            assign: {
-                              variable: "value",
-                              value: "$> data.lastName"
-                            }
-                          }
+                          type: "boolean"
+                        },
+                        {
+                          $ref: "#/definitions/jexl-expr"
                         }
                       ]
+                    },
+                    position: {
+                      type: "number",
+                      title: "Group Position",
+                      description: "Item position within group",
+                      default: 5,
+                    },
+                    dynamic: {
+                      type: "object",
+                      title: "Dynamic Menu Item",
+                      description: "Use a query to load data then set the menu item label or hidden property using a Jexl expression.",
+                      additionalProperties: false,
+                      required: ["data"],
+                      properties: {
+                        data: {
+                          $ref: "#/definitions/data-reference"
+                        },
+                        label: {
+                          $ref: "#/definitions/jexl-expr",
+                          description: "Jexl Expression should return the label. Loaded data is available as 'data' in the Jexl expression context."
+                        },
+                        icon: {
+                          $ref: "#/definitions/jexl-expr",
+                          description: "Jexl Expression should return the MDI Icon name in kebab-case. Loaded data is available as 'data' in the Jexl expression context."
+                        },
+                        hidden: {
+                          $ref: "#/definitions/jexl-expr",
+                          description: "Jexl Expression should return true if the sidebar item is hidden. Loaded data is available as 'data' in the Jexl expression context."
+                        }
+                      }
                     }
-                  ]
+                  }
+                },
+                title: {
+                  $ref: "#/definitions/page-title"
+                },
+                "title:expr": {
+                  $ref: "#/definitions/page-title-expr"
+                },
+                type: {
+                  $ref: "#/definitions/page-type"
+                },
+                mainPage: {
+                  $ref: "#/definitions/page-main-page"
+                },
+                breadcrumb: {
+                  $ref: "#/definitions/page-breadcrumb"
+                },
+                "breadcrumb:t": {
+                  $ref: "#/definitions/t-key"
+                },
+                tab: {
+                  $ref: "#/definitions/page-tab"
+                },
+                props: {
+                  $ref: "#/definitions/page-props"
+                },
+                "props:expr": {
+                  $ref: "#/definitions/jexl-expr",
+                  title: "Dynamic Page Props",
+                  description: "A Jexl expression to dynamically define page props."
                 }
-              ]
+              }
+            },
+            {
+              type: "object",
+              title: "Sub-Level Page",
+              description: "Sub-Level pages are only accessible from page links on other pages. They usually have dynamic route parameters.",
+              additionalProperties: false,
+              required: ["name", "route", "topLevel"],
+              if: {
+                properties: {
+                  type: {
+                    enum: ["dialog", "drawer"]
+                  }
+                }
+              },
+              then: {
+                required: ["mainPage"]
+              },
+              properties: {
+                topLevel: {
+                  type: "boolean",
+                  const: false,
+                  title: "This is a Sub-Level Page"
+                },
+                service: {
+                  $ref: "#/definitions/service"
+                },
+                name: {
+                  $ref: "#/definitions/page-name"
+                },
+                route: {
+                  $ref: "#/definitions/page-route"
+                },
+                title: {
+                  $ref: "#/definitions/page-title"
+                },
+                "title:expr": {
+                  $ref: "#/definitions/page-title-expr"
+                },
+                type: {
+                  $ref: "#/definitions/page-type"
+                },
+                mainPage: {
+                  $ref: "#/definitions/page-main-page"
+                },
+                breadcrumb: {
+                  $ref: "#/definitions/page-breadcrumb"
+                },
+                "breadcrumb:t": {
+                  $ref: "#/definitions/t-key"
+                },
+                tab: {
+                  $ref: "#/definitions/page-tab"
+                },
+                props: {
+                  $ref: "#/definitions/page-props"
+                },
+                "props:expr": {
+                  $ref: "#/definitions/jexl-expr",
+                  title: "Dynamic Page Props",
+                  description: "A Jexl expression to dynamically define page props."
+                }
+              }
             }
-          }
+          ]
         }
       }
     }
   },
   definitions: {
+    "service": {
+      type: "string",
+      title: "Module/Service",
+      description: "A Cody Play app can be organized in multiple modules or services. The default service is \"App\" which is ok for small apps. It's recommended to organize larger applications in modules that align with the business contexts.",
+      examples: [
+        "Crm",
+        "OnlineShop",
+        "Admin",
+        "BackOffice",
+        "Payments",
+        "Shipping",
+        "Accounting"
+      ]
+    },
+    "page-name": {
+      type: "string",
+      title: "Page Name",
+      description: "Name of the page incl. service prefix. This should be identical to the property name of the pages map",
+      examples: [
+        "App.Dashboard",
+        "Crm.Customers",
+        "Admin.ProjectDetails",
+        "Shipping.OrderOverview"
+      ]
+    },
+    "page-route": {
+      type: "string",
+      title: "Route",
+      description: "Each route should start with a \"/\". The slash separates route parts. Sub-level pages can have dynamic route parts of the format /:[paramter] If a parameter is followed by a question mark, the parameter is optional. It is recommended to use the service of the page as the first route part to avoid conflicts of similar routes in different services.",
+      examples: [
+        "/app/customers",
+        "/app/customers/:customerId",
+        "/app/customers/:customerId/projects",
+        "/app/customers/:customerId/projects/:projectId",
+        "/app/customers/:customerId/projects/:projectId/:finished?"
+      ]
+    },
+    "page-title": {
+      type: "string",
+      title: "Page Title",
+      description: "Appears as main heading (H1) on the page in the app. If not set, \"name\" is titleized and displayed instead."
+    },
+    "page-title-expr": {
+      type: "string",
+      title: "Dynamic Page Title",
+      description: "Similar to \"title\", but uses Jexl to evaluate the given expression before displaying the result. In the Jexl Context you have access to: page, store, user, theme. See prooph board wiki for details about expressions: https://wiki.prooph-board.com/board_workspace/Expressions.html",
+      examples: [
+        "$> (user|role('Admin')) ? 'Hello Admin' : 'Hello User'",
+        "$> page|data('/Crm/Customer')|get('name')"
+      ]
+    },
+    "page-type": {
+      type: "string",
+      title: "Page Type",
+      description: "Type of the page. If type is \"dialog\" or \"drawer\", the \"mainPage\" property should be set to the full qualified page name (Service.PageName) of the page where the dialog or drawer should appear.",
+      enum: ["standard", "dialog", "drawer"],
+      default: "standard"
+    },
+    "page-main-page": {
+      type: "string",
+      title: "Main Page",
+      description: "Full qualified name of the page (Service.PageName) where a dialog or drawer should appear. See \"type\" property for details."
+    },
+    "page-breadcrumb": {
+      oneOf: [
+        {
+          type: "string",
+          title: "Fixed Breadcrumb Label",
+          description: "A fixed text that represents the page in the breadcrumbs of the app."
+        },
+        {
+          type: "object",
+          title: "Dynamic Breadcrumb Label",
+          description: "A dynamic breadcrumb label derived from data using rules.",
+          additionalProperties: false,
+          required: ["data", "label"],
+          properties: {
+            data: {
+              $ref: "#/definitions/data-reference",
+              title: "Data Reference",
+              description: "The data reference is loaded from the server. The query schema configured for the data reference should only require properties that are available as route parameters in the current route."
+            },
+            label: {
+              oneOf: [
+                {
+                  $ref: "#/definitions/jexl-expr",
+                  title: "Jexl Expression",
+                  description: "The Jexl expression has access to the 'data' reference and should evaluate to a string value that is used as label of the breadcrumb."
+                },
+                {
+                  type: "array",
+                  title: "Ruleset",
+                  description: "List of rules to provide a label for the breadcrumb. The rules have access to the 'data' reference, and should assign a variable 'value', which should be of type string. Value is then used as the label of the breadcrumb.",
+                  items: {
+                    $ref: "#/definitions/rule"
+                  }
+                }
+              ]
+            }
+          },
+          examples: [
+            {
+              data: "/App/Customer",
+              label: "$> data.name"
+            },
+            {
+              data: "/App/Customer",
+              label: [
+                {
+                  rule: "condition",
+                  if: "$> data.firstName",
+                  then: {
+                    assign: {
+                      variable: "value",
+                      value: "$> data.firstName + ' ' + data.lastName"
+                    }
+                  },
+                  else: {
+                    assign: {
+                      variable: "value",
+                      value: "$> data.lastName"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "page-tab": {
+      type: "object",
+      title: "Tab Group",
+      description: "Organize multiple pages in tabs. Pages of same tab group belong together. Each page still has its own route. If you group multiple top-level pages in a tab group, make sure to show only the page of the first tab in the sidebar. Hide all other pages of the tab group in the sidebar.",
+      additionalProperties: false,
+      required: ["group", "label"],
+      properties: {
+        group: {
+          type: "string",
+          title: "Group Name",
+          description: "Set the same name on all pages that belong to the tab group.",
+          minLength: 1
+        },
+        label: {
+          type: "string",
+          title: "Tab Label",
+          description: "Label of the tab for this particular page",
+          minLength: 1
+        },
+        "label:t": {
+          $ref: "#/definitions/t-key"
+        },
+        icon: {
+          $ref: "#/definitions/mdi-icon",
+          title: "Tab Icon"
+        },
+        style: {
+          $ref: "#/definitions/mui-sx-prop"
+        },
+        styleExpr: {
+          $ref: "#/definitions/jexl-expr",
+          title: "Style Expression",
+          description: "Jexl expression to dynamically style the tab"
+        },
+        hidden: {
+          $ref: "#/definitions/jexl-expr",
+          title: "Hidden?",
+          description: "Return true from the Jexl expression to hide the tab. This is especially useful, when certain user roles don't have permission to view the tab."
+        },
+        disabled: {
+          $ref: "#/definitions/jexl-expr",
+          title: "Disabled?",
+          description: "Return true from the Jexl expression to disable the tab."
+        },
+        position: {
+          type: "number",
+          title: "Position",
+          description: "Position of tab within tab group. If not set, the position of the page within the page registry config defines tab ordering.",
+          default: 5
+        }
+      }
+    },
+    "page-props": {
+      type: "object",
+      title: "UI Page Props",
+      description: "Can be used for two different things:\n1. the property 'container' is passed to the [MUI Grid container](https://v5.mui.com/system/react-grid/) that represents the page in the UI, so you can for example customize the Grid layout or use the 'sx' property for custom styling within the container.\n\n2. All other properties are merged into route params. This allows you set fix values for route parameters that are used for querying data on the page.",
+      patternProperties: {
+        "^container$": {
+          type: "object",
+          title: "MUI Grid Container Props",
+          description: "[MUI Grid container](https://v5.mui.com/system/react-grid/) passed to the react component of the page. Use it to customize the Grid layout of the page and/or customize styling using the 'sx' prop.",
+          examples: [
+            {
+              spacing: 4,
+              sx: {
+                border: "1px solid grey"
+              }
+            }
+          ]
+        },
+        "^(?!container$).+": {
+          type: "string",
+          title: "Route Parameter Override",
+          description: "All non container properties are merged into route params. This allows you set fix values for route parameters that are used for querying data on the page."
+        }
+      }
+    },
+    "mdi-icon": {
+      type: "string",
+      title: "Icon",
+      description: "A valid [MDI Icon](https://pictogrammers.com/library/mdi/) name in kebab case (e.g. arrow-down-thin)",
+      default: "square"
+    },
+    "mui-sx-prop": {
+      type: "object",
+      title: "MUI Styling",
+      description: "CSS superset with access to MUI theme. See [MUI sx prop](https://v5.mui.com/system/getting-started/the-sx-prop/) for details."
+    },
+    "t-key": {
+      type: "string",
+      title: "Translation Key",
+      description: "Translations are managed in JSON structures. Use '.' for nested translation keys. Translation keys are optional and override the main property. For example 'label' is the main property and 'label:t' overrides the main property, if it is set.",
+      examples: [
+        "form.save",
+        "form.cancel",
+        "sidebar.customers",
+        "sidebar.projects",
+        "page.customerOverview.headline"
+      ]
+    },
     "data-reference": {
       type: "string",
       title: "Data Reference",
@@ -292,7 +596,22 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         },
         {
           $ref: "#/definitions/rule-then-find-information"
-        }
+        },
+        {
+          $ref: "#/definitions/rule-then-find-partial-information"
+        },
+        {
+          $ref: "#/definitions/rule-then-find-information-by-id"
+        },
+        {
+          $ref: "#/definitions/rule-then-find-one-information"
+        },
+        {
+          $ref: "#/definitions/rule-then-find-partial-information-by-id"
+        },
+        {
+          $ref: "#/definitions/rule-then-find-one-partial-information"
+        },
       ]
     },
     "prop-mapping": {
@@ -679,12 +998,12 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
             },
             catch: {
               then: {
-                log: { msg: "Payment failed" }
+                log: {msg: "Payment failed"}
               }
             },
             finally: {
               then: {
-                log: { msg: "Payment attempt finished" }
+                log: {msg: "Payment attempt finished"}
               }
             }
           }
@@ -705,11 +1024,11 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
           required: ["information", "filter"],
           properties: {
             information: {
-              type: "string",
+              $ref: "#/definitions/data-reference",
               title: "Information",
               description: "The information resource to query."
             },
-            filter: { $ref: "#/definitions/filter" },
+            filter: {$ref: "#/definitions/filter"},
             skip: {
               type: "integer",
               minimum: 0
@@ -718,9 +1037,13 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
               type: "integer",
               minimum: 1
             },
-            // @TODO: Add sort-order definition and fix example
             orderBy: {
-              $ref: "#/definitions/sort-order"
+              type: "array",
+              title: "Order By",
+              description: "Define the sort order",
+              items: {
+                $ref: "#/definitions/sort-order"
+              }
             },
             variable: {
               type: "string",
@@ -735,11 +1058,11 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
           find: {
             information: "orders",
             filter: {
-              eq: { prop: "status", value: "$> query.status" }
+              eq: {prop: "status", value: "$> query.status"}
             },
             skip: 0,
             limit: 10,
-            orderBy: { prop: "createdAt", direction: "desc" },
+            orderBy: [{prop: "createdAt", sort: "desc"}],
             variable: "pendingOrders"
           }
         },
@@ -748,8 +1071,8 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
             information: "customers",
             filter: {
               and: [
-                { like: { prop: "name", value: "$> 'John%'" } },
-                { gte: { prop: "age", value: "$> 21" } }
+                {like: {prop: "name", value: "$> 'John%'"}},
+                {gte: {prop: "age", value: "$> 21"}}
               ]
             },
             variable: "adultJohns"
@@ -757,26 +1080,220 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         }
       ]
     },
-    //@TODO: All filter strings are #/definitions/jexl-expr refs to provide filter values at runtime
+    "rule-then-find-partial-information": {
+      type: "object",
+      title: "Find Partial Information",
+      description: "Query information with partial field selection, filter, and ordering options.",
+      additionalProperties: false,
+      required: ["findPartial"],
+      properties: {
+        findPartial: {
+          type: "object",
+          additionalProperties: false,
+          required: ["information", "select", "filter"],
+          properties: {
+            information: {
+              $ref: "#/definitions/data-reference",
+              title: "Information",
+              description: "The information resource to query."
+            },
+            select: {$ref: "#/definitions/partial-select"},
+            filter: {$ref: "#/definitions/filter"},
+            skip: {type: "integer", minimum: 0},
+            limit: {type: "integer", minimum: 1},
+            orderBy: {
+              type: "array",
+              items: {$ref: "#/definitions/sort-order"}
+            },
+            variable: {type: "string"}
+          }
+        }
+      },
+      examples: [
+        {
+          findPartial: {
+            information: "Crm.Customers",
+            select: ["id", {field: "name", alias: "customerName"}],
+            filter: {like: {prop: "name", value: "$> 'A%'"}},
+            limit: 5,
+            orderBy: [{prop: "name", sort: "asc"}],
+            variable: "customersStartingWithA"
+          }
+        },
+        {
+          findPartial: {
+            information: "Shopping.Orders",
+            select: [
+              "id",
+              {field: "total", alias: "orderTotal"},
+              {
+                lookup: "Crm.Customers",
+                alias: "customer",
+                on: {localKey: "customerId", foreignKey: "id"},
+                select: ["name", "email"]
+              }
+            ],
+            filter: {gte: {prop: "total", value: "$> 100"}},
+            variable: "bigOrdersWithCustomer"
+          }
+        }
+      ]
+    },
+    "rule-then-find-information-by-id": {
+      type: "object",
+      title: "Find Information By Id",
+      description: "Query a single document by id.",
+      additionalProperties: false,
+      required: ["findById"],
+      properties: {
+        findById: {
+          type: "object",
+          additionalProperties: false,
+          required: ["information", "id"],
+          properties: {
+            information: {
+              $ref: "#/definitions/data-reference",
+              title: "Information",
+              description: "The information resource to query."
+            },
+            id: {
+              $ref: "#/definitions/jexl-expr",
+            },
+            variable: {type: "string"}
+          }
+        }
+      },
+      examples: [
+        {
+          findById: {
+            information: "Crm.Customers",
+            id: "$> query.customerId",
+            variable: "customer"
+          }
+        }
+      ]
+    },
+    "rule-then-find-one-information": {
+      type: "object",
+      title: "Find One Information",
+      description: "Query a single document matching a filter.",
+      additionalProperties: false,
+      required: ["findOne"],
+      properties: {
+        findOne: {
+          type: "object",
+          additionalProperties: false,
+          required: ["information", "filter"],
+          properties: {
+            information: {
+              $ref: "#/definitions/data-reference",
+              title: "Information",
+              description: "The information resource to query."
+            },
+            filter: {$ref: "#/definitions/filter"},
+            variable: {type: "string"}
+          }
+        }
+      },
+      examples: [
+        {
+          findOne: {
+            information: "Shopping.Orders",
+            filter: {eq: {prop: "status", value: "$> 'open'"}},
+            variable: "firstOpenOrder"
+          }
+        }
+      ]
+    },
+    "rule-then-find-partial-information-by-id": {
+      type: "object",
+      title: "Find Partial Information By Id",
+      description: "Query a single document by id with partial field selection.",
+      additionalProperties: false,
+      required: ["findPartialById"],
+      properties: {
+        findPartialById: {
+          type: "object",
+          additionalProperties: false,
+          required: ["information", "id", "select"],
+          properties: {
+            information: {
+              $ref: "#/definitions/data-reference",
+              title: "Information",
+              description: "The information resource to query."
+            },
+            id: {
+              $ref: "#/definitions/jexl-expr",
+            },
+            select: {$ref: "#/definitions/partial-select"},
+            variable: {type: "string"}
+          }
+        }
+      },
+      examples: [
+        {
+          findPartialById: {
+            information: "Shopping.Orders",
+            id: "$> query.orderId",
+            select: ["id", "status", {field: "total", alias: "orderTotal"}],
+            variable: "orderSummary"
+          }
+        }
+      ]
+    },
+    "rule-then-find-one-partial-information": {
+      type: "object",
+      title: "Find One Partial Information",
+      description: "Query a single document with partial field selection matching a filter.",
+      additionalProperties: false,
+      required: ["findOnePartial"],
+      properties: {
+        findOnePartial: {
+          type: "object",
+          additionalProperties: false,
+          required: ["information", "select", "filter"],
+          properties: {
+            information: {
+              $ref: "#/definitions/data-reference",
+              title: "Information",
+              description: "The information resource to query."
+            },
+            select: {$ref: "#/definitions/partial-select"},
+            filter: {$ref: "#/definitions/filter"},
+            variable: {type: "string"}
+          }
+        }
+      },
+      examples: [
+        {
+          findOnePartial: {
+            information: "Crm.Customers",
+            select: ["id", "name", "email"],
+            filter: {eq: {prop: "email", value: "$> meta.user.email"}},
+            variable: "currentCustomer"
+          }
+        }
+      ]
+    },
     "filter": {
       title: "Filter",
       description: "Filter definition for querying information.",
       oneOf: [
-        { $ref: "#/definitions/and-filter" },
-        { $ref: "#/definitions/or-filter" },
-        { $ref: "#/definitions/not-filter" },
-        { $ref: "#/definitions/any-filter" },
-        { $ref: "#/definitions/any-of-doc-id-filter" },
-        { $ref: "#/definitions/any-of-filter" },
-        { $ref: "#/definitions/doc-id-filter" },
-        { $ref: "#/definitions/eq-filter" },
-        { $ref: "#/definitions/exists-filter" },
-        { $ref: "#/definitions/gte-filter" },
-        { $ref: "#/definitions/gt-filter" },
-        { $ref: "#/definitions/in-array-filter" },
-        { $ref: "#/definitions/like-filter" },
-        { $ref: "#/definitions/lte-filter" },
-        { $ref: "#/definitions/lt-filter" }
+        {$ref: "#/definitions/and-filter"},
+        {$ref: "#/definitions/or-filter"},
+        {$ref: "#/definitions/not-filter"},
+        {$ref: "#/definitions/any-filter"},
+        {$ref: "#/definitions/any-of-doc-id-filter"},
+        {$ref: "#/definitions/any-of-filter"},
+        {$ref: "#/definitions/doc-id-filter"},
+        {$ref: "#/definitions/eq-filter"},
+        {$ref: "#/definitions/exists-filter"},
+        {$ref: "#/definitions/gte-filter"},
+        {$ref: "#/definitions/gt-filter"},
+        {$ref: "#/definitions/in-array-filter"},
+        {$ref: "#/definitions/like-filter"},
+        {$ref: "#/definitions/lte-filter"},
+        {$ref: "#/definitions/lt-filter"}
       ]
     },
     "and-filter": {
@@ -785,7 +1302,7 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
       properties: {
         and: {
           type: "array",
-          items: { $ref: "#/definitions/filter" }
+          items: {$ref: "#/definitions/filter"}
         }
       }
     },
@@ -795,7 +1312,7 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
       properties: {
         or: {
           type: "array",
-          items: { $ref: "#/definitions/filter" }
+          items: {$ref: "#/definitions/filter"}
         }
       }
     },
@@ -803,33 +1320,43 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
       type: "object",
       required: ["not"],
       properties: {
-        not: { $ref: "#/definitions/filter" }
+        not: {$ref: "#/definitions/filter"}
       }
     },
     "any-filter": {
       type: "object",
       required: ["any"],
+      title: "Any Filter",
+      description: "Matches any document.",
       properties: {
-        any: { type: "boolean", default: true }
+        any: {type: "boolean", default: true}
       }
     },
     "any-of-doc-id-filter": {
       type: "object",
       required: ["anyOfDocId"],
+      title: "Any of DocId Filter",
+      description: "Jexl expression should evaluate to an array of document ids. The filter will match all documents with ids in that list.",
       properties: {
-        anyOfDocId: { type: "string" }
+        anyOfDocId: {
+          $ref: "#/definitions/jexl-expr",
+        }
       }
     },
     "any-of-filter": {
       type: "object",
       required: ["anyOf"],
+      title: "Any of Filter",
+      description: "The filter will match all documents with prop value being in the value list returned by the Jexl expression.",
       properties: {
         anyOf: {
           type: "object",
           required: ["prop", "valueList"],
           properties: {
-            prop: { type: "string" },
-            valueList: { type: "string" }
+            prop: {type: "string"},
+            valueList: {
+              $ref: "#/definitions/jexl-expr",
+            }
           }
         }
       }
@@ -837,20 +1364,28 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
     "doc-id-filter": {
       type: "object",
       required: ["docId"],
+      title: "Document Id Filter",
+      description: "Matches the given document id returned by the Jexl expression.",
       properties: {
-        docId: { type: "string" }
+        docId: {
+          $ref: "#/definitions/jexl-expr",
+        }
       }
     },
     "eq-filter": {
       type: "object",
       required: ["eq"],
+      title: "Equal Filter",
+      description: "Matches all documents where prop value equals return value of Jexl expression",
       properties: {
         eq: {
           type: "object",
           required: ["prop", "value"],
           properties: {
-            prop: { type: "string" },
-            value: { type: "string" }
+            prop: {type: "string"},
+            value: {
+              $ref: "#/definitions/jexl-expr",
+            }
           }
         }
       }
@@ -858,12 +1393,14 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
     "exists-filter": {
       type: "object",
       required: ["exists"],
+      title: "Exists Filter",
+      description: "Matches all documents that have prop defined.",
       properties: {
         exists: {
           type: "object",
           required: ["prop"],
           properties: {
-            prop: { type: "string" }
+            prop: {type: "string"}
           }
         }
       }
@@ -871,13 +1408,17 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
     "gte-filter": {
       type: "object",
       required: ["gte"],
+      title: "Greater Than or Equal Filter",
+      description: "Matches all documents where prop is greater than or equal to value returned by the Jexl expression.",
       properties: {
         gte: {
           type: "object",
           required: ["prop", "value"],
           properties: {
-            prop: { type: "string" },
-            value: { type: "string" }
+            prop: {type: "string"},
+            value: {
+              $ref: "#/definitions/jexl-expr",
+            }
           }
         }
       }
@@ -885,13 +1426,17 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
     "gt-filter": {
       type: "object",
       required: ["gt"],
+      title: "Greater Than Filter",
+      description: "Matches all documents where prop is greater than value returned by Jexl expression.",
       properties: {
         gt: {
           type: "object",
           required: ["prop", "value"],
           properties: {
-            prop: { type: "string" },
-            value: { type: "string" }
+            prop: {type: "string"},
+            value: {
+              $ref: "#/definitions/jexl-expr",
+            }
           }
         }
       }
@@ -899,13 +1444,17 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
     "in-array-filter": {
       type: "object",
       required: ["inArray"],
+      title: "In-Array Filter",
+      description: "Matches all documents where prop is an array and contains the value returned by the Jexl expression.",
       properties: {
         inArray: {
           type: "object",
           required: ["prop", "value"],
           properties: {
-            prop: { type: "string" },
-            value: { type: "string" }
+            prop: {type: "string"},
+            value: {
+              $ref: "#/definitions/jexl-expr",
+            }
           }
         }
       }
@@ -913,13 +1462,17 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
     "like-filter": {
       type: "object",
       required: ["like"],
+      title: "Like Filter",
+      description: "Matches all documents where prop is like the value returned by the Jexl expression. % sign can be used as a wildcard before and/or after the substring.",
       properties: {
         like: {
           type: "object",
           required: ["prop", "value"],
           properties: {
-            prop: { type: "string" },
-            value: { type: "string" }
+            prop: {type: "string"},
+            value: {
+              $ref: "#/definitions/jexl-expr",
+            }
           }
         }
       }
@@ -927,13 +1480,17 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
     "lte-filter": {
       type: "object",
       required: ["lte"],
+      title: "Lower Than or Equal Filter",
+      description: "Matches all documents where prop is lower than or equal to the value returned by the Jexl expression.",
       properties: {
         lte: {
           type: "object",
           required: ["prop", "value"],
           properties: {
-            prop: { type: "string" },
-            value: { type: "string" }
+            prop: {type: "string"},
+            value: {
+              $ref: "#/definitions/jexl-expr",
+            }
           }
         }
       }
@@ -941,16 +1498,114 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
     "lt-filter": {
       type: "object",
       required: ["lt"],
+      title: "Lower Than Filter",
+      description: "Matches all documents where prop is lower than the value returned by the Jexl Expression.",
       properties: {
         lt: {
           type: "object",
           required: ["prop", "value"],
           properties: {
-            prop: { type: "string" },
-            value: { type: "string" }
+            prop: {type: "string"},
+            value: {
+              $ref: "#/definitions/jexl-expr",
+            }
+          }
+        }
+      }
+    },
+    "sort-order": {
+      type: "object",
+      additionalProperties: false,
+      required: ["prop", "sort"],
+      properties: {
+        prop: {
+          type: "string",
+          title: "Property",
+          description: "Name of the property to be sorted"
+        },
+        sort: {
+          type: "string",
+          title: "Sorting",
+          description: "Ascending (asc) or descending (desc) sorting",
+          enum: ["asc", "desc"]
+        }
+      }
+    },
+    "field-name": {
+      type: "string",
+      title: "Field Name",
+      description: "A property name to be selected."
+    },
+    "alias-field-name-mapping": {
+      type: "object",
+      title: "Alias Field Mapping",
+      description: "Map a field to an alias name in the result set.",
+      required: ["field", "alias"],
+      properties: {
+        field: {type: "string"},
+        alias: {type: "string"}
+      }
+    },
+    "partial-select": {
+      type: "array",
+      title: "Partial Select",
+      description: "Defines which fields and lookups to select.",
+      items: {
+        oneOf: [
+          {$ref: "#/definitions/field-name"},
+          {$ref: "#/definitions/alias-field-name-mapping"},
+          {$ref: "#/definitions/lookup"}
+        ]
+      }
+    },
+    "lookup": {
+      type: "object",
+      title: "Lookup",
+      description: "Perform a join-like lookup to another collection.",
+      required: ["lookup", "on"],
+      properties: {
+        lookup: {
+          $ref: "#/definitions/data-reference",
+          title: "Lookup",
+          description: "The information resource to look up."
+        },
+        alias: {type: "string", title: "Alias", description: "Define an alias for the looked up information."},
+        using: {
+          type: "string",
+          title: "Using",
+          description: "Use another looked up information (or its alias) as the local (base) information."
+        },
+        optional: {
+          type: "boolean",
+          default: false,
+          title: "Is optional lookup?",
+          description: "If lookup is otpional, the local select is included in resultset even if looked up information cannot be found."
+        },
+        on: {
+          type: "object",
+          required: ["localKey"],
+          properties: {
+            localKey: {type: "string"},
+            foreignKey: {type: "string"},
+            and: {
+              $ref: "#/definitions/filter",
+              title: "Additional Filter",
+              description: "Optional filter condition that should match additionally to the local key -> foreign key match."
+            }
+          }
+        },
+        select: {
+          type: "array",
+          title: "Select",
+          description: "Fields of lookup to be included in the resultset.",
+          items: {
+            oneOf: [
+              {$ref: "#/definitions/field-name"},
+              {$ref: "#/definitions/alias-field-name-mapping"}
+            ]
           }
         }
       }
     }
-  }
+  },
 };
