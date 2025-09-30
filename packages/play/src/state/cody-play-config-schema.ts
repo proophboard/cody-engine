@@ -1,5 +1,7 @@
 import {JSONSchema7} from "json-schema";
 
+const FORM_JEXL_CTX = "In the Jexl context you have access to:\n\n'data' -> the form data,\n\n'page' -> page registry with access to loaded view components,\n\n'store' -> global store,\n\n'user' -> current user,\n\n'theme' -> MUI theme,\n\n'routeParams' -> current route params,\n\n'mode' -> one of: 'pageForm' | 'pageView' | 'dialogForm' | 'commandDialogForm' | 'dialogView' | 'listView'";
+
 export const CodyPlayConfigSchema: JSONSchema7 = {
   title: "Cody Play Config",
   type: "object",
@@ -514,7 +516,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
           description: "Base action extended with button configuration.",
           required: ["button"],
           properties: {
-            // @TODO: add button config
             button: { $ref: "#/definitions/button-config" }
           }
         }
@@ -575,17 +576,18 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
           properties: {
             type: { const: "command" },
             command: { type: "string", title: "Command Name", description: "Full qualified command name in the format: [Service].[CommandName]" },
-            // @TODO: Add UI Schema definition
             uiSchema: { $ref: "#/definitions/ui-schema" },
-            // @TODO: describe these settings
-            connectTo: { type: "string" },
-            directSubmit: { type: "boolean" },
-            forceSchema: { type: "boolean" },
+            connectTo: {
+              type: "string",
+              title: "Connect To",
+              description: "Connect the button to a form on the page. A view of type: 'form' is registered on the page as '/Form/ViewName'. So if you have a view component like 'App.Customer' with {type: 'form'} configured on the same page as the command action, you can connect the action to '/Form/Customer'. The action button becomes a submit button and the form data is used as command payload."
+            },
+            directSubmit: { type: "boolean", title: "Direct Submit?", description: "If set to true, a click on the button will submit the command directly without showing the command form in a dialog. This is useful when you want to submit data that is set programmatically using the 'data' property mapping config" },
+            forceSchema: { type: "boolean", title: "Force Schema?", description: "If set to true and the command action is connected to a form on the page, the schema of the command is used to validate form data. This is useful, when you have a form and two different commands connected to it. One command is used for intermediate save of incomplete data, so it has a schema with optional properties, while a second command is used to save the final data, hence it has a stricter schema and causes validation errors, when the user tries to submit incomplete data as final data." },
             data: {
               $ref: "#/definitions/prop-mapping",
               title: "Initial Data",
-              // @TODO: extract definition of JEXL Form context to constant
-              description: "Use property mapping to set the initial command form data when the command button is clicked. In the Jexl context you have access to: 'page', 'store', 'user', 'theme', 'routeParams'"
+              description: `Use property mapping to set the initial command form data when the command button is clicked.\n\n${FORM_JEXL_CTX}`
             }
           }
         }
@@ -1977,6 +1979,268 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         "contentEncoding": { "type": "string" }
       },
       "default": true
+    },
+    "ui-schema": {
+      title: "RJSF uiSchema",
+      description: "User-interface schema for [react-jsonschema-form (v5)](https://rjsf-team.github.io/react-jsonschema-form/docs/version-5.24.10/api-reference/uiSchema).",
+      type: "object",
+      additionalProperties: {
+        oneOf: [
+          { $ref: "#/definitions/ui-schema-field" },
+          true  // allow arbitrary extra properties (for nested sections, etc.)
+        ]
+      }
+    },
+    "ui-schema-field": {
+      type: "object",
+      description: "Schema for a single field or nested object in uiSchema",
+      additionalProperties: {
+        // keys like "ui:widget", "ui:options", etc.
+        oneOf: [
+          { $ref: "#/definitions/ui-option-value" },
+          { $ref: "#/definitions/ui-schema-field" },
+          true
+        ]
+      },
+      properties: {
+        "ui:widget": {
+          description: "Override widget for this field",
+          oneOf: [
+            { type: "string" },
+            { type: "object" }  // allow custom widget object
+          ]
+        },
+        "ui:field": {
+          description: "Override field component",
+          oneOf: [
+            { type: "string" },
+            { type: "object" }
+          ]
+        },
+        "ui:options": {
+          type: "object",
+          description: "Options passed to the widget",
+          additionalProperties: true
+        },
+        "ui:classNames": {
+          type: "string"
+        },
+        "ui:style": {
+          type: "object",
+          additionalProperties: true
+        },
+        "ui:autofocus": {
+          type: "boolean"
+        },
+        "ui:placeholder": {
+          type: ["string", "number"]
+        },
+        "ui:help": {
+          type: "string"
+        },
+        "ui:description": {
+          type: "string"
+        },
+        "ui:disabled": {
+          type: "boolean"
+        },
+        "ui:readonly": {
+          type: "boolean"
+        },
+        "ui:hidden": {
+          type: "boolean"
+        },
+        // anyOf / oneOf uiSchema customization
+        "anyOf": {
+          type: "array",
+          items: { $ref: "#/definitions/ui-schema-field" }
+        },
+        "oneOf": {
+          type: "array",
+          items: { $ref: "#/definitions/ui-schema-field" }
+        },
+        "ui:rootFieldId": {
+          type: "string"
+        }
+      },
+      allOf: [
+        {
+          if: {
+            properties: { "ui:widget": { const: "DataSelect" } },
+            required: ["ui:widget"]
+          },
+          then: {
+            properties: {
+              "ui:options": {
+                type: "object",
+                required: ["data", "label", "value"],
+                additionalProperties: false,
+                properties: {
+                  data: {
+                    $ref: "#/definitions/data-reference",
+                    description: "Query a list of entities to populate the select."
+                  },
+                  label: {
+                    $ref: "#/definitions/jexl-expr",
+                    description:
+                      "Jexl expression evaluated per option. Should resolve to the option label."
+                  },
+                  value: {
+                    $ref: "#/definitions/jexl-expr",
+                    description:
+                      "Jexl expression evaluated per option. Should resolve to the option value."
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ui-option-value": {
+      description: "Allowed value in ui:options or a ui:* key",
+      oneOf: [
+        { type: "boolean" },
+        { type: "string" },
+        { type: "number" },
+        { type: "object", additionalProperties: true },
+        { type: "array", items: true }
+      ]
+    },
+    "button-config": {
+      type: "object",
+      title: "Button Configuration",
+      description: "Configuration for rendering an action button in the UI.",
+      additionalProperties: false,
+      properties: {
+        variant: {
+          type: "string",
+          enum: ["text", "outlined", "contained"],
+          title: "Variant",
+          description: "MUI button variant."
+        },
+        color: {
+          type: "string",
+          enum: [
+            "inherit",
+            "primary",
+            "secondary",
+            "success",
+            "error",
+            "info",
+            "warning",
+            "default"
+          ],
+          title: "Color",
+          description: "MUI button color."
+        },
+        className: {
+          type: "string",
+          title: "CSS Class",
+          description: "Optional CSS class for styling the button."
+        },
+        disabled: {
+          type: "boolean",
+          title: "Disabled",
+          description: "If true, the button will be disabled."
+        },
+        style: {
+          $ref: "#/definitions/mui-sx-prop",
+          title: "Style",
+          description: "MUI sx style object applied to the button."
+        },
+        hidden: {
+          type: "boolean",
+          title: "Hidden",
+          description: "If true, the button will not be rendered."
+        },
+        icon: {
+          $ref: "#/definitions/mdi-icon",
+          title: "Icon",
+          description: "MDI Icon name or identifier for the start icon."
+        },
+        label: {
+          type: "string",
+          title: "Label",
+          description: "Text label of the button."
+        },
+        endIcon: {
+          $ref: "#/definitions/mdi-icon",
+          title: "End Icon",
+          description: "MDI Icon name or identifier for the end icon."
+        },
+        /* Expression-based overrides */
+        "variant:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Variant",
+          description: "Jexl expression resolving to a variant value."
+        },
+        "color:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Color",
+          description: "Jexl expression resolving to a color value."
+        },
+        "disabled:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Disabled",
+          description: "Jexl expression resolving to a boolean disabled value."
+        },
+        "style:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Style",
+          description: "Jexl expression resolving to a MUI sx style object."
+        },
+        "hidden:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Hidden",
+          description: "Jexl expression resolving to a boolean hidden value."
+        },
+        "icon:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Icon",
+          description: "Jexl expression resolving to an icon identifier."
+        },
+        "label:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Label",
+          description: "Jexl expression resolving to a string label."
+        },
+        "endIcon:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic End Icon",
+          description: "Jexl expression resolving to an icon identifier."
+        },
+
+        /* DataGrid specific options */
+        asGridActionsCellItem: {
+          type: "boolean",
+          title: "As Grid Actions Cell Item",
+          description:
+            "If true, the button is rendered inside a MUI DataGrid actions cell."
+        },
+        showInMenu: {
+          type: "boolean",
+          title: "Show in Menu",
+          description: "If true, the button will be displayed in the grid action menu."
+        }
+      },
+      examples: [
+        {
+          variant: "contained",
+          color: "primary",
+          label: "Save",
+          icon: "content-save",
+          "disabled:expr": "$> !form.valid",
+          asGridActionsCellItem: true
+        },
+        {
+          variant: "outlined",
+          label: "Delete",
+          color: "error",
+          endIcon: "delete",
+          showInMenu: true
+        }
+      ]
     }
   },
 };
