@@ -174,6 +174,12 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
                   $ref: "#/definitions/jexl-expr",
                   title: "Dynamic Page Props",
                   description: "A Jexl expression to dynamically define page props."
+                },
+                commands: {
+                  $ref: "#/definitions/page-commands"
+                },
+                components: {
+                  $ref: "#/definitions/page-components"
                 }
               }
             },
@@ -236,6 +242,12 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
                   $ref: "#/definitions/jexl-expr",
                   title: "Dynamic Page Props",
                   description: "A Jexl expression to dynamically define page props."
+                },
+                commands: {
+                  $ref: "#/definitions/page-commands"
+                },
+                components: {
+                  $ref: "#/definitions/page-components"
                 }
               }
             }
@@ -430,9 +442,9 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
     "page-props": {
       type: "object",
       title: "UI Page Props",
-      description: "Can be used for two different things:\n1. the property 'container' is passed to the [MUI Grid container](https://v5.mui.com/system/react-grid/) that represents the page in the UI, so you can for example customize the Grid layout or use the 'sx' property for custom styling within the container.\n\n2. All other properties are merged into route params. This allows you set fix values for route parameters that are used for querying data on the page.",
-      patternProperties: {
-        "^container$": {
+      description: "Can be used like this:\n1. the property 'container' is passed to the [MUI Grid container](https://v5.mui.com/system/react-grid/) that represents the page in the UI, so you can for example customize the Grid layout or use the 'sx' property for custom styling within the container.",
+      properties: {
+        container: {
           type: "object",
           title: "MUI Grid Container Props",
           description: "[MUI Grid container](https://v5.mui.com/system/react-grid/) passed to the react component of the page. Use it to customize the Grid layout of the page and/or customize styling using the 'sx' prop.",
@@ -444,11 +456,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
               }
             }
           ]
-        },
-        "^(?!container$).+": {
-          type: "string",
-          title: "Route Parameter Override",
-          description: "All non container properties are merged into route params. This allows you set fix values for route parameters that are used for querying data on the page."
         }
       }
     },
@@ -469,6 +476,145 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         ]
       }
     },
+    "page-components": {
+      title: "Page Components",
+      description: "Defines one or more view components to be rendered on a page. A component can be a shorthand string reference of a view name in th format: [Service].[ViewName] or a detailed object configuration.",
+      type: "array",
+      items: {
+        oneOf: [
+          {
+            type: "string",
+            title: "View Component Reference",
+            description: "Simple string shorthand referencing a view by name in the format: [Service].[ViewName]",
+            examples: ["Crm.CustomerList", "App.OrderDetails"]
+          },
+          {
+            type: "object",
+            title: "View Component Configuration",
+            additionalProperties: false,
+            required: ["view"],
+            properties: {
+              view: {
+                type: "string",
+                title: "View",
+                description: "Name of the registered view component. Format: [Service].[ViewName]"
+              },
+              hidden: {
+                type: "boolean",
+                title: "Hidden?",
+                description: "If true, the component will not be rendered."
+              },
+              "hidden:expr": {
+                $ref: "#/definitions/jexl-expr",
+                title: "Dynamic Hidden",
+                description: "Jexl expression that resolves to a boolean to dynamically hide the component."
+              },
+              props: {
+                type: "object",
+                title: "Props",
+                description: "Can be used for two different things:\n1. the property 'container' is passed to the [MUI Grid item](https://v5.mui.com/system/react-grid/) inside the page grid container that contains the rendered view, so you can for example customize the Grid layout or use the 'sx' property for custom styling within the grid item.\n\n2. All other properties are merged into route params. This allows you set fix values for route parameters that are used for querying data on the page.",
+                patternProperties: {
+                  "^container$": {
+                    type: "object",
+                    title: "MUI Grid Container Props",
+                    description: "[MUI Grid item](https://v5.mui.com/system/react-grid/) passed to the react Grid component that contains the rendered view. Use it to customize the Grid column layout and/or customize styling using the 'sx' prop.",
+                    examples: [
+                      {
+                        xs: 12,
+                        md: 6,
+                        sx: {
+                          border: "1px solid grey"
+                        }
+                      }
+                    ]
+                  },
+                  "^(?!container$).+": {
+                    type: "string",
+                    title: "Route Parameter Override",
+                    description: "All non container properties are merged into route params. This allows you set fixed values for route parameters that are used for querying the data of the view."
+                  }
+                }
+              },
+              "props:expr": {
+                $ref: "#/definitions/prop-mapping",
+                title: "Dynamic Props",
+                description: "Jexl-based property mapping for dynamic props."
+              },
+              uiSchema: {
+                $ref: "#/definitions/ui-schema",
+                title: "UI Schema",
+                description: "Optional react-jsonschema-form UI Schema configuration for components. All single object view components are based on react-jsonschema-form. If data is only displayed, a readonly rjsf form is rendered. The readonly from gets the class '.stateview' assigned, and the MUI theme contains customized styling for this class, so that form controls are hidden and the form looks like a readonly view."
+              },
+              type: {
+                type: "string",
+                title: "Component Type",
+                description: "Explicit component type.",
+                enum: ["auto", "state", "form", "table", "list"],
+                default: "auto"
+              },
+              "type:expr": {
+                $ref: "#/definitions/jexl-expr",
+                title: "Dynamic Component Type",
+                description: "Jexl expression resolving to a component type."
+              },
+              loadState: {
+                type: "boolean",
+                title: "Load State",
+                description: "If true, automatically load the component state."
+              },
+              data: {
+                $ref: "#/definitions/prop-mapping",
+                title: "Data",
+                description: "Data binding for the component."
+              }
+            },
+            examples: [
+              {
+                view: "App.ProjectDetails",
+                type: "form",
+                uiSchema: {
+                  "customer": {
+                    "ui:widget": "DataSelect",
+                    "ui:options": {
+                      data: "/App/Customers",
+                      label: "$> data.customerName",
+                      value: "$> data.customerId"
+                    }
+                  }
+                }
+              },
+              {
+                view: "App.OrderTable",
+                type: "table",
+                uiSchema: {
+                  "ui:table": {
+                    "columns": [
+                      {
+                        field: "orderId",
+                        headerName: "ID"
+                      },
+                      {
+                        field: "orderedAt",
+                        headerName: "Order Date"
+                      },
+                      {
+                        field: "shippedAt",
+                        headerName: "Shipping Date"
+                      }
+                    ]
+                  }
+                }
+              },
+              {
+                view: "App.ProjectState",
+                type: "state",
+                "hidden:expr": "$> !user|role('Admin')"
+              }
+            ]
+          }
+        ]
+      }
+    },
     "action": {
       title: "Action",
       description: "Defines an action triggered from the UI (button or form).",
@@ -479,15 +625,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         { $ref: "#/definitions/form-action" }
       ]
     },
-
-    "button-position": {
-      type: "string",
-      title: "Button Position",
-      description: "Defines the button placement in the UI.",
-      enum: ["top-right", "bottom-left", "bottom-center", "bottom-right"],
-      default: "top-right"
-    },
-
     "base-action": {
       type: "object",
       title: "Base Action",
@@ -662,6 +799,148 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
             }
           },
           scope: "global"
+        }
+      ]
+    },
+    "button-position": {
+      type: "string",
+      title: "Button Position",
+      description: "Defines the button placement in the UI.",
+      enum: ["top-right", "bottom-left", "bottom-center", "bottom-right"],
+      default: "top-right"
+    },
+    "button-config": {
+      type: "object",
+      title: "Button Configuration",
+      description: "Configuration for rendering an action button in the UI.",
+      additionalProperties: false,
+      properties: {
+        variant: {
+          type: "string",
+          enum: ["text", "outlined", "contained"],
+          title: "Variant",
+          description: "MUI button variant."
+        },
+        color: {
+          type: "string",
+          enum: [
+            "inherit",
+            "primary",
+            "secondary",
+            "success",
+            "error",
+            "info",
+            "warning",
+            "default"
+          ],
+          title: "Color",
+          description: "MUI button color."
+        },
+        className: {
+          type: "string",
+          title: "CSS Class",
+          description: "Optional CSS class for styling the button."
+        },
+        disabled: {
+          type: "boolean",
+          title: "Disabled",
+          description: "If true, the button will be disabled."
+        },
+        style: {
+          $ref: "#/definitions/mui-sx-prop",
+          title: "Style",
+          description: "MUI sx style object applied to the button."
+        },
+        hidden: {
+          type: "boolean",
+          title: "Hidden",
+          description: "If true, the button will not be rendered."
+        },
+        icon: {
+          $ref: "#/definitions/mdi-icon",
+          title: "Icon",
+          description: "MDI Icon name or identifier for the start icon."
+        },
+        label: {
+          type: "string",
+          title: "Label",
+          description: "Text label of the button."
+        },
+        endIcon: {
+          $ref: "#/definitions/mdi-icon",
+          title: "End Icon",
+          description: "MDI Icon name or identifier for the end icon."
+        },
+        /* Expression-based overrides */
+        "variant:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Variant",
+          description: "Jexl expression resolving to a variant value."
+        },
+        "color:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Color",
+          description: "Jexl expression resolving to a color value."
+        },
+        "disabled:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Disabled",
+          description: "Jexl expression resolving to a boolean disabled value."
+        },
+        "style:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Style",
+          description: "Jexl expression resolving to a MUI sx style object."
+        },
+        "hidden:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Hidden",
+          description: "Jexl expression resolving to a boolean hidden value."
+        },
+        "icon:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Icon",
+          description: "Jexl expression resolving to an icon identifier."
+        },
+        "label:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic Label",
+          description: "Jexl expression resolving to a string label."
+        },
+        "endIcon:expr": {
+          $ref: "#/definitions/jexl-expr",
+          title: "Dynamic End Icon",
+          description: "Jexl expression resolving to an icon identifier."
+        },
+
+        /* DataGrid specific options */
+        asGridActionsCellItem: {
+          type: "boolean",
+          title: "As Grid Actions Cell Item",
+          description:
+            "If true, the button is rendered inside a MUI DataGrid actions cell."
+        },
+        showInMenu: {
+          type: "boolean",
+          title: "Show in Menu",
+          description: "If true, the button will be displayed in the grid action menu."
+        }
+      },
+      examples: [
+        {
+          variant: "contained",
+          color: "primary",
+          label: "Save",
+          icon: "content-save",
+          "disabled:expr": "$> !form.valid",
+          asGridActionsCellItem: true
+        },
+        {
+          variant: "outlined",
+          label: "Delete",
+          color: "error",
+          endIcon: "delete",
+          showInMenu: true
         }
       ]
     },
@@ -2105,141 +2384,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         { type: "number" },
         { type: "object", additionalProperties: true },
         { type: "array", items: true }
-      ]
-    },
-    "button-config": {
-      type: "object",
-      title: "Button Configuration",
-      description: "Configuration for rendering an action button in the UI.",
-      additionalProperties: false,
-      properties: {
-        variant: {
-          type: "string",
-          enum: ["text", "outlined", "contained"],
-          title: "Variant",
-          description: "MUI button variant."
-        },
-        color: {
-          type: "string",
-          enum: [
-            "inherit",
-            "primary",
-            "secondary",
-            "success",
-            "error",
-            "info",
-            "warning",
-            "default"
-          ],
-          title: "Color",
-          description: "MUI button color."
-        },
-        className: {
-          type: "string",
-          title: "CSS Class",
-          description: "Optional CSS class for styling the button."
-        },
-        disabled: {
-          type: "boolean",
-          title: "Disabled",
-          description: "If true, the button will be disabled."
-        },
-        style: {
-          $ref: "#/definitions/mui-sx-prop",
-          title: "Style",
-          description: "MUI sx style object applied to the button."
-        },
-        hidden: {
-          type: "boolean",
-          title: "Hidden",
-          description: "If true, the button will not be rendered."
-        },
-        icon: {
-          $ref: "#/definitions/mdi-icon",
-          title: "Icon",
-          description: "MDI Icon name or identifier for the start icon."
-        },
-        label: {
-          type: "string",
-          title: "Label",
-          description: "Text label of the button."
-        },
-        endIcon: {
-          $ref: "#/definitions/mdi-icon",
-          title: "End Icon",
-          description: "MDI Icon name or identifier for the end icon."
-        },
-        /* Expression-based overrides */
-        "variant:expr": {
-          $ref: "#/definitions/jexl-expr",
-          title: "Dynamic Variant",
-          description: "Jexl expression resolving to a variant value."
-        },
-        "color:expr": {
-          $ref: "#/definitions/jexl-expr",
-          title: "Dynamic Color",
-          description: "Jexl expression resolving to a color value."
-        },
-        "disabled:expr": {
-          $ref: "#/definitions/jexl-expr",
-          title: "Dynamic Disabled",
-          description: "Jexl expression resolving to a boolean disabled value."
-        },
-        "style:expr": {
-          $ref: "#/definitions/jexl-expr",
-          title: "Dynamic Style",
-          description: "Jexl expression resolving to a MUI sx style object."
-        },
-        "hidden:expr": {
-          $ref: "#/definitions/jexl-expr",
-          title: "Dynamic Hidden",
-          description: "Jexl expression resolving to a boolean hidden value."
-        },
-        "icon:expr": {
-          $ref: "#/definitions/jexl-expr",
-          title: "Dynamic Icon",
-          description: "Jexl expression resolving to an icon identifier."
-        },
-        "label:expr": {
-          $ref: "#/definitions/jexl-expr",
-          title: "Dynamic Label",
-          description: "Jexl expression resolving to a string label."
-        },
-        "endIcon:expr": {
-          $ref: "#/definitions/jexl-expr",
-          title: "Dynamic End Icon",
-          description: "Jexl expression resolving to an icon identifier."
-        },
-
-        /* DataGrid specific options */
-        asGridActionsCellItem: {
-          type: "boolean",
-          title: "As Grid Actions Cell Item",
-          description:
-            "If true, the button is rendered inside a MUI DataGrid actions cell."
-        },
-        showInMenu: {
-          type: "boolean",
-          title: "Show in Menu",
-          description: "If true, the button will be displayed in the grid action menu."
-        }
-      },
-      examples: [
-        {
-          variant: "contained",
-          color: "primary",
-          label: "Save",
-          icon: "content-save",
-          "disabled:expr": "$> !form.valid",
-          asGridActionsCellItem: true
-        },
-        {
-          variant: "outlined",
-          label: "Delete",
-          color: "error",
-          endIcon: "delete",
-          showInMenu: true
-        }
       ]
     }
   },
