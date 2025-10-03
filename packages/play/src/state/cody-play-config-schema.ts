@@ -16,7 +16,7 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
       patternProperties: {
         "^[A-Z][A-Za-z0-9]+.[A-Z][A-Za-z0-9]+$": {
           title: "Page Configuration",
-          description: "Each page is a container for a collection of commands and views, accessible in the app via its route. Top",
+          description: "Each page is a container for a collection of commands and views, accessible in the app via its route.",
           oneOf: [
             {
               type: "object",
@@ -2137,8 +2137,8 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
     "lte-filter": {
       type: "object",
       required: ["lte"],
-      title: "Lower Than or Equal Filter",
-      description: "Matches all documents where prop is lower than or equal to the value returned by the Jexl expression.",
+      title: "Less Than or Equal Filter",
+      description: "Matches all documents where prop is less than or equal to the value returned by the Jexl expression.",
       properties: {
         lte: {
           type: "object",
@@ -2236,7 +2236,7 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
           type: "boolean",
           default: false,
           title: "Is optional lookup?",
-          description: "If lookup is otpional, the local select is included in resultset even if looked up information cannot be found."
+          description: "If lookup is optional, the local select is included in result set even if looked up information cannot be found."
         },
         on: {
           type: "object",
@@ -2622,7 +2622,37 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
       properties: {
         "ui:table": { $ref: "#/definitions/table-props" },
         table: { $ref: "#/definitions/table-props" }
-      }
+      },
+      examples: [
+        {
+          "ui:table": {
+            columns: [
+              "id",
+              { field: "name", headerName: "Customer Name", flex: 1 },
+              {
+                field: "status",
+                type: "singleSelect",
+                valueOptions: ["active", "inactive"]
+              },
+              {
+                field: "actions",
+                type: "actions",
+                actions: [
+                  {
+                    type: "command",
+                    description: "Edit Customer",
+                    button: { label: "Edit", icon: "pencil" },
+                    command: "Crm.EditCustomer"
+                  }
+                ]
+              }
+            ],
+            pageSize: 10,
+            density: "standard",
+            checkboxSelection: true
+          }
+        }
+      ]
     },
     "table-props": {
       type: "object",
@@ -2641,7 +2671,7 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         },
         density: {
           type: "string",
-          enum: ["comfortable", "standard", "compact"],
+          enum: ["standard", "comfortable", "compact"],
           description: "Table row density"
         },
         hideToolbar: { type: "boolean" },
@@ -2774,7 +2804,21 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
           type: "array",
           items: { $ref: "#/definitions/rule" }
         }
-      }
+      },
+      examples: [
+        // @TODO: improve example
+        {
+          where: {
+            rule: "condition",
+            if: "$> data.status === 'active'",
+            then: { assign: { variable: "value", value: "$> true" } }
+          },
+          orderBy: { prop: "createdAt", sort: "desc" },
+          rules: [
+            { rule: "always", then: { log: { msg: "Resolver is going to execute" } } }
+          ]
+        }
+      ]
     },
     "prooph-board-description": {
       type: "object",
