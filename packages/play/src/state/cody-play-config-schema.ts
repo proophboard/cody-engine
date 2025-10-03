@@ -254,6 +254,107 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
           ]
         }
       }
+    },
+    views: {
+      type: "object",
+      title: "Views",
+      description: "Registry of view components keyed by view name in the format: [Service].[ViewName]",
+      additionalProperties: {
+        type: "object",
+        required: ["information"],
+        properties: {
+          information: { $ref: "#/definitions/full-qualified-data-type-name", title: "Information", description: "The information (data type) this view is displaying." }
+        }
+      }
+    },
+
+    commands: {
+      type: "object",
+      title: "Commands",
+      description: "Registry of commands with runtime metadata",
+      additionalProperties: { $ref: "#/definitions/play-command-runtime-info" }
+    },
+
+    commandHandlers: {
+      type: "object",
+      title: "Command Handlers",
+      description: "Registry of command handlers mapping command name to rule sets",
+      additionalProperties: {
+        type: "array",
+        items: { $ref: "#/definitions/rule" }
+      }
+    },
+
+    queries: {
+      type: "object",
+      title: "Queries",
+      description: "Registry of queries with runtime metadata",
+      additionalProperties: { $ref: "#/definitions/play-query-runtime-info" }
+    },
+
+    resolvers: {
+      type: "object",
+      title: "Resolvers",
+      description: "Registry of resolvers mapping query name to resolver configs",
+      additionalProperties: { $ref: "#/definitions/resolve-config" }
+    },
+
+    types: {
+      type: "object",
+      title: "Types",
+      description: "Registry of information objects (value objects, state, queryables)",
+      additionalProperties: { $ref: "#/definitions/play-information-runtime-info" }
+    },
+
+    aggregates: {
+      type: "object",
+      title: "Aggregates",
+      description: "Registry of aggregates by name",
+      additionalProperties: { $ref: "#/definitions/aggregate-description" }
+    },
+
+    events: {
+      type: "object",
+      title: "Events",
+      description: "Registry of events with runtime metadata",
+      additionalProperties: { $ref: "#/definitions/play-event-runtime-info" }
+    },
+
+    eventReducers: {
+      type: "object",
+      title: "Event Reducers",
+      description: "Registry of reducers mapping aggregate names to event handlers",
+      additionalProperties: {
+        type: "object",
+        additionalProperties: {
+          type: "array",
+          items: { $ref: "#/definitions/rule" }
+        }
+      }
+    },
+
+    eventPolicies: {
+      type: "object",
+      title: "Event Policies",
+      description: "Registry of policies reacting to events",
+      additionalProperties: {
+        type: "object",
+        additionalProperties: { $ref: "#/definitions/play-event-policy-description" }
+      }
+    },
+
+    definitions: {
+      type: "object",
+      title: "Schema Definitions",
+      description: "Registry of reusable JSON Schema definitions",
+      additionalProperties: { $ref: "#/definitions/json-schema" }
+    },
+
+    services: {
+      type: "object",
+      title: "Services",
+      description: "Registry of services available to Cody Play runtime",
+      additionalProperties: { $ref: "#/definitions/play-service-rules" }
     }
   },
   definitions: {
@@ -2513,6 +2614,168 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         { type: "array", items: true }
       ]
     },
+    "table-ui-schema": {
+      type: "object",
+      title: "Table UI Schema",
+      description: "Defines the configuration for rendering a table view",
+      additionalProperties: false,
+      properties: {
+        "ui:table": { $ref: "#/definitions/table-props" },
+        table: { $ref: "#/definitions/table-props" }
+      }
+    },
+    "table-props": {
+      type: "object",
+      title: "Table Props",
+      description: "Properties for configuring a data table",
+      additionalProperties: false,
+      properties: {
+        columns: {
+          type: "array",
+          items: { $ref: "#/definitions/string-or-table-column-ui-schema" }
+        },
+        pageSize: { type: "integer", minimum: 1 },
+        pageSizeOptions: {
+          type: "array",
+          items: { type: "integer", minimum: 1 }
+        },
+        density: {
+          type: "string",
+          enum: ["comfortable", "standard", "compact"],
+          description: "Table row density"
+        },
+        hideToolbar: { type: "boolean" },
+        checkboxSelection: { type: "boolean" }
+      }
+    },
+    "string-or-table-column-ui-schema": {
+      oneOf: [
+        { type: "string" },
+        { $ref: "#/definitions/table-column-ui-schema" }
+      ]
+    },
+    "table-column-ui-schema": {
+      type: "object",
+      title: "Table Column UI Schema",
+      description: "Defines a single column configuration for a table",
+      additionalProperties: false,
+      required: ["field"],
+      properties: {
+        field: { type: "string" },
+        headerName: { type: "string" },
+        type: {
+          type: "string",
+          enum: ["string", "number", "date", "dateTime", "boolean", "singleSelect", "actions"]
+        },
+        flex: { oneOf: [{ type: "string" }, { type: "number" }] },
+        width: { oneOf: [{ type: "string" }, { type: "number" }] },
+        value: {
+          oneOf: [
+            { $ref: "#/definitions/jexl-expr" },
+            { type: "array", items: { $ref: "#/definitions/rule" } }
+          ]
+        },
+        valueOptions: {
+          type: "array",
+          items: {
+            oneOf: [
+              { type: "string" },
+              {
+                type: "object",
+                required: ["label", "value"],
+                properties: {
+                  label: { type: "string" },
+                  value: { type: "string" }
+                }
+              }
+            ]
+          }
+        },
+        pageLink: {
+          oneOf: [
+            { type: "string", title: "Page Name", description: "Page name is registered in the page registry" },
+            { $ref: "#/definitions/page-link-table-column" }
+          ]
+        },
+        action: { $ref: "#/definitions/action-table-column" },
+        actions: {
+          type: "array",
+          items: { $ref: "#/definitions/action-table-column" }
+        },
+        ref: { $ref: "#/definitions/ref-table-column" },
+        link: {
+          oneOf: [
+            { type: "string" },
+            { type: "array", items: { $ref: "#/definitions/rule" } }
+          ]
+        }
+      }
+    },
+    "ref-table-column": {
+      type: "object",
+      title: "Reference Table Column",
+      description: "Column that references data by value",
+      required: ["data", "value"],
+      properties: {
+        data: { $ref: "#/definitions/data-reference" },
+        value: {
+          oneOf: [
+            { $ref: "#/definitions/jexl-expr" },
+            { type: "array", items: { $ref: "#/definitions/rule" } }
+          ]
+        },
+        itemIdentifier: { type: "string" },
+        multiple: { type: "boolean" }
+      }
+    },
+
+    "page-link-table-column": {
+      type: "object",
+      title: "Page Link Table Column",
+      description: "Column that links to another page",
+      required: ["page", "mapping"],
+      properties: {
+        page: { type: "string", title: "Page Name", description: "Page name as registered in the pages registry" },
+        "page:expr": { $ref: "#/definitions/jexl-expr" },
+        mapping: {
+          type: "object",
+          additionalProperties: { type: "string" }
+        }
+      }
+    },
+    "action-table-column": {
+      allOf: [
+        { $ref: "#/definitions/button-action" },
+        {
+          type: "object",
+          properties: {
+            showInMenu: { type: "boolean" }
+          }
+        }
+      ]
+    },
+    "resolve-config": {
+      type: "object",
+      title: "Resolve Config",
+      description: "Configuration for resolving queries",
+      additionalProperties: false,
+      properties: {
+        where: { $ref: "#/definitions/rule" },
+        orderBy: {
+          oneOf: [
+            { $ref: "#/definitions/sort-order" },
+            {
+              type: "array",
+              items: { $ref: "#/definitions/sort-order" }
+            }
+          ]
+        },
+        rules: {
+          type: "array",
+          items: { $ref: "#/definitions/rule" }
+        }
+      }
+    },
     "prooph-board-description": {
       type: "object",
       title: "Prooph Board Description",
@@ -2720,7 +2983,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         }
       ]
     },
-    // @TODO: fill in details, ref qualified names, ...qq
     "stream-command-description": {
       allOf: [
         { $ref: "#/definitions/command-description" },
@@ -2939,7 +3201,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         }
       ]
     },
-
     "queryable-state-description": {
       allOf: [
         { $ref: "#/definitions/state-description" },
@@ -2953,7 +3214,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         }
       ]
     },
-
     "queryable-state-description-with-rules": {
       allOf: [
         { $ref: "#/definitions/queryable-state-description" },
@@ -2977,7 +3237,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         }
       ]
     },
-
     "queryable-not-stored-state-description": {
       allOf: [
         { $ref: "#/definitions/state-description" },
@@ -2988,7 +3247,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         }
       ]
     },
-
     "queryable-not-stored-state-list-description": {
       allOf: [
         { $ref: "#/definitions/state-list-description" },
@@ -3002,7 +3260,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         }
       ]
     },
-
     "queryable-state-list-description": {
       allOf: [
         { $ref: "#/definitions/state-list-description" },
@@ -3017,7 +3274,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         }
       ]
     },
-
     "queryable-list-description": {
       allOf: [
         { $ref: "#/definitions/value-object-description" },
@@ -3031,7 +3287,6 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         }
       ]
     },
-
     "stored-queryable-list-description": {
       allOf: [
         { $ref: "#/definitions/value-object-description" },
@@ -3045,6 +3300,114 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
           }
         }
       ]
-    }
+    },
+    "play-command-runtime-info": {
+      type: "object",
+      required: ["desc", "factory", "schema"],
+      properties: {
+        desc: {
+          oneOf: [
+            { $ref: "#/definitions/command-description" },
+            { $ref: "#/definitions/aggregate-command-description" },
+            { $ref: "#/definitions/pure-command-description" },
+            { $ref: "#/definitions/stream-command-description" }
+          ]
+        },
+        factory: {
+          type: "array",
+          items: { $ref: "#/definitions/rule" },
+          default: []
+        },
+        schema: { $ref: "#/definitions/json-schema" },
+        uiSchema: { $ref: "#/definitions/ui-schema" }
+      }
+    },
+    "play-query-runtime-info": {
+      type: "object",
+      required: ["desc", "factory", "schema"],
+      properties: {
+        desc: { $ref: "#/definitions/query-description" },
+        factory: {
+          type: "array",
+          items: { $ref: "#/definitions/rule" },
+          default: []
+        },
+        schema: { $ref: "#/definitions/json-schema" }
+      }
+    },
+    "play-information-runtime-info": {
+      type: "object",
+      required: ["desc", "factory", "schema"],
+      properties: {
+        desc: {
+          oneOf: [
+            { $ref: "#/definitions/value-object-description" },
+            { $ref: "#/definitions/state-description" },
+            { $ref: "#/definitions/state-list-description" },
+            { $ref: "#/definitions/queryable-value-object-description" },
+            { $ref: "#/definitions/queryable-state-description" },
+            { $ref: "#/definitions/queryable-state-list-description" }
+          ]
+        },
+        factory: {
+          type: "array",
+          items: { $ref: "#/definitions/rule" },
+          default: []
+        },
+        schema: { $ref: "#/definitions/json-schema" },
+        uiSchema: { oneOf: [
+            { $ref: "#/definitions/ui-schema" },
+            { $ref: "#/definitions/table-ui-schema" }
+          ]}
+      }
+    },
+    "play-event-runtime-info": {
+      type: "object",
+      required: ["desc", "factory", "schema"],
+      properties: {
+        desc: {
+          oneOf: [
+            { $ref: "#/definitions/event-description" },
+            { $ref: "#/definitions/aggregate-event-description" }
+          ]
+        },
+        factory: {
+          type: "array",
+          items: { $ref: "#/definitions/rule" },
+          default: []
+        },
+        schema: { $ref: "#/definitions/json-schema" }
+      }
+    },
+
+    "play-event-policy-description": {
+      allOf: [
+        { $ref: "#/definitions/policy-description" },
+        {
+          type: "object",
+          required: ["rules"],
+          properties: {
+            rules: {
+              type: "array",
+              items: { $ref: "#/definitions/rule" }
+            }
+          }
+        }
+      ]
+    },
+    "play-service-rules": {
+      type: "object",
+      required: ["rules"],
+      properties: {
+        rules: {
+          type: "array",
+          items: { $ref: "#/definitions/rule" }
+        },
+        async: {
+          type: "boolean",
+          default: false
+        }
+      }
+    },
   },
 };
