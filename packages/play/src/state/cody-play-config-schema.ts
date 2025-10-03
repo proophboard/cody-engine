@@ -977,6 +977,68 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         "Planner.Project.Task"
       ]
     },
+    "full-qualified-command-name": {
+      type: "string",
+      title: "Command Name",
+      description: "Full qualified command name in the format: [Service].[CommandName]. Command names are written in imperative mood to indicate that the user or another system wants to change information in the application.",
+      examples: [
+        "Book Room",
+        "Buy Car",
+        "Register User",
+        "Finish Project"
+      ]
+    },
+    "full-qualified-aggregate-name": {
+      type: "string",
+      title: "Aggregate Name",
+      description: "Aggregate name in the format: [Service].[AggregateName]. An event-sourced aggregate is usually a process or workflow of multiple steps like a booking procedure, cart checkout, parcel delivery. It groups a set of command-event(s)-pairs, where each pair represents a step in the workflow. The aggregate is versioned and no two commands can record different events for the same aggregate in parallel. One of them will fail, due to optimistic locking enforced by the event store given the aggregate name, aggregate id, and current aggregate version."
+    },
+    "full-qualified-query-name": {
+      type: "string",
+      title: "Query Name",
+      description: "Full qualified query name in the format: [Service].Get[DataType]",
+      examples: [
+        "Crm.GetCustomers",
+        "OnlineShop.GetOrderList",
+        "App.GetProjectDetails"
+      ]
+    },
+    "full-qualified-event-name": {
+      type: "string",
+      title: "Event Name",
+      description: "Full qualified event name. In case of an aggregate event the format is: [Service].[AggregateName].[EventName], otherwise the format is: [Service].[EventName]. Events are business facts that have happened, hence they are written in past tense.",
+      examples: [
+        "Room Booked",
+        "Order Paid",
+        "User Registered",
+        "Project Finished"
+      ]
+    },
+    "full-qualified-policy-name": {
+      type: "string",
+      title: "Policy Name",
+      description: "Policies are automations that react on events to either trigger new command(s), call an external service, or project information recorded by events into read models. The policy name format is: [Service].[PolicyName]. You can apply naming conventions:\n\nCommand trigger policy: [Service].Auto[CommandName]On[EventName]\n\nExternal Service call policy: [Service].Call[ExternalService]On[EventName]\n\nEvent Projection: [Service].[DataType]Projection"
+    },
+    "full-qualified-data-type-name": {
+      type: "string",
+      title: "Data Type Name",
+      description: "Full qualified data type name in the format: [Service].[Namespace].[DataType]",
+      examples: [
+        "Crm.Customers.CustomerSummary",
+        "OnlineShop.Payments.Invoice",
+        "App.Common.Address"
+      ]
+    },
+    "collection-name": {
+      type: "string",
+      title: "Collection Name",
+      description: "Cody Play stores read model information in documents. A set of similar documents is stored in a collection. The naming convention is: [data_type]_collection"
+    },
+    "stream-name": {
+      type: "string",
+      title: "Stream Name",
+      description: "Events are recorded in streams within the event store. The default stream is 'write_model_stream', but aggregates can define their own steams. Naming convention is: [aggregate_name]_stream"
+    },
     "jexl-expr": {
       type: "string",
       pattern: "^\$> .+$",
@@ -2101,6 +2163,67 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         }
       }
     },
+    "evt-match-operator": {
+      type: "string",
+      title: "Match Operator",
+      enum: ["===", ">", ">=", "<", "<="]
+    },
+    "evt-prop": {
+      type: "string",
+      title: "Event Property",
+      enum: ["uuid", "payload", "name", "meta", "createdAt"],
+      default: "meta"
+    },
+    "evt-matcher-value": {
+      title: "Value",
+      oneOf: [
+        { type: "string" },
+        { type: "number" },
+        { type: "boolean" }
+      ]
+    },
+    "evt-match-object": {
+      type: "object",
+      title: "Match Object",
+      required: ["op", "val"],
+      additionalProperties: false,
+      properties: {
+        op: { $ref: "#/definitions/evt-match-operator" },
+        val: {
+          oneOf: [
+            { $ref: "#/definitions/evt-matcher-value" },
+            {
+              type: "array",
+              items: { $ref: "#/definitions/evt-matcher-value" }
+            }
+          ]
+        },
+        evtProp: { $ref: "#/definitions/evt-prop" }
+      }
+    },
+    "event-matcher": {
+      type: "object",
+      title: "Event Matcher",
+      description: "An event matcher maps metadata keys to either primitive values or structured match objects.",
+      additionalProperties: {
+        oneOf: [
+          { $ref: "#/definitions/evt-value" },
+          {
+            type: "array",
+            items: { $ref: "#/definitions/evt-value" }
+          },
+          { $ref: "#/definitions/evt-match-object" }
+        ]
+      },
+      examples: [
+        {
+          "$eventId": "123e4567-e89b-12d3-a456-426614174000",
+          "$eventName": { "op": "===", "val": "CustomerRegistered", "evtProp": "name" },
+          "$createdAt": { "op": ">=", "val": "2024-01-01T00:00:00Z", "evtProp": "createdAt" },
+          "customKey": { "op": "===", "val": true, "evtProp": "meta" }
+        }
+      ]
+    },
     "json-schema7": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "$id": "http://json-schema.org/draft-07/schema#",
@@ -2341,6 +2464,10 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         "ui:rootFieldId": {
           type: "string"
         }
+        // @TODO: describe ui:button
+        // @TODO: describe ui:actions
+        // @TODO: describe ui:table
+        // @TODO: describe ui:list
       },
       allOf: [
         {
@@ -2384,6 +2511,539 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
         { type: "number" },
         { type: "object", additionalProperties: true },
         { type: "array", items: true }
+      ]
+    },
+    "prooph-board-description": {
+      type: "object",
+      title: "Prooph Board Description",
+      description: "Base properties shared by all Prooph Board elements. You don't need to take care of the properties yourself. This information is assigned by prooph board, or Vibe Cody whenever a new element is added to the configuration.",
+      required: [
+        "_pbBoardId", "_pbCardId", "_pbCreatedBy", "_pbCreatedAt",
+        "_pbLastUpdatedBy", "_pbLastUpdatedAt", "_pbVersion", "_pbLink"
+      ],
+      properties: {
+        _pbBoardId: { type: "string" },
+        _pbCardId: { type: "string" },
+        _pbCreatedBy: { type: "string" },
+        _pbCreatedAt: { type: "string", format: "date-time" },
+        _pbLastUpdatedBy: { type: "string" },
+        _pbLastUpdatedAt: { type: "string", format: "date-time" },
+        _pbVersion: { type: "integer" },
+        _pbLink: { type: "string", format: "uri" }
+      }
+    },
+    "dependency": {
+      type: "object",
+      title: "Dependency",
+      // @TODO: convert to oneOf for each type to describe different options for query and events
+      oneOf: [
+        {
+          title: "Query Dependency",
+          type: "object",
+          required: ["type"],
+          properties: {
+            type: {
+              const: "query"
+            },
+            options: {
+              type: "object",
+              title: "Options",
+              properties: {
+                query: {
+                  $ref: "#/definitions/prop-mapping",
+                  title: "Query Payload",
+                  description: "By default, query payload is derived from the main command/query/event payload. The query option lets you set query payload explicitly using property mapping. In the mapping Jexl context you have access to the main command/query/event, the meta of the message that includes the current user, and all loaded dependencies that are configured before the current one.",
+                },
+                mapping: {
+                  type: "object",
+                  title: "Key Mapping",
+                  description: "Define a mapping for query properties. Let's say the dependency query expects a property called 'customerId', but the main command has a property called 'customer'. In that case, the query payload cannot be derived from the command payload. A mapping like this: `{ \"customerId\": \"customer\" } resolves the mapping mismatch.`",
+                  additionalProperties: {
+                    type: "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          title: "Service Dependency",
+          required: ["type"],
+          properties: {
+            type: { const: "service"},
+            options: {
+              type: "object",
+              description: "Options passed to the service factory.",
+              additionalProperties: true
+            }
+          }
+        },
+        {
+          title: "Events Dependency",
+          description: "Load events from the event store to check business rules directly against recorded events.",
+          required: ["type", "options"],
+          properties: {
+            type: { const: "events"},
+            options: {
+              type: "object",
+              title: "Options",
+              required: ["match"],
+              properties: {
+                stream: {
+                  $ref: "#/definitions/stream-name"
+                },
+                match: {
+                  $ref: "#/definitions/event-matcher"
+                },
+                limit: {
+                  type: "integer",
+                  title: "Limit",
+                  description: "Limit the number of loaded events"
+                },
+                latestFirst: {
+                  type: "boolean",
+                  description: "Query events in reverse order.",
+                  default: false
+                }
+              }
+            }
+          }
+        }
+      ],
+      properties: {
+        type: { enum: ["query", "service", "events"], description: "Depending on the type, the dependency registry name is interpreted differently:\n\ntype = query: dependency registry name is expected to be the full qualified query name\n\ntype = service: dependency registry name is expected to be the service name used in the services registry\n\ntype = events: dependency registry name can be anything" },
+        options: {
+          type: "object",
+          description: "Options for the dependency.",
+          additionalProperties: true
+        },
+        alias: { type: "string", title: "Alias", description: "By default, the dependency becomes available in the Jexl rules context under its dependency registry name. The alias name makes the dependency available under the alias name." },
+        if: { $ref: "#/definitions/jexl-expr", description: "Optional Jexl expression to conditionally enable the dependency. The Jexl expression context provides:\n\n- command (if dependency is for business rules) | query (if dependency is for query resolver) | event (if dependency is for policy)\n\n- meta: metadata of the message that also contains current user\n\n- all dependencies that are defined before the current dependency" }
+      },
+      required: ["type"]
+    },
+    "dependency-registry": {
+      type: "object",
+      title: "Dependency Registry",
+      additionalProperties: {
+        description: "Depending on the type, the dependency registry name (object key) is interpreted differently:\n\n- type = query: dependency registry name is expected to be the full qualified query name\n\n- type = service: dependency registry name is expected to be the service name used in the services registry\n\n- type = events: dependency registry name can be anything.",
+        oneOf: [
+          { $ref: "#/definitions/dependency" },
+          {
+            // @TODO: provide description when array is useful: same query multiple times with different query params ...
+            type: "array",
+            items: { $ref: "#/definitions/dependency" }
+          }
+        ]
+      }
+    },
+    "aggregate-description": {
+      allOf: [
+        { $ref: "#/definitions/prooph-board-description" },
+        {
+          type: "object",
+          title: "Aggregate Description",
+          required: ["name", "identifier", "collection", "state"],
+          properties: {
+            name: {
+              $ref: "#/definitions/full-qualified-aggregate-name"
+            },
+            identifier: {
+              type: "string",
+              title: "Identifier",
+              description: "Property name of aggregate identifier. Each command handled by the aggregate and each event recorded by the aggregate should include the identifier in the payload. The aggregate state should have the same identifier."
+            },
+            collection: { $ref: "#/definitions/collection-name" },
+            stream: { $ref: "#/definitions/stream-name" },
+            state: { $ref: "#/definitions/full-qualified-data-type-name", title: "State", description: "Aggregate state data type name (full-qualified-data-type-name)" }
+          }
+        }
+      ]
+    },
+    "command-description": {
+      allOf: [
+        { $ref: "#/definitions/prooph-board-description" },
+        {
+          type: "object",
+          title: "Command Description",
+          required: ["name", "aggregateCommand"],
+          properties: {
+            name: { $ref: "#/definitions/full-qualified-command-name" },
+            aggregateCommand: { type: "boolean", title: "Aggregate Command?", description: "Is this command handled by an aggregate?" },
+            dependencies: { $ref: "#/definitions/dependency-registry" },
+            streamCommand: { type: "boolean", title: "Stream Command?", description: "Does this command record events for a specific stream id? Stream ids can be used for optimistic locking. No two commands recording events for the same stream id, can record in parallel. One of them will fail, due to number of events in the stream checked by the event store." }
+          }
+        }
+      ]
+    },
+    "aggregate-command-description": {
+      allOf: [
+        { $ref: "#/definitions/command-description" },
+        {
+          type: "object",
+          title: "Aggregate Command Description",
+          description: "Aggregate command handlers get the current aggregate 'state' injected in the business rules to check them against the state. Aggregates are versioned so the system does not allow concurrent writes for an aggregate",
+          required: ["newAggregate", "aggregateName", "aggregateIdentifier"],
+          properties: {
+            newAggregate: {
+              type: "boolean",
+              title: "Is a new Aggregate created?",
+              description: "A command handler that kicks off a new aggregate process, does not get the current aggregate state injected."
+            },
+            aggregateName: {
+              $ref: "#/definitions/full-qualified-aggregate-name"
+            },
+            aggregateIdentifier: {
+              type: "string",
+              title: "Aggregate Identifier",
+              description: "Which property in the command payload identifies the aggregate?"
+            },
+            persistState: {
+              type: "boolean",
+              title: "Persist State?",
+              description: "If set to false, aggregate state is not persisted in a collection along with recording events. By default, aggregate state and events are persisted within the same transaction.",
+              default: true
+            },
+            deleteState: {
+              type: "boolean",
+              title: "Delete Aggregate State?",
+              description: "Should the aggregate state be deleted from the collection when this command is handled successfully?",
+              default: false
+            },
+            deleteHistory: {
+              type: "boolean",
+              title: "Delete History?",
+              description: "Should all aggregate events be deleted from the event stream when this command is handled successfully? That option should only be set to true, when regulations like GDPR require it, or you're cleaning up the event stream and move archived events to a cold storage.",
+              default: false
+            }
+          }
+        }
+      ]
+    },
+    // @TODO: fill in details, ref qualified names, ...qq
+    "stream-command-description": {
+      allOf: [
+        { $ref: "#/definitions/command-description" },
+        {
+          type: "object",
+          title: "Stream Command Description",
+          description: "Optimistic locking can be freely defined through a dynamic stream id. Let's say you want to avoid concurrent updates on project tasks. You can compose a stream id like this: $> 'prj_' + command.projectId + '_task_' + command.taskId\n\n Define the same stream id for all commands that affect a project task and optimistic locking will raise an exception when a concurrent write occurs.",
+          required: ["streamIdExpr"],
+          properties: {
+            streamIdExpr: { $ref: "#/definitions/jexl-expr", title: "Stream-ID Expression", description: "A Jexl Expression that should resolve to a stream id. You have access to 'command' and 'meta' in the expression context. The stream id is used for optimistic locking. No two can commands can record events for the same stream id in parallel. One of them will fail with a version conflict." },
+            streamName: { $ref: "#/definitions/stream-name" },
+            publicStream: { $ref: "#/definitions/stream-name", title: "Public Stream", description: "Events marked as pubic will be added to the public stream." }
+          }
+        }
+      ]
+    },
+    "pure-command-description": {
+      allOf: [
+        { $ref: "#/definitions/command-description" },
+        {
+          type: "object",
+          title: "Pure Command Description",
+          description: "No optimistic locking applies. Events are recorded as they arrive. Pure commands can be used in all cases, where only one user works with the information changed through the command, or where concurrent updates are not critical and the system and users can deal with the 'last-write-wins' approach.",
+          properties: {
+            streamName: { $ref: "#/definitions/stream-name" },
+            publicStream: { $ref: "#/definitions/stream-name", title: "Public Stream", description: "Events marked as pubic will be added to the public stream." }
+          }
+        }
+      ]
+    },
+    "event-description": {
+      allOf: [
+        { $ref: "#/definitions/prooph-board-description" },
+        {
+          type: "object",
+          title: "Event Description",
+          required: ["name", "aggregateEvent", "public"],
+          properties: {
+            name: { $ref: "#/definitions/full-qualified-event-name" },
+            aggregateEvent: { type: "boolean", title: "Belongs to an Aggregate?" },
+            public: { type: "boolean", title: "Is it a public Event?" }
+          }
+        }
+      ]
+    },
+    "aggregate-event-description": {
+      allOf: [
+        { $ref: "#/definitions/event-description" },
+        {
+          type: "object",
+          title: "Aggregate Event Description",
+          required: ["aggregateName", "aggregateIdentifier", "aggregateState"],
+          properties: {
+            identifier: {
+              type: "string",
+              title: "Identifier",
+              description: "Property name of aggregate identifier. Each command handled by the aggregate and each event recorded by the aggregate should include the identifier in the payload. The aggregate state should have the same identifier."
+            },
+            aggregateName: { $ref: "#/definitions/full-qualified-aggregate-name" },
+            aggregateIdentifier: {
+              type: "string",
+              title: "Aggregate Identifier",
+              description: "Property name of aggregate identifier. Each event recorded by the aggregate should include the identifier in the payload. The aggregate state should have the same identifier."
+            },
+            aggregateState: { $ref: "#/definitions/full-qualified-data-type-name", title: "Aggregate State", description: "Aggregate state data type name (full-qualified-data-type-name)" }
+          }
+        }
+      ]
+    },
+    "query-description": {
+      allOf: [
+        { $ref: "#/definitions/prooph-board-description" },
+        {
+          type: "object",
+          title: "Query Description",
+          required: ["name", "returnType"],
+          properties: {
+            name: { $ref: "#/definitions/full-qualified-query-name" },
+            returnType: { $ref: "#/definitions/full-qualified-data-type-name", title: "Return Type" },
+            dependencies: { $ref: "#/definitions/dependency-registry" }
+          }
+        }
+      ]
+    },
+    "policy-description": {
+      allOf: [
+        { $ref: "#/definitions/prooph-board-description" },
+        {
+          type: "object",
+          title: "Policy Description",
+          required: ["name"],
+          properties: {
+            name: { $ref: "#/definitions/full-qualified-policy-name" },
+            dependencies: { $ref: "#/definitions/dependency-registry" },
+            live: { type: "boolean", title: "Live?", description: "Use this flag in combination with projection to include the projection run in the same database transaction as recording the event(s). This avoids eventual consistency and allows you to use information of live projections in business rules, because you can be certain that the information is up-to-date. The downside of live projections is slower write operations and too many information changed within one transaction which increases the chance for conflicts.\n\nIf you disable live mode for a projection later, make sure to refactor the business rules that use information from that projection. You can for example load events directly from the event store, or use an aggregate that always has up-to-date state/information connected to it." },
+            projection: { type: "string", title: "Projection Name", description: "Policies are reactions to events. They either call a service, trigger a new command or a policy is part of a projection. In the latter case, set the projection name where this policy belongs to. Naming convention is: [DataType]Projection" }
+          }
+        }
+      ]
+    },
+    "value-object-description-flags": {
+      type: "object",
+      title: "Value Object Description Flags",
+      required: ["isList", "hasIdentifier", "isQueryable"],
+      properties: {
+        isList: { type: "boolean", title: "Is a List?" },
+        hasIdentifier: { type: "boolean", title: "Has an Identifier?" },
+        isQueryable: { type: "boolean", title: "Is Queryable?" },
+        isNotStored: { type: "boolean", title: "Is Not Stored in the database?", default: false },
+        resolve: {
+          type: "object",
+          title: "Query Resolver Rules",
+          description: "If the data type is queryable, define rules how the 'query' is resolved to the query return type, which is the data type defined in this description. Resolve rules have access to 'query', 'meta', query dependencies, and should use find* rules. The data to return should be assigned to the variable 'information' in the Jexl resolve rules context.",
+          properties: {
+            rules: {
+              type: "array",
+              items: {
+                $ref: "#/definitions/rule"
+              }
+            }
+          },
+          examples: [
+            {
+              rules: [
+                {
+                  rule: "always",
+                  then: {
+                    find: {
+                      information: "/Crm/Customers",
+                      filter: {
+                        any: true
+                      },
+                      variable: "information"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    "value-object-description": {
+      allOf: [
+        { $ref: "#/definitions/prooph-board-description" },
+        { $ref: "#/definitions/value-object-description-flags" },
+        {
+          type: "object",
+          title: "Value Object Description",
+          required: ["name"],
+          properties: {
+            name: {$ref: "#/definitions/full-qualified-data-type-name"},
+            projection: { type: "string", title: "Projection Name", description: "A unique projection name. Naming convention is: [DataType]Projection" }
+          }
+        }
+      ]
+    },
+    "queryable-description": {
+      allOf: [
+        { $ref: "#/definitions/value-object-description" },
+        {
+          type: "object",
+          title: "Queryable Description",
+          required: ["query"],
+          properties: {
+            query: { $ref: "#/definitions/full-qualified-query-name" },
+          }
+        }
+      ]
+    },
+    "queryable-value-object-description": {
+      allOf: [
+        { $ref: "#/definitions/queryable-description" },
+        {
+          type: "object",
+          required: ["collection"],
+          properties: {
+            collection: { $ref: "#/definitions/collection-name" }
+          }
+        }
+      ]
+    },
+    "state-description": {
+      allOf: [
+        { $ref: "#/definitions/value-object-description" },
+        {
+          type: "object",
+          required: ["identifier"],
+          properties: {
+            identifier: { type: "string", title: "Identifier", description: "Property name of the identifier" }
+          }
+        }
+      ]
+    },
+    "list-description": {
+      allOf: [
+        { $ref: "#/definitions/value-object-description" },
+        {
+          type: "object",
+          required: ["itemType"],
+          properties: {
+            itemType: { $ref: "#/definitions/full-qualified-data-type-name", title: "Item Type" }
+          }
+        }
+      ]
+    },
+    "state-list-description": {
+      allOf: [
+        { $ref: "#/definitions/value-object-description" },
+        {
+          type: "object",
+          required: ["itemIdentifier"],
+          properties: {
+            itemIdentifier: { type: "string", title: "Item Identifier", description: "Name of the property that identifies a state item." }
+          }
+        }
+      ]
+    },
+
+    "queryable-state-description": {
+      allOf: [
+        { $ref: "#/definitions/state-description" },
+        {
+          type: "object",
+          required: ["query", "collection"],
+          properties: {
+            query: { $ref: "#/definitions/full-qualified-query-name" },
+            collection: { $ref: "#/definitions/collection-name" }
+          }
+        }
+      ]
+    },
+
+    "queryable-state-description-with-rules": {
+      allOf: [
+        { $ref: "#/definitions/queryable-state-description" },
+        {
+          type: "object",
+          required: ["resolve"],
+          properties: {
+            resolve: {
+              type: "object",
+              required: ["rules"],
+              properties: {
+                rules: {
+                  type: "array",
+                  items: {
+                    $ref: "#/definitions/rule"
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+
+    "queryable-not-stored-state-description": {
+      allOf: [
+        { $ref: "#/definitions/state-description" },
+        {
+          type: "object",
+          required: ["query"],
+          properties: { query: { $ref: "#/definitions/full-qualified-query-name" } }
+        }
+      ]
+    },
+
+    "queryable-not-stored-state-list-description": {
+      allOf: [
+        { $ref: "#/definitions/state-list-description" },
+        {
+          type: "object",
+          required: ["query", "itemType"],
+          properties: {
+            query: { $ref: "#/definitions/full-qualified-query-name" },
+            itemType: { $ref: "#/definitions/full-qualified-data-type-name", title: "Item Type" }
+          }
+        }
+      ]
+    },
+
+    "queryable-state-list-description": {
+      allOf: [
+        { $ref: "#/definitions/state-list-description" },
+        {
+          type: "object",
+          required: ["query", "collection", "itemType"],
+          properties: {
+            query: { $ref: "#/definitions/full-qualified-query-name" },
+            collection: { $ref: "#/definitions/collection-name" },
+            itemType: { $ref: "#/definitions/full-qualified-data-type-name", title: "Item Type" }
+          }
+        }
+      ]
+    },
+
+    "queryable-list-description": {
+      allOf: [
+        { $ref: "#/definitions/value-object-description" },
+        {
+          type: "object",
+          required: ["query", "itemType"],
+          properties: {
+            query: { $ref: "#/definitions/full-qualified-query-name" },
+            itemType: { $ref: "#/definitions/full-qualified-data-type-name", title: "Item Type" }
+          }
+        }
+      ]
+    },
+
+    "stored-queryable-list-description": {
+      allOf: [
+        { $ref: "#/definitions/value-object-description" },
+        {
+          type: "object",
+          required: ["query", "itemType", "collection"],
+          properties: {
+            query: { $ref: "#/definitions/full-qualified-query-name" },
+            itemType: { $ref: "#/definitions/full-qualified-data-type-name", title: "Item Type" },
+            collection: { $ref: "#/definitions/collection-name" }
+          }
+        }
       ]
     }
   },
