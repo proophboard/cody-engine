@@ -5,7 +5,8 @@ const FORM_JEXL_CTX = "In the Jexl context you have access to:\n\n'data' -> the 
 export const CodyPlayConfigSchema: JSONSchema7 = {
   title: "Cody Play Config",
   type: "object",
-  description: "Runtime configuration for a Cody Play powered app",
+  description: "Runtime configuration for a Cody Play powered app.\n\n⚠️ Important: Factory rules across all elements are used exclusively for pre-validation data preparation (upcasting)." +
+    "They must never include business logic, event recording, or side effects. Business rules belong in commandHandlers, automations in eventPolicies, and query logic (find* rules) in resolvers.",
   additionalProperties: false,
   required: ["pages"],
   properties: {
@@ -275,14 +276,33 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
       additionalProperties: { $ref: "#/definitions/play-command-runtime-info" }
     },
 
-    commandHandlers: {
+    "commandHandlers": {
       type: "object",
       title: "Command Handlers",
-      description: "Registry of command handlers mapping command name to rule sets",
+      description:
+        "Registry of command handlers, mapping each command name to its list of business rules. \
+        These rules define domain behavior such as event recording, validations, and side effects. \
+        Unlike command factory rules, handler rules are executed *after validation* and \
+        represent the core business logic of the system.",
       additionalProperties: {
         type: "array",
         items: { $ref: "#/definitions/rule" }
-      }
+      },
+      examples: [
+        {
+          "Crm.AddClient": [
+            {
+              rule: "always",
+              then: {
+                record: {
+                  event: "Crm.ClientAdded",
+                  mapping: "$> command"
+                }
+              }
+            }
+          ]
+        }
+      ]
     },
 
     queries: {
@@ -3357,13 +3377,31 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
             { $ref: "#/definitions/stream-command-description" }
           ]
         },
+        schema: { $ref: "#/definitions/json-schema" },
+        uiSchema: { $ref: "#/definitions/ui-schema" },
         factory: {
           type: "array",
+          title: "Factory Rules",
+          description:
+            "Factory rules are **NOT** business rules. They run *before validation* to prepare or upcast the raw payload so it conforms to the latest schema version. \
+Use these rules to set default values, migrate renamed fields, or initialize new properties. \
+They must never record events, trigger commands, or interact with external systems. \
+Forbidden rule keywords: 'record', 'trigger', 'call', 'find*'.",
           items: { $ref: "#/definitions/rule" },
-          default: []
-        },
-        schema: { $ref: "#/definitions/json-schema" },
-        uiSchema: { $ref: "#/definitions/ui-schema" }
+          default: [],
+          examples: [
+            {
+              rule: "condition",
+              if: "$> !command.tags",
+              then: {
+                assign: {
+                  variable: "command.tags",
+                  value: "$> []"
+                }
+              }
+            }
+          ]
+        }
       }
     },
     "play-query-runtime-info": {
@@ -3371,12 +3409,29 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
       required: ["desc", "factory", "schema"],
       properties: {
         desc: { $ref: "#/definitions/query-description" },
+        schema: { $ref: "#/definitions/json-schema" },
         factory: {
           type: "array",
+          title: "Query Factory Rules",
+          description:
+            "Factory rules for queries are used to adapt input parameters before validation or execution. \
+    They ensure backward compatibility when query schemas evolve. \
+    Factory rules must not contain side effects or interact with aggregates, projections, or services.",
           items: { $ref: "#/definitions/rule" },
-          default: []
-        },
-        schema: { $ref: "#/definitions/json-schema" }
+          default: [],
+          examples: [
+            {
+              rule: "condition",
+              if: "$> !query.pageSize",
+              then: {
+                assign: {
+                  variable: "query.pageSize",
+                  value: "$> 25"
+                }
+              }
+            }
+          ]
+        }
       }
     },
     "play-information-runtime-info": {
@@ -3393,16 +3448,31 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
             { $ref: "#/definitions/queryable-state-list-description" }
           ]
         },
+        schema: { $ref: "#/definitions/json-schema" },
+        uiSchema: { oneOf: [{ $ref: "#/definitions/ui-schema" }, { $ref: "#/definitions/table-ui-schema" }] },
         factory: {
           type: "array",
+          title: "Information Factory Rules",
+          description:
+            "Factory rules prepare or migrate data before validation against the information schema. \
+    They are used for projection or state upcasting and must not include domain logic. \
+    Examples: initialize missing properties, rename keys, or set default values for new fields. \
+    Forbidden actions: 'record', 'trigger', 'call', 'find*'.",
           items: { $ref: "#/definitions/rule" },
-          default: []
-        },
-        schema: { $ref: "#/definitions/json-schema" },
-        uiSchema: { oneOf: [
-            { $ref: "#/definitions/ui-schema" },
-            { $ref: "#/definitions/table-ui-schema" }
-          ]}
+          default: [],
+          examples: [
+            {
+              rule: "condition",
+              if: "$> !data.projects",
+              then: {
+                assign: {
+                  variable: "data.projects",
+                  value: "$> []"
+                }
+              }
+            }
+          ]
+        }
       }
     },
     "play-event-runtime-info": {
@@ -3415,12 +3485,30 @@ export const CodyPlayConfigSchema: JSONSchema7 = {
             { $ref: "#/definitions/aggregate-event-description" }
           ]
         },
+        schema: { $ref: "#/definitions/json-schema" },
         factory: {
           type: "array",
+          title: "Event Factory Rules",
+          description:
+            "Executed *before validation* when loading or publishing events. \
+    Factory rules adapt or enrich legacy event payloads to match the latest event schema. \
+    They are strictly used for schema compatibility and **must not** perform business logic, emit new events, or trigger commands. \
+    Typical use case: add new required fields introduced in later schema versions.",
           items: { $ref: "#/definitions/rule" },
-          default: []
-        },
-        schema: { $ref: "#/definitions/json-schema" }
+          default: [],
+          examples: [
+            {
+              rule: "condition",
+              if: "$> !event.newField",
+              then: {
+                assign: {
+                  variable: "event.newField",
+                  value: "$> ''"
+                }
+              }
+            }
+          ]
+        }
       }
     },
 
