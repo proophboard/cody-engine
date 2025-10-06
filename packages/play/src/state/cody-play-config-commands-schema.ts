@@ -2,383 +2,252 @@ import {JSONSchema7} from "json-schema";
 
 const FORM_JEXL_CTX = "In the Jexl context you have access to:\n\n'data' -> the form data,\n\n'page' -> page registry with access to loaded view components,\n\n'store' -> global store,\n\n'user' -> current user,\n\n'theme' -> MUI theme,\n\n'routeParams' -> current route params,\n\n'mode' -> one of: 'pageForm' | 'pageView' | 'dialogForm' | 'commandDialogForm' | 'dialogView' | 'listView'";
 
-export const CodyPlayConfigSchema: JSONSchema7 = {
-  title: "Cody Play Config",
+export const CodyPlayConfigCommandsSchema: JSONSchema7 = {
+  title: "Cody Play Config Commands",
   type: "object",
-  description: "Runtime configuration for a Cody Play powered app.\n\n⚠️ Important: Factory rules across all elements are used exclusively for pre-validation data preparation (upcasting)." +
-    "They must never include business logic, event recording, or side effects. Business rules belong in commandHandlers, automations in eventPolicies, and query logic (find* rules) in resolvers.",
+  description: "Record of commands that can be used to modify a Cody Play Config. Cody Play is a configuration-driven Nocode tool to build 'Line-of-Business applications' also known as LOB systems. Cody Play uses Event Sourcing as an architectural foundation. This means, that information managed by the application is added, changed or removed by issuing commands from a task-based user interface to the backend. The commands are handled by command handlers. The command handlers record one or more events. The events are written to an event store and read model projections use the events to manage a current view of the information. Information can be fetched from the backend using 'queries'. Queries are resolved by query resolvers. Process or workflow automation can be achieved by policies that react on events and automatically trigger new commands and/or call external services. A Cody Play Configuration is described by a JSON Schema, that can be found here: https://raw.githubusercontent.com/proophboard/cody-engine/refs/heads/feature/cody-play-config-schema/packages/play/src/state/cody-play-config-schema.ts",
   additionalProperties: false,
-  required: ["pages"],
   properties: {
-    pages: {
+    AddTopLevelPage: {
       type: "object",
-      title: "Pages",
-      description: "Map of page name to page configuration. A page name has the format: [Service].[Name]. The default service is \"App\". Two types of pages exist. 1) Top-Level Page: has a sidebar configuration and is therefor accessible from the app sidebar. 2) Sub-Level Page: is accessible from a top-level page and usually has a dynamic route part e.g. the id of an entity.",
-      patternProperties: {
-        "^[A-Z][A-Za-z0-9]+.[A-Z][A-Za-z0-9]+$": {
-          title: "Page Configuration",
-          description: "Each page is a container for a collection of commands and views, accessible in the app via its route.",
-          oneOf: [
-            {
+      title: "Add a new Top-level Page",
+      description: "A command to add a new Top-level page to a Cody Play Config. If a page with same page name already exists in the Config, the page will be replaced.",
+      required: ["page"],
+      properties: {
+        page: {
+          type: "object",
+          title: "Top-Level Page",
+          description: "Top-Level pages are accessible from the app sidebar. They usually don't have dynamic route parameters.",
+          additionalProperties: false,
+          required: ["name", "route", "topLevel", "sidebar"],
+          if: {
+            properties: {
+              type: {
+                enum: ["dialog", "drawer"]
+              }
+            }
+          },
+          then: {
+            required: ["mainPage"]
+          },
+          properties: {
+            topLevel: {
+              type: "boolean",
+              const: true,
+              title: "This is a Top-Level Page"
+            },
+            service: {
+              $ref: "#/definitions/service"
+            },
+            name: {
+              $ref: "#/definitions/page-name"
+            },
+            route: {
+              $ref: "#/definitions/page-route"
+            },
+            sidebar: {
               type: "object",
-              title: "Top-Level Page",
-              description: "Top-Level pages are accessible from the app sidebar. They usually don't have dynamic route parameters.",
+              title: "Sidebar",
+              description: "Defines the sidebar menu item of the page",
               additionalProperties: false,
-              required: ["name", "route", "topLevel", "sidebar"],
-              if: {
-                properties: {
-                  type: {
-                    enum: ["dialog", "drawer"]
-                  }
-                }
-              },
-              then: {
-                required: ["mainPage"]
-              },
+              required: ["label", "icon"],
               properties: {
-                topLevel: {
-                  type: "boolean",
-                  const: true,
-                  title: "This is a Top-Level Page"
+                label: {
+                  type: "string",
+                  title: "Label",
+                  description: "Menu item label",
+                  minLength: 1
                 },
-                service: {
-                  $ref: "#/definitions/service"
+                "label:t": {
+                  $ref: "#/definitions/t-key"
                 },
-                name: {
-                  $ref: "#/definitions/page-name"
+                icon: {
+                  $ref: "#/definitions/mdi-icon",
+                  title: "Menu item icon"
                 },
-                route: {
-                  $ref: "#/definitions/page-route"
-                },
-                sidebar: {
-                  type: "object",
-                  title: "Sidebar",
-                  description: "Defines the sidebar menu item of the page",
-                  additionalProperties: false,
-                  required: ["label", "icon"],
-                  properties: {
-                    label: {
+                group: {
+                  title: "Group",
+                  description: "Sidebar items can be organized in collapsable sidebar groups. Items with same group name belong together. The first item in the group defines the group position within the sidebar. Sidebar and group position depends either on the position in the page registry configuration and/or the optional 'position' property of each sidebar item.",
+                  oneOf: [
+                    {
                       type: "string",
-                      title: "Label",
-                      description: "Menu item label",
-                      minLength: 1
+                      title: "Group Name",
+                      description: "Name of the group where this item belongs to."
                     },
-                    "label:t": {
-                      $ref: "#/definitions/t-key"
-                    },
-                    icon: {
-                      $ref: "#/definitions/mdi-icon",
-                      title: "Menu item icon"
-                    },
-                    group: {
-                      title: "Group",
-                      description: "Sidebar items can be organized in collapsable sidebar groups. Items with same group name belong together. The first item in the group defines the group position within the sidebar. Sidebar and group position depends either on the position in the page registry configuration and/or the optional 'position' property of each sidebar item.",
-                      oneOf: [
-                        {
-                          type: "string",
-                          title: "Group Name",
-                          description: "Name of the group where this item belongs to."
-                        },
-                        {
-                          type: "object",
-                          title: "Group Configuration",
-                          description: "Detailed sidebar group configuration. It's enough when one of the pages of the group provides the detailed group configuration.",
-                          additionalProperties: false,
-                          required: ["label", "icon"],
-                          properties: {
-                            label: {
-                              type: "string",
-                              minLength: 1,
-                              title: "Group Name",
-                              description: "Name of the group."
-                            },
-                            "label:t": {
-                              $ref: "#/definitions/t-key"
-                            },
-                            icon: {
-                              $ref: "#/definitions/mdi-icon",
-                              title: "Group Icon"
-                            }
-                          }
-                        }
-                      ]
-                    },
-                    invisible: {
-                      title: "Hidden?",
-                      description: "Set to true, to always hide the menu item in the sidebar (e.g. when multiple top-level pages belong to the same tab group), or use a Jexl expression to dynamically show/hide the menu item. The latter is especially useful when different user roles have access to different parts of the app.",
-                      oneOf: [
-                        {
-                          type: "boolean"
-                        },
-                        {
-                          $ref: "#/definitions/jexl-expr"
-                        }
-                      ]
-                    },
-                    position: {
-                      type: "number",
-                      title: "Group Position",
-                      description: "Item position within group",
-                      default: 5,
-                    },
-                    dynamic: {
+                    {
                       type: "object",
-                      title: "Dynamic Menu Item",
-                      description: "Use a query to load data then set the menu item label or hidden property using a Jexl expression.",
+                      title: "Group Configuration",
+                      description: "Detailed sidebar group configuration. It's enough when one of the pages of the group provides the detailed group configuration.",
                       additionalProperties: false,
-                      required: ["data"],
+                      required: ["label", "icon"],
                       properties: {
-                        data: {
-                          $ref: "#/definitions/data-reference"
-                        },
                         label: {
-                          $ref: "#/definitions/jexl-expr",
-                          description: "Jexl Expression should return the label. Loaded data is available as 'data' in the Jexl expression context."
+                          type: "string",
+                          minLength: 1,
+                          title: "Group Name",
+                          description: "Name of the group."
+                        },
+                        "label:t": {
+                          $ref: "#/definitions/t-key"
                         },
                         icon: {
-                          $ref: "#/definitions/jexl-expr",
-                          description: "Jexl Expression should return the MDI Icon name in kebab-case. Loaded data is available as 'data' in the Jexl expression context."
-                        },
-                        hidden: {
-                          $ref: "#/definitions/jexl-expr",
-                          description: "Jexl Expression should return true if the sidebar item is hidden. Loaded data is available as 'data' in the Jexl expression context."
+                          $ref: "#/definitions/mdi-icon",
+                          title: "Group Icon"
                         }
                       }
                     }
+                  ]
+                },
+                invisible: {
+                  title: "Hidden?",
+                  description: "Set to true, to always hide the menu item in the sidebar (e.g. when multiple top-level pages belong to the same tab group), or use a Jexl expression to dynamically show/hide the menu item. The latter is especially useful when different user roles have access to different parts of the app.",
+                  oneOf: [
+                    {
+                      type: "boolean"
+                    },
+                    {
+                      $ref: "#/definitions/jexl-expr"
+                    }
+                  ]
+                },
+                position: {
+                  type: "number",
+                  title: "Group Position",
+                  description: "Item position within group",
+                  default: 5,
+                },
+                dynamic: {
+                  type: "object",
+                  title: "Dynamic Menu Item",
+                  description: "Use a query to load data then set the menu item label or hidden property using a Jexl expression.",
+                  additionalProperties: false,
+                  required: ["data"],
+                  properties: {
+                    data: {
+                      $ref: "#/definitions/data-reference"
+                    },
+                    label: {
+                      $ref: "#/definitions/jexl-expr",
+                      description: "Jexl Expression should return the label. Loaded data is available as 'data' in the Jexl expression context."
+                    },
+                    icon: {
+                      $ref: "#/definitions/jexl-expr",
+                      description: "Jexl Expression should return the MDI Icon name in kebab-case. Loaded data is available as 'data' in the Jexl expression context."
+                    },
+                    hidden: {
+                      $ref: "#/definitions/jexl-expr",
+                      description: "Jexl Expression should return true if the sidebar item is hidden. Loaded data is available as 'data' in the Jexl expression context."
+                    }
                   }
-                },
-                title: {
-                  $ref: "#/definitions/page-title"
-                },
-                "title:expr": {
-                  $ref: "#/definitions/page-title-expr"
-                },
-                type: {
-                  $ref: "#/definitions/page-type"
-                },
-                mainPage: {
-                  $ref: "#/definitions/page-main-page"
-                },
-                breadcrumb: {
-                  $ref: "#/definitions/page-breadcrumb"
-                },
-                "breadcrumb:t": {
-                  $ref: "#/definitions/t-key"
-                },
-                tab: {
-                  $ref: "#/definitions/page-tab"
-                },
-                props: {
-                  $ref: "#/definitions/page-props"
-                },
-                "props:expr": {
-                  $ref: "#/definitions/jexl-expr",
-                  title: "Dynamic Page Props",
-                  description: "A Jexl expression to dynamically define page props."
-                },
-                commands: {
-                  $ref: "#/definitions/page-commands"
-                },
-                components: {
-                  $ref: "#/definitions/page-components"
                 }
               }
             },
-            {
-              type: "object",
-              title: "Sub-Level Page",
-              description: "Sub-Level pages are only accessible from page links on other pages. They usually have dynamic route parameters.",
-              additionalProperties: false,
-              required: ["name", "route", "topLevel"],
-              if: {
-                properties: {
-                  type: {
-                    enum: ["dialog", "drawer"]
-                  }
-                }
-              },
-              then: {
-                required: ["mainPage"]
-              },
-              properties: {
-                topLevel: {
-                  type: "boolean",
-                  const: false,
-                  title: "This is a Sub-Level Page"
-                },
-                service: {
-                  $ref: "#/definitions/service"
-                },
-                name: {
-                  $ref: "#/definitions/page-name"
-                },
-                route: {
-                  $ref: "#/definitions/page-route"
-                },
-                title: {
-                  $ref: "#/definitions/page-title"
-                },
-                "title:expr": {
-                  $ref: "#/definitions/page-title-expr"
-                },
-                type: {
-                  $ref: "#/definitions/page-type"
-                },
-                mainPage: {
-                  $ref: "#/definitions/page-main-page"
-                },
-                breadcrumb: {
-                  $ref: "#/definitions/page-breadcrumb"
-                },
-                "breadcrumb:t": {
-                  $ref: "#/definitions/t-key"
-                },
-                tab: {
-                  $ref: "#/definitions/page-tab"
-                },
-                props: {
-                  $ref: "#/definitions/page-props"
-                },
-                "props:expr": {
-                  $ref: "#/definitions/jexl-expr",
-                  title: "Dynamic Page Props",
-                  description: "A Jexl expression to dynamically define page props."
-                },
-                commands: {
-                  $ref: "#/definitions/page-commands"
-                },
-                components: {
-                  $ref: "#/definitions/page-components"
-                }
-              }
+            title: {
+              $ref: "#/definitions/page-title"
+            },
+            "title:expr": {
+              $ref: "#/definitions/page-title-expr"
+            },
+            type: {
+              $ref: "#/definitions/page-type"
+            },
+            mainPage: {
+              $ref: "#/definitions/page-main-page"
+            },
+            breadcrumb: {
+              $ref: "#/definitions/page-breadcrumb"
+            },
+            "breadcrumb:t": {
+              $ref: "#/definitions/t-key"
+            },
+            tab: {
+              $ref: "#/definitions/page-tab"
+            },
+            props: {
+              $ref: "#/definitions/page-props"
+            },
+            "props:expr": {
+              $ref: "#/definitions/jexl-expr",
+              title: "Dynamic Page Props",
+              description: "A Jexl expression to dynamically define page props."
+            },
+            commands: {
+              $ref: "#/definitions/page-commands"
+            },
+            components: {
+              $ref: "#/definitions/page-components"
             }
-          ]
-        }
-      }
-    },
-    views: {
-      type: "object",
-      title: "Views",
-      description: "Registry of view components keyed by view name in the format: [Service].[ViewName]",
-      additionalProperties: {
-        type: "object",
-        required: ["information"],
-        properties: {
-          information: { $ref: "#/definitions/full-qualified-data-type-name", title: "Information", description: "The information (data type) this view is displaying." }
-        }
-      }
-    },
-
-    commands: {
-      type: "object",
-      title: "Commands",
-      description: "Registry of commands with runtime metadata",
-      additionalProperties: { $ref: "#/definitions/play-command-runtime-info" }
-    },
-
-    "commandHandlers": {
-      type: "object",
-      title: "Command Handlers",
-      description:
-        "Registry of command handlers, mapping each command name to its list of business rules. \
-        These rules define domain behavior such as event recording, validations, and side effects. \
-        Unlike command factory rules, handler rules are executed *after validation* and \
-        represent the core business logic of the system.",
-      additionalProperties: {
-        type: "array",
-        items: { $ref: "#/definitions/rule" }
+          }
+        },
       },
-      examples: [
-        {
-          "Crm.AddClient": [
+    },
+    RemovePage: {
+      type: "object",
+      title: "Remove an existing page",
+      description: "A command to remove an existing page form a Cody Play Config.",
+      required: ["pageName"],
+      properties: {
+        pageName: {
+          type: "string",
+          title: "Page Name",
+          examples: [
+            "Crm.CustomerOverview",
+            "App.ProjectList",
+            "Auth.UserDetails"
+          ]
+        }
+      }
+    },
+    AddCommandToPage: {
+      type: "object",
+      title: "Add a command to an existing page",
+      description: "Add a command to an existing page. If the command is already shown on that page, the configuration will be replaced.",
+      required: ["pageName", "command"],
+      properties: {
+        pageName: {
+          type: "string",
+          title: "Page Name",
+          examples: [
+            "Crm.CustomerOverview",
+            "App.ProjectList",
+            "Auth.UserDetails"
+          ]
+        },
+        command: {
+          oneOf: [
             {
-              rule: "always",
-              then: {
-                record: {
-                  event: "Crm.ClientAdded",
-                  mapping: "$> command"
-                }
-              }
+              type: "string",
+              title: "Command Name",
+              description: "Full qualified command name in the format: [Service].[CommandName]"
+            },
+            {
+              $ref: "#/definitions/action"
             }
           ]
         }
-      ]
+      }
     },
-
-    queries: {
+    RemoveCommandFromPage: {
       type: "object",
-      title: "Queries",
-      description: "Registry of queries with runtime metadata",
-      additionalProperties: { $ref: "#/definitions/play-query-runtime-info" }
-    },
-
-    resolvers: {
-      type: "object",
-      title: "Resolvers",
-      description: "Registry of resolvers mapping query name to resolver configs",
-      additionalProperties: { $ref: "#/definitions/resolve-config" }
-    },
-
-    types: {
-      type: "object",
-      title: "Types",
-      description: "Registry of information objects (value objects, state, queryables)",
-      additionalProperties: { $ref: "#/definitions/play-information-runtime-info" }
-    },
-
-    aggregates: {
-      type: "object",
-      title: "Aggregates",
-      description: "Registry of aggregates by name",
-      additionalProperties: { $ref: "#/definitions/aggregate-description" }
-    },
-
-    events: {
-      type: "object",
-      title: "Events",
-      description: "Registry of events with runtime metadata",
-      additionalProperties: { $ref: "#/definitions/play-event-runtime-info" }
-    },
-
-    eventReducers: {
-      type: "object",
-      title: "Event Reducers",
-      description: "Registry of reducers mapping aggregate names to event handlers",
-      additionalProperties: {
-        type: "object",
-        additionalProperties: {
-          type: "array",
-          items: { $ref: "#/definitions/rule" }
+      title: "Remove a command from a page page",
+      description: "Remove a command from a page.",
+      required: ["pageName", "commandName"],
+      properties: {
+        pageName: {
+          type: "string",
+          title: "Page Name",
+          examples: [
+            "Crm.CustomerOverview",
+            "App.ProjectList",
+            "Auth.UserDetails"
+          ]
+        },
+        commandName: {
+          type: "string",
+          title: "Command Name",
+          description: "Full qualified command name in the format: [Service].[CommandName]"
         }
       }
-    },
-
-    eventPolicies: {
-      type: "object",
-      title: "Event Policies",
-      description: "Registry of policies reacting to events",
-      additionalProperties: {
-        type: "object",
-        additionalProperties: { $ref: "#/definitions/play-event-policy-description" }
-      }
-    },
-
-    definitions: {
-      type: "object",
-      title: "Schema Definitions",
-      description: "Global JSON Schema definitions for all information types. Keys must be kebab-case and match the naming convention described in #/definitions/information-schema-guidelines.",
-      patternProperties: {
-        "^[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*$": {
-          "$ref": "#/definitions/json-schema"
-        }
-      }
-    },
-
-    services: {
-      type: "object",
-      title: "Services",
-      description: "Registry of services available to Cody Play runtime",
-      additionalProperties: { $ref: "#/definitions/play-service-rules" }
     }
   },
   definitions: {
