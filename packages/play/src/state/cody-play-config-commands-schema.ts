@@ -3,254 +3,830 @@ import {JSONSchema7} from "json-schema";
 const FORM_JEXL_CTX = "In the Jexl context you have access to:\n\n'data' -> the form data,\n\n'page' -> page registry with access to loaded view components,\n\n'store' -> global store,\n\n'user' -> current user,\n\n'theme' -> MUI theme,\n\n'routeParams' -> current route params,\n\n'mode' -> one of: 'pageForm' | 'pageView' | 'dialogForm' | 'commandDialogForm' | 'dialogView' | 'listView'";
 
 export const CodyPlayConfigCommandsSchema: JSONSchema7 = {
-  title: "Cody Play Config Commands",
+  $schema: "http://json-schema.org/draft-07/schema#",
+  title: "Cody Play Config - Commands Schema",
+  description:
+    "Schema describing atomic configuration commands to modify a CodyPlayConfig. " +
+    "Each command is expressed as a single-object with the command name as the property, e.g. { \"AddTopLevelPage\": { ... } }.",
   type: "object",
-  description: "Record of commands that can be used to modify a Cody Play Config. Cody Play is a configuration-driven Nocode tool to build 'Line-of-Business applications' also known as LOB systems. Cody Play uses Event Sourcing as an architectural foundation. This means, that information managed by the application is added, changed or removed by issuing commands from a task-based user interface to the backend. The commands are handled by command handlers. The command handlers record one or more events. The events are written to an event store and read model projections use the events to manage a current view of the information. Information can be fetched from the backend using 'queries'. Queries are resolved by query resolvers. Process or workflow automation can be achieved by policies that react on events and automatically trigger new commands and/or call external services. A Cody Play Configuration is described by a JSON Schema, that can be found here: https://raw.githubusercontent.com/proophboard/cody-engine/refs/heads/feature/cody-play-config-schema/packages/play/src/state/cody-play-config-schema.ts",
   additionalProperties: false,
-  properties: {
-    AddTopLevelPage: {
+  oneOf: [
+    // Pages
+    {
       type: "object",
-      title: "Add a new Top-level Page",
-      description: "A command to add a new Top-level page to a Cody Play Config. If a page with same page name already exists in the Config, the page will be replaced.",
-      required: ["page"],
+      required: ["AddTopLevelPage"],
+      additionalProperties: false,
       properties: {
-        page: {
-          type: "object",
-          title: "Top-Level Page",
-          description: "Top-Level pages are accessible from the app sidebar. They usually don't have dynamic route parameters.",
-          additionalProperties: false,
-          required: ["name", "route", "topLevel", "sidebar"],
-          if: {
-            properties: {
-              type: {
-                enum: ["dialog", "drawer"]
+        AddTopLevelPage: { $ref: "#/definitions/add-top-level-page" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemovePage"],
+      additionalProperties: false,
+      properties: {
+        RemovePage: { $ref: "#/definitions/remove-page" }
+      }
+    },
+    {
+      type: "object",
+      required: ["AddCommandToPage"],
+      additionalProperties: false,
+      properties: {
+        AddCommandToPage: { $ref: "#/definitions/add-command-to-page" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveCommandFromPage"],
+      additionalProperties: false,
+      properties: {
+        RemoveCommandFromPage: { $ref: "#/definitions/remove-command-from-page" }
+      }
+    },
+    {
+      type: "object",
+      required: ["AddViewToPage"],
+      additionalProperties: false,
+      properties: {
+        AddViewToPage: { $ref: "#/definitions/add-view-to-page" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveViewFromPage"],
+      additionalProperties: false,
+      properties: {
+        RemoveViewFromPage: { $ref: "#/definitions/remove-view-from-page" }
+      }
+    },
+
+    // Commands (global)
+    {
+      type: "object",
+      required: ["AddCommand"],
+      additionalProperties: false,
+      properties: {
+        AddCommand: { $ref: "#/definitions/add-command" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveCommand"],
+      additionalProperties: false,
+      properties: {
+        RemoveCommand: { $ref: "#/definitions/remove-command" }
+      }
+    },
+
+    // Command Handlers
+    {
+      type: "object",
+      required: ["AddCommandHandler"],
+      additionalProperties: false,
+      properties: {
+        AddCommandHandler: { $ref: "#/definitions/add-command-handler" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveCommandHandler"],
+      additionalProperties: false,
+      properties: {
+        RemoveCommandHandler: { $ref: "#/definitions/remove-command-handler" }
+      }
+    },
+
+    // Queries & Resolvers
+    {
+      type: "object",
+      required: ["AddQuery"],
+      additionalProperties: false,
+      properties: {
+        AddQuery: { $ref: "#/definitions/add-query" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveQuery"],
+      additionalProperties: false,
+      properties: {
+        RemoveQuery: { $ref: "#/definitions/remove-query" }
+      }
+    },
+    {
+      type: "object",
+      required: ["AddResolver"],
+      additionalProperties: false,
+      properties: {
+        AddResolver: { $ref: "#/definitions/add-resolver" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveResolver"],
+      additionalProperties: false,
+      properties: {
+        RemoveResolver: { $ref: "#/definitions/remove-resolver" }
+      }
+    },
+
+    // Aggregates
+    {
+      type: "object",
+      required: ["AddAggregate"],
+      additionalProperties: false,
+      properties: {
+        AddAggregate: { $ref: "#/definitions/add-aggregate" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveAggregate"],
+      additionalProperties: false,
+      properties: {
+        RemoveAggregate: { $ref: "#/definitions/remove-aggregate" }
+      }
+    },
+
+    // Events & Event Policies
+    {
+      type: "object",
+      required: ["AddEvent"],
+      additionalProperties: false,
+      properties: {
+        AddEvent: { $ref: "#/definitions/add-event" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveEvent"],
+      additionalProperties: false,
+      properties: {
+        RemoveEvent: { $ref: "#/definitions/remove-event" }
+      }
+    },
+    {
+      type: "object",
+      required: ["AddEventPolicy"],
+      additionalProperties: false,
+      properties: {
+        AddEventPolicy: { $ref: "#/definitions/add-event-policy" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveEventPolicy"],
+      additionalProperties: false,
+      properties: {
+        RemoveEventPolicy: { $ref: "#/definitions/remove-event-policy" }
+      }
+    },
+
+    // Types / Information
+    {
+      type: "object",
+      required: ["AddInformationType"],
+      additionalProperties: false,
+      properties: {
+        AddInformationType: { $ref: "#/definitions/add-information-type" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveInformationType"],
+      additionalProperties: false,
+      properties: {
+        RemoveInformationType: { $ref: "#/definitions/remove-information-type" }
+      }
+    },
+
+    // Definitions (raw JSON Schema fragments)
+    {
+      type: "object",
+      required: ["AddDefinition"],
+      additionalProperties: false,
+      properties: {
+        AddDefinition: { $ref: "#/definitions/add-definition" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveDefinition"],
+      additionalProperties: false,
+      properties: {
+        RemoveDefinition: { $ref: "#/definitions/remove-definition" }
+      }
+    },
+
+    // Services
+    {
+      type: "object",
+      required: ["AddService"],
+      additionalProperties: false,
+      properties: {
+        AddService: { $ref: "#/definitions/add-service" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveService"],
+      additionalProperties: false,
+      properties: {
+        RemoveService: { $ref: "#/definitions/remove-service" }
+      }
+    },
+
+    // Views (global)
+    {
+      type: "object",
+      required: ["AddView"],
+      additionalProperties: false,
+      properties: {
+        AddView: { $ref: "#/definitions/add-view" }
+      }
+    },
+    {
+      type: "object",
+      required: ["RemoveView"],
+      additionalProperties: false,
+      properties: {
+        RemoveView: { $ref: "#/definitions/remove-view" }
+      }
+    }
+  ],
+  definitions: {
+    "add-top-level-page": {
+      title: "AddTopLevelPage",
+      description: "Add a top-level page to the pages registry. The page object should follow the Page Configuration shape.",
+      type: "object",
+      additionalProperties: false,
+      required: ["name", "route", "topLevel"],
+      properties: {
+        name: { type: "string", description: "Full page name, e.g. App.Customers" },
+        route: { $ref: "#/definitions/page-route" },
+        topLevel: { type: "boolean", const: true },
+        service: { $ref: "#/definitions/service" },
+        title: { $ref: "#/definitions/page-title" },
+        "title:expr": { $ref: "#/definitions/jexl-expr" },
+        sidebar: { $ref: "#/definitions/sidebar" },
+        type: { $ref: "#/definitions/page-type" },
+        mainPage: { $ref: "#/definitions/page-main-page" },
+        breadcrumb: { $ref: "#/definitions/page-breadcrumb" },
+        tab: { $ref: "#/definitions/page-tab" },
+        props: { $ref: "#/definitions/page-props" },
+        "props:expr": { $ref: "#/definitions/jexl-expr" },
+        commands: {
+          type: "array",
+          items: {
+            oneOf: [
+              { type: "string", description: "Command name" },
+              { $ref: "#/definitions/action" }
+            ]
+          }
+        },
+        views: {
+          type: "array",
+          items: { type: "string", description: "View component name" }
+        }
+      },
+      examples: [
+        {
+          name: "App.Clients",
+          route: "/app/clients",
+          topLevel: true,
+          sidebar: { label: "Clients", icon: "account-group" },
+          title: "Clients"
+        }
+      ]
+    },
+
+    "remove-page": {
+      title: "RemovePage",
+      description: "Remove a page by its full name from the pages registry.",
+      type: "object",
+      additionalProperties: false,
+      required: ["name"],
+      properties: {
+        name: { type: "string", description: "Full page name (Service.Page)" }
+      },
+      examples: [{ name: "App.Clients" }]
+    },
+
+    "add-command-to-page": {
+      title: "AddCommandToPage",
+      description: "Add an existing command reference (or inline action) to an existing page's commands array.",
+      type: "object",
+      additionalProperties: false,
+      required: ["page", "command"],
+      properties: {
+        page: { type: "string", description: "Full page name" },
+        command: {
+          oneOf: [
+            { type: "string", description: "Full command name to add (e.g. Crm.AddClient)" },
+            { $ref: "#/definitions/action" }
+          ]
+        },
+        position: { type: "integer", description: "Optional insertion index (0-based)" }
+      },
+      examples: [{ page: "App.Clients", command: "Crm.AddClient" }]
+    },
+
+    "remove-command-from-page": {
+      title: "RemoveCommandFromPage",
+      description: "Remove a command (by name) or an inline action from a page's commands array.",
+      type: "object",
+      additionalProperties: false,
+      required: ["page", "command"],
+      properties: {
+        page: { type: "string" },
+        command: {
+          oneOf: [
+            { type: "string" },
+            { $ref: "#/definitions/action" }
+          ]
+        }
+      },
+      examples: [{ page: "App.Clients", command: "Crm.AddClient" }]
+    },
+
+    "add-view-to-page": {
+      title: "AddViewToPage",
+      description: "Add a view reference to a page's views array.",
+      type: "object",
+      additionalProperties: false,
+      required: ["page", "view"],
+      properties: {
+        page: { type: "string" },
+        view: { type: "string", description: "View name, e.g. App.ClientListView" },
+        position: { type: "integer" }
+      },
+      examples: [{ page: "App.Clients", view: "App.ClientListView" }]
+    },
+
+    "remove-view-from-page": {
+      title: "RemoveViewFromPage",
+      description: "Remove a view reference from a page's views array.",
+      type: "object",
+      additionalProperties: false,
+      required: ["page", "view"],
+      properties: {
+        page: { type: "string" },
+        view: { type: "string" }
+      },
+      examples: [{ page: "App.Clients", view: "App.ClientListView" }]
+    },
+
+    /* ---------------------------
+       Command registry commands
+       --------------------------- */
+
+    "add-command": {
+      title: "AddCommand",
+      description:
+        "Add a full command runtime info to the global commands registry. The payload must match the runtime info shape (desc, schema, factory, optional uiSchema). " +
+        "Remember: factory rules are for pre-validation upcasting only; business logic belongs to commandHandlers.",
+      type: "object",
+      additionalProperties: false,
+      required: ["name", "info"],
+      properties: {
+        name: { type: "string", description: "Full command name: Service.CommandName" },
+        info: { $ref: "#/definitions/play-command-runtime-info" }
+      },
+      examples: [
+        {
+          name: "Crm.AddClient",
+          info: {
+            desc: {
+              name: "AddClient",
+              aggregateCommand: true,
+              aggregateName: "Client",
+              aggregateIdentifier: "clientId",
+              newAggregate: true,
+              _pbBoardId: "1",
+              _pbCardId: "1",
+              _pbCreatedBy: "dev"
+            },
+            factory: [],
+            schema: { type: "object", properties: { clientId: { type: "string" }, name: { type: "string" } }, required: ["clientId", "name"] }
+          }
+        }
+      ]
+    },
+
+    "remove-command": {
+      title: "RemoveCommand",
+      description: "Remove a command from the global commands registry by name.",
+      type: "object",
+      additionalProperties: false,
+      required: ["name"],
+      properties: {
+        name: { type: "string" }
+      },
+      examples: [{ name: "Crm.AddClient" }]
+    },
+
+    /* ---------------------------
+       Command handlers
+       --------------------------- */
+
+    "add-command-handler": {
+      title: "AddCommandHandler",
+      description:
+        "Add or replace the handler rule set for a command. Handler rules are business rules executed after validation and are allowed to record events, trigger commands, and call services.",
+      type: "object",
+      additionalProperties: false,
+      required: ["command", "rules"],
+      properties: {
+        command: { type: "string" },
+        rules: { type: "array", items: { $ref: "#/definitions/rule" } },
+        replace: { type: "boolean", default: false, description: "If true replace existing handler; otherwise append." }
+      },
+      examples: [
+        {
+          command: "Crm.AddClient",
+          rules: [
+            {
+              rule: "always",
+              then: {
+                record: { event: "Crm.ClientAdded", mapping: "$> command" }
               }
             }
-          },
-          then: {
-            required: ["mainPage"]
-          },
-          properties: {
-            topLevel: {
-              type: "boolean",
-              const: true,
-              title: "This is a Top-Level Page"
-            },
-            service: {
-              $ref: "#/definitions/service"
-            },
-            name: {
-              $ref: "#/definitions/page-name"
-            },
-            route: {
-              $ref: "#/definitions/page-route"
-            },
-            sidebar: {
-              type: "object",
-              title: "Sidebar",
-              description: "Defines the sidebar menu item of the page",
-              additionalProperties: false,
-              required: ["label", "icon"],
-              properties: {
-                label: {
-                  type: "string",
-                  title: "Label",
-                  description: "Menu item label",
-                  minLength: 1
-                },
-                "label:t": {
-                  $ref: "#/definitions/t-key"
-                },
-                icon: {
-                  $ref: "#/definitions/mdi-icon",
-                  title: "Menu item icon"
-                },
-                group: {
-                  title: "Group",
-                  description: "Sidebar items can be organized in collapsable sidebar groups. Items with same group name belong together. The first item in the group defines the group position within the sidebar. Sidebar and group position depends either on the position in the page registry configuration and/or the optional 'position' property of each sidebar item.",
-                  oneOf: [
-                    {
-                      type: "string",
-                      title: "Group Name",
-                      description: "Name of the group where this item belongs to."
-                    },
-                    {
-                      type: "object",
-                      title: "Group Configuration",
-                      description: "Detailed sidebar group configuration. It's enough when one of the pages of the group provides the detailed group configuration.",
-                      additionalProperties: false,
-                      required: ["label", "icon"],
-                      properties: {
-                        label: {
-                          type: "string",
-                          minLength: 1,
-                          title: "Group Name",
-                          description: "Name of the group."
-                        },
-                        "label:t": {
-                          $ref: "#/definitions/t-key"
-                        },
-                        icon: {
-                          $ref: "#/definitions/mdi-icon",
-                          title: "Group Icon"
-                        }
-                      }
-                    }
-                  ]
-                },
-                invisible: {
-                  title: "Hidden?",
-                  description: "Set to true, to always hide the menu item in the sidebar (e.g. when multiple top-level pages belong to the same tab group), or use a Jexl expression to dynamically show/hide the menu item. The latter is especially useful when different user roles have access to different parts of the app.",
-                  oneOf: [
-                    {
-                      type: "boolean"
-                    },
-                    {
-                      $ref: "#/definitions/jexl-expr"
-                    }
-                  ]
-                },
-                position: {
-                  type: "number",
-                  title: "Group Position",
-                  description: "Item position within group",
-                  default: 5,
-                },
-                dynamic: {
-                  type: "object",
-                  title: "Dynamic Menu Item",
-                  description: "Use a query to load data then set the menu item label or hidden property using a Jexl expression.",
-                  additionalProperties: false,
-                  required: ["data"],
-                  properties: {
-                    data: {
-                      $ref: "#/definitions/data-reference"
-                    },
-                    label: {
-                      $ref: "#/definitions/jexl-expr",
-                      description: "Jexl Expression should return the label. Loaded data is available as 'data' in the Jexl expression context."
-                    },
-                    icon: {
-                      $ref: "#/definitions/jexl-expr",
-                      description: "Jexl Expression should return the MDI Icon name in kebab-case. Loaded data is available as 'data' in the Jexl expression context."
-                    },
-                    hidden: {
-                      $ref: "#/definitions/jexl-expr",
-                      description: "Jexl Expression should return true if the sidebar item is hidden. Loaded data is available as 'data' in the Jexl expression context."
-                    }
+          ]
+        }
+      ]
+    },
+
+    "remove-command-handler": {
+      title: "RemoveCommandHandler",
+      description: "Remove handler rules for the specified command.",
+      type: "object",
+      additionalProperties: false,
+      required: ["command"],
+      properties: {
+        command: { type: "string" }
+      },
+      examples: [{ command: "Crm.AddClient" }]
+    },
+
+    /* ---------------------------
+       Queries & resolvers
+       --------------------------- */
+
+    "add-query": {
+      title: "AddQuery",
+      description: "Add a query runtime info to the queries registry.",
+      type: "object",
+      additionalProperties: false,
+      required: ["name", "info"],
+      properties: {
+        name: { type: "string" },
+        info: { $ref: "#/definitions/play-query-runtime-info" }
+      },
+      examples: [
+        {
+          name: "GetClients",
+          info: {
+            desc: { name: "GetClients", returnType: "Crm.Clients", _pbBoardId: "q1" },
+            factory: [],
+            schema: { type: "object", properties: { search: { type: "string" } } }
+          }
+        }
+      ]
+    },
+
+    "remove-query": {
+      title: "RemoveQuery",
+      description: "Remove a query from the queries registry by name.",
+      type: "object",
+      additionalProperties: false,
+      required: ["name"],
+      properties: { name: { type: "string" } },
+      examples: [{ name: "GetClients" }]
+    },
+
+    "add-resolver": {
+      title: "AddResolver",
+      description: "Add or replace a resolver config for a named query. Resolver is the set of rules executed when query is called.",
+      type: "object",
+      additionalProperties: false,
+      required: ["query", "config"],
+      properties: {
+        query: { type: "string" },
+        config: { $ref: "#/definitions/resolve-config" },
+        replace: { type: "boolean", default: false }
+      },
+      examples: [
+        {
+          query: "GetProjectsByClient",
+          config: {
+            rules: [
+              {
+                rule: "always",
+                then: {
+                  find: {
+                    information: "Projects.AllProjects",
+                    filter: { eq: { prop: "clientId", value: "$> query.clientId" } }
                   }
                 }
               }
+            ]
+          }
+        }
+      ]
+    },
+
+    "remove-resolver": {
+      title: "RemoveResolver",
+      description: "Remove resolver for a named query.",
+      type: "object",
+      additionalProperties: false,
+      required: ["query"],
+      properties: { query: { type: "string" } },
+      examples: [{ query: "GetClients" }]
+    },
+
+    /* ---------------------------
+       Aggregates
+       --------------------------- */
+
+    "add-aggregate": {
+      title: "AddAggregate",
+      description: "Add an aggregate description to the aggregates registry.",
+      type: "object",
+      additionalProperties: false,
+      required: ["name", "desc"],
+      properties: {
+        name: { type: "string" },
+        desc: { $ref: "#/definitions/aggregate-description" }
+      },
+      examples: [
+        {
+          name: "Crm.Client",
+          desc: {
+            name: "Client",
+            identifier: "clientId",
+            collection: "clients",
+            state: "Crm.ClientState",
+            _pbBoardId: "a1"
+          }
+        }
+      ]
+    },
+
+    "remove-aggregate": {
+      title: "RemoveAggregate",
+      description: "Remove an aggregate by name.",
+      type: "object",
+      additionalProperties: false,
+      required: ["name"],
+      properties: { name: { type: "string" } },
+      examples: [{ name: "Crm.Client" }]
+    },
+
+    /* ---------------------------
+       Events & Policies
+       --------------------------- */
+
+    "add-event": {
+      title: "AddEvent",
+      description: "Add an event runtime info to the events registry.",
+      type: "object",
+      additionalProperties: false,
+      required: ["name", "info"],
+      properties: {
+        name: { type: "string" },
+        info: { $ref: "#/definitions/play-event-runtime-info" }
+      },
+      examples: [
+        {
+          name: "Crm.ClientAdded",
+          info: {
+            desc: {
+              name: "ClientAdded",
+              aggregateEvent: true,
+              aggregateName: "Client",
+              aggregateIdentifier: "clientId",
+              aggregateState: "Crm.ClientState",
+              public: true,
+              _pbBoardId: "e1"
             },
-            title: {
-              $ref: "#/definitions/page-title"
-            },
-            "title:expr": {
-              $ref: "#/definitions/page-title-expr"
-            },
-            type: {
-              $ref: "#/definitions/page-type"
-            },
-            mainPage: {
-              $ref: "#/definitions/page-main-page"
-            },
-            breadcrumb: {
-              $ref: "#/definitions/page-breadcrumb"
-            },
-            "breadcrumb:t": {
-              $ref: "#/definitions/t-key"
-            },
-            tab: {
-              $ref: "#/definitions/page-tab"
-            },
-            props: {
-              $ref: "#/definitions/page-props"
-            },
-            "props:expr": {
-              $ref: "#/definitions/jexl-expr",
-              title: "Dynamic Page Props",
-              description: "A Jexl expression to dynamically define page props."
-            },
-            commands: {
-              $ref: "#/definitions/page-commands"
-            },
-            components: {
-              $ref: "#/definitions/page-components"
-            }
+            factory: [],
+            schema: { type: "object" }
+          }
+        }
+      ]
+    },
+
+    "remove-event": {
+      title: "RemoveEvent",
+      description: "Remove an event by name.",
+      type: "object",
+      additionalProperties: false,
+      required: ["name"],
+      properties: { name: { type: "string" } },
+      examples: [{ name: "Crm.ClientAdded" }]
+    },
+
+    "add-event-policy": {
+      title: "AddEventPolicy",
+      description: "Add an event policy (policyDescription + rules) for a given event. Event policies are declared per event name in the eventPolicies registry.",
+      type: "object",
+      additionalProperties: false,
+      required: ["event", "policyName", "policy"],
+      properties: {
+        event: { type: "string" },
+        policyName: { type: "string" },
+        policy: { $ref: "#/definitions/play-event-policy-description" },
+        replace: { type: "boolean", default: false }
+      },
+      examples: [
+        {
+          event: "Projects.ProjectAdded",
+          policyName: "NotifyClientPolicy",
+          policy: {
+            name: "NotifyClientPolicy",
+            live: true,
+            rules: [
+              {
+                rule: "always",
+                then: {
+                  trigger: {
+                    command: "Notification.Send",
+                    mapping: { "projectId": "$> event.projectId" }
+                  }
+                }
+              }
+            ],
+            _pbBoardId: "p1"
+          }
+        }
+      ]
+    },
+
+    "remove-event-policy": {
+      title: "RemoveEventPolicy",
+      description: "Remove a policy for an event.",
+      type: "object",
+      additionalProperties: false,
+      required: ["event", "policyName"],
+      properties: {
+        event: { type: "string" },
+        policyName: { type: "string" }
+      },
+      examples: [{ event: "Projects.ProjectAdded", policyName: "NotifyClientPolicy" }]
+    },
+
+    /* ---------------------------
+       Types / Information
+       --------------------------- */
+
+    "add-information-type": {
+      title: "AddInformationType",
+      description:
+        "Add a play information runtime info into the types registry. If the information represents a list (desc.isList === true) ensure the schema is an array with items.$ref pointing to the corresponding single-item definition under #/definitions (kebab-case).",
+      type: "object",
+      additionalProperties: false,
+      required: ["name", "info"],
+      properties: {
+        name: { type: "string" },
+        info: { $ref: "#/definitions/play-information-runtime-info" }
+      },
+      examples: [
+        {
+          name: "Crm.Clients",
+          info: {
+            desc: { name: "Clients", query: "GetClients", isList: true, hasIdentifier: true, isQueryable: true, _pbBoardId: "t1" },
+            factory: [],
+            schema: { $ref: "#/definitions/crm/clients" },
+            uiSchema: { "ui:table": { columns: ["clientId", { field: "name", headerName: "Name" }] } }
+          }
+        }
+      ]
+    },
+
+    "remove-information-type": {
+      title: "RemoveInformationType",
+      description: "Remove an information type from the types registry (e.g. Crm.Clients or Crm.Client).",
+      type: "object",
+      additionalProperties: false,
+      required: ["name"],
+      properties: { name: { type: "string" } },
+      examples: [{ name: "Crm.Clients" }]
+    },
+
+    /* ---------------------------
+       Definitions (raw JSON Schema fragments)
+       --------------------------- */
+
+    "add-definition": {
+      title: "AddDefinition",
+      description:
+        "Add a raw JSON Schema under the definitions object. Keys should follow the kebab-case service path convention, e.g. 'crm/client' and 'crm/clients'. " +
+        "If adding a list definition (crm/clients) ensure items.$ref points to the single-item definition (crm/client).",
+      type: "object",
+      additionalProperties: false,
+      required: ["key", "schema"],
+      properties: {
+        key: {
+          type: "string",
+          description: "Definition key (kebab-case with optional service path), e.g. 'crm/client', 'projects/project-state'."
+        },
+        schema: {
+          description: "A JSON Schema fragment (value to be inserted under definitions[key]).",
+          oneOf: [{ type: "object" }, { type: "boolean" }]
+        },
+        replace: { type: "boolean", default: false }
+      },
+      examples: [
+        {
+          key: "crm/client",
+          schema: {
+            type: "object",
+            properties: { clientId: { type: "string" }, name: { type: "string" } },
+            required: ["clientId", "name"]
           }
         },
+        {
+          key: "crm/clients",
+          schema: {
+            type: "array",
+            items: { $ref: "#/definitions/crm/client" }
+          }
+        }
+      ]
+    },
+
+    "remove-definition": {
+      title: "RemoveDefinition",
+      description: "Remove a definition by its kebab-case key from definitions.",
+      type: "object",
+      additionalProperties: false,
+      required: ["key"],
+      properties: {
+        key: { type: "string" }
       },
+      examples: [{ key: "crm/clients" }]
     },
-    RemovePage: {
+
+    /* ---------------------------
+       Services
+       --------------------------- */
+
+    "add-service": {
+      title: "AddService",
+      description: "Add a service entry to the services registry. The service config defines rules and optional async flag.",
       type: "object",
-      title: "Remove an existing page",
-      description: "A command to remove an existing page form a Cody Play Config.",
-      required: ["pageName"],
+      additionalProperties: false,
+      required: ["name", "config"],
       properties: {
-        pageName: {
-          type: "string",
-          title: "Page Name",
-          examples: [
-            "Crm.CustomerOverview",
-            "App.ProjectList",
-            "Auth.UserDetails"
-          ]
-        }
-      }
+        name: { type: "string" },
+        config: { $ref: "#/definitions/play-service-rules" }
+      },
+      examples: [{ name: "EmailService", config: { rules: [], async: true } }]
     },
-    AddCommandToPage: {
+
+    "remove-service": {
+      title: "RemoveService",
+      description: "Remove a service by name from services registry.",
       type: "object",
-      title: "Add a command to an existing page",
-      description: "Add a command to an existing page. If the command is already shown on that page, the configuration will be replaced.",
-      required: ["pageName", "command"],
-      properties: {
-        pageName: {
-          type: "string",
-          title: "Page Name",
-          examples: [
-            "Crm.CustomerOverview",
-            "App.ProjectList",
-            "Auth.UserDetails"
-          ]
-        },
-        command: {
-          oneOf: [
-            {
-              type: "string",
-              title: "Command Name",
-              description: "Full qualified command name in the format: [Service].[CommandName]"
-            },
-            {
-              $ref: "#/definitions/action"
-            }
-          ]
-        }
-      }
+      additionalProperties: false,
+      required: ["name"],
+      properties: { name: { type: "string" } },
+      examples: [{ name: "EmailService" }]
     },
-    RemoveCommandFromPage: {
+
+    /* ---------------------------
+       Views (global)
+       --------------------------- */
+
+    "add-view": {
+      title: "AddView",
+      description: "Add a view registration to the views registry. View config references an information type.",
       type: "object",
-      title: "Remove a command from a page page",
-      description: "Remove a command from a page.",
-      required: ["pageName", "commandName"],
+      additionalProperties: false,
+      required: ["name", "information"],
       properties: {
-        pageName: {
-          type: "string",
-          title: "Page Name",
-          examples: [
-            "Crm.CustomerOverview",
-            "App.ProjectList",
-            "Auth.UserDetails"
-          ]
-        },
-        commandName: {
-          type: "string",
-          title: "Command Name",
-          description: "Full qualified command name in the format: [Service].[CommandName]"
-        }
-      }
-    }
-  },
-  definitions: {
+        name: { type: "string" },
+        information: { $ref: "#/definitions/data-reference" }
+      },
+      examples: [{ name: "App.ClientListView", information: "Crm.Clients" }]
+    },
+
+    "remove-view": {
+      title: "RemoveView",
+      description: "Remove a view from the views registry.",
+      type: "object",
+      additionalProperties: false,
+      required: ["name"],
+      properties: { name: { type: "string" } },
+      examples: [{ name: "App.ClientListView" }]
+    },
+
+    /* ---------------------------
+       Helper Definitions
+       --------------------------- */
+
     "service": {
       type: "string",
       title: "Module/Service",
