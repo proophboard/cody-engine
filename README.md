@@ -1,6 +1,12 @@
 # CodyEngine
 
-Looking for a way to bridge the gap between Event Modeling and prototyping or even production-ready solutions?
+A batteries-included, highly opinionated fullstack to develop event-sourced backends and task-based UIs with NodeJS and React.
+
+Cody Engine is the go-to stack at prooph software. We share our tooling as open source for everyone to look into, use yourself, and modify as you see fit (MIT licensed).
+
+The stack integrates with an Even Model designed on [https://prooph-board.com](https://prooph-board.com). You can run playshots vibe coded with [https://vibe-cody.ai](https://vibe-cody.ai) and/or use the integrated [Cody Server](https://wiki.prooph-board.com/cody/introduction.html) to generate working code from the Event Model on prooph board.
+
+The stack allows a seamless development workflow from #nocode to #procode and everything in-between. 
 
 ## Installation 
 
