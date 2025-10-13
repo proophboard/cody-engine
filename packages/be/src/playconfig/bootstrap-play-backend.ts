@@ -34,6 +34,8 @@ import {services} from "@server/extensions/services";
 import {makePlayRulesServiceFactory} from "@cody-play/infrastructure/services/make-play-rules-service-factory";
 import {informationServiceFactory} from "@server/infrastructure/information-service/information-service-factory";
 import {names} from "@event-engine/messaging/helpers";
+import { Personas } from '@app/shared/extensions/personas';
+import { DevLogger } from '@frontend/util/Logger';
 
 export const bootstrapPlayBackend = () => {
   registerTypes();
@@ -44,6 +46,7 @@ export const bootstrapPlayBackend = () => {
   registerQueries();
   bootstrapQueryResolvers();
   bootstrapServices();
+  registerPersonas();
 }
 
 const playDefinitionIdFromFQCN = (fqcn: string): string => {
@@ -282,5 +285,21 @@ const bootstrapServices = () => {
 
     console.log(`Registered play service "${serviceName}".`);
   }
+}
+
+const registerPersonas = () => {
+  // Remove Anyone persona
+  Personas.shift();
+
+  // Preserve user defined personas
+  Personas.reverse();
+
+  playshot.personas.forEach(p => {
+    Personas.unshift(p);
+
+    DevLogger.log(`[CodyPlay] Registered play persona "${p.displayName}".`);
+  });
+
+  Personas.reverse();
 }
 

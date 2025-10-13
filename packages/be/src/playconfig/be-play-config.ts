@@ -6,6 +6,7 @@ import {
   PlaySchemaDefinitions, PlayServiceRegistry
 } from "@cody-play/package/state/types";
 import {PaletteOptions, SxProps} from "@mui/material";
+import {Persona} from "@app/shared/extensions/personas";
 
 export interface BePlayConfig {
   defaultService: string,
@@ -20,6 +21,7 @@ export interface BePlayConfig {
   types: PlayInformationRegistry,
   definitions: PlaySchemaDefinitions,
   services: PlayServiceRegistry,
+  personas: Persona[],
 }
 
 // Override MUI theme options to avoid compile errors of Cody Play Config
