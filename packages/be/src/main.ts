@@ -25,6 +25,7 @@ import {
 import { FileUploadService } from '@event-engine/infrastructure/file-upload-service/file-upload-service';
 import { schedulerFactory } from '@server/infrastructure/scheduler/scheduler-factory';
 import { TimeHasPassedEventSchedule } from '@event-engine/infrastructure/scheduler/scheduler';
+import {bootstrapPlayBackend} from "@server/playconfig/bootstrap-play-backend";
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 4100;
@@ -215,6 +216,8 @@ app.use(errorHandler);
 
 const scheduler = env.scheduler ? schedulerFactory(env.production) : undefined;
 const eventSchedule: TimeHasPassedEventSchedule = [];
+
+bootstrapPlayBackend();
 
 if (env.production) {
   const pgMigrationOptions: RunnerOption = {
