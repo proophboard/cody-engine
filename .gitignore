@@ -42,9 +42,17 @@ Thumbs.db
 .nx/cache
 .nx/workspace-data/
 
+# Nx migration
+migrations.json
+# cursor
+/.cursor/**
+.github/instructions/nx.instructions.md
+
 # Filesystem storage
 data/*
 !data/.gitkeep
+!data/persistent-collections.json.cetmpl
+!data/persistent-streams.json.cetmpl
 
 # docker env
 !env/docker/pgadmin/tmp/.gitkeep
