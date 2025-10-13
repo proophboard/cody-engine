@@ -12,6 +12,9 @@
   ],
   "compilerOptions": {
     "jsx": "react-jsx",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "target": "ES2022",
+    "module": "ES2020",
+    "moduleResolution": "bundler"
   }
 }

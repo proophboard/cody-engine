@@ -4,7 +4,7 @@ import {Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, u
 import {Close, ZipDisk} from "mdi-material-ui";
 import Form from "@rjsf/mui";
 import {JSONSchema7} from "json-schema";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {getRjsfValidator} from "@frontend/util/rjsf-validator";
 import {useContext, useEffect, useRef, useState} from "react";
 import {Persona} from "@app/shared/extensions/personas";
@@ -135,7 +135,7 @@ const PlayPersonaModal = (props: PlayPersonaModalProps) => {
     </DialogTitle>
     <DialogContent sx={{ padding: '24px 24px' }}>
       <Grid2 container={true} spacing={3}>
-        <Grid2 md={12}>
+        <Grid2 size={{md: 12}}>
           <Form schema={PersonaSchema}
                 ref={(form) => formRef = form}
                 validator={getRjsfValidator()}

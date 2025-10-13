@@ -30,5 +30,8 @@ export interface Environment {
   };
   authentication?: {
     disabled: boolean;
-  }
+  },
+  scheduler?: {
+    techAdminId: string;
+  },
 }

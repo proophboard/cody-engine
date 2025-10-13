@@ -1,5 +1,5 @@
 import {getPageTitle, PageDefinition, PageType, Tab} from "@frontend/app/pages/page-definitions";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {generatePath, useParams} from "react-router-dom";
 import CommandBar, {renderTabs} from "@frontend/app/layout/CommandBar";
 import {loadViewComponent} from "@frontend/util/components/load-view-components";
@@ -113,14 +113,14 @@ export const StandardPage = (props: Props) => {
     .filter(a => !isButtonAction(a) || !a.button.hidden);
 
   if(environment.layout === "prototype") {
-    topBar = cmdBtns.length > 0 || tabs ? <Grid2 xs={12}><CommandBar tabs={tabs}>
+    topBar = cmdBtns.length > 0 || tabs ? <Grid2 size={12}><CommandBar tabs={tabs}>
       {cmdBtns.map((a, index) => isButtonAction(a)
         ? <ActionButton key={`${page.name}_action_${index}`} action={a} defaultService={env.DEFAULT_SERVICE} jexlCtx={jexlCtx} />
         : <FormAction key={`${page.name}_action_${index}`} action={a as FormActionType} defaultService={env.DEFAULT_SERVICE} jexlCtx={jexlCtx} />
       )}
     </CommandBar></Grid2> : <></>;
   } else {
-    topBar = tabs ? <Grid2 xs={12} sx={headerGridSx}>{renderTabs(tabs, user, pageData, theme, t, true)}</Grid2> : <></>;
+    topBar = tabs ? <Grid2 size={12} sx={headerGridSx}>{renderTabs(tabs, user, pageData, theme, t, true)}</Grid2> : <></>;
 
     if(pageMode === "standard") {
       topActions = cmdBtns.filter(c => c.position === "top-right");
@@ -164,7 +164,7 @@ export const StandardPage = (props: Props) => {
 
     const ViewComponent = loadViewComponent(valueObjectName);
 
-    const containerProps = {xs: 12, className: "CodyView-root", ...(props?.container || {})};
+    const containerProps = {size: 12, className: "CodyView-root", ...(props?.container || {})};
 
     const runtimeConfig: ViewRuntimeConfig = {
       isHiddenView,
@@ -197,13 +197,13 @@ export const StandardPage = (props: Props) => {
     {environment.layout === 'task-based-ui'
       && pageMode === "standard"
       && <>
-        <Grid2 xs={12} sx={headerGridSx}><Breadcrumbs /></Grid2>
-        <Grid2 xs sx={headerGridSx}>
+        <Grid2 size={12} sx={headerGridSx}><Breadcrumbs /></Grid2>
+        <Grid2 size={'grow'} sx={headerGridSx}>
           <Typography variant="h1" className="CodyPageTitle-root">{getPageTitle(page as unknown as PageDefinition)}</Typography></Grid2>
         <TopRightActions actions={topActions} uiOptions={{}} defaultService={env.DEFAULT_SERVICE} jexlCtx={jexlCtx} />
       </>}
     {topBar}
-    <Grid2 xs={12} sx={{padding: 0}} />
+    <Grid2 size={12} sx={{padding: 0}} />
     {components}
     { /*Render a placeholder to keep space for the  bottom bar */ }
     {environment.layout === 'task-based-ui' && pageMode === 'standard' && bottomActions.length > 0 && <Box className={'CodyBottomBar-placeholder'} sx={{

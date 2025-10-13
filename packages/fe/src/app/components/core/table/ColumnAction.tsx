@@ -8,6 +8,7 @@ import {TableRowJexlContext} from "@frontend/app/components/core/table/table-row
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {Action, ButtonAction, TableActionConfig} from "@frontend/app/components/core/form/types/action";
 import {useEnv} from "@frontend/hooks/use-env";
+import {UiSchema} from "@rjsf/utils";
 
 interface OwnProps {
   action: TableActionConfig;
@@ -35,7 +36,7 @@ const ColumnAction = (props: ColumnActionProps) => {
     store: globalStore,
   }
 
-  const action = normalizeUiSchema(props.action, jexlCtx, env) as Action;
+  const action = normalizeUiSchema(props.action as UiSchema, jexlCtx, env) as unknown as Action;
 
   return <ActionButton
     action={{...action, position: "bottom-center"} as ButtonAction}

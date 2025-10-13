@@ -38,6 +38,8 @@ import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/A
 import {FormModeType} from "@frontend/app/components/core/CommandForm";
 import DescriptionFieldTemplate from "@frontend/app/components/core/form/templates/DescriptionFieldTemplate";
 import {EDropzoneId} from "@cody-play/app/types/enums/EDropzoneId";
+import {ArrayFieldItemTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldItemTemplate";
+import AddButton from "@frontend/app/components/core/form/templates/buttons/AddButton";
 
 interface OwnProps {
   state?: any;
@@ -134,7 +136,9 @@ const StateView = (props: StateViewProps) => {
         {
           ObjectFieldTemplate,
           ArrayFieldTemplate,
+          ArrayFieldItemTemplate,
           DescriptionFieldTemplate,
+          ButtonTemplates: { AddButton },
           ...props.templates
         }
       }

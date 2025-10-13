@@ -1,11 +1,11 @@
 import {Box, CircularProgress, IconButton, Typography, useTheme} from '@mui/material';
 import {
   DataGrid, GridActionsColDef,
-  GridColDef,
+  GridColDef, GridDensity,
   GridRenderCellParams,
   GridToolbar,
 } from '@mui/x-data-grid';
-import React, { useContext, useEffect } from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import { triggerSideBarAnchorsRendered } from '@frontend/util/sidebar/trigger-sidebar-anchors-rendered';
 import NoRowsOverlay from '@frontend/app/components/core/table/NoRowsOverlay';
 import { dataValueGetter } from '@frontend/util/table/data-value-getter';
@@ -65,7 +65,7 @@ import ColumnAction from '@frontend/app/components/core/table/ColumnAction';
 import ColumnActionsMenu from '@frontend/app/components/core/table/ColumnActionsMenu';
 import { useGlobalStore } from '@frontend/hooks/use-global-store';
 import { merge } from 'lodash/fp';
-import Grid2 from '@mui/material/Unstable_Grid2';
+import Grid2 from '@mui/material/Grid';
 import TopRightActions from '@frontend/app/components/core/actions/TopRightActions';
 import BottomActions from '@frontend/app/components/core/actions/BottomActions';
 import { normalizeUiSchema } from '@frontend/util/schema/normalize-ui-schema';
@@ -191,6 +191,7 @@ const PlayTableView = (
   if(liveEditMode) {
     columns = columns.map(c => ({
       ...c,
+      ...(c.type === "actions" ? {width: 150} : {}),
       renderHeader: (colParams) => {
 
         const columnName = colParams.colDef.headerName || colParams.field;
@@ -210,7 +211,15 @@ const PlayTableView = (
     }))
   } else {
     // Workaround to reset custom column header rendering when live edit mode is turned off
-    columns = columns.map(c => ({...c, renderHeader: undefined}))
+    columns = columns.map(c => ({...c, renderHeader: (colParams) => {
+        if(!colParams.colDef.headerName) {
+          return <></>
+        }
+
+        return <Typography variant="h6">
+          {colParams.colDef.headerName}
+        </Typography>
+      }}))
   }
 
   if (isHidden) {
@@ -227,7 +236,7 @@ const PlayTableView = (
   return (
     <Box component="div">
       <Grid2 container={true}>
-        <Grid2 xs>
+        <Grid2 size={'grow'}>
           {(showTitle(uiSchema) || liveEditMode) && (
             <Typography
               variant="h2"
@@ -267,8 +276,8 @@ const PlayTableView = (
             itemIdentifier ? row[itemIdentifier] : JSON.stringify(row)
           }
           sx={{ width: '100%' }}
+          showToolbar={!hideToolbar}
           slots={{
-            toolbar: hideToolbar || liveEditMode ? undefined : GridToolbar,
             noRowsOverlay: NoRowsOverlay,
           }}
           initialState={{
@@ -344,10 +353,10 @@ export const compileTableColumns = (
   const gridColDefs: GridColDef[] = [];
 
   const getColValueWithExpr = (
-    rowParams: GridRenderCellParams,
+    row: any,
     cValue: string | AnyRule[]
   ): any => {
-    let ctx = { ...rowParams, value: '', user };
+    let ctx = { row, value: '', user };
 
     if (typeof cValue === 'string') {
       return jexl.evalSync(cValue, ctx);
@@ -491,7 +500,7 @@ export const compileTableColumns = (
           };
           break;
         case 'value':
-          gridColDef.valueGetter = (rowParams) => {
+          gridColDef.valueGetter = (_, rowParams) => {
             return getColValueWithExpr(rowParams, cValue as any);
           };
 
@@ -559,13 +568,13 @@ export const compileTableColumns = (
           }
 
           const field = column.field;
-          const value = (cValue as RefTableColumn).value;
+          const expr = (cValue as RefTableColumn).value;
 
-          gridColDef.valueGetter = (rowParams) => {
-            let rowParamsVal = rowParams.value;
+          gridColDef.valueGetter = (value, row) => {
+            let rowParamsVal: any = value;
 
             if (typeof column !== 'string' && column['value']) {
-              rowParamsVal = getColValueWithExpr(rowParams, column['value']);
+              rowParamsVal = getColValueWithExpr({row}, column['value']);
             }
 
             return dataValueGetter(
@@ -575,11 +584,11 @@ export const compileTableColumns = (
               (data: any) => {
                 let ctx = { data, value: '', user };
 
-                if (typeof value === 'string') {
-                  return jexl.evalSync(value, ctx);
+                if (typeof expr === 'string') {
+                  return jexl.evalSync(expr, ctx);
                 }
 
-                const exe = makeSyncExecutable(value as AnyRule[]);
+                const exe = makeSyncExecutable(expr as AnyRule[]);
 
                 ctx = exe(ctx);
 
@@ -599,7 +608,7 @@ export const compileTableColumns = (
     }
 
     if (!hasValueGetter) {
-      gridColDef.valueGetter = (params) => stringify(params.value);
+      gridColDef.valueGetter = (value, params) => stringify(value);
     }
 
     gridColDefs.push(gridColDef as GridColDef);

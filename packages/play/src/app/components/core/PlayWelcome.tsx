@@ -2,7 +2,7 @@ import * as React from 'react';
 import {AccountSchool, Flash, Lightbulb, OpenInNew} from "mdi-material-ui";
 import {Alert, Box, Button, IconButton, Link, Typography} from "@mui/material";
 import PersonaCard from "@frontend/app/components/core/prototype/PersonaCard";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {useContext, useState} from "react";
 import {configStore} from "@cody-play/state/config-store";
 import {Person} from "@mui/icons-material";

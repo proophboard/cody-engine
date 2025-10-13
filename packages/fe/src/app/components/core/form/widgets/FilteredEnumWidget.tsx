@@ -18,7 +18,7 @@ const FilteredEnumWidget = (props: FilteredEnumWidgetProps) => {
   const [pageData,] = usePageData();
   const routeParams = useParams();
 
-  const jexlCtx = {...routeParams, form: props.formContext?.data || {}, user, page: pageData}
+  const jexlCtx = {...routeParams, form: props.registry.formContext?.data || {}, user, page: pageData}
 
   const enumVals = props.options.enumOptions || [];
   const filter = props.options.filter as string || 'true';
@@ -37,7 +37,7 @@ const FilteredEnumWidget = (props: FilteredEnumWidgetProps) => {
 
   const orgOnChange = props.onChange;
   const _onChange = (value: string | string[] | null) => {
-    if(props.options.updateForm && props.formContext) {
+    if(props.options.updateForm && props.registry.formContext) {
       if(value) {
         const updateFormExe = makeSyncExecutable(props.options.updateForm as Rule[]);
 
@@ -48,7 +48,7 @@ const FilteredEnumWidget = (props: FilteredEnumWidgetProps) => {
           update: {}}
         );
 
-        props.formContext.updateForm(result.update);
+        props.registry.formContext.updateForm(result.update);
       }
     }
 

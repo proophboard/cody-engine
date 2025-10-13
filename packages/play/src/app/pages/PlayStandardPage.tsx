@@ -1,4 +1,4 @@
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {generatePath, useParams} from "react-router-dom";
 import CommandBar, {renderTabs} from "@frontend/app/layout/CommandBar";
 import React, {useContext, useEffect, useMemo} from "react";
@@ -159,7 +159,7 @@ export const PlayStandardPage = (props: Props) => {
   if (config.layout === 'prototype') {
     topBar =
       cmdBtns.length > 0 || tabs ? (
-        <Grid2 xs={12}>
+        <Grid2 size={12}>
           <CommandBar tabs={tabs}>
             {cmdBtns.map((a, index) => (
               isButtonAction(a) ? <ActionButton
@@ -177,7 +177,7 @@ export const PlayStandardPage = (props: Props) => {
       );
   } else {
     topBar = tabs ? (
-      <Grid2 xs={12} sx={headerGridSx}>
+      <Grid2 size={12} sx={headerGridSx}>
         {renderTabs(tabs, user, pageData, theme, t, true, liveEditMode, focusedEle, setFocusedEle)}
       </Grid2>
     ) : (
@@ -253,7 +253,7 @@ export const PlayStandardPage = (props: Props) => {
     );
 
     const containerProps = {
-      xs: 12,
+      size: 12,
       className: 'CodyView-root',
       ...(props?.container || {}),
     };
@@ -294,11 +294,11 @@ export const PlayStandardPage = (props: Props) => {
     >
       {config.layout === 'task-based-ui' && pageMode === 'standard' && (
         <>
-          <Grid2 xs={12} sx={headerGridSx}>
+          <Grid2 size={12} sx={headerGridSx}>
             <PlayBreadcrumbs />
           </Grid2>
           {(page.title !== '' || (liveEditMode && page.name !== 'CodyPlay.VibeCodyProcessing')) && <>
-            <Grid2 xs sx={headerGridSx}>
+            <Grid2 size={'grow'} sx={headerGridSx}>
               <Typography variant="h1" className="CodyPageTitle-root" sx={liveEditMode && page.title === '' ? {
                 color: theme.palette.action.disabled,
                 textDecoration: 'line-through'
@@ -324,7 +324,7 @@ export const PlayStandardPage = (props: Props) => {
         </>
       )}
       {topBar}
-      <Grid2 xs={12} sx={{ padding: 0 }} />
+      <Grid2 size={12} sx={{ padding: 0 }} />
       {components}
       {/*Render a placeholder to keep space for the  bottom bar */}
       {config.layout === 'task-based-ui' &&

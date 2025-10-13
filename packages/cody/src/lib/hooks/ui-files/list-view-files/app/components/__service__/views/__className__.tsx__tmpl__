@@ -119,7 +119,7 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
   return (
     <Box component="div">
       <Grid2 container={true}>
-        <Grid2 xs>
+        <Grid2 size={'grow'}>
           {showTitle(uiSchema) && <Typography
             variant="h2"
             className="sidebar-anchor"
@@ -137,8 +137,8 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
           rows={query.data}
           getRowId={row => <% if (identifier) { %>row.<%= identifier %> <% } else { %>JSON.stringify(row) <% } %>}
           sx={{width: "100%"}}
+          <% if (!hideToolbar) { %>showToolbar: true,<% } %>
           slots={{
-            <% if (!hideToolbar) { %>toolbar: GridToolbar,<% } %>
             noRowsOverlay: NoRowsOverlay,
           }}
           initialState={

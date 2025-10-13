@@ -18,7 +18,7 @@ import {
 import {names} from "@event-engine/messaging/helpers";
 import {playFQCNFromDefinitionId} from "@cody-play/infrastructure/cody/schema/play-definition-id";
 import * as React from "react";
-import Grid2, {Grid2Props} from "@mui/material/Unstable_Grid2";
+import Grid2, {GridProps as Grid2Props} from "@mui/material/Grid";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {useUser} from "@frontend/hooks/use-user";
@@ -52,15 +52,15 @@ export const ArrayFieldTemplate = <
     page:
     pageData,
     routeParams,
-    data: props.formContext!.data,
+    data: props.registry.formContext!.data,
     store,
-    mode: props.formContext!.mode,
+    mode: props.registry.formContext!.mode,
   };
 
-  const mode: FormModeType = props.formContext!.mode || 'page';
+  const mode: FormModeType = props.registry.formContext!.mode || 'page';
 
-  const nestingLevel = getNestingLevel(props.idSchema.$id);
-  const headingVariant = headingNestingLevel(props.idSchema.$id);
+  const nestingLevel = getNestingLevel(props.fieldPathId.$id);
+  const headingVariant = headingNestingLevel(props.fieldPathId.$id);
 
   const title = props.uiSchema && props.uiSchema['ui:title'] ? props.uiSchema['ui:title'] : props.title;
   let fallbackTitle = title;
@@ -74,7 +74,7 @@ export const ArrayFieldTemplate = <
   }
 
   let index = '';
-  const match = props.idSchema.$id.match(/_(?<index>[\d]+)$/);
+  const match = props.fieldPathId.$id.match(/_(?<index>[\d]+)$/);
 
   if(match) {
     index = ' ' + (Number(match.groups!['index']) + 1);
@@ -111,8 +111,8 @@ export const ArrayFieldTemplate = <
   if(nestingLevel > 1) {
     return <>
       <Grid2 container={true} sx={{width: '100%'}} columns={gridConfig.columns} spacing={gridConfig.spacing}>
-        <Grid2 xs>
-          {!!title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+        <Grid2 size={'grow'}>
+          {!!title && <Typography id={idPrefix + props.fieldPathId.$id} key={props.fieldPathId.$id} variant={headingVariant}
                                   className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
                                   sx={ title
                                     ? getObjPropTitleStyle(headingVariant, theme, mode)
@@ -122,7 +122,7 @@ export const ArrayFieldTemplate = <
           </Typography>}
           {(uiOptions.description || props.schema.description) && <Box sx={title ? {} : getObjPropTitleStyle(headingVariant, theme, mode)}>
             <ArrayFieldDescriptionTemplate
-              idSchema={props.idSchema}
+              fieldPathId={props.fieldPathId}
               description={uiOptions.description || props.schema.description}
               schema={props.schema}
               uiSchema={props.uiSchema}
@@ -132,16 +132,16 @@ export const ArrayFieldTemplate = <
         </Grid2>
         <TopRightActions uiOptions={uiOptions}
                          containerInfo={undefined}
-                         defaultService={props.formContext!.defaultService}
+                         defaultService={props.registry.formContext!.defaultService}
                          jexlCtx={jexlCtx}
                          dropzoneId={undefined}
                          showDropzone={false}
         />
       </Grid2>
       <Grid2 container={true} columns={gridConfig.columns} spacing={gridConfig.spacing}>
-        {!props.items.length && <Grid2 xs={12} className={'array-element-wrapper'} key={'array_ele_wrapper_empty'} {...getElementGridConfig(undefined, (props.uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}>
+        {!props.items.length && <Grid2 size={12} className={'array-element-wrapper'} key={'array_ele_wrapper_empty'} {...getElementGridConfig(undefined, (props.uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}>
           <Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Grid2> }
-        {props.items.map((element, index) => <Grid2 xs={12}
+        {props.items.map((element, index) => <Grid2 size={12}
           className={'array-element-wrapper'}
           key={'array_ele_wrapper_' + index}
           {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}
@@ -151,12 +151,12 @@ export const ArrayFieldTemplate = <
         sx={{padding: 0}}
         uiOptions={uiOptions}
         containerInfo={undefined}
-        defaultService={props.formContext!.defaultService}
+        defaultService={props.registry.formContext!.defaultService}
         jexlCtx={jexlCtx}
         additionalRightButtons={
           isWriteMode(mode) && props.canAdd ? [
             <AddButton
-              key={'array_field_' + props.idSchema.$id + 'add_button'}
+              key={'array_field_' + props.fieldPathId.$id + 'add_button'}
               className='array-item-add'
               onClick={props.onAddClick}
               disabled={props.disabled || props.readonly}
@@ -173,8 +173,8 @@ export const ArrayFieldTemplate = <
   return (<>
     <Grid2 container={true} className={'CodyCommandFormContainer'} {...gridConfig}>
       {((isPageMode(mode) && !isListMode(mode))) && <>
-        <Grid2 xs>
-          {(title || liveEditMode) && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+        <Grid2 size={'grow'}>
+          {(title || liveEditMode) && <Typography id={idPrefix + props.fieldPathId.$id} key={props.fieldPathId.$id} variant={headingVariant}
                                                   className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
                                                   sx={ title
                                                     ? getObjPropTitleStyle(headingVariant, theme, mode)
@@ -189,7 +189,7 @@ export const ArrayFieldTemplate = <
           </Typography>}
           {(uiOptions.description || props.schema.description) && <Box sx={(title || liveEditMode || isDialogMode(mode)) ? {} : getObjPropTitleStyle(headingVariant, theme, mode)}>
             <ArrayFieldDescriptionTemplate
-              idSchema={props.idSchema}
+              fieldPathId={props.fieldPathId}
               description={uiOptions.description || props.schema.description}
               schema={props.schema}
               uiSchema={props.uiSchema}
@@ -197,50 +197,50 @@ export const ArrayFieldTemplate = <
             />
           </Box>}
         </Grid2>
-        <Grid2 xs sx={{paddingRight: 0, paddingTop: theme.spacing(3)}}>
+        <Grid2 size={'grow'} sx={{paddingRight: 0, paddingTop: theme.spacing(3)}}>
           <TopRightActions uiOptions={uiOptions}
                            containerInfo={{name: fqcn, type: mapFormModeTypeToContainerInfoType(mode)}}
-                           defaultService={props.formContext!.defaultService}
+                           defaultService={props.registry.formContext!.defaultService}
                            jexlCtx={jexlCtx}
                            dropzoneId={mapFormModeTypeToDropzoneIdTopRight(mode)}
-                           showDropzone={props.formContext!.showDropzone}
+                           showDropzone={props.registry.formContext!.showDropzone}
           />
         </Grid2>
         </>}
-        <Grid2 xs={12}>
+        <Grid2 size={12}>
         {isListMode(mode) && <Grid2 container={true} columns={gridConfig.columns} spacing={gridConfig.spacing}>
-          <Grid2 xs>
-            {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+          <Grid2 size={'grow'}>
+            {title && <Typography id={idPrefix + props.fieldPathId.$id} key={props.fieldPathId.$id} variant={headingVariant}
                                   sx={getObjPropTitleStyle(headingVariant, theme, mode)}>{index}{title}</Typography>}
           </Grid2>
           <TopRightActions
             uiOptions={uiOptions}
-            defaultService={props.formContext!.defaultService}
+            defaultService={props.registry.formContext!.defaultService}
             jexlCtx={jexlCtx}
             containerInfo={{name: fqcn, type: mapFormModeTypeToContainerInfoType(mode)}}
             dropzoneId={mapFormModeTypeToDropzoneIdTopRight(mode)}
-            showDropzone={props.formContext!.showDropzone}
+            showDropzone={props.registry.formContext!.showDropzone}
           />
         </Grid2>}
-        {isDialogMode(mode) && !isListMode(mode) && mode !== 'commandDialogForm' /* Cmd Title + actions is already shown in CommandDialog */ && <Grid2 xs={12}>
-          <Grid2 xs>
-            {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+        {isDialogMode(mode) && !isListMode(mode) && mode !== 'commandDialogForm' /* Cmd Title + actions is already shown in CommandDialog */ && <Grid2 size={12}>
+          <Grid2 size={'grow'}>
+            {title && <Typography id={idPrefix + props.fieldPathId.$id} key={props.fieldPathId.$id} variant={headingVariant}
                                   sx={getObjPropTitleStyle(headingVariant, theme, mode)}>{index}{title}</Typography>}
           </Grid2>
           <TopRightActions
             uiOptions={uiOptions}
-            defaultService={props.formContext!.defaultService}
+            defaultService={props.registry.formContext!.defaultService}
             jexlCtx={jexlCtx}
             containerInfo={{name: fqcn, type: mapFormModeTypeToContainerInfoType(mode)}}
             dropzoneId={mapFormModeTypeToDropzoneIdTopRight(mode)}
-            showDropzone={props.formContext!.showDropzone}
+            showDropzone={props.registry.formContext!.showDropzone}
           />
         </Grid2>}
         {isDialogMode(mode) && (uiOptions.description || props.schema.description) && (
           <Grid2 container={true} columns={gridConfig.columns} spacing={gridConfig.spacing}>
-            <Grid2 xs={12}>
+            <Grid2 size={12}>
               <ArrayFieldDescriptionTemplate
-                idSchema={props.idSchema}
+                fieldPathId={props.fieldPathId}
                 description={uiOptions.description || props.schema.description}
                 schema={props.schema}
                 uiSchema={props.uiSchema}
@@ -251,7 +251,7 @@ export const ArrayFieldTemplate = <
         )}
         <Grid2 container={true} columns={gridConfig.columns} spacing={gridConfig.spacing}>
           {!props.items.length && <Box className={'array-element-wrapper'} key={'array_ele_wrapper_empty'}><Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Box> }
-          {props.items.map((element, index) => <Grid2 xs={12}
+          {props.items.map((element, index) => <Grid2 size={12}
             className={'array-element-wrapper'}
             key={'array_ele_wrapper_' + index}
             {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}
@@ -259,16 +259,16 @@ export const ArrayFieldTemplate = <
         </Grid2>
       </Grid2>
       <Grid2 container={true} sx={{width: "100%", paddingTop: gridConfig.spacing}} spacing={0}>
-        <Grid2 xs={12} sx={{padding: 0}}>
+        <Grid2 size={12} sx={{padding: 0}}>
           {mode !== "commandDialogForm" && <BottomActions
             sx={{padding: nestingLevel === 1 ? `0 ${theme.spacing(2)}` : 0}}
             containerInfo={nestingLevel === 1 ? {name: fqcn, type: "mixed"} : undefined}
             uiOptions={uiOptions}
-            defaultService={props.formContext!.defaultService}
+            defaultService={props.registry.formContext!.defaultService}
             jexlCtx={jexlCtx} additionalRightButtons={
             isWriteMode(mode) && props.canAdd ? [
               <AddButton
-                key={'array_field_' + props.idSchema.$id + 'add_button'}
+                key={'array_field_' + props.fieldPathId.$id + 'add_button'}
                 className='array-item-add'
                 onClick={props.onAddClick}
                 disabled={props.disabled || props.readonly}

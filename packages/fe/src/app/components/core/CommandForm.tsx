@@ -11,7 +11,7 @@ import {Logger} from "@frontend/util/Logger";
 import Form from "@rjsf/mui";
 import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
 import {v4} from "uuid";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {Alert, AlertTitle, Container, useTheme} from "@mui/material";
 import AxiosResponseViewer from "@frontend/app/components/core/AxiosResponseViewer";
 import {AxiosError, AxiosResponse} from "axios";
@@ -36,6 +36,8 @@ import {useEnv} from "@frontend/hooks/use-env";
 import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
 import DescriptionFieldTemplate from "@frontend/app/components/core/form/templates/DescriptionFieldTemplate";
 import {merge} from "lodash/fp";
+import {ArrayFieldItemTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldItemTemplate";
+import AddButton from "@frontend/app/components/core/form/templates/buttons/AddButton";
 
 export type FormModeType = 'pageForm' | 'pageView' | 'dialogForm' | 'commandDialogForm' | 'dialogView' | 'listView';
 
@@ -209,7 +211,7 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
   return (
     <div>
       <Grid2 container={true} spacing={3} sx={theme.commandForm?.styleOverrides}>
-        <Grid2 md={12}>
+        <Grid2 size={{md: 12}}>
           {!mutation.isSuccess && !mutation.isError && <Form
             schema={schema}
             children={<></>}
@@ -229,7 +231,9 @@ const CommandForm = (props: CommandFormProps, ref: any) => {
             templates={{
               ObjectFieldTemplate,
               ArrayFieldTemplate,
+              ArrayFieldItemTemplate,
               DescriptionFieldTemplate,
+              ButtonTemplates: { AddButton },
               ...props.templates,
             }}
             widgets={

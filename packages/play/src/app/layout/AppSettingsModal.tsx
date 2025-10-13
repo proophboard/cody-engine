@@ -17,7 +17,7 @@ import {BuildCircleOutlined, PaletteOutlined} from "@mui/icons-material";
 import PlayConfig from "@cody-play/app/components/core/play-backend/PlayConfig";
 import Database from "@cody-play/app/components/core/play-backend/Database";
 import Messagebox from "@cody-play/app/components/core/play-backend/Messagebox";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import {config} from "@swc/core/spack";
 import {configStore} from "@cody-play/state/config-store";
@@ -60,7 +60,7 @@ const AppSettingsModal = (props: AppSettingsModalProps) => {
   const settings = <>
     <DialogTitle>
       <Grid2 container>
-        <Grid2 xs sx={{padding: theme.spacing(2)}}>
+        <Grid2 size={'grow'} sx={{padding: theme.spacing(2)}}>
           Play Backend
         </Grid2>
         <TopRightActions  uiOptions={{}} defaultService={config.defaultService} jexlCtx={{} as any} additionalRightButtons={[

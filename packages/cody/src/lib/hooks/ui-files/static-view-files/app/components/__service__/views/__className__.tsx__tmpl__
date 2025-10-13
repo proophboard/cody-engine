@@ -27,7 +27,7 @@ const <%= className %> = (props: <%= className %>Props & {hidden?: boolean}, con
 
   let isHidden = config.isHiddenView;
 
-  const uiSchema = merge({...RuntimeInfo.uiSchema}, config.uiSchemaOverride || {});
+  const uiSchema = merge(RuntimeInfo.uiSchema, config.uiSchemaOverride || {});
 
   if(!isHidden && typeof uiSchema['ui:hidden'] !== "undefined") {
     if(typeof uiSchema['ui:hidden'] === "string") {

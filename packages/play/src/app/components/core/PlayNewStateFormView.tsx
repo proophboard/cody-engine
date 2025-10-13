@@ -27,7 +27,7 @@ const PlayNewStateFormView = (params: any, informationInfo: PlayInformationRunti
 
   let isHidden = hiddenView;
 
-  const uiSchema = merge({...informationInfo.uiSchema} || {}, uiSchemaOverride || {});
+  const uiSchema = merge(informationInfo.uiSchema ?? {}, uiSchemaOverride || {});
 
   if(!hiddenView && typeof uiSchema['ui:hidden'] !== "undefined") {
     if(typeof uiSchema['ui:hidden'] === "string") {

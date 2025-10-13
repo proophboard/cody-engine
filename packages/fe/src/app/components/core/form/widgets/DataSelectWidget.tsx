@@ -217,7 +217,7 @@ export default function DataSelectWidget<
             }
           })
         }}
-        aria-describedby={ariaDescribedByIds<T>(id)}
+        aria-describedby={ariaDescribedByIds(id)}
       >
         {Array.isArray(selectOptions) &&
           selectOptions.map(({ value, label, readonly }, i: number) => {

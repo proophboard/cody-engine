@@ -15,7 +15,7 @@ import {saveConfigToLocalStorage} from "@cody-play/infrastructure/multi-model-st
 import Editor from "@monaco-editor/react";
 import {PendingChangesContext} from "@cody-play/infrastructure/multi-model-store/PendingChanges";
 import MdiIcon from "@cody-play/app/components/core/MdiIcon";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {jsonrepair} from "jsonrepair";
 import {JexlFlavouredJSON} from "@event-engine/infrastructure/code-editor/JexlFlavouredJSON";
 import {merge} from "lodash/fp";
@@ -235,7 +235,7 @@ const AppSettings = (props: AppSettingsProps) => {
       </TextField>
     </div>
     <Grid2 container style={{marginTop: "30px", marginLeft: "10px", marginRight: "10px", display: "flex"}}>
-      <Grid2 xs={12}>
+      <Grid2 size={12}>
         <FormLabel>Theme</FormLabel>
         <IconButton sx={{marginLeft: "auto"}} title={'Click to expand editor. Ctrl+Click to double expand.'} color={themeEditorHeight > 200 ? 'primary' : 'default'} onClick={e => {
           const isExpanded = themeEditorHeight === 400;
@@ -260,7 +260,7 @@ const AppSettings = (props: AppSettingsProps) => {
           )}
         </IconButton>}
       </Grid2>
-      <Grid2 xs={12}>
+      <Grid2 size={12}>
       {invalidThemeOptions &&
         <Alert variant="standard" severity="error">
           <AlertTitle>Invalid theme options. Please check your input!</AlertTitle>
@@ -296,7 +296,7 @@ const AppSettings = (props: AppSettingsProps) => {
           />
         </div>
       </Grid2>
-      <Grid2 xs={12}>
+      <Grid2 size={12}>
         <Box sx={{display: 'flex'}}>
           <small>See <a href="https://mui.com/material-ui/customization/theming/#theme-configuration-variables"
                         target="material_ui">Material UI docs</a> for options</small>

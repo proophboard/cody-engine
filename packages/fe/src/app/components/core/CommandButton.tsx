@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { CommandRuntimeInfo } from '@event-engine/messaging/command';
 import { camelCaseToTitle } from '@frontend/util/string';
-import { Button, IconButton } from '@mui/material';
+import {Button, CSSProperties, IconButton} from '@mui/material';
 import { isAggregateCommandDescription } from '@event-engine/descriptions/descriptions';
 import { Plus, Square } from 'mdi-material-ui';
 import { useUser } from '@frontend/hooks/use-user';
@@ -100,8 +100,8 @@ const CommandButton = (props: CommandButtonProps) => {
       showInMenu={showInMenu}
       onClick={props.onClick}
       disabled={disabled}
-      color={color === 'default' ? undefined : color}
-      sx={{ ...style }}
+      color={color === 'default' ? undefined : color as 'default' | 'inherit' | 'primary'}
+      style={{ ...style } as CSSProperties}
       className={className}
     />
   }

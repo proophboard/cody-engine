@@ -16,7 +16,7 @@ import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {useTranslation} from "react-i18next";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {usePageData} from "@frontend/hooks/use-page-data";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
@@ -88,7 +88,7 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
       >
         <DialogTitle>
           <Grid2 container={true}>
-            <Grid2 xs sx={{padding: `${theme.spacing(2)} ${theme.spacing(1)}`}}>
+            <Grid2 size={'grow'} sx={{padding: `${theme.spacing(2)} ${theme.spacing(1)}`}}>
               {title && <Typography variant={"h2"}>{title}</Typography>}
             </Grid2>
             {topRightActions.length
@@ -97,7 +97,7 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
                                  uiOptions={{}}
                                  defaultService={defaultService}
                                  jexlCtx={jexlCtx} />
-              : <Grid2 xs
+              : <Grid2 size={'grow'}
                        display="flex"
                        direction="column"
                        alignItems="center"

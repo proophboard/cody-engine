@@ -9,7 +9,7 @@ import {
   FormAction as FormActionType
 } from '@frontend/app/components/core/form/types/action';
 import { FormJexlContext } from '@frontend/app/components/core/form/types/form-jexl-context';
-import Grid2 from '@mui/material/Unstable_Grid2';
+import Grid2 from '@mui/material/Grid';
 import ActionButton from '@frontend/app/components/core/ActionButton';
 import { useEnv } from '@frontend/hooks/use-env';
 import { parseActionsFromUiOptions } from '@frontend/app/components/core/form/types/parse-actions';
@@ -149,7 +149,7 @@ const TopRightActions = (props: TopRightActionsProps) => {
 
   return (
     <Grid2
-      xs
+      size={'grow'}
       display="flex"
       direction="column"
       alignItems="center"

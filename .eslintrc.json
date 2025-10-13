@@ -7,13 +7,31 @@
       "files": ["*.ts", "*.tsx"],
       "extends": ["plugin:@nx/typescript"],
       "rules": {
-        "no-case-declarations": "off"
+        "no-explicit-any": "off",
+        "no-case-declarations": "off",
+        "no-restricted-imports": [
+          "warn",
+          {
+            "paths": [
+              {
+                "name": "@mui/material",
+                "importNames": ["Drawer"],
+                "message": "Consider using the custom drawer. `import Drawer from '@frontend/app/components/core/drawer/Drawer';`"
+              }
+            ]
+          }
+        ],
+        "@typescript-eslint/no-extra-semi": "error",
+        "no-extra-semi": "off"
       }
     },
     {
       "files": ["*.js", "*.jsx"],
       "extends": ["plugin:@nx/javascript"],
-      "rules": {}
+      "rules": {
+        "@typescript-eslint/no-extra-semi": "error",
+        "no-extra-semi": "off"
+      }
     },
     {
       "files": ["*.spec.ts", "*.spec.tsx", "*.spec.js", "*.spec.jsx"],

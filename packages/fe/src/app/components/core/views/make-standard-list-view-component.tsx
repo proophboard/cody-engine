@@ -34,7 +34,7 @@ import {queries} from "@app/shared/queries";
 import {pages} from "@frontend/app/pages";
 import {types} from "@app/shared/types";
 import definitions from "@app/shared/types/definitions";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {showTitle} from "@frontend/util/schema/show-title";
 import {informationTitle} from "@frontend/util/information/titelize";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
@@ -148,7 +148,7 @@ export const makeStandardListViewComponent = (information: ValueObjectRuntimeInf
       return (
         <Box component="div">
           <Grid2 container={true}>
-            <Grid2 xs>
+            <Grid2 size={'grow'}>
               {showTitle(uiSchema) && (
                 <Typography
                   variant="h2"
@@ -223,7 +223,7 @@ export const makeStandardListViewComponent = (information: ValueObjectRuntimeInf
     return (
       <Box component="div">
         <Grid2 container={true}>
-          <Grid2 xs>
+          <Grid2 size={'grow'}>
             {showTitle(uiSchema) && (
               <Typography
                 variant="h2"

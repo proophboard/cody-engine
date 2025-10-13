@@ -352,7 +352,7 @@ const prepareValueGetter = (vo: Node, valueGetter: Rule[], ctx: Context, indent:
     return expr;
   }
 
-  return `(params) => {
+  return `(_, params) => {
 ${indent}  const ctx: any = {...params, value: '', user};
 ${indent}      
 ${indent}  ${expr};
@@ -405,7 +405,7 @@ const prepareDataValueGetter = (column: TableColumnUiSchema, vo: Node, listVo: N
 
   const itemIdentifier = column.ref?.itemIdentifier || listVoMeta.identifier;
 
-  const valueGetterFn = `(rowParams) => {
+  const valueGetterFn = `(_, rowParams) => {
 ${indent}  const columnValue = ${innerValueGetter};
 ${indent}  return dataValueGetter(
 ${indent}    ${columnNames.propertyName}ColumnQuery,

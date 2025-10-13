@@ -42,6 +42,7 @@ import {camelCaseToTitle} from "@cody-play/infrastructure/utils/string";
 import {playRenameFQCN} from "@cody-play/infrastructure/vibe-cody/utils/play-rename-f-q-c-n";
 import {toSingularItemName} from "@event-engine/infrastructure/nlp/to-singular";
 import shortUUID from "short-uuid";
+import {UiSchema} from "@rjsf/utils";
 
 export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: ElementEditedContext, config: CodyPlayConfig): Promise<CodyResponse> => {
   try {
@@ -88,7 +89,7 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
     if(isInlineItemsArraySchema(voMeta.schema)) {
       const itemDesc = getInlineItemDesc(vo, voFQCN, voMeta, desc);
       const itemSchema = voMeta.schema.items || {};
-      const itemUiSchema = normalizeServerUiSchema(voMeta.uiSchema?.items || {}, names(config.defaultService).className);
+      const itemUiSchema = normalizeServerUiSchema((voMeta.uiSchema?.items || {}) as UiSchema, names(config.defaultService).className);
 
       itemSchema.title = camelCaseToTitle(playNodeLabel(itemDesc.name));
       itemSchema.$id = playDefinitionIdFromFQCN(itemDesc.name);

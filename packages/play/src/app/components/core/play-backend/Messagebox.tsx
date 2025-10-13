@@ -22,7 +22,7 @@ import {useUser} from "@frontend/hooks/use-user";
 import {Send} from "mdi-material-ui";
 import {cloneDeepJSON} from "@frontend/util/clone-deep-json";
 import {getConfiguredPlayMessageBox} from "@cody-play/infrastructure/message-box/configured-message-box";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {Event} from "@event-engine/messaging/event";
 import {useQueryClient} from "@tanstack/react-query";
 import {Palette} from "@cody-play/infrastructure/utils/styles";
@@ -136,7 +136,7 @@ const Messagebox = (props: MessageboxProps) => {
 
   return <div style={{marginLeft: "10px", marginRight: "10px"}}>
     <Grid2 container={true} spacing={4} sx={{paddingTop: 0}}>
-      <Grid2 xs={12} md={isDrawerMode(props.dockMode, !sideBarPersistent) ? 12 : 6}>
+      <Grid2 size={{xs: 12, md: isDrawerMode(props.dockMode, !sideBarPersistent) ? 12 : 6}}>
         <Autocomplete<MessageOption>
           disablePortal={true}
           id="message"
@@ -152,7 +152,7 @@ const Messagebox = (props: MessageboxProps) => {
           getOptionLabel={o => o.name}
           isOptionEqualToValue={(o, v) => o.name === v.name}
           renderOption={(props, option: MessageOption) => {
-              return <MenuItem key={option.name} {...props}>
+              return <MenuItem {...props} key={option.name}>
                 <div style={{display: 'flex', alignItems: 'center'}}>
                   <StickyNote2 sx={{color: getMessageColor(option)}}/>
                   <ListItemText style={{marginLeft: '10px'}}>{option.name}</ListItemText>
@@ -164,7 +164,7 @@ const Messagebox = (props: MessageboxProps) => {
       </Grid2>
     </Grid2>
     <Grid2 container={true} spacing={4}>
-      <Grid2 xs={12} md={isDrawerMode(props.dockMode, !sideBarPersistent) ? 12 : 6}>
+      <Grid2 size={{xs: 12, md: isDrawerMode(props.dockMode, !sideBarPersistent) ? 12 : 6}}>
         <FormLabel>Message Context</FormLabel>
         {invalidMessageContext &&
           <Alert variant="standard" severity="error">Invalid Message Context. Please check your input!</Alert>}
@@ -207,7 +207,7 @@ const Messagebox = (props: MessageboxProps) => {
           />
         </Box>
       </Grid2>
-      <Grid2 xs={12} md={isDrawerMode(props.dockMode, !sideBarPersistent) ? 12 : 6}>
+      <Grid2 size={{xs: 12, md: isDrawerMode(props.dockMode, !sideBarPersistent) ? 12 : 6}}>
         <FormLabel>Result</FormLabel>
         <div style={{border: '1px solid #eee'}}>
           <Editor height="400px"

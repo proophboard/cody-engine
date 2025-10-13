@@ -38,6 +38,10 @@ testem.log
 .DS_Store
 Thumbs.db
 
+# Nx cache
+.nx/cache
+.nx/workspace-data/
+
 # Filesystem storage
 data/*
 !data/.gitkeep

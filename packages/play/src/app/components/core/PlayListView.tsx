@@ -24,7 +24,7 @@ import {merge} from "lodash/fp";
 import jexl from "@app/shared/jexl/get-configured-jexl";
 import {triggerSideBarAnchorsRendered} from "@frontend/util/sidebar/trigger-sidebar-anchors-rendered";
 import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-reference";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {showTitle} from "@frontend/util/schema/show-title";
 import {informationTitle} from "@frontend/util/information/titelize";
 import {Target} from "mdi-material-ui";
@@ -165,7 +165,7 @@ const PlayListView = (
   return (
     <Box component="div">
       <Grid2 container={true}>
-        <Grid2 xs>
+        <Grid2 size={'grow'}>
           {(showTitle(uiSchema) || liveEditMode) && (
             <Typography
               variant="h2"
