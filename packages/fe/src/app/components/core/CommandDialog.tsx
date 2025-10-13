@@ -33,7 +33,7 @@ import {getFormSuccessRedirect} from "@frontend/util/command-form/get-form-succe
 import {useTranslation} from "react-i18next";
 import {determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
 import {useEnv} from "@frontend/hooks/use-env";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {ActionContainerInfo} from "@frontend/app/components/core/form/types/action";
 import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
 
@@ -250,10 +250,10 @@ const CommandDialog = (props: CommandDialogProps) => {
         scrollbarGutter: "stable both-edges"
       }}>
         <Grid2 container>
-          <Grid2 xs sx={{padding: `${theme.spacing(2)} ${theme.spacing(1)}`}}>
+          <Grid2 size={'grow'} sx={{padding: `${theme.spacing(2)} ${theme.spacing(1)}`}}>
             {title && <Typography variant={"h2"}>{title}</Typography>}
           </Grid2>
-          <Grid2 xs
+          <Grid2 size={'grow'}
                  display="flex"
                  direction="column"
                  alignItems="center"

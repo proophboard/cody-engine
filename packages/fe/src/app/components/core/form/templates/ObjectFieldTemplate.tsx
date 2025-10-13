@@ -6,7 +6,7 @@ import {
   getUiOptions,
   ObjectFieldTemplatePropertyType, UiSchema, ArrayFieldTemplateItemType, getTemplate, descriptionId, canExpand,
 } from '@rjsf/utils';
-import Grid2, {Grid2Props} from "@mui/material/Unstable_Grid2";
+import Grid2, {GridProps as Grid2Props} from "@mui/material/Grid";
 import {Box, CSSObject, IconButton, Stack, SxProps, Theme, Typography, useTheme} from "@mui/material";
 import {PropsWithChildren, useContext} from "react";
 import {useUser} from "@frontend/hooks/use-user";
@@ -128,13 +128,13 @@ export const getElementGridConfig = <
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
->(element: ObjectFieldTemplatePropertyType | ArrayFieldTemplateItemType<T,S,F> | undefined, uiSchema: UiSchema, theme: Theme, nestingLevel: number): object & {xs: number, padding: string} => {
+>(element: ObjectFieldTemplatePropertyType | ArrayFieldTemplateItemType<T,S,F> | undefined, uiSchema: UiSchema, theme: Theme, nestingLevel: number): object & {size: number, padding: string} => {
   const elUiSchema = (element && isObjectFiledTemplatePropertyType(element)? uiSchema[element.name] : uiSchema['items']) || {};
   const elUiOptions = elUiSchema['ui:options'] || {};
-  const gridOptions: object & {xs: number, padding: string} = elUiOptions.grid || {};
+  const gridOptions: object & {size: number, padding: string} = elUiOptions.grid || {};
 
-  if(!gridOptions.xs) {
-    gridOptions.xs = 12;
+  if(!gridOptions.size) {
+    gridOptions.size = 12;
   }
 
   return gridOptions;
@@ -190,15 +190,15 @@ export default function ObjectFieldTemplate<
     user,
     page: pageData,
     routeParams,
-    data: props.formContext!.data,
+    data: props.registry.formContext!.data,
     store,
-    mode: props.formContext!.mode,
+    mode: props.registry.formContext!.mode,
   };
 
-  const mode: FormModeType = props.formContext!.mode || 'page';
+  const mode: FormModeType = props.registry.formContext!.mode || 'page';
 
-  const nestingLevel = getNestingLevel(props.idSchema.$id);
-  const headingVariant = headingNestingLevel(props.idSchema.$id);
+  const nestingLevel = getNestingLevel(props.fieldPathId.$id);
+  const headingVariant = headingNestingLevel(props.fieldPathId.$id);
 
   let title = props.uiSchema && props.uiSchema['ui:title'] ? props.uiSchema['ui:title'] : props.title;
   let fallbackTitle = title;
@@ -212,7 +212,7 @@ export default function ObjectFieldTemplate<
   }
 
   let index = '';
-  const match = props.idSchema.$id.match(/_(?<index>[\d]+)$/);
+  const match = props.fieldPathId.$id.match(/_(?<index>[\d]+)$/);
 
   if(match) {
     index = ''+(Number(match.groups!['index']) + 1);
@@ -240,8 +240,8 @@ export default function ObjectFieldTemplate<
   if(nestingLevel > 1) {
     return <>
       <Grid2 container={true} sx={{width: '100%'}} columns={gridConfig.columns} spacing={gridConfig.spacing}>
-        <Grid2 xs>
-          {!!title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+        <Grid2 size={'grow'}>
+          {!!title && <Typography id={idPrefix + props.fieldPathId.$id} key={props.fieldPathId.$id} variant={headingVariant}
             className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
             sx={ title
               ? getObjPropTitleStyle(headingVariant, theme, mode)
@@ -251,7 +251,7 @@ export default function ObjectFieldTemplate<
           </Typography>}
           {props.description && <Box sx={title ? {} : getObjPropTitleStyle(headingVariant, theme, mode)}>
             <DescriptionFieldTemplate
-            id={descriptionId<T>(props.idSchema)}
+            id={descriptionId(props.fieldPathId)}
             description={props.description}
             schema={props.schema}
             uiSchema={props.uiSchema}
@@ -261,7 +261,7 @@ export default function ObjectFieldTemplate<
         </Grid2>
         <TopRightActions uiOptions={uiOptions}
                          containerInfo={undefined}
-                         defaultService={props.formContext!.defaultService}
+                         defaultService={props.registry.formContext!.defaultService}
                          jexlCtx={jexlCtx}
                          dropzoneId={undefined}
                          showDropzone={false}
@@ -280,13 +280,13 @@ export default function ObjectFieldTemplate<
         sx={{padding: 0}}
         uiOptions={uiOptions}
         containerInfo={undefined}
-        defaultService={props.formContext!.defaultService}
+        defaultService={props.registry.formContext!.defaultService}
         jexlCtx={jexlCtx}
         additionalRightButtons={
           isWriteMode(mode) && canExpand<T, S, F>(props.schema, props.uiSchema, props.formData) ? [
             <AddButton
               className='object-property-expand'
-              key={'object_field_' + props.idSchema.$id + '_object_property_expand'}
+              key={'object_field_' + props.fieldPathId.$id + '_object_property_expand'}
               onClick={props.onAddClick(props.schema)}
               disabled={props.disabled || props.readonly}
               uiSchema={props.uiSchema}
@@ -302,8 +302,8 @@ export default function ObjectFieldTemplate<
   return (<>
     <Grid2 container={true} className={'CodyCommandFormContainer'} {...gridConfig}>
       {isPageMode(mode) && <>
-        <Grid2 xs>
-          {(title || liveEditMode) && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+        <Grid2 size={'grow'}>
+          {(title || liveEditMode) && <Typography id={idPrefix + props.fieldPathId.$id} key={props.fieldPathId.$id} variant={headingVariant}
                                 className={(headingVariant === 'h3' || headingVariant === 'h4') ? 'sidebar-anchor' : ''}
                                 sx={ title
                                   ? getObjPropTitleStyle(headingVariant, theme, mode)
@@ -318,7 +318,7 @@ export default function ObjectFieldTemplate<
           </Typography>}
           {props.description && <Box sx={(title || liveEditMode || isDialogMode(mode)) ? {} : getObjPropTitleStyle(headingVariant, theme, mode)}>
             <DescriptionFieldTemplate
-            id={descriptionId<T>(props.idSchema)}
+            id={descriptionId(props.fieldPathId)}
             description={props.description}
             schema={props.schema}
             uiSchema={props.uiSchema}
@@ -326,36 +326,36 @@ export default function ObjectFieldTemplate<
             />
           </Box>}
         </Grid2>
-        <Grid2 xs sx={{paddingRight: 0, paddingTop: theme.spacing(3)}}>
+        <Grid2 size={'grow'} sx={{paddingRight: 0, paddingTop: theme.spacing(3)}}>
           <TopRightActions uiOptions={uiOptions}
                            containerInfo={{name: fqcn, type: mapFormModeTypeToContainerInfoType(mode)}}
-                           defaultService={props.formContext!.defaultService}
+                           defaultService={props.registry.formContext!.defaultService}
                            jexlCtx={jexlCtx}
                            dropzoneId={mapFormModeTypeToDropzoneIdTopRight(mode)}
-                           showDropzone={props.formContext!.showDropzone}
+                           showDropzone={props.registry.formContext!.showDropzone}
           />
         </Grid2>
       </>}
-      <Grid2 xs={12}>
-        {isDialogMode(mode) && !isListMode(mode) && mode !== 'commandDialogForm' /* Cmd Title + actions is already shown in CommandDialog */ && <Grid2 xs={12}>
-          <Grid2 xs>
-            {title && <Typography id={idPrefix + props.idSchema.$id} key={props.idSchema.$id} variant={headingVariant}
+      <Grid2 size={12}>
+        {isDialogMode(mode) && !isListMode(mode) && mode !== 'commandDialogForm' /* Cmd Title + actions is already shown in CommandDialog */ && <Grid2 size={12}>
+          <Grid2 size={'grow'}>
+            {title && <Typography id={idPrefix + props.fieldPathId.$id} key={props.fieldPathId.$id} variant={headingVariant}
                          sx={getObjPropTitleStyle(headingVariant, theme, mode)}>{index}{title}</Typography>}
           </Grid2>
           <TopRightActions
             uiOptions={uiOptions}
-            defaultService={props.formContext!.defaultService}
+            defaultService={props.registry.formContext!.defaultService}
             jexlCtx={jexlCtx}
             containerInfo={{name: fqcn, type: mapFormModeTypeToContainerInfoType(mode)}}
             dropzoneId={mapFormModeTypeToDropzoneIdTopRight(mode)}
-            showDropzone={props.formContext!.showDropzone}
+            showDropzone={props.registry.formContext!.showDropzone}
           />
         </Grid2>}
         {isDialogMode(mode) && props.description && (
           <Grid2 container={true} columns={gridConfig.columns} spacing={gridConfig.spacing}>
-            <Grid2 xs={12}>
+            <Grid2 size={12}>
               <DescriptionFieldTemplate
-                id={descriptionId<T>(props.idSchema)}
+                id={descriptionId(props.fieldPathId)}
                 description={props.description}
                 schema={props.schema}
                 uiSchema={props.uiSchema}
@@ -375,7 +375,7 @@ export default function ObjectFieldTemplate<
         </Grid2>
       </Grid2>
       <Grid2 container={true} sx={{width: "100%", paddingTop: gridConfig.spacing}} spacing={0}>
-        <Grid2 xs={12} sx={{padding: 0}}>
+        <Grid2 size={12} sx={{padding: 0}}>
           {mode !== "commandDialogForm" && <BottomActions
             uiOptions={uiOptions}
             containerInfo={{name: fqcn, type: mapFormModeTypeToContainerInfoType(mode)}}
@@ -384,14 +384,14 @@ export default function ObjectFieldTemplate<
               center: EDropzoneId.VIEW_BOTTOM_ACTIONS_CENTER,
               right: EDropzoneId.VIEW_BOTTOM_ACTIONS_RIGHT,
             }}
-            showDropzone={props.formContext!.showDropzone ? {left: true, center: true, right: true} : undefined}
-            defaultService={props.formContext!.defaultService}
+            showDropzone={props.registry.formContext!.showDropzone ? {left: true, center: true, right: true} : undefined}
+            defaultService={props.registry.formContext!.defaultService}
             jexlCtx={jexlCtx}
             additionalRightButtons={
               isWriteMode(mode) && canExpand<T, S, F>(props.schema, props.uiSchema, props.formData) ? [
                 <AddButton
                   className='object-property-expand'
-                  key={'object_field_' + props.idSchema.$id + '_object_property_expand'}
+                  key={'object_field_' + props.fieldPathId.$id + '_object_property_expand'}
                   onClick={props.onAddClick(props.schema)}
                   disabled={props.disabled || props.readonly}
                   uiSchema={props.uiSchema}

@@ -3,6 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/be/src",
   "projectType": "application",
+  "implicitDependencies": ["shared"],
   "targets": {
     "build": {
       "executor": "@nx/esbuild:esbuild",

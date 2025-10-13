@@ -64,5 +64,6 @@
         "linter": "eslint"
       }
     }
-  }
+  },
+  "useInferencePlugins": false
 }

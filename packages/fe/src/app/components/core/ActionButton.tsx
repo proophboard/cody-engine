@@ -7,7 +7,7 @@ import {
 } from "@frontend/app/components/core/form/types/action";
 import {MouseEvent, PropsWithChildren, useContext} from "react";
 import {configStore} from "@cody-play/state/config-store";
-import {Alert, Button, IconButton} from '@mui/material';
+import {Alert, Button, CSSProperties, IconButton} from '@mui/material';
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
 import {determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
 import {generatePageLink, getPageDefinition} from "@frontend/app/components/core/PageLink";
@@ -51,8 +51,8 @@ const makeGridActionsCellItemLink = (config: ButtonConfig, to: string, external:
       }
     }}
     disabled={config.disabled}
-    color={config.color === 'default' ? undefined : config.color}
-    sx={{ ...config.style }}
+    color={config.color === 'default' ? undefined : config.color as 'default' | 'inherit' | 'primary'}
+    style={{ ...config.style } as CSSProperties}
   />
 }
 
@@ -63,8 +63,8 @@ const makeGridActionsCellItemRulesBtn = (config: ButtonConfig, onClick: () => vo
     showInMenu={config.showInMenu}
     onClick={onClick}
     disabled={config.disabled}
-    color={config.color === 'default' ? undefined : config.color}
-    sx={{ ...config.style }}
+    color={config.color === 'default' ? undefined : config.color as 'default' | 'inherit' | 'primary'}
+    style={{ ...config.style } as CSSProperties}
   />
 }
 

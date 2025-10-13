@@ -140,7 +140,7 @@ export const enrichColumnConfigFromSchema = (columnConfig: TableColumnUiSchema, 
         }
       }
     } else if (isJsonSchemaArray(schema)) {
-      const itemsUiSchema = uiSchema['items'] || {};
+      const itemsUiSchema = (uiSchema['items'] || {}) as UiSchema;
 
       const options = getUiOptions(itemsUiSchema);
 

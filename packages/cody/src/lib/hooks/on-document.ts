@@ -42,6 +42,7 @@ import {upsertStaticViewComponent} from "@cody-engine/cody/hooks/utils/ui/upsert
 import {nodeNameFQCN} from "@cody-engine/cody/hooks/utils/node-fqcn";
 import {getNodeFromSyncedNodesByFQCN} from "@cody-engine/cody/hooks/utils/node-tree";
 import {isCodyError} from "@proophboard/cody-utils";
+import {UiSchema} from "@rjsf/utils";
 
 export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
   try {
@@ -100,7 +101,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
     if(isInlineItemsArraySchema(voMeta.schema)) {
       itemFQCN = withErrorCheck(voFQCN, [vo, voMeta, ctx]) + "Item";
       itemSchema = voMeta.schema.items || {};
-      itemUiSchema = voMeta.uiSchema?.items || {};
+      itemUiSchema = (voMeta.uiSchema?.items || {}) as UiSchema;
       itemSchema.title = (voMeta.schema.title || '') + ' Item';
       itemSchema.$id = definitionIdFromFQCN(itemFQCN);
       const itemMeta = {
@@ -231,7 +232,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
       if(ctx.codeGeneration.fe.reactComponents) {
         // Upsert View Component
         if(isList) {
-          await asyncWithErrorCheck(upsertListViewComponent, [vo, voMeta, ctx, tree, voMeta.itemType as string, itemSchema as JSONSchema7, itemUiSchema]);
+          await asyncWithErrorCheck(upsertListViewComponent, [vo, voMeta, ctx, tree, voMeta.itemType as string, itemSchema as JSONSchema7, itemUiSchema ?? ({} as UiSchema)]);
         } else {
           await asyncWithErrorCheck(upsertStateViewComponent, [vo, voMeta, ctx, tree]);
         }

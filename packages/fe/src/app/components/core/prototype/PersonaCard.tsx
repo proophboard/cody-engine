@@ -2,7 +2,7 @@ import * as React from 'react';
 import {Persona, PERSONA_STORAGE_KEY} from "@app/shared/extensions/personas";
 import {Box, Button, Card, CardActions, CardContent, Typography} from "@mui/material";
 import UserAvatar from "@frontend/app/components/core/UserAvatar";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {useUser} from "@frontend/hooks/use-user";
 import {Login} from "mdi-material-ui";
 
@@ -21,7 +21,7 @@ const PersonaCard = (props: PersonaCardProps) => {
     sessionStorage.setItem(PERSONA_STORAGE_KEY, JSON.stringify(persona));
   }
 
-  return <Grid2 xs={12} sm={6} md={4}>
+  return <Grid2 size={{xs: 12, sm: 6, md: 4}}>
     <Card sx={{height: '100%'}}>
       <CardContent>
         <Typography variant="h5" gutterBottom={true}>{persona.displayName}</Typography>

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import {Alert, Box, Link, Typography} from "@mui/material";
 import {Personas} from "@app/shared/extensions/personas";
 import {Lightbulb} from "mdi-material-ui";

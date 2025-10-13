@@ -17,7 +17,7 @@ import {useUser} from "@frontend/hooks/use-user";
 import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {usePageData} from "@frontend/hooks/use-page-data";
 import {useTranslation} from "react-i18next";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
@@ -92,7 +92,7 @@ const PlayRightDrawerPage = (props: PlayRightDrawerPageProps) => {
       <Toolbar />
       <DialogTitle>
         <Grid2 container={true}>
-          <Grid2 xs>
+          <Grid2 size={'grow'}>
             {getPageTitle(page as unknown as PageDefinition)}
           </Grid2>
           {topRightActions.length
@@ -101,7 +101,7 @@ const PlayRightDrawerPage = (props: PlayRightDrawerPageProps) => {
                                uiOptions={{}}
                                defaultService={defaultService}
                                jexlCtx={jexlCtx} />
-            : <Grid2 xs
+            : <Grid2 size={'grow'}
                      display="flex"
                      direction="column"
                      alignItems="center"

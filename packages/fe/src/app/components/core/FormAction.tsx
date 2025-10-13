@@ -24,6 +24,8 @@ import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidg
 import {useTranslation} from "react-i18next";
 import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 import {translateUiSchema} from "@frontend/util/schema/translate-ui-schema";
+import {ArrayFieldItemTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldItemTemplate";
+import AddButton from "@frontend/app/components/core/form/templates/buttons/AddButton";
 
 interface OwnProps {
   action: FormActionType;
@@ -144,7 +146,9 @@ const FormAction = ({action, defaultService, jexlCtx}: FormActionProps) => {
         {
           ObjectFieldTemplate,
           ArrayFieldTemplate,
+          ArrayFieldItemTemplate,
           DescriptionFieldTemplate,
+          ButtonTemplates: { AddButton },
         }
       }
       widgets={

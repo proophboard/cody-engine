@@ -39,6 +39,8 @@ import {registryIdToDataReference} from "@app/shared/utils/registry-id-to-data-r
 import {ArrayFieldTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldTemplate";
 import DescriptionFieldTemplate from "@frontend/app/components/core/form/templates/DescriptionFieldTemplate";
 import {PageMode} from "@cody-play/app/pages/PlayStandardPage";
+import {ArrayFieldItemTemplate} from "@frontend/app/components/core/form/templates/ArrayFieldItemTemplate";
+import AddButton from "@frontend/app/components/core/form/templates/buttons/AddButton";
 
 interface OwnProps {
   pageMode: PageMode;
@@ -284,7 +286,9 @@ const FormView = (props: FormViewProps) => {
         {
           ObjectFieldTemplate,
           ArrayFieldTemplate,
+          ArrayFieldItemTemplate,
           DescriptionFieldTemplate,
+          ButtonTemplates: { AddButton },
           ...props.templates
         }
       }

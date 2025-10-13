@@ -3,6 +3,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/shared/src",
   "projectType": "library",
+  "implicitDependencies": ["infrastructure"],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",

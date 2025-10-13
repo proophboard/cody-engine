@@ -13,7 +13,7 @@ import {useGlobalStore} from "@frontend/hooks/use-global-store";
 import {useTranslation} from "react-i18next";
 import {FormJexlContext} from "@frontend/app/components/core/form/types/form-jexl-context";
 import {usePageData} from "@frontend/hooks/use-page-data";
-import Grid2 from "@mui/material/Unstable_Grid2";
+import Grid2 from "@mui/material/Grid";
 import TopRightActions from "@frontend/app/components/core/actions/TopRightActions";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
@@ -70,12 +70,12 @@ const DialogPage = (props: DialogPageProps) => {
     <Dialog open={true} fullWidth={true} maxWidth={'lg'} onClose={handleClose} sx={{"& .MuiDialog-paper": {minHeight: "50%"}}}>
       <DialogTitle>
         <Grid2 container={true}>
-          <Grid2 xs>
+          <Grid2 size={'grow'}>
             {getPageTitle(page)}
           </Grid2>
           {topRightActions.length
             ? <TopRightActions actions={topRightActions}  uiOptions={{}} defaultService={defaultService} jexlCtx={jexlCtx} />
-            : <Grid2 xs
+            : <Grid2 size={'grow'}
                      display="flex"
                      direction="column"
                      alignItems="center"
