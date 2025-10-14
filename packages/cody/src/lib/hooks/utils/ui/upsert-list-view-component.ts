@@ -271,7 +271,7 @@ const compileTableColumns = (vo: Node, voMeta: ValueObjectMetadata, itemVOFQCN: 
     }
 
     if(!hasValueGetter) {
-      objStr += `${indent}valueGetter: params => stringify(params.value),\n`;
+      objStr += `${indent}valueGetter: value => stringify(value),\n`;
       imports = addImport('import {stringify} from "@app/shared/utils/stringify"', imports);
     }
 
