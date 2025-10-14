@@ -12,5 +12,6 @@ export const playshot = {
   "types": {},
   "definitions": {},
   "eventPolicies": {},
-  "services": {}
+  "services": {},
+  "personas": [],
 } as unknown as BePlayConfig;

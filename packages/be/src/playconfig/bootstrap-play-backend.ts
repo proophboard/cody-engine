@@ -297,7 +297,7 @@ const registerPersonas = () => {
   playshot.personas.forEach(p => {
     Personas.unshift(p);
 
-    DevLogger.log(`[CodyPlay] Registered play persona "${p.displayName}".`);
+    DevLogger.log(`Registered play persona "${p.displayName}".`);
   });
 
   Personas.reverse();
