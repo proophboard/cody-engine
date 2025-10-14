@@ -393,7 +393,7 @@ const prepareDataValueGetter = (column: TableColumnUiSchema, vo: Node, listVo: N
 
   const expr = convertRuleConfigToTableColumnValueGetterRules(vo, ctx, valueGetter, indent + '  ');
 
-  let innerValueGetter = 'rowParams.value';
+  let innerValueGetter = 'value';
 
   if(column.value) {
     const preparedValueGetter = prepareValueGetter(vo, column.value as Rule[], ctx, indent + '  ');
@@ -405,7 +405,7 @@ const prepareDataValueGetter = (column: TableColumnUiSchema, vo: Node, listVo: N
 
   const itemIdentifier = column.ref?.itemIdentifier || listVoMeta.identifier;
 
-  const valueGetterFn = `(_, rowParams) => {
+  const valueGetterFn = `(value, rowParams) => {
 ${indent}  const columnValue = ${innerValueGetter};
 ${indent}  return dataValueGetter(
 ${indent}    ${columnNames.propertyName}ColumnQuery,
