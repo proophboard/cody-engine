@@ -14,8 +14,8 @@ import {PageDefinition} from "@frontend/app/pages/page-definitions";
 interface OwnProps {
   name: string;
   label: string;
-  Icon: JSX.Element;
-  pages: JSX.Element[],
+  Icon: React.JSX.Element;
+  pages: React.JSX.Element[],
   pageDefinitions: PageDefinition[],
 }
 

@@ -136,7 +136,7 @@ export const PlayStandardPage = (props: Props) => {
   }
 
   let tabs;
-  let topBar: JSX.Element = <></>;
+  let topBar: React.JSX.Element = <></>;
   let topActions: Action[] = [];
   let bottomActions: Action[] = [];
 

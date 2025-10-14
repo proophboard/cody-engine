@@ -90,7 +90,7 @@ const FormView = (props: FormViewProps) => {
   const [globalStore] = useGlobalStore();
   const {t} = useTranslation();
   const env = useEnv();
-  const [extraError, setExtraError] = useState<JSX.Element | undefined>();
+  const [extraError, setExtraError] = useState<React.JSX.Element | undefined>();
   const [formDataCacheKey, setFormDataCacheKey] = useState('');
 
   const jexlCtx: FormJexlContext = {
@@ -121,7 +121,7 @@ const FormView = (props: FormViewProps) => {
           ) as RJSFSchema
         );
       },
-      validate: () => {
+      validate: async () => {
         if(formRef.current) {
           return formRef.current.validateForm();
         }

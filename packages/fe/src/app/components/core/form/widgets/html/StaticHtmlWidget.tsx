@@ -74,7 +74,7 @@ export default StaticHtmlWidget;
 
 const SkipAttributes = ['tag', 'children', 'text', 'query', 'if', 'ui:style'];
 
-const convertToJSX = (config: HtmlConfig, props: StaticHtmlWidgetProps): JSX.Element => {
+const convertToJSX = (config: HtmlConfig, props: StaticHtmlWidgetProps): React.JSX.Element => {
   const Tag = config.tag || 'div';
 
   const attributes: Record<string, any> = {};
@@ -134,9 +134,9 @@ const convertToJSX = (config: HtmlConfig, props: StaticHtmlWidgetProps): JSX.Ele
   }
 }
 
-const getChildrenOrText = (config: HtmlConfig, props: StaticHtmlWidgetProps): Array<JSX.Element> | string | undefined => {
+const getChildrenOrText = (config: HtmlConfig, props: StaticHtmlWidgetProps): Array<React.JSX.Element> | string | undefined => {
   if(config.children) {
-    const children: Array<JSX.Element> = [];
+    const children: Array<React.JSX.Element> = [];
 
     config.children.forEach(child => {
       children!.push(convertToJSX({...child, key: v4()}, props));

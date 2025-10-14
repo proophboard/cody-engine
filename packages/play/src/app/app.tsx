@@ -102,7 +102,7 @@ export function App() {
     const routeObjects: RouteObject[] = Object.keys(pages).map((pName) => {
       const p = pages[pName];
       const pType = getPageType(p as unknown as PageDefinition);
-      let element: JSX.Element = <></>;
+      let element: React.JSX.Element = <></>;
 
       switch (pType) {
         case 'dialog':

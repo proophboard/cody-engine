@@ -37,9 +37,9 @@ interface OwnProps {
   jexlCtx: FormJexlContext;
   sx?: SxProps;
   actions?: Action[];
-  additionalLeftButtons?: JSX.Element[];
-  additionalCenterButtons?: JSX.Element[];
-  additionalRightButtons?: JSX.Element[];
+  additionalLeftButtons?: React.JSX.Element[];
+  additionalCenterButtons?: React.JSX.Element[];
+  additionalRightButtons?: React.JSX.Element[];
   containerInfo?: ActionContainerInfo;
   dropzoneId?: { left: EDropzoneId; center: EDropzoneId; right: EDropzoneId };
   showDropzone?: { left: boolean; center: boolean; right: boolean };

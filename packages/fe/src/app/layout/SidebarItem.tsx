@@ -25,7 +25,7 @@ interface OwnProps {
   route: string,
   label: string,
   service: string,
-  Icon: JSX.Element,
+  Icon: React.JSX.Element,
   theme: Theme,
   user: User,
   pageMatch: {pathname: string},
@@ -40,7 +40,7 @@ type SidebarItemProps = OwnProps;
 const SidebarItem = ({pageName, invisible, route, label, Icon, theme, user, pageMatch, service, dynamic}: SidebarItemProps) => {
   const [hidden, setHidden] = useState(false);
   const [dynamicLabel, setDynamicLabel] = useState<string | undefined>('');
-  const [DynamicIcon, setDynamicIcon] = useState<JSX.Element | undefined>();
+  const [DynamicIcon, setDynamicIcon] = useState<React.JSX.Element | undefined>();
   const [page] = usePageData();
   const [types] = useTypes();
   const { liveEditMode } = useContext(LiveEditModeContext);

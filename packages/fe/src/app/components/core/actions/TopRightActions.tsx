@@ -35,7 +35,7 @@ interface OwnProps {
   defaultService: string;
   jexlCtx: FormJexlContext;
   actions?: Action[];
-  additionalRightButtons?: JSX.Element[];
+  additionalRightButtons?: React.JSX.Element[];
   containerInfo?: ActionContainerInfo;
   dropzoneId?: EDropzoneId;
   showDropzone?: boolean;

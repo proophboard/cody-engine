@@ -122,7 +122,7 @@ const PlayConnectedCommand = (props: PlayConnectedCommandProps) => {
     mutation.reset();
   }, [props.command.desc.name]);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const form = page[props.connectTo];
 
     if(!isPageFormReference(form)) {
@@ -130,8 +130,8 @@ const PlayConnectedCommand = (props: PlayConnectedCommandProps) => {
       return;
     }
 
-    const submit = () => {
-      if(form.validate()) {
+    const submit = async () => {
+      if(await form.validate()) {
         const data = form.getData();
 
         mutation.mutate(data);
@@ -143,7 +143,7 @@ const PlayConnectedCommand = (props: PlayConnectedCommandProps) => {
       // Wait a moment so that the form can apply the schema
       window.setTimeout(submit, 50);
     } else {
-      submit();
+      await submit();
     }
   }
 

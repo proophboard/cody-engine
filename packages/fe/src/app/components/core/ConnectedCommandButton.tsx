@@ -56,8 +56,8 @@ const ConnectedCommandButton = (props: ConnectedCommandButtonProps) => {
       return;
     }
 
-    const submit = () => {
-      if(form.validate()) {
+    const submit = async () => {
+      if(await form.validate()) {
         const data = form.getData();
 
         mutation.mutate(data);
@@ -69,7 +69,7 @@ const ConnectedCommandButton = (props: ConnectedCommandButtonProps) => {
       // Wait a moment so that the form can apply the schema
       window.setTimeout(submit, 50);
     } else {
-      submit();
+      await submit();
     }
   }
 
