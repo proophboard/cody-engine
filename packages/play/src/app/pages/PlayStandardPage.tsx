@@ -102,8 +102,13 @@ export const PlayStandardPage = (props: Props) => {
     mode: "pageForm"
   };
 
-  const copiedRouteParams = useMemo(() => {
-    return cloneDeepJSON(routeParams);
+  const copiedRouteParamsPerView = useMemo(() => {
+    const componentNames = page.components.map(c => typeof c === "string" ? c : c.view);
+
+    const paramsMap: Record<string, typeof routeParams> = {};
+    componentNames.forEach(c => paramsMap[c] = cloneDeepJSON(routeParams));
+
+    return paramsMap;
   }, [routeParams]);
 
   // @TODO: inject via config or theme
@@ -262,9 +267,9 @@ export const PlayStandardPage = (props: Props) => {
     // We need routeParams to keep its identity
     // otherwise react ends up in an endless update call insight the views
     // due to params being passed to useApiQuery()
-    merge(copiedRouteParams, omit(props, 'container'));
+    merge(copiedRouteParamsPerView[valueObjectName], omit(props, 'container'));
 
-    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(copiedRouteParams)}</Grid2>
+    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(copiedRouteParamsPerView[valueObjectName])}</Grid2>
   });
 
   const defaultContainerProps = {

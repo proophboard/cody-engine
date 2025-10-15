@@ -55,8 +55,13 @@ export const StandardPage = (props: Props) => {
   const [store] = useGlobalStore();
   const {reset} = useContext(PageDataContext);
 
-  const copiedRouteParams = useMemo(() => {
-    return cloneDeepJSON(routeParams);
+  const copiedRouteParamsPerView = useMemo(() => {
+    const componentNames = page.components.map(c => typeof c === "string" ? c : c.view);
+
+    const paramsMap: Record<string, typeof routeParams> = {};
+    componentNames.forEach(c => paramsMap[c] = cloneDeepJSON(routeParams));
+
+    return paramsMap;
   }, [routeParams]);
 
   const pageMode = props.mode || "standard";
@@ -179,10 +184,10 @@ export const StandardPage = (props: Props) => {
     // We need routeParams to keep its identity
     // otherwise react ends up in an endless update call insight the views
     // due to params being passed to useApiQuery()
-    merge(copiedRouteParams, omit(props, 'container'));
-    merge(copiedRouteParams, {hidden: isHiddenView});
+    merge(copiedRouteParamsPerView[valueObjectName], omit(props, 'container'));
+    merge(copiedRouteParamsPerView[valueObjectName], {hidden: isHiddenView});
 
-    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(copiedRouteParams, runtimeConfig)}</Grid2>
+    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(copiedRouteParamsPerView[valueObjectName], runtimeConfig)}</Grid2>
   });
 
 
