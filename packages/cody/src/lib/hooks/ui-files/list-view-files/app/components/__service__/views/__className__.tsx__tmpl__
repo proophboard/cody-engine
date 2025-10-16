@@ -147,8 +147,9 @@ const <%= className %> = (params: Get<%= className %> & {hidden?: boolean}, conf
           pageSizeOptions={<%- toJSON(pageSizeConfig.pageSizeOptions) %>}
           density="<%= density %>"
           checkboxSelection={<%- checkboxSelection %>}
+          disableRowSelectionExcludeModel
           onRowSelectionModelChange={model => {
-            addQueryResult('<%= dataReference %>/Selection', model);
+            addQueryResult('<%= dataReference %>/Selection', Array.from(model.ids));
           }}
       />}
       <BottomActions uiOptions={uiOptions} defaultService={normalizedDefaultService} jexlCtx={jexlCtx} sx={{marginTop: theme.spacing(2)}} />

@@ -289,11 +289,12 @@ const PlayTableView = (
           pageSizeOptions={pageSizeConfig.pageSizeOptions}
           density={density}
           checkboxSelection={checkboxSelection}
+          disableRowSelectionExcludeModel
           onRowSelectionModelChange={(model) => {
             const selectionDataReference =
               registryIdToDataReference(informationInfo.desc.name) +
               '/Selection';
-            addQueryResult(selectionDataReference, model);
+            addQueryResult(selectionDataReference, Array.from(model.ids));
           }}
         />
       )}

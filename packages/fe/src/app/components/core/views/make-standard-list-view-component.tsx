@@ -258,11 +258,12 @@ export const makeStandardListViewComponent = (information: ValueObjectRuntimeInf
             pageSizeOptions={pageSizeConfig.pageSizeOptions}
             density={density}
             checkboxSelection={checkboxSelection}
+            disableRowSelectionExcludeModel
             onRowSelectionModelChange={(model) => {
               const selectionDataReference =
                 registryIdToDataReference(information.desc.name) +
                 '/Selection';
-              addQueryResult(selectionDataReference, model);
+              addQueryResult(selectionDataReference, Array.from(model.ids));
             }}
           />
         )}
