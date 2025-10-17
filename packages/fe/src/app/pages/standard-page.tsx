@@ -55,6 +55,9 @@ export const StandardPage = (props: Props) => {
   const [store] = useGlobalStore();
   const {reset} = useContext(PageDataContext);
 
+  const pageMode = props.mode || "standard";
+  const page = {...props.page};
+
   const copiedRouteParamsPerView = useMemo(() => {
     const componentNames = page.components.map(c => typeof c === "string" ? c : c.view);
 
@@ -63,9 +66,6 @@ export const StandardPage = (props: Props) => {
 
     return paramsMap;
   }, [routeParams]);
-
-  const pageMode = props.mode || "standard";
-  const page = {...props.page};
 
   const sideBarPersistent = useMediaQuery(theme.breakpoints.up('lg'), {
     defaultMatches: true,
