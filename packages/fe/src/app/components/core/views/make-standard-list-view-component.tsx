@@ -250,8 +250,8 @@ export const makeStandardListViewComponent = (information: ValueObjectRuntimeInf
               itemIdentifier ? row[itemIdentifier] : JSON.stringify(row)
             }
             sx={{ width: '100%' }}
+            showToolbar={!hideToolbar}
             slots={{
-              toolbar: hideToolbar ? undefined : GridToolbar,
               noRowsOverlay: NoRowsOverlay,
             }}
             initialState={{ pagination: { paginationModel: { pageSize: pageSizeConfig.pageSize }, } }}
