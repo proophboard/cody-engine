@@ -269,7 +269,9 @@ export const PlayStandardPage = (props: Props) => {
     // due to params being passed to useApiQuery()
     merge(copiedRouteParamsPerView[valueObjectName], omit(props, 'container'));
 
-    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(copiedRouteParamsPerView[valueObjectName])}</Grid2>
+    return isHiddenView
+      ? <>{ViewComponent(copiedRouteParamsPerView[valueObjectName])}</>
+      : <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(copiedRouteParamsPerView[valueObjectName])}</Grid2>
   });
 
   const defaultContainerProps = {
@@ -329,7 +331,6 @@ export const PlayStandardPage = (props: Props) => {
         </>
       )}
       {topBar}
-      <Grid2 size={12} sx={{ padding: 0 }} />
       {components}
       {/*Render a placeholder to keep space for the  bottom bar */}
       {config.layout === 'task-based-ui' &&

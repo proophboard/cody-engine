@@ -1,5 +1,5 @@
 import {Jexl} from "@event-engine/infrastructure/jexl/jexl";
-import {pad, padStart, padEnd} from "lodash";
+import {pad, padStart, padEnd, replace} from "lodash";
 
 export const registerStringExtensions = (jexl: Jexl): void => {
   jexl.addFunction('upperCase', (str: string) => str.toUpperCase());

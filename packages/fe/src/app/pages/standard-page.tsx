@@ -187,7 +187,9 @@ export const StandardPage = (props: Props) => {
     merge(copiedRouteParamsPerView[valueObjectName], omit(props, 'container'));
     merge(copiedRouteParamsPerView[valueObjectName], {hidden: isHiddenView});
 
-    return <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(copiedRouteParamsPerView[valueObjectName], runtimeConfig)}</Grid2>
+    return isHiddenView
+      ? <>{ViewComponent(copiedRouteParamsPerView[valueObjectName], runtimeConfig)}</>
+      : <Grid2 key={'comp' + index} {...containerProps}>{ViewComponent(copiedRouteParamsPerView[valueObjectName], runtimeConfig)}</Grid2>
   });
 
 
@@ -208,7 +210,6 @@ export const StandardPage = (props: Props) => {
         <TopRightActions actions={topActions} uiOptions={{}} defaultService={env.DEFAULT_SERVICE} jexlCtx={jexlCtx} />
       </>}
     {topBar}
-    <Grid2 size={12} sx={{padding: 0}} />
     {components}
     { /*Render a placeholder to keep space for the  bottom bar */ }
     {environment.layout === 'task-based-ui' && pageMode === 'standard' && bottomActions.length > 0 && <Box className={'CodyBottomBar-placeholder'} sx={{
