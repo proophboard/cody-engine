@@ -10,6 +10,7 @@ export interface ButtonConfig {
   hidden?: boolean,
   icon?: React.ReactNode,
   label?: string,
+  'label:t'?: string;
   endIcon?: React.ReactNode,
   'variant:expr'?: string,
   'color:expr'?: string,
