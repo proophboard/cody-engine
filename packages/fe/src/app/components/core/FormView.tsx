@@ -108,7 +108,7 @@ const FormView = (props: FormViewProps) => {
     return desc.name + '.Form.ExtraError'.replaceAll('.', '_');
   }
 
-  const refreshPageForm = () => {
+  const refreshPageForm = (cacheKey: string) => {
     addPageForm(registryIdToDataReference(props.description.desc.name) + '/Form', {
       getData: () => formRef.current?.state.formData || {},
       useSchema: (newSchema) => {
@@ -134,6 +134,9 @@ const FormView = (props: FormViewProps) => {
         if(props.onSubmitted) {
           props.onSubmitted();
         }
+      },
+      cancel: () => {
+        delete formDataCache[cacheKey];
       },
       displayError: errorComponent => setExtraError(errorComponent)
     })
@@ -170,7 +173,7 @@ const FormView = (props: FormViewProps) => {
     setFormData({ ...initialFormData, ...cachedData });
     setFormDataCacheKey(cKey);
 
-    refreshPageForm();
+    refreshPageForm(cKey);
 
     return () => {
       isInitialized = false;
@@ -218,7 +221,7 @@ const FormView = (props: FormViewProps) => {
         debounceTimer = null;
         setFormData(change);
         updateCache(formDataCacheKey, change);
-        refreshPageForm();
+        refreshPageForm(formDataCacheKey);
 
         if(props.onChange) {
           props.onChange(change);
@@ -229,7 +232,7 @@ const FormView = (props: FormViewProps) => {
     if(isFirstUpdate || forceUpdate) {
       setFormData(change);
       updateCache(formDataCacheKey, change);
-      refreshPageForm();
+      refreshPageForm(formDataCacheKey);
 
       if(props.onChange) {
         props.onChange(change);

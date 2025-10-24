@@ -6,6 +6,7 @@ export type PageFormReference = {
   useSchema: (schema: JSONSchema7) => void,
   validate: () => Promise<boolean>,
   markAsSubmitted: () => void,
+  cancel: () => void,
   displayError: (errorComponent: React.JSX.Element) => void,
 }
 

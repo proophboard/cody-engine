@@ -3,11 +3,11 @@ import {
   ButtonAction,
   isCommandAction,
   isLinkAction,
-  isRulesAction
+  isRulesAction, LinkAction
 } from "@frontend/app/components/core/form/types/action";
-import {MouseEvent, PropsWithChildren, useContext} from "react";
+import {MouseEvent, PropsWithChildren, useContext, useState} from "react";
 import {configStore} from "@cody-play/state/config-store";
-import {Alert, Button, CSSProperties, IconButton} from '@mui/material';
+import {Alert, Button, CSSProperties, IconButton, Typography, useTheme} from '@mui/material';
 import PlayCommand from "@cody-play/app/components/core/PlayCommand";
 import {determineButtonConfig} from "@frontend/app/components/core/button/determine-button-config";
 import {generatePageLink, getPageDefinition} from "@frontend/app/components/core/PageLink";
@@ -23,9 +23,13 @@ import {makeAsyncExecutable} from "@cody-play/infrastructure/rule-engine/make-ex
 import PlayConnectedCommand from "@cody-play/app/components/core/PlayConnectedCommand";
 import PlayDirectSubmitCommand from "@cody-play/app/components/core/PlayDirectSubmitCommand";
 import {ButtonConfig} from "@frontend/app/components/core/button/button-config";
-import {Plus, Square} from "mdi-material-ui";
+import {Square} from "mdi-material-ui";
 import {GridActionsCellItem} from "@mui/x-data-grid";
-import {commandTitle} from "@frontend/app/components/core/CommandButton";
+import {usePageData} from "@frontend/hooks/use-page-data";
+import {useTranslation} from "react-i18next";
+import {TFunction} from "i18next";
+import ConfirmationDialog from "@frontend/app/components/core/dialogs/ConfirmationDialog";
+import {isPageFormReference} from "@app/shared/types/core/page-data/page-data";
 
 interface OwnProps {
   action: ButtonAction;
@@ -38,9 +42,9 @@ interface OwnProps {
 
 type ActionButtonProps = OwnProps;
 
-const makeGridActionsCellItemLink = (config: ButtonConfig, to: string, external: boolean, navigate: (to: string) => void) => {
+const makeGridActionsCellItemLink = (config: ButtonConfig, to: string, external: boolean, navigate: (to: string) => void, t: TFunction) => {
   return <GridActionsCellItem
-    label={config.label || ''}
+    label={config['label:t'] ? t(config['label:t']) : config.label || ''}
     icon={(config.icon ? config.icon :  <Square />) as any}
     showInMenu={config.showInMenu}
     onClick={(e: any) => {
@@ -56,9 +60,9 @@ const makeGridActionsCellItemLink = (config: ButtonConfig, to: string, external:
   />
 }
 
-const makeGridActionsCellItemRulesBtn = (config: ButtonConfig, onClick: () => void) => {
+const makeGridActionsCellItemRulesBtn = (config: ButtonConfig, onClick: () => void, t: TFunction) => {
   return <GridActionsCellItem
-    label={config.label || ''}
+    label={config['label:t'] ? t(config['label:t']) : config.label || ''}
     icon={(config.icon ? config.icon :  <Square />) as any}
     showInMenu={config.showInMenu}
     onClick={onClick}
@@ -68,7 +72,7 @@ const makeGridActionsCellItemRulesBtn = (config: ButtonConfig, onClick: () => vo
   />
 }
 
-const makeButton = (config: ButtonConfig, additionalProps: object) => {
+const makeButton = (config: ButtonConfig, additionalProps: object, t: TFunction) => {
   if (config.hidden) {
     return <></>;
   }
@@ -93,7 +97,7 @@ const makeButton = (config: ButtonConfig, additionalProps: object) => {
         color={config.color === 'default' ? undefined : config.color}
         startIcon={config.icon}
         endIcon={config.endIcon}
-        children={config.label ? config.label : 'change'}
+        children={config['label:t'] ? t(config['label:t']) : config.label || 'Change'}
         disabled={config.disabled}
         className={config.className}
         {...additionalProps}
@@ -102,10 +106,83 @@ const makeButton = (config: ButtonConfig, additionalProps: object) => {
   }
 };
 
+const MakeConfirmationButton = (
+  action: LinkAction,
+  additionalProps: any,
+  t: TFunction
+) => {
+  const [dialog, setDialog] = useState(false);
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const [page,] = usePageData();
+
+  return (
+    <>
+      {makeButton(
+        action.button,
+        {
+          ...additionalProps,
+          onClick: (event: MouseEvent) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setDialog(true);
+          },
+        },
+        t
+      )}
+      <ConfirmationDialog
+        open={dialog}
+        onClose={() => setDialog(false)}
+        title={
+          action['confirmTitle:t']
+            ? t(action['confirmTitle:t'])
+            : action.confirmTitle || t('common.confirm', 'Do you really want to leave the page?')
+        }
+        onConfirmClick={() => {
+          if(action.cancelForm) {
+            const form = page[action.cancelForm];
+
+            if(!isPageFormReference(form)) {
+              console.warn(`Cannot find the form "${action.cancelForm}" to be canceled on the page. Configure a view of type "form" on the same page as the link action.`);
+            } else {
+              form.cancel();
+            }
+          }
+
+          if (additionalProps.href) {
+            window.open(additionalProps.href, '_blank');
+          } else if (additionalProps.to) {
+            navigate(additionalProps.to);
+          }
+          setDialog(false);
+        }}
+        confirmButtonText={
+          action['confirmAcceptText:t']
+            ? t(action['confirmAcceptText:t'])
+            : action.confirmAcceptText || t('common.confirm', 'Yes')
+        }
+        abortButtonText={
+          action['confirmCancelText:t']
+            ? t(action['confirmCancelText:t'])
+            : action.confirmCancelText || t('common.cancel', 'Cancel')
+        }
+      >
+        <Typography sx={{ paddingLeft: theme.spacing(1) }}>
+          {action['confirmText:t']
+            ? t(action['confirmText:t'])
+            : action.confirmText || t('common.confirmDefaultLinkMessage', 'Your entered data will be lost!')}
+        </Typography>
+      </ConfirmationDialog>
+    </>
+  );
+};
+
 const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose, asGridActionsCellItem, showInMenu }: ActionButtonProps) => {
   const env = useEnv();
+  const { t } = useTranslation();
   const { config } = useContext(configStore);
   const [, setGlobalStore] = useGlobalStore();
+  const [page] = usePageData();
   const params = useParams();
   const buttonProps = determineButtonConfig({...action.button, className: 'CodyAction-root'}, {}, jexlCtx, env);
   const navigate = useNavigate();
@@ -165,10 +242,35 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose, asGridAc
   }
 
   if (isLinkAction(action)) {
+
+    let onClick = undefined;
+
+    if(action.cancelForm) {
+      onClick = () => {
+        const form = page[action.cancelForm!];
+
+        if(!isPageFormReference(form)) {
+          console.warn(`Cannot find the form "${action.cancelForm}" to be canceled on the page. Configure a view of type "form" on the same page as the link action.`);
+        } else {
+          form.cancel();
+        }
+      }
+    }
+
     if (action.href) {
-      return buttonProps.asGridActionsCellItem
-        ? makeGridActionsCellItemLink(buttonProps, action.href, true, navigate)
-        : makeButton({...action.button, asGridActionsCellItem, showInMenu, className: 'CodyAction-root'}, { component: 'a', href: action.href });
+      if(buttonProps.asGridActionsCellItem) {
+        return makeGridActionsCellItemLink(buttonProps, action.href, true, navigate, t);
+      }
+
+      if (action.needsConfirmation) {
+        return MakeConfirmationButton(
+          action,
+          { component: 'a', href: action.href },
+          t
+        );
+      }
+
+      return makeButton({...action.button, asGridActionsCellItem, showInMenu, className: 'CodyAction-root'}, { component: 'a', href: action.href, onClick }, t);
     } else if (action.pageLink) {
       const paramsMapping: Record<string, any> = {};
       const pageLink = typeof action.pageLink === "string" ? {page: action.pageLink, mapping: undefined} : action.pageLink;
@@ -191,9 +293,15 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose, asGridAc
         { ...jexlCtx.routeParams, ...paramsMapping }
       );
 
-      return buttonProps.asGridActionsCellItem
-        ? makeGridActionsCellItemLink(buttonProps, path, false, navigate)
-        : makeButton(buttonProps, { component: Link, to: path })
+      if(buttonProps.asGridActionsCellItem) {
+        return makeGridActionsCellItemLink(buttonProps, path, false, navigate, t);
+      }
+
+      if (action.needsConfirmation) {
+        return MakeConfirmationButton(action, { component: Link, to: path }, t);
+      }
+
+      return makeButton(buttonProps, { component: Link, to: path, onClick }, t);
     }
   }
 
@@ -205,7 +313,7 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose, asGridAc
           await exec(jexlCtx);
           setGlobalStore(jexlCtx.store);
         })().catch((e) => console.error(e));
-      })
+      }, t)
       : makeButton(buttonProps, {
       onClick: (event: MouseEvent) => {
         event.preventDefault();
@@ -217,7 +325,7 @@ const ActionButton = ({ action, defaultService, jexlCtx, onDialogClose, asGridAc
           setGlobalStore(jexlCtx.store);
         })().catch((e) => console.error(e));
       },
-    });
+    }, t);
   }
 
   return <></>;

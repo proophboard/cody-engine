@@ -97,6 +97,16 @@ export const isFormAction = (action: Action): action is FormAction => {
 export interface LinkAction extends ButtonAction {
   pageLink?: string | {page: string; mapping: Record<string, string>};
   href?: string;
+  needsConfirmation?: boolean;
+  cancelForm?: string;
+  confirmTitle?: string;
+  'confirmTitle:t'?: string;
+  confirmText?: string;
+  'confirmText:t'?: string;
+  confirmCancelText?: string;
+  'confirmCancelText:t'?: string;
+  confirmAcceptText?: string;
+  'confirmAcceptText:t'?: string;
 }
 
 export interface CommandAction extends ButtonAction {
