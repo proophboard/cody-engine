@@ -11,7 +11,13 @@ export type COLOR_MODE = 'dark' | 'light';
 export const ColorModeContext = React.createContext<{mode: COLOR_MODE, toggleColorMode: () => void}>({mode: 'light', toggleColorMode: () => {} });
 
 const ToggleColorMode = ({children}: Props) => {
-  const [mode, setMode] = React.useState<COLOR_MODE>('light');
+  let initial: COLOR_MODE = 'light';
+
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    initial = 'dark';
+  }
+
+  const [mode, setMode] = React.useState<COLOR_MODE>(initial);
   const colorMode = {
       mode,
       toggleColorMode: () => {

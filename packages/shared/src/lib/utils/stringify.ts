@@ -1,6 +1,6 @@
-export const stringify = (val: any): string => {
+export const stringify = (val: any, replacer?: (this: any, key: string, value: any) => any, space?: string | number): string => {
   if(typeof val !== "string") {
-    return JSON.stringify(val);
+    return JSON.stringify(val, replacer, space);
   }
 
   return val;

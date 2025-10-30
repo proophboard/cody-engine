@@ -18,3 +18,7 @@ export const currentBoardId = (): string | null => {
 
   return currentBoardIdVal;
 }
+
+export const setCurrentBoardId = (boardId: string) => {
+  sessionStorage.setItem(BOARD_SESSION_STORAGE_KEY, boardId);
+}

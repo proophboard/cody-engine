@@ -4,7 +4,7 @@
 import {CodyEngineMode} from "@app/shared/types/core/cody/cody-engine-mode";
 
 export const environment = {
-  production: false,
+  production: true,
   mode: 'prototype' as CodyEngineMode,
   vibeCodyAI: true,
 };

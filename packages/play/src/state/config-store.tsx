@@ -71,7 +71,8 @@ import {makePlayRulesServiceFactory} from "@cody-play/infrastructure/services/ma
 import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
-import {useVibeCodyAi} from "@cody-play/hooks/use-vibe-cody-ai";
+import {environment} from "@cody-play/environments/environment";
+import {v4} from "uuid";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -98,8 +99,8 @@ export interface CodyPlayConfig {
   services: PlayServiceRegistry,
 }
 
-const initialPlayConfig: CodyPlayConfig = {
-  appName: 'Cody Play',
+export const initialPlayConfig: CodyPlayConfig = {
+  appName: environment.vibeCodyAI ? 'Vibe Cody' : 'Cody Play',
   defaultService: 'App',
   layout: 'task-based-ui',
   boardId: '',
@@ -133,7 +134,8 @@ const initialPlayConfig: CodyPlayConfig = {
         invisible: true
       },
       route: "/welcome",
-      topLevel: true
+      topLevel: true,
+      title: " "
     } as PlayTopLevelPage),
     'CodyPlay.VibeCodyProcessing': ({
       name: 'CodyPlay.VibeCodyProcessing',
@@ -298,7 +300,6 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
   const [user, ] = useUser();
   const {env, setEnv} = useContext(EnvContext);
   const [, setTypes] = useTypes();
-  const [isVibeCodyAiMode, setVibeCodyAiMode] = useVibeCodyAi();
   const [config, dispatch] = useReducer((config: CodyPlayConfig, action: Action): CodyPlayConfig => {
     console.log(`[PlayConfigStore] Going to apply action: `, action);
 
@@ -317,12 +318,6 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
           setEnv({...env, DEFAULT_SERVICE: names(config.defaultService).className, PAGES: config.pages as unknown as PageRegistry});
         }, 50);
 
-        if(action.ctx.origin === "vibe-cody.ai" && !isVibeCodyAiMode) {
-          setVibeCodyAiMode(true);
-        } else if(isVibeCodyAiMode) {
-          setVibeCodyAiMode(false);
-        }
-        
         return newConfig;
       case "RENAME_APP":
         return {...config, appName: action.name};
