@@ -102,15 +102,6 @@ export const PlayStandardPage = (props: Props) => {
     mode: "pageForm"
   };
 
-  const copiedRouteParamsPerView = useMemo(() => {
-    const componentNames = page.components.map(c => typeof c === "string" ? c : c.view);
-
-    const paramsMap: Record<string, typeof routeParams> = {};
-    componentNames.forEach(c => paramsMap[c] = cloneDeepJSON(routeParams));
-
-    return paramsMap;
-  }, [routeParams]);
-
   // @TODO: inject via config or theme
   let SIDEBAR_WIDTH = 300;
 
@@ -139,6 +130,15 @@ export const PlayStandardPage = (props: Props) => {
   if (page['props:expr']) {
     page.props = execMappingSync(page['props:expr'], jexlCtx);
   }
+
+  const copiedRouteParamsPerView = useMemo(() => {
+    const componentNames = page.components.map(c => typeof c === "string" ? c : c.view);
+
+    const paramsMap: Record<string, typeof routeParams> = {};
+    componentNames.forEach(c => paramsMap[c] = cloneDeepJSON(routeParams));
+
+    return paramsMap;
+  }, [routeParams]);
 
   let tabs;
   let topBar: React.JSX.Element = <></>;

@@ -41,6 +41,20 @@
           "namedChunks": false,
           "extractLicenses": true,
           "vendorChunk": false
+        },
+        "vibe-cody": {
+          "fileReplacements": [
+            {
+              "replace": "packages/play/src/environments/environment.ts",
+              "with": "packages/play/src/environments/environment.vibe-cody.ts"
+            }
+          ],
+          "optimization": true,
+          "outputHashing": "all",
+          "sourceMap": false,
+          "namedChunks": false,
+          "extractLicenses": true,
+          "vendorChunk": false
         }
       }
     },

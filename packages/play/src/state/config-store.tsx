@@ -71,6 +71,8 @@ import {makePlayRulesServiceFactory} from "@cody-play/infrastructure/services/ma
 import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
+import {environment} from "@cody-play/environments/environment";
+import {v4} from "uuid";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -97,8 +99,8 @@ export interface CodyPlayConfig {
   services: PlayServiceRegistry,
 }
 
-const initialPlayConfig: CodyPlayConfig = {
-  appName: 'Cody Play',
+export const initialPlayConfig: CodyPlayConfig = {
+  appName: environment.vibeCodyAI ? 'Vibe Cody' : 'Cody Play',
   defaultService: 'App',
   layout: 'task-based-ui',
   boardId: '',
@@ -132,7 +134,8 @@ const initialPlayConfig: CodyPlayConfig = {
         invisible: true
       },
       route: "/welcome",
-      topLevel: true
+      topLevel: true,
+      title: " "
     } as PlayTopLevelPage),
     'CodyPlay.VibeCodyProcessing': ({
       name: 'CodyPlay.VibeCodyProcessing',
