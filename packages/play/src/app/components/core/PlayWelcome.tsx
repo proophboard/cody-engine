@@ -35,6 +35,7 @@ import {FileDropzone} from "@cody-play/app/components/core/FileDropzone";
 import {parseJson} from "@app/shared/utils/parse-json";
 import {getRjsfValidator} from "@frontend/util/rjsf-validator";
 import {PlayshotSchema} from "@cody-play/state/playshot.schema";
+import {useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
 
 interface OwnProps {
 
@@ -50,6 +51,7 @@ const PlayWelcome = (props: PlayWelcomeProps) => {
   const personasCards = config.personas.map(persona => <PersonaCard persona={persona} key={persona.userId} />)
   const [personaModalOpen, setPersonaModalOpen] = useState(false);
   const [isVibeCody] = useVibeCodyAi();
+  const [vibeCodyOpen, setVibeCodyOpen] = useVibeCodyOpen();
 
   const initPlayshot = async (playshot: Playshot) => {
     dispatch({
@@ -90,6 +92,8 @@ const PlayWelcome = (props: PlayWelcomeProps) => {
           sequences: {}
         }
       }).catch(e => enqueueSnackbar({message: e + '', variant: "error"}));
+
+      setVibeCodyOpen(true);
     }
   }, [config.boardId, isVibeCody]);
 
@@ -125,13 +129,14 @@ const PlayWelcome = (props: PlayWelcomeProps) => {
     : 'https://wiki.prooph-board.com/cody_play/tutorial.html';
 
   return <>
-    {!isVibeCody && <h1>Welcome to {config.appName}</h1>}
-    {isVibeCody && <h1>Welcome on vibe-cody.ai</h1>}
-    <p><Flash sx={{color: '#f5e339'}} />This application is powered by <Link href="https://github.com/proophboard/cody-engine">Cody Engine</Link><Flash sx={{color: '#f5e339'}} /></p>
-    <Box sx={{marginTop: '30px', maxWidth: '1000px'}}>
-      <p>
+    <Box sx={{maxWidth: '1000px'}}>
+      {!isVibeCody && <Typography variant="h1" align="center">Welcome to {config.appName}</Typography>}
+      {isVibeCody && <Typography variant="h1" align="center">Welcome on vibe-cody.ai</Typography>}
+      <p style={{textAlign: "center"}}><Flash sx={{color: '#f5e339'}} />This application is powered by <Link href="https://github.com/proophboard/cody-engine">Cody Engine</Link><Flash sx={{color: '#f5e339'}} /></p>
+      <Divider sx={{marginTop: theme => theme.spacing(4)}}><Typography variant="h3">Intro</Typography></Divider>
+      <Box sx={{marginTop: theme => theme.spacing(4)}}>
         {playName} is a <strong>browser-only "vibe coding" app</strong>. Design software using natural language.
-      </p>
+      </Box>
       <List>
         <ListItem>
           <ListItemIcon><MdiIcon icon="arrow-decision" /></ListItemIcon>
@@ -172,7 +177,8 @@ const PlayWelcome = (props: PlayWelcomeProps) => {
                 onClick={() => setPersonaModalOpen(true)}
         >Manage Personas</Button>
       </p>
-      <Divider sx={{marginTop: theme => theme.spacing(4)}}><Typography variant="h3">Playshot Import</Typography></Divider>
+      {isVibeCody && <Divider sx={{marginTop: theme => theme.spacing(4)}}><Typography variant="h3">Playshot
+        Import</Typography></Divider>}
       {isVibeCody && <Box sx={{marginTop: theme => theme.spacing(4)}}><FileDropzone onFileImport={handleFileImport} /></Box>}
     </Box>
     <PlayPersonaModal open={personaModalOpen} onClose={() => setPersonaModalOpen(false)} />

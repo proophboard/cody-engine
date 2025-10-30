@@ -9,9 +9,13 @@ Cody Play is available on https://play.prooph-board.com
 
 The production build is hosted on Github Pages using the cody-play repo: 
 
-### Production Build
+### Production Build Cody Play
 
 `npx nx run play:build`
+
+### Production Build vibe-cody.ai
+
+`npx nx run play:build:vibe-cody`
 
 ### Push to Github Repo
 
