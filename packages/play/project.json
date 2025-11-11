@@ -49,6 +49,7 @@
               "with": "packages/play/src/environments/environment.vibe-cody.ts"
             }
           ],
+          "index": "packages/play/src/vibe-cody-ai/index.html",
           "optimization": true,
           "outputHashing": "all",
           "sourceMap": false,
