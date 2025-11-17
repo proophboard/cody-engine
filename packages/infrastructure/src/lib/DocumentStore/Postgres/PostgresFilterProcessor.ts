@@ -133,6 +133,10 @@ export class PostgresFilterProcessor implements FilterProcessor {
       const argumentRef = this.registerArgument(JSON.stringify(value));
       options.push(`$${argumentRef}`);
     });
+    if (options.length === 0) {
+      return 'TRUE';
+    }
+
     const propPath = this.propToJsonPath(filter.prop);
 
     return `${filter.collection}.${propPath} IN(${options.join(',')})`;
