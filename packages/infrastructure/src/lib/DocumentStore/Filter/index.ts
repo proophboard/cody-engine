@@ -13,6 +13,7 @@ import {LteFilter} from "@event-engine/infrastructure/DocumentStore/Filter/LteFi
 import {LtFilter} from "@event-engine/infrastructure/DocumentStore/Filter/LtFilter";
 import {NotFilter} from "@event-engine/infrastructure/DocumentStore/Filter/NotFilter";
 import {OrFilter} from "@event-engine/infrastructure/DocumentStore/Filter/OrFilter";
+import {ArrayIntersectFilter} from "@event-engine/infrastructure/DocumentStore/Filter/ArrayIntersectFilter";
 
 export const filters = {
   AndFilter: AndFilter,
@@ -30,4 +31,5 @@ export const filters = {
   LtFilter: LtFilter,
   NotFilter: NotFilter,
   OrFilter: OrFilter,
+  ArrayIntersectFilter: ArrayIntersectFilter,
 }
