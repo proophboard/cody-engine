@@ -115,6 +115,14 @@ _Run prepare database before the import to ensure that all tables exist._
 
 _If you want to rerun the import, make sure to empty the database before._
 
+### Import Cody Playshot
+
+Export a playshot from prooph board and place it into: `data/playshot.json`
+
+Then run:
+
+`npm run import-playshot`
+
 ### Access local services
 
 | service        | user     | password   | link                                                                     |

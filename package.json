@@ -15,7 +15,8 @@
     "test-fe": "npx nx run fe:test",
     "test-shared": "npx nx run shared:test",
     "migrate": "ts-node packages/infrastructure/src/lib/helpers/create-registry-files.ts && npx nx run be:migrate",
-    "create-migration": "npx node-pg-migrate -m packages/be/src/migrations -j ts create"
+    "create-migration": "npx node-pg-migrate -m packages/be/src/migrations -j ts create",
+    "import-playshot": "node tools/scripts/import-playshot.mjs"
   },
   "private": false,
   "devDependencies": {
