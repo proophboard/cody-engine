@@ -18,6 +18,7 @@ export const registerArrayExtensions = (jexl: Jexl): void => {
   jexl.addTransform('list', (v: unknown): unknown[] => typeof v === "undefined" ? [] :Array.isArray(v) ? v : [v]);
   jexl.addTransform('reduce', (arr: Array<unknown>, iterateeExpr: string, accumulator: any, ctx?: object): any => reduce(arr, (sum, item) => reduceWithExpr(sum, item, iterateeExpr, ctx || {}, jexl), accumulator));
   jexl.addTransform('reverse', (arr: Array<unknown>) => reverse(arr));
+  jexl.addTransform('length', (arr: Array<unknown>) => arr.length);
 }
 
 const arrayPush = (arr: Array<unknown>, val: unknown): Array<unknown> => {
