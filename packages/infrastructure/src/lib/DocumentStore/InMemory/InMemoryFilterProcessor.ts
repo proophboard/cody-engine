@@ -15,6 +15,7 @@ import {LikeFilter} from "@event-engine/infrastructure/DocumentStore/Filter/Like
 import {NotFilter} from "@event-engine/infrastructure/DocumentStore/Filter/NotFilter";
 import {AnyOfDocIdFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AnyOfDocIdFilter";
 import {AnyOfFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AnyOfFilter";
+import {ArrayIntersectFilter} from '@event-engine/infrastructure/DocumentStore/Filter/ArrayIntersectFilter';
 import {getValueFromPath} from "@event-engine/infrastructure/DocumentStore/helpers";
 
 type ReturnType = (doc: any, docId: string) => boolean;
@@ -117,6 +118,18 @@ export class InMemoryFilterProcessor implements FilterProcessor {
     return (doc: any) => {
       const value = getValueFromPath(filter.prop, doc);
       return filter.valList.includes(value);
+    };
+  }
+
+  processArrayIntersectFilter(filter: ArrayIntersectFilter): ReturnType {
+    return (doc: any) => {
+      const value = getValueFromPath(filter.prop, doc);
+
+      if (filter.valList.length === 0) {
+        return true;
+      }
+
+      return filter.valList.some((item) => value.includes(item));
     };
   }
 }

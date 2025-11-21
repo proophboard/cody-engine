@@ -14,6 +14,7 @@ import {LikeFilter} from "@event-engine/infrastructure/DocumentStore/Filter/Like
 import {NotFilter} from "@event-engine/infrastructure/DocumentStore/Filter/NotFilter";
 import {AnyOfDocIdFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AnyOfDocIdFilter";
 import {AnyOfFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AnyOfFilter";
+import {ArrayIntersectFilter} from '@event-engine/infrastructure/DocumentStore/Filter/ArrayIntersectFilter';
 
 export interface FilterProcessor {
   process: (filter: Filter) => any;
@@ -32,4 +33,5 @@ export interface FilterProcessor {
   processNotFilter: (filter: NotFilter) => any;
   processAnyOfDocIdFilter: (filter: AnyOfDocIdFilter) => any;
   processAnyOfFilter: (filter: AnyOfFilter) => any;
+  processArrayIntersectFilter: (filter: ArrayIntersectFilter) => any;
 }
