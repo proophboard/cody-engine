@@ -15,6 +15,7 @@ import {LikeFilter} from "@event-engine/infrastructure/DocumentStore/Filter/Like
 import {NotFilter} from "@event-engine/infrastructure/DocumentStore/Filter/NotFilter";
 import {AnyOfDocIdFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AnyOfDocIdFilter";
 import {AnyOfFilter} from "@event-engine/infrastructure/DocumentStore/Filter/AnyOfFilter";
+import {ArrayIntersectFilter} from '@event-engine/infrastructure/DocumentStore/Filter/ArrayIntersectFilter';
 
 export class PostgresFilterProcessor implements FilterProcessor {
   private arguments: any[] = [];
@@ -132,9 +133,24 @@ export class PostgresFilterProcessor implements FilterProcessor {
       const argumentRef = this.registerArgument(JSON.stringify(value));
       options.push(`$${argumentRef}`);
     });
+    if (options.length === 0) {
+      return 'TRUE';
+    }
+
     const propPath = this.propToJsonPath(filter.prop);
 
     return `${filter.collection}.${propPath} IN(${options.join(',')})`;
+  }
+
+  processArrayIntersectFilter(filter: ArrayIntersectFilter): string {
+    if (filter.valList.length === 0) {
+      return 'TRUE';
+    }
+
+    const argumentRef = this.registerArgument(filter.valList);
+    const propPath = this.propToJsonPath(filter.prop);
+
+    return `${filter.collection}.${propPath} ?| $${argumentRef}`;
   }
 
 
