@@ -21,6 +21,7 @@ commander.version('1.0.0', '-v, --version')
   .usage('[OPTIONS]...')
   .option('-i, --eventid <EventId>', 'Id of event to project into read model')
   .option('-n, --name <ProjectionName>', `Name of the projection to run (default: ${DEFAULT_READ_MODEL_PROJECTION})`, DEFAULT_READ_MODEL_PROJECTION)
+  .option('--buildTarget <BuildTarget>', 'The build target')
   .parse(process.argv);
 
 const options = commander.opts();
