@@ -62,7 +62,7 @@
       "options": {
         "cwd": "packages/be",
         "color": true,
-        "command": "npx ts-node --swc -r tsconfig-paths/register src/infrastructure/preparedb.ts",
+        "command": "npx tsx src/infrastructure/preparedb.ts",
         "buildTarget": "be:build"
       },
       "configurations": {
@@ -74,13 +74,22 @@
         }
       }
     },
+    "migrate": {
+      "executor": "nx:run-commands",
+      "defaultConfiguration": "development",
+      "options": {
+        "cwd": "packages/be",
+        "color": true,
+        "command": "npx tsx src/infrastructure/migrateLocal.ts"
+      }
+    },
     "republish": {
       "executor": "nx:run-commands",
       "defaultConfiguration": "development",
       "options": {
         "cwd": "packages/be",
         "color": true,
-        "command": "npx ts-node --swc -r tsconfig-paths/register src/infrastructure/republish.ts",
+        "command": "npx tsx src/infrastructure/republish.ts",
         "buildTarget": "be:build"
       },
       "configurations": {
@@ -98,7 +107,7 @@
       "options": {
         "cwd": "packages/be",
         "color": true,
-        "command": "npx ts-node --swc -r tsconfig-paths/register src/infrastructure/run-projection.ts",
+        "command": "npx tsx src/infrastructure/run-projection.ts",
         "buildTarget": "be:build"
       },
       "configurations": {
@@ -116,7 +125,7 @@
       "options": {
         "cwd": "packages/be",
         "color": true,
-        "command": "npx ts-node --swc -r tsconfig-paths/register src/infrastructure/import-filesystem-db.ts",
+        "command": "npx tsx src/infrastructure/import-filesystem-db.ts",
         "buildTarget": "be:build"
       },
       "configurations": {

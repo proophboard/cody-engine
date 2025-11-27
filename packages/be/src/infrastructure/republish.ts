@@ -18,6 +18,7 @@ const commander = new Command('republish');
 commander.version('1.0.0', '-v, --version')
   .usage('[OPTIONS]...')
   .option('-i, --eventid <EventId>', 'Id of event to republish')
+  .option('--buildTarget <BuildTarget>', 'The build target')
   .parse(process.argv);
 
 const options = commander.opts();

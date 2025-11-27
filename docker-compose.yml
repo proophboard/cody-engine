@@ -83,7 +83,7 @@ services:
       POSTGRES_APP_USER_PASSWORD: password
       POSTGRES_APP_DB: app
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     networks:
       - cody
 
