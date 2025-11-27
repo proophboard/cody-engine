@@ -11,7 +11,6 @@ import MdiIcon from "@cody-play/app/components/core/MdiIcon";
 import {makeAggregateCommandMutationFn} from "@cody-play/infrastructure/commands/make-aggregate-command-mutation-fn";
 import {isAggregateCommandDescription} from "@event-engine/descriptions/descriptions";
 import {useUser} from "@frontend/hooks/use-user";
-import PlayExistingStateCommandDialog from "@cody-play/app/components/core/PlayExistingStateCommandDialog";
 import PlayDataSelectWidget from "@cody-play/app/form/widgets/PlayDataSelectWidget";
 import {CommandMutationFunction} from "@cody-play/infrastructure/commands/command-mutation-function";
 import {makePureCommandMutationFn} from "@cody-play/infrastructure/commands/make-pure-command-mutation-fn";
@@ -127,7 +126,7 @@ const PlayCommand = (props: PlayCommandProps) => {
         onClick={handleOpenDialog}
         {...props.buttonProps}
       />
-      {((isAggregateCommandDescription(commandDesc) && commandDesc.newAggregate) || !isAggregateCommandDescription(commandDesc) ) && <CommandDialog
+      <CommandDialog
         open={dialogOpen}
         onClose={handleCloseDialog}
         commandDialogCommand={runtimeInfo}
@@ -138,17 +137,7 @@ const PlayCommand = (props: PlayCommandProps) => {
         widgets={{
           DataSelect: PlayDataSelectWidget
         }}
-      />}
-      {stateInfo && isAggregateCommandDescription(commandDesc) && !commandDesc.newAggregate && <PlayExistingStateCommandDialog
-          open={dialogOpen}
-          onClose={handleCloseDialog}
-          commandDialogCommand={runtimeInfo}
-          commandFn={incompleteCommandConfigError? undefined : commandFn}
-          incompleteCommandConfigError={incompleteCommandConfigError}
-          definitions={definitions}
-          stateInfo={stateInfo}
-          initialValues={initialValues}
-      />}
+      />
     </>
   );
 };
