@@ -279,10 +279,11 @@ const validateTriggerCommandContext = (then: ThenTriggerCommand, ctx: ExecutionC
 }
 
 const execForEachSync = (then: ThenForEach, ctx: ExecutionContext): ExecutionContext => {
-  if(ctx[then.forEach.variable] && Array.isArray(ctx[then.forEach.variable])) {
+  const forEachVariable = jexl.evalSync(then.forEach.variable, ctx);
+  if(Array.isArray(forEachVariable)) {
     const item = then.forEach.of || 'item';
-    for (const itemIndex in ctx[then.forEach.variable]) {
-      ctx[item] = ctx[then.forEach.variable][itemIndex];
+    for (const itemIndex in forEachVariable) {
+      ctx[item] = forEachVariable[itemIndex];
       ctx['_'] = ctx[item];
       ctx['itemIndex'] = itemIndex;
 
@@ -294,11 +295,12 @@ const execForEachSync = (then: ThenForEach, ctx: ExecutionContext): ExecutionCon
 }
 
 const execForEachAsync = async (then: ThenForEach, ctx: ExecutionContext): Promise<ExecutionContext> => {
-  if(ctx[then.forEach.variable] && Array.isArray(ctx[then.forEach.variable])) {
+  const forEachVariable = jexl.evalSync(then.forEach.variable, ctx);
+  if(Array.isArray(forEachVariable)) {
     const item = then.forEach.of || 'item';
 
-    for (const itemIndex in ctx[then.forEach.variable]) {
-      ctx[item] = ctx[then.forEach.variable][itemIndex];
+    for (const itemIndex in forEachVariable) {
+      ctx[item] = forEachVariable[itemIndex];
       ctx['_'] = ctx[item];
       ctx['itemIndex'] = itemIndex;
 
