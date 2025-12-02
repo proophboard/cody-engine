@@ -2,10 +2,9 @@ import * as React from 'react';
 import {isSubLevelPage, isTopLevelPage, PageDefinition} from "@frontend/app/pages/page-definitions";
 import {generatePath, Link} from "react-router-dom";
 import {PropsWithChildren} from "react";
-import {PageLinkTableColumn} from "@cody-engine/cody/hooks/utils/value-object/types";
-import {PlayPageDefinition, PlayPageRegistry} from "@cody-play/state/types";
 import {names} from "@event-engine/messaging/helpers";
 import {PageRegistry} from "@frontend/app/pages";
+import {Link as MuiLink} from '@mui/material';
 
 interface OwnProps {
   page: PageDefinition,
@@ -54,7 +53,16 @@ export const getPageDefinition = (linkedPage: string, defaultService: string, pa
 }
 
 const PageLink = (props: PageLinkProps) => {
-  return <Link to={generatePageLink(props.page, props.params)}>{props.children}</Link>
+  return (
+    <MuiLink
+      component={Link}
+      to={generatePageLink(props.page, props.params)}
+      color="primary"
+      underline="hover"
+    >
+      {props.children}
+    </MuiLink>
+  );
 };
 
 export default PageLink;
