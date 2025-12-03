@@ -60,7 +60,7 @@ if (!env.authentication?.disabled) {
         }
         return undefined;
       },
-    }).unless({ path: ['/api/bitexpert/monitoring/health'] })
+    }).unless({ path: ['/api/cody-engine/monitoring/health'] })
   );
 
   app.use((req, res, next) => {
