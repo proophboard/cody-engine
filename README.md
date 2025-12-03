@@ -142,7 +142,17 @@ _See realm config in `env/docker/keycloak/import/app-realm.json`_
 |-------------------|----------|----------------------|
 | anyone@cody.local | dev      | Anyone               |
 
+#### User Attributes
 
+Additional user attributes need to be mapped in Keycloak so that they are included in the JWT.
+1. Goto `client scopes -> profile -> mappers -> Add Mapper -> By configuration`. 
+2. Pick `User Attribute` from the list.
+3. Fill out the form. Set token claim name to `attributes.[your_attribute_name]`
+4. Turn on `multivalued` if a user can have multiple values set for an attribute.
+
+#### User Roles
+
+Make sure to register user roles in `shared/src/lib/types/core/user/user-role.ts`. _Done by Cody if you pass a role sticky to Cody._
 
 ## Production Build
 
