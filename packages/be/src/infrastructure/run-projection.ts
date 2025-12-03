@@ -5,6 +5,9 @@ import {Command} from "commander";
 import {DEFAULT_READ_MODEL_PROJECTION} from "@event-engine/infrastructure/Projection/types";
 import {getConfiguredEventBus} from "@server/infrastructure/configuredEventBus";
 import {mapMetadataFromEventStore} from "@event-engine/infrastructure/EventStore/map-metadata-from-event-store";
+import {bootstrapPlayBackend} from "@server/playconfig/bootstrap-play-backend";
+
+bootstrapPlayBackend();
 
 // Do not remove messageBox, without that import the script fails
 // Somehow ts-node is not able to load the event store module correctly

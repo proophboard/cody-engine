@@ -4,6 +4,9 @@ import {getConfiguredDocumentStore} from "@server/infrastructure/configuredDocum
 import {PostgresDocumentStore} from "@event-engine/infrastructure/DocumentStore/PostgresDocumentStore";
 import {types} from "@app/shared/types";
 import {ValueObjectDescription} from "@event-engine/descriptions/descriptions";
+import {bootstrapPlayBackend} from "@server/playconfig/bootstrap-play-backend";
+
+bootstrapPlayBackend();
 
 // Do not remove messageBox, without that import the script fails
 // Somehow ts-node is not able to load the event store module correctly

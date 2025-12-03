@@ -2,6 +2,9 @@ import {getConfiguredMessageBox} from "@server/infrastructure/configuredMessageB
 import {getConfiguredEventStore, PERSISTENT_STREAMS_FILE} from "@server/infrastructure/configuredEventStore";
 import {getConfiguredDocumentStore, PERSISTENT_COLLECTION_FILE} from "@server/infrastructure/configuredDocumentStore";
 import * as fs from "node:fs";
+import {bootstrapPlayBackend} from "@server/playconfig/bootstrap-play-backend";
+
+bootstrapPlayBackend();
 
 // Do not remove messageBox, without that import the script fails
 // Somehow ts-node is not able to load the event store module correctly

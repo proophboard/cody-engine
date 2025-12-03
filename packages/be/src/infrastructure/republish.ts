@@ -4,6 +4,9 @@ import * as process from "process";
 import {Command} from "commander";
 import {getExternalServiceOrThrow} from "@server/extensions/get-external-service";
 import {AuthService} from "@event-engine/infrastructure/auth-service/auth-service";
+import {bootstrapPlayBackend} from "@server/playconfig/bootstrap-play-backend";
+
+bootstrapPlayBackend();
 
 // Do not remove messageBox, without that import the script fails
 // Somehow ts-node is not able to load the event store module correctly
