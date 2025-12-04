@@ -35,7 +35,6 @@ import {makePlayRulesServiceFactory} from "@cody-play/infrastructure/services/ma
 import {informationServiceFactory} from "@server/infrastructure/information-service/information-service-factory";
 import {names} from "@event-engine/messaging/helpers";
 import { Personas } from '@app/shared/extensions/personas';
-import { DevLogger } from '@frontend/util/Logger';
 
 export const bootstrapPlayBackend = () => {
   registerTypes();
@@ -297,7 +296,7 @@ const registerPersonas = () => {
   playshot.personas.forEach(p => {
     Personas.unshift(p);
 
-    DevLogger.log(`Registered play persona "${p.displayName}".`);
+    console.log(`Registered play persona "${p.displayName}".`);
   });
 
   Personas.reverse();

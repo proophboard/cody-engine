@@ -8,6 +8,7 @@
     "@aws-sdk/s3-request-presigner": "^3.850.0",
     "@s3pweb/keycloak-admin-client-cjs": "^26.3.3",
     "@app/shared": "file:be/packages/shared",
+    "@cody-play/package": "file:be/packages/play",
     "@event-engine/infrastructure": "file:be/packages/infrastructure",
     "@event-engine/messaging": "file:be/packages/messaging",
     "@event-engine/descriptions": "file:be/packages/descriptions",

@@ -15,6 +15,8 @@
     "esModuleInterop": true,
     "target": "ES2022",
     "module": "ES2020",
-    "moduleResolution": "bundler"
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true
   }
 }
