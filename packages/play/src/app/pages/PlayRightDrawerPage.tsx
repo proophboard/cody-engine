@@ -22,6 +22,7 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
 import {ActionContainerInfo, isButtonAction} from "@frontend/app/components/core/form/types/action";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 
 interface OwnProps {
   page: string;
@@ -78,6 +79,12 @@ const PlayRightDrawerPage = (props: PlayRightDrawerPageProps) => {
     type: "page"
   }
 
+  let title = getPageTitle(page as unknown as PageDefinition);
+
+  if (page['title:expr']) {
+    title = jexl.evalSync(page['title:expr'], jexlCtx);
+  }
+
   return <>
     <PlayStandardPage page={mainPage.name} drawerWidth={drawerWidth} />
     <Drawer anchor="right"
@@ -93,7 +100,7 @@ const PlayRightDrawerPage = (props: PlayRightDrawerPageProps) => {
       <DialogTitle>
         <Grid2 container={true}>
           <Grid2 size={'grow'}>
-            {getPageTitle(page as unknown as PageDefinition)}
+            {title}
           </Grid2>
           {topRightActions.length
             ? <TopRightActions actions={topRightActions}
