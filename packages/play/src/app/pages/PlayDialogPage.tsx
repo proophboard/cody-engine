@@ -22,6 +22,7 @@ import BottomActions from "@frontend/app/components/core/actions/BottomActions";
 import {parseActionsFromPageCommands} from "@frontend/app/components/core/form/types/parse-actions";
 import {ActionContainerInfo, isButtonAction} from "@frontend/app/components/core/form/types/action";
 import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
+import jexl from "@app/shared/jexl/get-configured-jexl";
 
 interface OwnProps {
   page: string;
@@ -75,7 +76,11 @@ const PlayDialogPage = (props: PlayDialogPageProps) => {
     type: "page"
   }
 
-  const title = getPageTitle(page as unknown as PageDefinition);
+  let title = getPageTitle(page as unknown as PageDefinition);
+
+  if (page['title:expr']) {
+    title = jexl.evalSync(page['title:expr'], jexlCtx);
+  }
 
   return <>
       <PlayStandardPage page={mainPage.name} />
