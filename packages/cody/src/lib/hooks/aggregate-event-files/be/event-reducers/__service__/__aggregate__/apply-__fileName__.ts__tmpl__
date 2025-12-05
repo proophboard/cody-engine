@@ -9,6 +9,7 @@ export const apply<%= className %> = async (information: <%= aggregateStateNames
   ctx['information'] = information;
   ctx['event'] = enforceUndefinedProperties(event.payload, <%= runtimeInfoId %>.schema);
   ctx['meta'] = event.meta;
+  ctx['eventCreatedAt'] = event.createdAt;
 
   <%- rules %>
 
