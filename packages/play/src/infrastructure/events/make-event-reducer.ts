@@ -13,7 +13,8 @@ export const makeEventReducer = (rules: Rule[], config: CodyPlayConfig): ApplyFu
       const ctx = {
         information: state,
         event: enforceUndefinedProperties(event.payload, eventSchema),
-        meta: event.meta
+        meta: event.meta,
+        eventCreatedAt: event.createdAt
       };
 
       const exe = makeAsyncExecutable(rules);
