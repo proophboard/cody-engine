@@ -30,7 +30,7 @@ import {
 } from "@server/infrastructure/information-service/document-store-information-service";
 import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 import {
-  isDeleteInformation,
+  isDeleteInformation, isExecuteRules, isForEach,
   isInsertInformation, isReplaceInformation,
   isUpdateInformation,
   isUpsertInformation,
@@ -92,7 +92,7 @@ const Database = (props: DatabaseProps) => {
   const [projections, setProjections] = useState<ProjectionRegistry>({});
   const [selectedProjection, setSelectedProjection] = useState<string>('');
   const [isRunningProjection, setIsRunningProjection] = useState(false);
-  const [projectionSetupError, setProjectionSetupError] = useState<string|undefined>();
+  const [projectionSetupError, f] = useState<string|undefined>();
   const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
   const [editorHeight, setEditorHeight] = useState(DEFAULT_EDITOR_HEIGHT);
   const editor = useRef<IStandaloneCodeEditor>();
@@ -410,6 +410,14 @@ const detectCollection = (projectionName: string, rules: Rule[], infoService: Do
 
     if(isDeleteInformation(rule.then)) {
       return infoService.detectCollection(rule.then.delete.information);
+    }
+
+    if(isExecuteRules(rule.then)) {
+      return detectCollection(projectionName, rule.then.execute.rules, infoService);
+    }
+
+    if(isForEach(rule.then)) {
+      return detectCollection(projectionName, [{rule: "always", then: rule.then.forEach.then}], infoService);
     }
   }
 
