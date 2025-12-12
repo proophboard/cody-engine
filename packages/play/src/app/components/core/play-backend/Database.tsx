@@ -413,11 +413,20 @@ const detectCollection = (projectionName: string, rules: Rule[], infoService: Do
     }
 
     if(isExecuteRules(rule.then)) {
-      return detectCollection(projectionName, rule.then.execute.rules, infoService);
+      try {
+        return detectCollection(projectionName, rule.then.execute.rules, infoService);
+      } catch (e) {
+        // ignore to try remaining rules before finally throwing
+      }
+
     }
 
     if(isForEach(rule.then)) {
-      return detectCollection(projectionName, [{rule: "always", then: rule.then.forEach.then}], infoService);
+      try {
+        return detectCollection(projectionName, [{rule: "always", then: rule.then.forEach.then}], infoService);
+      } catch (e) {
+        // ignore to try remaining rules before finally throwing
+      }
     }
   }
 
