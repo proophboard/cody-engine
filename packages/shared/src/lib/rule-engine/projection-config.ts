@@ -1,6 +1,6 @@
 import {
   AnyRule,
-  isDeleteInformation,
+  isDeleteInformation, isExecuteRules, isForEach,
   isInsertInformation, isReplaceInformation, isUpdateInformation,
   isUpsertInformation,
   Rule,
@@ -49,6 +49,22 @@ export const normalizeProjectionConfig = (config: ProjectionConfig, informationF
 
     if(isDeleteInformation(prjCase.then)) {
       prjCase.then.delete.information = informationFQCN;
+    }
+
+    if(isExecuteRules(prjCase.then)) {
+      prjCase.then.execute.rules = normalizeProjectionConfig({
+        cases: prjCase.then.execute.rules as unknown as ProjectionConfigCase[],
+        name: informationFQCN,
+        live: true
+      }, informationFQCN).cases as unknown as Rule[];
+    }
+
+    if(isForEach(prjCase.then)) {
+      prjCase.then.forEach.then = normalizeProjectionConfig({
+        cases: [{then: prjCase.then.forEach.then}] as unknown as ProjectionConfigCase[],
+        name: informationFQCN,
+        live: true
+      }, informationFQCN).cases[0].then as unknown as ThenType;
     }
   })
 
