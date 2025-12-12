@@ -92,7 +92,7 @@ const Database = (props: DatabaseProps) => {
   const [projections, setProjections] = useState<ProjectionRegistry>({});
   const [selectedProjection, setSelectedProjection] = useState<string>('');
   const [isRunningProjection, setIsRunningProjection] = useState(false);
-  const [projectionSetupError, f] = useState<string|undefined>();
+  const [projectionSetupError, setProjectionSetupError] = useState<string|undefined>();
   const [editorTheme, setEditorTheme] = useState<'vs' | 'vs-dark'>('vs');
   const [editorHeight, setEditorHeight] = useState(DEFAULT_EDITOR_HEIGHT);
   const editor = useRef<IStandaloneCodeEditor>();
