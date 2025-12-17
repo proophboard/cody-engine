@@ -19,6 +19,7 @@ import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode"
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 import {Target} from "mdi-material-ui";
 import {FocusedSidebarItem} from "@cody-play/state/focused-element";
+import {useGlobalStore} from "@frontend/hooks/use-global-store";
 
 interface OwnProps {
   pageName: string,
@@ -38,10 +39,11 @@ interface OwnProps {
 type SidebarItemProps = OwnProps;
 
 const SidebarItem = ({pageName, invisible, route, label, Icon, theme, user, pageMatch, service, dynamic}: SidebarItemProps) => {
-  const [hidden, setHidden] = useState(false);
+  const [hidden, setHidden] = useState(!!(dynamic && dynamic.hidden));
   const [dynamicLabel, setDynamicLabel] = useState<string | undefined>('');
   const [DynamicIcon, setDynamicIcon] = useState<React.JSX.Element | undefined>();
   const [page] = usePageData();
+  const [store] = useGlobalStore();
   const [types] = useTypes();
   const { liveEditMode } = useContext(LiveEditModeContext);
   const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
@@ -58,20 +60,32 @@ const SidebarItem = ({pageName, invisible, route, label, Icon, theme, user, page
           return;
         }
 
+        if (dynamic.if) {
+          const shouldExecute = jexl.evalSync(dynamic.if, {
+            page,
+            user,
+            store,
+          });
+
+          if (!shouldExecute) {
+            return;
+          }
+        }
+
 
         getApiQuery()((desc as QueryableDescription).query, {}).then(data => {
           if(dynamic.label) {
-            const dLabel = jexl.evalSync(dynamic.label, {data, page, user});
+            const dLabel = jexl.evalSync(dynamic.label, {data, page, user, store});
             setDynamicLabel(dLabel);
           }
 
           if(dynamic.icon) {
-            const dIcon = jexl.evalSync(dynamic.icon, {data, page, user});
+            const dIcon = jexl.evalSync(dynamic.icon, {data, page, user, store});
             setDynamicIcon(<MdiIcon  icon={dIcon} />)
           }
 
           if(dynamic.hidden) {
-            setHidden(jexl.evalSync(dynamic.hidden, {data, page, user}));
+            setHidden(jexl.evalSync(dynamic.hidden, {data, page, user, store}));
           }
         }).catch(e => {
           throw e
@@ -88,7 +102,7 @@ const SidebarItem = ({pageName, invisible, route, label, Icon, theme, user, page
     return <></>
   }
 
-  if(typeof invisible === "string" && jexl.evalSync(invisible, {user})) {
+  if(typeof invisible === "string" && jexl.evalSync(invisible, {user, page, store})) {
     return <></>
   }
 

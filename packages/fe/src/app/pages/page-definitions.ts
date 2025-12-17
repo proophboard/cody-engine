@@ -34,6 +34,7 @@ export interface DynamicSidebar {
   label?: string;
   icon?: string;
   hidden?: string;
+  if?: string;
 }
 
 export interface TopLevelPage extends PageDefinition {
