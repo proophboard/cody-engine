@@ -14,6 +14,7 @@ import {registerMathExtension} from "@app/shared/jexl/math-extension/register";
 import {cloneDeep, merge as deepMerge} from "lodash";
 import {registerSequenceExtension} from "@app/shared/jexl/sequence-extension/register";
 import {registerMixedExtensions} from "@app/shared/jexl/mixed-extension/register";
+import {singleQuotedMustacheToConcat} from "@app/shared/jexl/template-extension/single-quoted-template";
 
 
 let configuredJexl: Jexl;
@@ -27,10 +28,12 @@ const getConfiguredJexl = (): Jexl => {
 
     // Remove prooph board Jexl indicator before expression is passed to Jexl
     configuredJexl.eval = (expression, context) => {
-      return evalAsync.call(configuredJexl, expression.replace(/^\$>/, ''), context);
+      expression = singleQuotedMustacheToConcat(expression.replace(/^\$>/, ''));
+      return evalAsync.call(configuredJexl, expression, context);
     }
     configuredJexl.evalSync = (expression, context) => {
-      return evalSync.call(configuredJexl, expression.replace(/^\$>/, ''), context);
+      expression = singleQuotedMustacheToConcat(expression.replace(/^\$>/, ''));
+      return evalSync.call(configuredJexl, expression, context);
     }
 
 
