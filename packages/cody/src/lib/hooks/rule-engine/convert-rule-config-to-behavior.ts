@@ -504,7 +504,7 @@ const convertThenForEach = (node: Node, ctx: Context, then: ThenForEach, rule: R
 
   const item = then.forEach.of || 'item';
 
-  lines.push(`${indent}const forEachVariable = await jexl.eval('${then.forEach.variable}', ctx);`)
+  lines.push(`${indent}const forEachVariable = jexl.evalSync('${then.forEach.variable}', ctx);`)
   lines.push(`${indent}for (const itemIndex in forEachVariable) {`);
   lines.push(`${indent}  ctx['${item}'] = forEachVariable[itemIndex];`);
   lines.push(`${indent}  ctx['_'] = ctx['${item}'];`);
