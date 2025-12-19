@@ -29,6 +29,8 @@ import {informationTitle} from "@frontend/util/information/titelize";
 import {Target} from "mdi-material-ui";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 import {EDropzoneId} from "@cody-play/app/types/enums/EDropzoneId";
+import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
+import {useEnv} from "@frontend/hooks/use-env";
 
 type HeadingVariant = "h2" | "h3" | "h4" | "h5" | "h6";
 
@@ -177,14 +179,7 @@ export default function ObjectFieldTemplate<
   const {t} = useTranslation();
   const { liveEditMode } = useContext(LiveEditModeContext);
   const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
-
-  const uiOptions = getUiOptions<T,S,F>(props.uiSchema);
-
-  const DescriptionFieldTemplate = getTemplate<'DescriptionFieldTemplate', T, S, F>(
-    'DescriptionFieldTemplate',
-    props.registry,
-    uiOptions
-  );
+  const env = useEnv();
 
   const jexlCtx: FormJexlContext & {value: object} = {
     user,
@@ -196,21 +191,28 @@ export default function ObjectFieldTemplate<
     value: props.formData as object,
   };
 
-  console.log("jexl ctx: ", jexlCtx);
+  const uiSchema = normalizeUiSchema((props.uiSchema as UiSchema) || {}, jexlCtx, env) as UiSchema<T,S,F>;
+  const uiOptions = getUiOptions<T,S,F>(uiSchema);
+
+  const DescriptionFieldTemplate = getTemplate<'DescriptionFieldTemplate', T, S, F>(
+    'DescriptionFieldTemplate',
+    props.registry,
+    uiOptions
+  );
 
   const mode: FormModeType = props.registry.formContext!.mode || 'page';
 
   const nestingLevel = getNestingLevel(props.fieldPathId.$id);
   const headingVariant = headingNestingLevel(props.fieldPathId.$id);
 
-  let title = props.uiSchema && props.uiSchema['ui:title'] ? props.uiSchema['ui:title'] : props.title;
+  let title = uiSchema && uiSchema['ui:title'] ? uiSchema['ui:title'] : props.title;
   let fallbackTitle = title;
 
   if(!fallbackTitle) {
     fallbackTitle = props.title || props.schema.title || '';
   }
 
-  if(props.uiSchema && props.uiSchema['ui:widget'] && props.uiSchema['ui:widget'] === 'hidden') {
+  if(uiSchema && uiSchema['ui:widget'] && uiSchema['ui:widget'] === 'hidden') {
     return <></>
   }
 
@@ -257,7 +259,7 @@ export default function ObjectFieldTemplate<
             id={descriptionId(props.fieldPathId)}
             description={props.description}
             schema={props.schema}
-            uiSchema={props.uiSchema}
+            uiSchema={uiSchema}
             registry={props.registry}
             />
           </Box>}
@@ -276,7 +278,7 @@ export default function ObjectFieldTemplate<
             element.hidden ? (
                 element.content
               ) :
-              <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}>{element.content}</Grid2>)
+              <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}>{element.content}</Grid2>)
         }
       </Grid2>
       <BottomActions
@@ -286,13 +288,13 @@ export default function ObjectFieldTemplate<
         defaultService={props.registry.formContext!.defaultService}
         jexlCtx={jexlCtx}
         additionalRightButtons={
-          isWriteMode(mode) && canExpand<T, S, F>(props.schema, props.uiSchema, props.formData) ? [
+          isWriteMode(mode) && canExpand<T, S, F>(props.schema, uiSchema, props.formData) ? [
             <AddButton
               className='object-property-expand'
               key={'object_field_' + props.fieldPathId.$id + '_object_property_expand'}
               onClick={props.onAddClick(props.schema)}
               disabled={props.disabled || props.readonly}
-              uiSchema={props.uiSchema}
+              uiSchema={uiSchema}
               registry={props.registry}
             />
           ] : undefined
@@ -324,7 +326,7 @@ export default function ObjectFieldTemplate<
             id={descriptionId(props.fieldPathId)}
             description={props.description}
             schema={props.schema}
-            uiSchema={props.uiSchema}
+            uiSchema={uiSchema}
             registry={props.registry}
             />
           </Box>}
@@ -361,7 +363,7 @@ export default function ObjectFieldTemplate<
                 id={descriptionId(props.fieldPathId)}
                 description={props.description}
                 schema={props.schema}
-                uiSchema={props.uiSchema}
+                uiSchema={uiSchema}
                 registry={props.registry}
               />
             </Grid2>
@@ -373,7 +375,7 @@ export default function ObjectFieldTemplate<
               element.hidden ? (
                   element.content
                 ) :
-                <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}>{element.content}</Grid2>)
+                <Grid2 component="div" key={'ele_wrapper_' + element.name} {...getElementGridConfig(element, (uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}>{element.content}</Grid2>)
           }
         </Grid2>
       </Grid2>
@@ -391,13 +393,13 @@ export default function ObjectFieldTemplate<
             defaultService={props.registry.formContext!.defaultService}
             jexlCtx={jexlCtx}
             additionalRightButtons={
-              isWriteMode(mode) && canExpand<T, S, F>(props.schema, props.uiSchema, props.formData) ? [
+              isWriteMode(mode) && canExpand<T, S, F>(props.schema, uiSchema, props.formData) ? [
                 <AddButton
                   className='object-property-expand'
                   key={'object_field_' + props.fieldPathId.$id + '_object_property_expand'}
                   onClick={props.onAddClick(props.schema)}
                   disabled={props.disabled || props.readonly}
-                  uiSchema={props.uiSchema}
+                  uiSchema={uiSchema}
                   registry={props.registry}
                 />
               ] : undefined
