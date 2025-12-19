@@ -186,14 +186,17 @@ export default function ObjectFieldTemplate<
     uiOptions
   );
 
-  const jexlCtx: FormJexlContext = {
+  const jexlCtx: FormJexlContext & {value: object} = {
     user,
     page: pageData,
     routeParams,
     data: props.registry.formContext!.data,
     store,
     mode: props.registry.formContext!.mode,
+    value: props.formData as object,
   };
+
+  console.log("jexl ctx: ", jexlCtx);
 
   const mode: FormModeType = props.registry.formContext!.mode || 'page';
 
