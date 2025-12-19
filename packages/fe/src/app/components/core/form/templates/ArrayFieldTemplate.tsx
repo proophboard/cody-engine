@@ -47,7 +47,7 @@ export const ArrayFieldTemplate = <
   const { liveEditMode } = useContext(LiveEditModeContext);
   const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
 
-  const jexlCtx: FormJexlContext = {
+  const jexlCtx: FormJexlContext & {value: any[]} = {
     user,
     page:
     pageData,
@@ -55,6 +55,7 @@ export const ArrayFieldTemplate = <
     data: props.registry.formContext!.data,
     store,
     mode: props.registry.formContext!.mode,
+    value: props.formData as any[]
   };
 
   const mode: FormModeType = props.registry.formContext!.mode || 'page';
