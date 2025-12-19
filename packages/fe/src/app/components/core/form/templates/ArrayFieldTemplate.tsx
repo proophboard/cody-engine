@@ -32,6 +32,8 @@ import {Target} from "mdi-material-ui";
 import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 import {mapFormModeTypeToContainerInfoType, mapFormModeTypeToDropzoneIdTopRight} from "@cody-play/app/utils/mappings";
+import {useEnv} from "@frontend/hooks/use-env";
+import {normalizeUiSchema} from "@frontend/util/schema/normalize-ui-schema";
 
 export const ArrayFieldTemplate = <
   T = any,
@@ -46,6 +48,7 @@ export const ArrayFieldTemplate = <
   const {t} = useTranslation();
   const { liveEditMode } = useContext(LiveEditModeContext);
   const [focusedEle, setFocusedEle] = useVibeCodyFocusElement();
+  const env = useEnv();
 
   const jexlCtx: FormJexlContext & {value: any[]} = {
     user,
@@ -58,19 +61,21 @@ export const ArrayFieldTemplate = <
     value: props.formData as any[]
   };
 
+  const uiSchema = normalizeUiSchema((props.uiSchema as UiSchema) || {}, jexlCtx, env) as UiSchema<T,S,F>;
+
   const mode: FormModeType = props.registry.formContext!.mode || 'page';
 
   const nestingLevel = getNestingLevel(props.fieldPathId.$id);
   const headingVariant = headingNestingLevel(props.fieldPathId.$id);
 
-  const title = props.uiSchema && props.uiSchema['ui:title'] ? props.uiSchema['ui:title'] : props.title;
+  const title = uiSchema && uiSchema['ui:title'] ? uiSchema['ui:title'] : props.title;
   let fallbackTitle = title;
 
   if(!fallbackTitle) {
     fallbackTitle = props.title || props.schema.title || '';
   }
 
-  if(props.uiSchema && props.uiSchema['ui:widget'] && props.uiSchema['ui:widget'] === 'hidden') {
+  if(uiSchema && uiSchema['ui:widget'] && uiSchema['ui:widget'] === 'hidden') {
     return <></>
   }
 
@@ -90,7 +95,7 @@ export const ArrayFieldTemplate = <
     idPrefix = 'component_' + names(fqcn).fileName + '_';
   }
 
-  const uiOptions = getUiOptions<T,S,F>(props.uiSchema);
+  const uiOptions = getUiOptions<T,S,F>(uiSchema);
 
   const ArrayFieldDescriptionTemplate = getTemplate<'ArrayFieldDescriptionTemplate', T, S, F>(
     'ArrayFieldDescriptionTemplate',
@@ -126,7 +131,7 @@ export const ArrayFieldTemplate = <
               fieldPathId={props.fieldPathId}
               description={uiOptions.description || props.schema.description}
               schema={props.schema}
-              uiSchema={props.uiSchema}
+              uiSchema={uiSchema}
               registry={props.registry}
             />
           </Box>}
@@ -140,12 +145,12 @@ export const ArrayFieldTemplate = <
         />
       </Grid2>
       <Grid2 container={true} columns={gridConfig.columns} spacing={gridConfig.spacing}>
-        {!props.items.length && <Grid2 size={12} className={'array-element-wrapper'} key={'array_ele_wrapper_empty'} {...getElementGridConfig(undefined, (props.uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}>
+        {!props.items.length && <Grid2 size={12} className={'array-element-wrapper'} key={'array_ele_wrapper_empty'} {...getElementGridConfig(undefined, (uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}>
           <Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Grid2> }
         {props.items.map((element, index) => <Grid2 size={12}
           className={'array-element-wrapper'}
           key={'array_ele_wrapper_' + index}
-          {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}
+          {...getElementGridConfig(element, (uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}
         >{isWriteMode(mode) ?  <ArrayFieldItemTemplate {...element} /> : element.children }</Grid2>)}
       </Grid2>
       <BottomActions
@@ -161,7 +166,7 @@ export const ArrayFieldTemplate = <
               className='array-item-add'
               onClick={props.onAddClick}
               disabled={props.disabled || props.readonly}
-              uiSchema={props.uiSchema}
+              uiSchema={uiSchema}
               registry={props.registry}
             />
           ] : undefined
@@ -193,7 +198,7 @@ export const ArrayFieldTemplate = <
               fieldPathId={props.fieldPathId}
               description={uiOptions.description || props.schema.description}
               schema={props.schema}
-              uiSchema={props.uiSchema}
+              uiSchema={uiSchema}
               registry={props.registry}
             />
           </Box>}
@@ -244,7 +249,7 @@ export const ArrayFieldTemplate = <
                 fieldPathId={props.fieldPathId}
                 description={uiOptions.description || props.schema.description}
                 schema={props.schema}
-                uiSchema={props.uiSchema}
+                uiSchema={uiSchema}
                 registry={props.registry}
               />
             </Grid2>
@@ -255,7 +260,7 @@ export const ArrayFieldTemplate = <
           {props.items.map((element, index) => <Grid2 size={12}
             className={'array-element-wrapper'}
             key={'array_ele_wrapper_' + index}
-            {...getElementGridConfig(element, (props.uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}
+            {...getElementGridConfig(element, (uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}
           >{isWriteMode(mode) ?  <ArrayFieldItemTemplate {...element} /> : element.children }</Grid2>)}
         </Grid2>
       </Grid2>
@@ -273,7 +278,7 @@ export const ArrayFieldTemplate = <
                 className='array-item-add'
                 onClick={props.onAddClick}
                 disabled={props.disabled || props.readonly}
-                uiSchema={props.uiSchema}
+                uiSchema={uiSchema}
                 registry={props.registry}
               />
             ] : undefined
