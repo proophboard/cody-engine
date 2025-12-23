@@ -558,7 +558,7 @@ const execFindOnePartialInformation = async (then: ThenFindOnePartialInformation
 
   const variable = then.findOnePartial.variable || 'information';
 
-  ctx[variable] = await infoService.findPartial(
+  ctx[variable] = await infoService.findOnePartial(
     then.findOnePartial.information,
     makeFiltersInPartialSelect(then.findOnePartial.select, ctx),
     makeFilter(then.findOnePartial.filter, ctx)
