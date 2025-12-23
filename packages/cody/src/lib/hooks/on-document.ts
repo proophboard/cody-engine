@@ -214,7 +214,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
         itemNames,
         itemNS,
         ...queryNames,
-        resolve: ctx.codeGeneration.be.resolverLogic ? withErrorCheck(makeQueryResolver, [vo, voMeta, ctx]) : '',
+        resolve: ctx.codeGeneration.be.resolverLogic ? withErrorCheck(makeQueryResolver, [vo, voMeta, ctx, allowNullReturn]) : '',
       });
 
       withErrorCheck(registerQueryResolver, [service, vo, ctx, tree]);

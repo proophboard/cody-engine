@@ -53,7 +53,7 @@ import {isAliasFieldNameMapping, isLookup, Lookup, PartialSelect} from "@event-e
 import {getVOFromDataReference} from "@cody-engine/cody/hooks/utils/value-object/get-vo-from-data-reference";
 import {voRegistryId} from "@cody-engine/cody/hooks/utils/value-object/vo-registry-id";
 
-export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context): string | CodyResponse => {
+export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Context, allowNullReturn?: boolean): string | CodyResponse => {
   if(!voMeta.isQueryable) {
     return {
       cody: `Oh, something went wrong. A non queryable value object is passed to makeQueryResolver. The Value Object node is: "${vo.getName()}"`,
@@ -64,15 +64,15 @@ export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Co
 
 
   if(isQueryableNotStoredStateDescription(voMeta)) {
-    return makeSingleValueObjectQueryResolver(vo, voMeta, ctx);
+    return makeSingleValueObjectQueryResolver(vo, voMeta, ctx, allowNullReturn);
   }
 
   if(isQueryableStateDescription(voMeta)) {
     if(isQueryableStateDescriptionWithRules(voMeta)) {
-      return makeSingleValueObjectQueryResolver(vo, voMeta, ctx);
+      return makeSingleValueObjectQueryResolver(vo, voMeta, ctx, allowNullReturn);
     }
 
-    return makeStateQueryResolver(vo, voMeta, ctx);
+    return makeStateQueryResolver(vo, voMeta, ctx, allowNullReturn);
   }
 
   if(isQueryableStateListDescription(voMeta) || isQueryableNotStoredStateListDescription(voMeta) || isQueryableListDescription(voMeta)) {
@@ -80,11 +80,11 @@ export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Co
   }
 
   if(isQueryableValueObjectDescription(voMeta)) {
-    return makeSingleValueObjectQueryResolver(vo, voMeta, ctx);
+    return makeSingleValueObjectQueryResolver(vo, voMeta, ctx, allowNullReturn);
   }
 
   if(isQueryableNotStoredValueObjectDescription(voMeta)) {
-    return makeSingleValueObjectQueryResolver(vo, voMeta, ctx);
+    return makeSingleValueObjectQueryResolver(vo, voMeta, ctx, allowNullReturn);
   }
 
   return {
