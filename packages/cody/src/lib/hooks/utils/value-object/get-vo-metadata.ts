@@ -139,6 +139,7 @@ export const getVoMetadata = (vo: Node, ctx: Context): ValueObjectMetadata | Cod
   if(meta.resolve) {
     convertedMeta.resolve = meta.resolve;
     convertedMeta.resolveRulesOnly = meta.resolveRulesOnly;
+    convertedMeta.allowNullReturn = meta.allowNullReturn;
   }
 
   if(typeof meta.collection === "string") {

@@ -45,6 +45,8 @@ export interface PlayValueObjectMetadataRaw {
   schema: any;
   querySchema?: any;
   resolve?: ResolveConfig;
+  resolveRulesOnly?: boolean;
+  allowNullReturn?: boolean;
   ns?: string;
   collection?: string | boolean;
   initialize?: Rule[];
@@ -113,6 +115,8 @@ export interface PlayValueObjectMetadata extends ValueObjectDescriptionFlags {
   initialize?: Rule[];
   itemType?: string;
   resolve?: ResolveConfig;
+  resolveRulesOnly?: boolean;
+  allowNullReturn?: boolean;
   uiSchema?: UiSchema & TableUiSchema;
   queryDependencies?: DependencyRegistry;
   projection?: ProjectionConfig;
@@ -220,6 +224,8 @@ export const playVoMetadata = (vo: Node, ctx: ElementEditedContext, types: PlayI
 
   if(meta.resolve) {
     convertedMeta.resolve = meta.resolve;
+    convertedMeta.resolveRulesOnly = meta.resolveRulesOnly;
+    convertedMeta.allowNullReturn = meta.allowNullReturn;
   }
 
   if(typeof meta.collection === "string") {

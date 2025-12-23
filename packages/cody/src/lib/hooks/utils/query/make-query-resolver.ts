@@ -94,7 +94,7 @@ export const makeQueryResolver = (vo: Node, voMeta: ValueObjectMetadata, ctx: Co
   }
 }
 
-const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata & (QueryableValueObjectDescription | QueryableNotStoredStateDescription | QueryableNotStoredValueObjectDescription), ctx: Context): string | CodyResponse => {
+const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata & (QueryableValueObjectDescription | QueryableNotStoredStateDescription | QueryableNotStoredValueObjectDescription), ctx: Context, allowNullReturn?: boolean): string | CodyResponse => {
   const voNames = names(vo.getName());
   const querySchema = meta.querySchema;
 
@@ -128,6 +128,8 @@ const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata 
     }
   }
 
+  const errorHandling = allowNullReturn ? 'return null;' : `throw new NotFoundError(\`${voNames.className} with "\${JSON.stringify(query.payload)}" not found!\`);`;
+
   if(meta.collection) {
     return `${jexlInit}
   ${jexlRules}  
@@ -141,7 +143,7 @@ const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata 
   
   const result = await asyncIteratorToArray(asyncMap(cursor, ([,d]) => ${names(voNames.className).propertyName}(d)));
   if(result.length !== 1) {
-    throw new NotFoundError(\`${voNames.className} with "\${JSON.stringify(query.payload)}" not found!\`);
+    ${errorHandling}
   }
   
   return result[0];
@@ -159,7 +161,7 @@ const makeSingleValueObjectQueryResolver = (vo: Node, meta: ValueObjectMetadata 
   `
 }
 
-const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableStateDescription, ctx: Context): string | CodyResponse => {
+const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableStateDescription, ctx: Context, allowNullReturn?: boolean): string | CodyResponse => {
   const voNames = names(vo.getName());
   const querySchema = meta.querySchema;
 
@@ -179,10 +181,12 @@ const makeStateQueryResolver = (vo: Node, meta: ValueObjectMetadata & QueryableS
     return codyQuerySchemaError;
   }
 
+  const errorHandling = allowNullReturn ? 'return null;' : `throw new NotFoundError(\`${voNames.className} with ${meta.identifier}: "\${query.payload.${meta.identifier}}" not found!\`);`;
+
   return `const doc = await ds.getDoc<${voNames.className}>(${voNames.className}Desc.collection, query.payload.${meta.identifier});
   
   if(!doc) {
-    throw new NotFoundError(\`${voNames.className} with ${meta.identifier}: "\${query.payload.${meta.identifier}}" not found!\`);
+    ${errorHandling}
   }
   
   return ${voNames.propertyName}(doc);
