@@ -65,7 +65,7 @@ export const resolve = async (ds: DocumentStore, infoService: InformationService
 
   const informationDesc = information.desc;
 
-  if(isQueryableNotStoredStateDescription(informationDesc)) {
+  if(isQueryableNotStoredStateDescription(informationDesc) || (isQueryableStateDescription(informationDesc) && queryInfo.desc.resolveRulesOnly)) {
     return await resolveNotStoredStateQuery(informationDesc, information.factory, queryInfo, ctx, verbose);
   }
 
@@ -95,11 +95,11 @@ export const resolve = async (ds: DocumentStore, infoService: InformationService
     return await resolveStateListQuery(ds, informationDesc, itemInfo.factory, queryInfo, resolveConfig, ctx.query, user, verbose)
   }
 
-  if(isQueryableValueObjectDescription(informationDesc)) {
+  if(isQueryableValueObjectDescription(informationDesc) && !queryInfo.desc.resolveRulesOnly) {
     return await resolveSingleValueObjectQuery(ds, informationDesc, information.factory, queryInfo, resolveConfig, ctx.query, user, verbose);
   }
 
-  if(isQueryableNotStoredValueObjectDescription(informationDesc)) {
+  if(isQueryableNotStoredValueObjectDescription(informationDesc) || (isQueryableValueObjectDescription(informationDesc) && queryInfo.desc.resolveRulesOnly)) {
     return await resolveNotStoredValueObjectQuery(informationDesc, information.factory, queryInfo, ctx, verbose);
   }
 
@@ -125,25 +125,34 @@ export const resolve = async (ds: DocumentStore, infoService: InformationService
 const resolveNotStoredStateQuery = async (desc: QueryableNotStoredStateDescription, factory: AnyRule[], queryInfo: PlayQueryRuntimeInfo, ctx: ResolvedCtx, verbose: boolean): Promise<any> => {
   const doc = ctx.information;
 
+  const log = () => {
+    if(verbose) {
+      console.log(
+        `%c[QueryBus] Performed not stored state query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+        desc._pbLink,
+        {
+          ctx,
+          result: doc
+        }
+      )
+    } else {
+      console.log(
+        `%c[QueryBus] Performed not stored state query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+        desc._pbLink,
+      )
+    }
+  }
+
   if(!doc) {
+    if(queryInfo.desc.allowNullReturn) {
+      log();
+      return null;
+    }
+
     throw new NotFoundError(`"${desc.name}" with "${desc.identifier}": "${ctx.query[desc.identifier]}" not found!`);
   }
 
-  if(verbose) {
-    console.log(
-      `%c[QueryBus] Performed not stored state query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
-      desc._pbLink,
-      {
-        ctx,
-        result: doc
-      }
-    )
-  } else {
-    console.log(
-      `%c[QueryBus] Performed not stored state query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
-      desc._pbLink,
-    )
-  }
+  log();
 
 
   const exe = makeInformationFactory(factory);
@@ -154,25 +163,34 @@ const resolveNotStoredStateQuery = async (desc: QueryableNotStoredStateDescripti
 const resolveNotStoredValueObjectQuery = async (desc: QueryableNotStoredValueObjectDescription, factory: AnyRule[], queryInfo: PlayQueryRuntimeInfo, ctx: ResolvedCtx, verbose: boolean): Promise<any> => {
   const doc = ctx.information;
 
-  if(!doc) {
-    throw new NotFoundError(`"${desc.name}" with "${ctx.query}" not found!`);
+  const log = () => {
+    if(verbose) {
+      console.log(
+        `%c[QueryBus] Performed not stored ValueObject query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+        desc._pbLink,
+        {
+          ctx,
+          result: doc
+        }
+      )
+    } else {
+      console.log(
+        `%c[QueryBus] Performed not stored ValueObject query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+        desc._pbLink,
+      )
+    }
   }
 
-  if(verbose) {
-    console.log(
-      `%c[QueryBus] Performed not stored ValueObject query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
-      desc._pbLink,
-      {
-        ctx,
-        result: doc
-      }
-    )
-  } else {
-    console.log(
-      `%c[QueryBus] Performed not stored ValueObject query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
-      desc._pbLink,
-    )
+  if(!doc) {
+    if(queryInfo.desc.allowNullReturn) {
+      log();
+      return null;
+    }
+
+    throw new NotFoundError(`"${desc.name}" with "${JSON.stringify(ctx.query)}" not found!`);
   }
+
+  log();
 
 
   const exe = makeInformationFactory(factory);
@@ -187,26 +205,34 @@ const resolveStateQuery = async (ds: DocumentStore, desc: QueryableStateDescript
 
   const doc = await ds.getDoc<any>(desc.collection, params[desc.identifier]);
 
+  const log = () => {
+    if(verbose) {
+      console.log(
+        `%c[QueryBus] Performed State query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+        desc._pbLink,
+        {
+          params,
+          result: doc
+        }
+      )
+    } else {
+      console.log(
+        `%c[QueryBus] Performed State query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+        desc._pbLink,
+      )
+    }
+  }
+
   if(!doc) {
+    if(queryInfo.desc.allowNullReturn) {
+      log();
+      return null;
+    }
+
     throw new NotFoundError(`"${desc.name}" with "${desc.identifier}": "${params[desc.identifier]}" not found!`);
   }
 
-  if(verbose) {
-    console.log(
-      `%c[QueryBus] Performed State query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
-      desc._pbLink,
-      {
-        params,
-        result: doc
-      }
-    )
-  } else {
-    console.log(
-      `%c[QueryBus] Performed State query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
-      desc._pbLink,
-    )
-  }
-
+  log();
 
   const exe = makeInformationFactory(factory);
 
@@ -269,26 +295,34 @@ const resolveSingleValueObjectQuery = async (ds: DocumentStore, desc: QueryableV
 
   const result = await asyncIteratorToArray(asyncMap(cursor, ([, d]) => exe(d)));
 
+  const log = () => {
+    if(verbose) {
+      console.log(
+        `%c[QueryBus] Performed SingleValueObject query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+        desc._pbLink,
+        {
+          filters,
+          result: result[0]
+        }
+      )
+    } else {
+      console.log(
+        `%c[QueryBus] Performed SingleValueObject query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
+        desc._pbLink,
+      )
+    }
+  }
+
   if(result.length !== 1) {
+    if(queryInfo.desc.allowNullReturn) {
+      log();
+      return null;
+    }
+
     throw new NotFoundError(`"${desc.name}" with "${JSON.stringify(params)}" not found!`);
   }
 
-  if(verbose) {
-    console.log(
-      `%c[QueryBus] Performed SingleValueObject query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
-      desc._pbLink,
-      {
-        filters,
-        result: result[0]
-      }
-    )
-  } else {
-    console.log(
-      `%c[QueryBus] Performed SingleValueObject query %c${desc.name}`, Palette.cColor(Palette.stickyColors.document), Palette.cColorBold(Palette.stickyColors.document),
-      desc._pbLink,
-    )
-  }
-
+  log();
 
   return result[0];
 }

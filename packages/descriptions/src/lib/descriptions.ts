@@ -87,6 +87,8 @@ export interface QueryDescription extends ProophBoardDescription {
   name: string;
   returnType: string;
   dependencies?: DependencyRegistry;
+  resolveRulesOnly?: boolean;
+  allowNullReturn?: boolean;
 }
 
 export interface PolicyDescription extends ProophBoardDescription {

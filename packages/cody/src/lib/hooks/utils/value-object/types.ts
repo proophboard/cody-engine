@@ -13,6 +13,7 @@ export interface ValueObjectMetadataRaw {
   querySchema?: any;
   resolve?: ResolveConfig;
   resolveRulesOnly?: boolean;
+  allowNullReturn?: boolean;
   queryDependencies?: DependencyRegistry;
   ns?: string;
   collection?: string | boolean;
@@ -93,6 +94,7 @@ export interface ValueObjectMetadata extends ValueObjectDescriptionFlags {
   itemType?: string;
   resolve?: ResolveConfig;
   resolveRulesOnly?: boolean;
+  allowNullReturn?: boolean;
   queryDependencies?: DependencyRegistry;
   uiSchema?: UiSchema & TableUiSchema;
   projection?: ProjectionConfig;

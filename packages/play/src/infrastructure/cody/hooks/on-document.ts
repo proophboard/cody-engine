@@ -128,6 +128,8 @@ export const onDocument = async (vo: Node, dispatch: PlayConfigDispatch, ctx: El
             name: queryName,
             returnType: voFQCN,
             dependencies: normalizeDependencies(voMeta.queryDependencies, serviceNames.className),
+            resolveRulesOnly: voMeta.resolveRulesOnly,
+            allowNullReturn: voMeta.allowNullReturn,
           },
           schema: voMeta.querySchema || {} as JSONSchema7,
           factory: []

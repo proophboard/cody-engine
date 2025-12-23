@@ -170,7 +170,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
 
       withErrorCheck(registerQuery, [service, vo, voMeta, ctx, tree]);
 
-      let itemNames, itemNS, isList = false, isSingleVOQuery = false;
+      let itemNames, itemNS, isList = false, isSingleVOQuery = false, allowNullReturn = false;
 
       if(isQueryableStateListDescription(voMeta) || isQueryableListDescription(voMeta) || isQueryableNotStoredStateListDescription(voMeta)) {
         itemNames = names(voClassNameFromFQCN(voMeta.itemType));
@@ -198,6 +198,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
         || isQueryableNotStoredValueObjectDescription(voMeta)
         || isQueryableStateDescriptionWithRules(voMeta)) {
         isSingleVOQuery = true;
+        allowNullReturn = !!voMeta.allowNullReturn;
       }
 
 
@@ -209,6 +210,7 @@ export const onDocument: CodyHook<Context> = async (vo: Node, ctx: Context) => {
         ns,
         isList,
         isSingleVOQuery,
+        allowNullReturn,
         itemNames,
         itemNS,
         ...queryNames,
