@@ -6,9 +6,9 @@ export const JexlFlavouredJSON = {
     // general functions
     'count', 'merge', 'deepMerge', 'uuid', 'isRole', 'userAttr', 'pageData', 'mediaQuery',
     // general transforms
-    'data', 'role', 'attr', 'typeof', 'default', 'call',
+    'data', 'role', 'attr', 'typeof', 'default', 'call', 'slice',
     // string extension
-    'upperCase', 'upper', 'lowerCase', 'lower', 'split', 'trim', 'trimEnd', 'trimStart', 'pad', 'padStart', 'padEnd', 'slice', 'replace',
+    'upperCase', 'upper', 'lowerCase', 'lower', 'split', 'trim', 'trimEnd', 'trimStart', 'pad', 'padStart', 'padEnd', 'replace',
     // type cast extension
     'toInt', 'toFloat', 'toStr', 'toLocal', 'toJSON', 'fromJSON', 'toArray',
     // Math extension
