@@ -139,7 +139,7 @@ export class PostgresEventStore implements EventStore {
     const bindings = [];
     for(const prop in eventMatcher) {
       const [matchWhere, value] = this.matchObjectToWhereClause(prop, valuePos, eventMatcher[prop]);
-      where += matchWhere + ' AND ';
+      where += (where.length > 0 ? ' AND ' : '') + matchWhere;
       if(Array.isArray(value)) {
         bindings.push(...value);
         valuePos += value.length;
