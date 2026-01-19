@@ -26,4 +26,8 @@ export const getConfiguredPlayEventStore = (): InMemoryEventStore => {
   return store;
 }
 
+export const injectEventStore = (es: InMemoryEventStore) => {
+  store = es;
+}
+
 

@@ -37,3 +37,7 @@ export const getConfiguredPlayAuthService = (
 
   return service;
 }
+
+export const injectAuthService = (auth: PlayAuthService)=> {
+  service = auth;
+}

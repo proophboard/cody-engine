@@ -33,3 +33,7 @@ export const getConfiguredPlayDocumentStore = (): InMemoryDocumentStore => {
 
   return store;
 }
+
+export const injectDocumentStore = (ds: InMemoryDocumentStore) => {
+  store = ds;
+}

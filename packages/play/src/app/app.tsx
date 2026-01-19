@@ -52,6 +52,7 @@ import PlayToggleLiveEditMode from '@cody-play/app/layout/PlayToggleLiveEditMode
 import DragAndDrop from '@cody-play/app/providers/DragAndDrop';
 import PlayVibeCodyDrawerProvider from "@cody-play/state/vibe-cody-drawer";
 import PlayVibeCodyAiModeProvider from "@cody-play/state/vibe-cody-ai";
+import {useMockApiHandler} from "@cody-play/hooks/use-mock-api-handler";
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -166,6 +167,9 @@ export function App() {
       clearAfterDispatchListener();
     };
   });
+
+  // Register Vibe Cody Extension Mock API Handler
+  useMockApiHandler();
 
   return (
     <QueryClientProvider client={queryClient!}>

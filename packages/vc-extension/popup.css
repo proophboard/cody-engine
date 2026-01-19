@@ -1,0 +1,14 @@
+body {
+    font-family: Arial, sans-serif;
+    width: 250px;
+    padding: 12px;
+    margin: 0;
+    background-color: #f9f9f9;
+    color: #333;
+}
+h1 { font-size: 16px; margin: 0 0 12px 0; color: #26C0E7; }
+.status { padding: 8px; border-radius: 4px; margin-bottom: 8px; font-weight: bold; text-align: center; }
+.connected { background-color: rgba(38, 192, 231, 0.15); color: #26C0E7; border: 1px solid #26C0E7; }
+.disconnected { background-color: rgba(243, 29, 48, 0.21); color: #f31d30; border: 1px solid #f31d30; }
+ul { padding-left: 20px; margin: 4px 0 0 0; }
+li { margin-bottom: 2px; }

@@ -42,6 +42,13 @@ export class PlayAuthService implements AuthService {
       ...user,
     }
 
+    this.personas.forEach((p, index) => {
+      if(p.userId === updatedPersona.userId) {
+        this.personas[index] = updatedPersona as Persona;
+      }
+    })
+
+
     this.onPersonaUpdated(updatedPersona as Persona);
   }
 

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Iframe Mock API Test</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        iframe { width: 100%; height: 200px; border: 1px solid #ccc; margin-top: 20px; }
+    </style>
+</head>
+<body>
+<h1>Iframe Test</h1>
+
+<button onclick="runFetch()">Main Page Fetch</button>
+
+<script>
+  function runFetch() {
+    fetch("https://vibe-cody.ai/api-mock/messages/main-frame", {
+      headers: { "CE-User": "main-frame-user" }
+    })
+      .then(r => r.json())
+      .then(console.log)
+      .catch(console.error);
+  }
+</script>
+
+<h2>Same-origin iframe</h2>
+<iframe srcdoc="
+    <!DOCTYPE html>
+    <html>
+      <body>
+        <button onclick='run()'>Iframe Fetch</button>
+        <script>
+          function run() {
+            fetch(
+              'https://vibe-cody.ai/api-mock/messages/same-origin-iframe',
+              { headers: { 'CE-User': 'iframe-user' } }
+            )
+              .then(r => r.json())
+              .then(console.log)
+              .catch(console.error);
+          }
+        </script>
+      </body>
+    </html>
+  "></iframe>
+
+<h2>Cross-origin iframe</h2>
+<iframe src="https://example.com"></iframe>
+</body>
+</html>

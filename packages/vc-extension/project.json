@@ -1,0 +1,51 @@
+{
+  "name": "vc-extension",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/vc-extension/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "bundle": true,
+        "format": ["esm"],
+        "platform": "browser",
+        "outputPath": "dist/packages/vc-extension",
+        "main": "packages/vc-extension/src/service-worker.ts",
+        "tsConfig": "packages/vc-extension/tsconfig.json",
+        "assets": [
+          "packages/vc-extension/manifest.json",
+          "packages/vc-extension/content-script.js",
+          "packages/vc-extension/popup.html",
+          "packages/vc-extension/popup.js",
+          "packages/vc-extension/popup.css",
+          "packages/vc-extension/icon/*"
+        ]
+      }
+    },
+    "lint": {
+      "executor": "@nx/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/vc-extension/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/vc-extension/jest.config.ts",
+        "passWithNoTests": true
+      },
+      "configurations": {
+        "ci": {
+          "ci": true,
+          "codeCoverage": true
+        }
+      }
+    }
+  },
+  "tags": []
+}
