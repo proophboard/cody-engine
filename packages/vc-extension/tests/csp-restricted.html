@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>CSP Restricted Test</title>
+
+    <!-- STRICT CSP -->
+    <meta http-equiv="Content-Security-Policy"
+          content="
+          default-src 'self';
+          script-src 'self' 'unsafe-inline';
+          connect-src https://vibe-cody.ai;
+          object-src 'none';
+          base-uri 'none';
+        ">
+
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        button { margin-right: 10px; padding: 8px 12px; }
+        pre { margin-top: 20px; background: #f5f5f5; padding: 10px; }
+    </style>
+</head>
+<body>
+<h1>CSP-Restricted Page</h1>
+
+<p>
+    This page blocks:
+<ul>
+    <li>Inline scripts</li>
+    <li>chrome-extension:// script tags</li>
+</ul>
+</p>
+
+<button id="fetchBtn">Fetch API</button>
+<button id="xhrBtn">XHR API</button>
+
+<pre id="output"></pre>
+
+<script src="test-script.js"></script>
+</body>
+</html>

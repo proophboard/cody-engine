@@ -1,0 +1,41 @@
+{
+  "name": "Mock API Extension",
+  "description": "Intercepts vibe-cody.ai/api-mock/* requests and responds with mock data",
+  "version": "1.0.0",
+  "manifest_version": 3,
+
+  "permissions": [
+    "storage",
+    "scripting",
+    "declarativeNetRequest",
+    "declarativeNetRequestWithHostAccess"
+  ],
+
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+
+  "host_permissions": ["<all_urls>"],
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Vibe Cody Extension"
+  },
+
+  "icons": {
+    "16": "icon/cody_light_16.png",
+    "32": "icon/cody_light_32.png",
+    "48": "icon/cody_light_48.png",
+    "128": "icon/cody_light_128.png"
+  }
+}

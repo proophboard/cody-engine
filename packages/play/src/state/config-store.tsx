@@ -107,11 +107,11 @@ export const initialPlayConfig: CodyPlayConfig = {
   boardName: '',
   origin: 'https://app.prooph-board.com',
   lastEditor: '',
-  theme: {
+  theme: ({
     vars: {},
     lightPalette: {},
     darkPalette: {},
-  },
+  } as unknown as ThemeOptions),
   personas: [
     {
       displayName: 'Anyone',
