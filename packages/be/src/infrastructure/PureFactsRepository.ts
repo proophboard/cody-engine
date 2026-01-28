@@ -92,18 +92,11 @@ export class PureFactsRepository {
     }
 
     // Trigger live projections
-    this.infoService.useSession(session);
-    try {
-      for (let projectionEvent of [...writeModelEvents, ...publicEvents]) {
-        // Only map userId, a projection should not implicitly get access to GDPR relevant user data
-        projectionEvent = (await mapMetadataFromEventStore([projectionEvent]))[0];
-        await this.messageBox.eventBus.on(projectionEvent, true);
-      }
-      this.infoService.forgetSession();
-      return await this.store.commitSession(session);
-    } catch (e) {
-      this.infoService.forgetSession();
-      throw e;
+    for (let projectionEvent of [...writeModelEvents, ...publicEvents]) {
+      // Only map userId, a projection should not implicitly get access to GDPR relevant user data
+      projectionEvent = (await mapMetadataFromEventStore([projectionEvent]))[0];
+      await this.messageBox.eventBus.on(projectionEvent, true, session);
     }
+    return await this.store.commitSession(session);
   }
 }
