@@ -291,27 +291,56 @@ export class PostgresEventStore implements EventStore {
 
     switch (matcher.op) {
       case MatchOperator.EQ:
-        if(Array.isArray(matcher.val)) {
-          return [`${matcher.evtProp}->>'${prop}' IN ($${matcher.val.map((v, i) => valuePos + i).join(', $')})`, matcher.val];
+        if (Array.isArray(matcher.val) && matcher.evtProp) {
+          return [
+            `${this.propToJsonPathStringCast(matcher.evtProp, prop)} IN ($${matcher.val
+              .map((v, i) => valuePos + i)
+              .join(', $')})`,
+            matcher.val,
+          ];
         }
       // eslint-disable-next-line no-fallthrough
       default:
-        return [`jsonb(${matcher.evtProp}->'${prop}') ${this.toPgOperator(matcher.op)} $${valuePos}::jsonb`, JSON.stringify(matcher.val)];
+        return [
+          `jsonb(${matcher.evtProp}->${this.propToJsonPath(prop)}) ${this.toPgOperator(
+            matcher.op
+          )} $${valuePos}::jsonb`,
+          JSON.stringify(matcher.val),
+        ];
     }
   }
 
   private toPgOperator(o: MatchOperator): string {
     switch (o) {
       case MatchOperator.EQ:
-        return "=";
+        return '=';
       case MatchOperator.GT:
-        return ">";
+        return '>';
       case MatchOperator.GTE:
-        return ">=";
+        return '>=';
       case MatchOperator.LT:
-        return "<";
+        return '<';
       case MatchOperator.LTE:
-        return "<=";
+        return '<=';
     }
+  }
+
+  private propToJsonPathStringCast(evtProp: string, field: string): string {
+    const props = field.split(".");
+
+    if(props.length === 1) {
+      return `${evtProp}->>'${field}'`
+    } else if (props.length === 0) {
+      return `${evtProp}->>'__EMPTY_PROP__'`
+    } else {
+      const lastProp = props[props.length - 1];
+      const remainingProps = props.slice(0, -1);
+
+      return `${evtProp}->${this.propToJsonPath(remainingProps.join("."))}->>'${lastProp}'`;
+    }
+  }
+
+  private propToJsonPath(field: string): string {
+    return `'${field.replaceAll('.', "'->'")}'`;
   }
 }
