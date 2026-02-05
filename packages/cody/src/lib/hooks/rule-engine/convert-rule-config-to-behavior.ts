@@ -817,6 +817,23 @@ const convertThenInsertInformation = (node: Node, ctx: Context, then: ThenInsert
   const vo = withErrorCheck(getVOFromDataReference, [then.insert.information, node, ctx]);
   const registryId = withErrorCheck(voRegistryId, [vo, ctx]);
 
+  lines.push(`${indent}if (session) {`)
+
+  let invokeInfoWithSessionService = `${indent}  ${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].insertInSession(session,'${registryId}', ${wrapExpression(then.insert.id, evalSync)}, `
+    + withErrorCheck(convertMapping, [node, ctx, then.insert.set, rule, indent + '  ', evalSync]);
+
+  if(then.insert.meta) {
+    invokeInfoWithSessionService += ', ' + withErrorCheck(convertMapping, [node, ctx, then.insert.meta, rule, indent + '  ', evalSync]);
+  }
+
+  if(then.insert.version) {
+    invokeInfoWithSessionService += ', ' + `${then.insert.version}`;
+  }
+
+  invokeInfoWithSessionService += `);`;
+  lines.push(`${indent}  return ${invokeInfoWithSessionService};`);
+  lines.push(`${indent}}`);
+
   let invokeInfoService = `${awaitStr}ctx['${INFORMATION_SERVICE_NAME}'].insert('${registryId}', ${wrapExpression(then.insert.id, evalSync)}, `
     + withErrorCheck(convertMapping, [node, ctx, then.insert.set, rule, indent + '  ', evalSync]);
 
@@ -903,7 +920,6 @@ const convertThenUpdateInformation = (node: Node, ctx: Context, then: ThenUpdate
   if(then.update.version) {
     lines.push(`${indent}  , ${then.update.version}`)
   }
-
   lines.push(`${indent});`);
 
   return true;
