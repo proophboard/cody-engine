@@ -56,7 +56,15 @@ interface Sync {
   nodes: RawNodeRecordProps[];
 }
 
-const allowedOrigins = ['https://ee.local', 'http://localhost:3001', 'http://localhost:8080', 'https://free.prooph-board.com', 'https://app.prooph-board.com', 'https://reloaded.prooph-board.com'];
+const allowedOrigins = [
+  'https://ee.local',
+  'http://localhost:3001',
+  'http://localhost:8080',
+  'https://free.prooph-board.com',
+  'https://app.prooph-board.com',
+  'https://reloaded.prooph-board.com',
+  'https://flow.prooph-board.com'
+];
 
 export type PlayConfigDispatch = (action: Action) => void;
 
