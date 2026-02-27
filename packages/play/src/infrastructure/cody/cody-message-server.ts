@@ -56,7 +56,7 @@ interface Sync {
   nodes: RawNodeRecordProps[];
 }
 
-const allowedOrigins = ['https://ee.local', 'http://localhost:3001', 'https://free.prooph-board.com', 'https://app.prooph-board.com'];
+const allowedOrigins = ['https://ee.local', 'http://localhost:3001', 'http://localhost:8080', 'https://free.prooph-board.com', 'https://app.prooph-board.com', 'https://reloaded.prooph-board.com'];
 
 export type PlayConfigDispatch = (action: Action) => void;
 
@@ -265,7 +265,6 @@ export class CodyMessageServer {
 
   private async handleFullSync(payload: Sync): Promise<CodyResponse> {
     this.syncRequired = false;
-
     const nodes: Node[] = payload.nodes.map(makeNodeRecord);
 
     nodes.forEach(node => this.syncedNodes = this.syncedNodes.set(node.getId(), node));
