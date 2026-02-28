@@ -15,20 +15,11 @@ import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 
 export class DocumentStoreInformationService implements InformationService {
   private ds: DocumentStore;
-  private session?: Session;
   private types: TypeRegistry;
 
   public constructor(ds: DocumentStore, types: TypeRegistry) {
     this.ds = ds;
     this.types = types;
-  }
-
-  public useSession(session: Session): void {
-    this.session = session;
-  }
-
-  public forgetSession(): void {
-    this.session = undefined;
   }
 
   public useTypes(types: TypeRegistry): void {
@@ -93,51 +84,71 @@ export class DocumentStoreInformationService implements InformationService {
     return this.ds.countDocs(collectionName, filter);
   }
 
-  public async insert(informationName: string, id: string, data: object, metadata?: object, version?: number): Promise<void> {
+  public async insertInSession(informationName: string, id: string, data: object, metadata?: object, version?: number, session?: Session): Promise<void> {
+    return this.insert(informationName, id, data, metadata, version, session);
+  }
+
+  public async insert(informationName: string, id: string, data: object, metadata?: object, version?: number, session?: Session): Promise<void> {
     const collectionName = this.detectCollection(informationName);
 
-    if(this.session) {
-      this.session.insertDocument(collectionName, id, data, metadata, version);
+    if(session) {
+      session.insertDocument(collectionName, id, data, metadata, version);
       return;
     }
     return this.ds.addDoc(collectionName, id, data, metadata, version);
   }
 
-  public async upsert(informationName: string, id: string, data: object, metadata?: object, version?: number): Promise<void> {
+  public async upsertInSession(session: Session, informationName: string, id: string, data: object, metadata?: object, version?: number): Promise<void> {
+    return this.upsert(informationName, id, data, metadata, version, session);
+  }
+
+  public async upsert(informationName: string, id: string, data: object, metadata?: object, version?: number, session?: Session): Promise<void> {
     const collectionName = this.detectCollection(informationName);
 
-    if(this.session) {
-      this.session.upsertDocument(collectionName, id, data, metadata, version);
+    if(session) {
+      session.upsertDocument(collectionName, id, data, metadata, version);
       return;
     }
     return this.ds.upsertDoc(collectionName, id, data, metadata, version);
   }
 
-  public async update(informationName: string, filter: Filter, data: object, metadata?: object, version?: number): Promise<void> {
+  public async updateInSession(session: Session, informationName: string, filter: Filter, data: object, metadata?: object, version?: number): Promise<void> {
+    return this.update(informationName, filter, data, metadata, version, session)
+  }
+
+  public async update(informationName: string, filter: Filter, data: object, metadata?: object, version?: number, session?: Session): Promise<void> {
     const collectionName = this.detectCollection(informationName);
 
-    if (this.session) {
-      this.session.updateManyDocuments(collectionName, filter, data, metadata, version);
+    if (session) {
+      session.updateManyDocuments(collectionName, filter, data, metadata, version);
       return;
     }
     return this.ds.updateMany(collectionName, filter, data, metadata, version);
   }
 
-  public async replace(informationName: string, filter: Filter, data: object, metadata?: object, version?: number): Promise<void> {
+  public async replaceInSession(session: Session,  informationName: string, filter: Filter, data: object, metadata?: object, version?: number): Promise<void> {
+    return this.replace(informationName, filter, data, metadata, version, session);
+  }
+
+  public async replace(informationName: string, filter: Filter, data: object, metadata?: object, version?: number, session?: Session): Promise<void> {
     const collectionName = this.detectCollection(informationName);
 
-    if(this.session) {
-      this.session.replaceManyDocuments(collectionName, filter, data, metadata, version);
+    if(session) {
+      session.replaceManyDocuments(collectionName, filter, data, metadata, version);
       return;
     }
     return this.ds.replaceMany(collectionName, filter, data, metadata, version);
   }
 
-  public async delete(informationName: string, filter: Filter): Promise<void> {
+  public async deleteInSession(session: Session, informationName: string, filter: Filter): Promise<void> {
+    return this.delete(informationName, filter, session);
+  }
+
+  public async delete(informationName: string, filter: Filter, session?: Session): Promise<void> {
     const collectionName = this.detectCollection(informationName);
 
-    if(this.session) {
-      this.session.deleteManyDocuments(collectionName, filter);
+    if(session) {
+      session.deleteManyDocuments(collectionName, filter);
       return;
     }
     return this.ds.deleteMany(collectionName, filter);
