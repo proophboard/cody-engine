@@ -4,7 +4,7 @@ import {
   RJSFSchema,
   StrictRJSFSchema,
   getUiOptions,
-  ObjectFieldTemplatePropertyType, UiSchema, ArrayFieldTemplateItemType, getTemplate, descriptionId, canExpand,
+  ObjectFieldTemplatePropertyType, UiSchema, getTemplate, descriptionId, canExpand,
 } from '@rjsf/utils';
 import Grid2, {GridProps as Grid2Props} from "@mui/material/Grid";
 import {Box, CSSObject, IconButton, Stack, SxProps, Theme, Typography, useTheme} from "@mui/material";
@@ -21,11 +21,8 @@ import TopRightActions from "@frontend/app/components/core/actions/TopRightActio
 import * as React from "react";
 import {FormModeType} from "@frontend/app/components/core/CommandForm";
 import BottomActions from "@frontend/app/components/core/actions/BottomActions";
-import {ActionContainerInfo, ActionContainerInfoType} from "@frontend/app/components/core/form/types/action";
-import {ValueObjectRuntimeInfo} from "@event-engine/messaging/value-object";
 import {mapFormModeTypeToContainerInfoType, mapFormModeTypeToDropzoneIdTopRight} from "@cody-play/app/utils/mappings";
 import {LiveEditModeContext} from "@cody-play/app/layout/PlayToggleLiveEditMode";
-import {informationTitle} from "@frontend/util/information/titelize";
 import {Target} from "mdi-material-ui";
 import {useVibeCodyFocusElement} from "@cody-play/hooks/use-vibe-cody";
 import {EDropzoneId} from "@cody-play/app/types/enums/EDropzoneId";
@@ -122,7 +119,7 @@ const isObjectFiledTemplatePropertyType = <
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
->(element: ObjectFieldTemplatePropertyType | ArrayFieldTemplateItemType<T,S,F>): element is ObjectFieldTemplatePropertyType => {
+>(element: ObjectFieldTemplatePropertyType): element is ObjectFieldTemplatePropertyType => {
   return element.hasOwnProperty('name');
 }
 
@@ -130,7 +127,7 @@ export const getElementGridConfig = <
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
->(element: ObjectFieldTemplatePropertyType | ArrayFieldTemplateItemType<T,S,F> | undefined, uiSchema: UiSchema, theme: Theme, nestingLevel: number): object & {size: number, padding: string} => {
+>(element: ObjectFieldTemplatePropertyType | undefined, uiSchema: UiSchema, theme: Theme, nestingLevel: number): object & {size: number, padding: string} => {
   const elUiSchema = (element && isObjectFiledTemplatePropertyType(element)? uiSchema[element.name] : uiSchema['items']) || {};
   const elUiOptions = elUiSchema['ui:options'] || {};
   const gridOptions: object & {size: number, padding: string} = elUiOptions.grid || {};
@@ -292,7 +289,7 @@ export default function ObjectFieldTemplate<
             <AddButton
               className='object-property-expand'
               key={'object_field_' + props.fieldPathId.$id + '_object_property_expand'}
-              onClick={props.onAddClick(props.schema)}
+              onClick={props.onAddProperty}
               disabled={props.disabled || props.readonly}
               uiSchema={uiSchema}
               registry={props.registry}
@@ -397,7 +394,7 @@ export default function ObjectFieldTemplate<
                 <AddButton
                   className='object-property-expand'
                   key={'object_field_' + props.fieldPathId.$id + '_object_property_expand'}
-                  onClick={props.onAddClick(props.schema)}
+                  onClick={props.onAddProperty}
                   disabled={props.disabled || props.readonly}
                   uiSchema={uiSchema}
                   registry={props.registry}

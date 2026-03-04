@@ -147,11 +147,7 @@ export const ArrayFieldTemplate = <
       <Grid2 container={true} columns={gridConfig.columns} spacing={gridConfig.spacing}>
         {!props.items.length && <Grid2 size={12} className={'array-element-wrapper'} key={'array_ele_wrapper_empty'} {...getElementGridConfig(undefined, (uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}>
           <Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Grid2> }
-        {props.items.map((element, index) => <Grid2 size={12}
-          className={'array-element-wrapper'}
-          key={'array_ele_wrapper_' + index}
-          {...getElementGridConfig(element, (uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}
-        >{isWriteMode(mode) ?  <ArrayFieldItemTemplate {...element} /> : element.children }</Grid2>)}
+          {props.items}
       </Grid2>
       <BottomActions
         sx={{padding: 0}}
@@ -257,11 +253,7 @@ export const ArrayFieldTemplate = <
         )}
         <Grid2 container={true} columns={gridConfig.columns} spacing={gridConfig.spacing}>
           {!props.items.length && <Box className={'array-element-wrapper'} key={'array_ele_wrapper_empty'}><Typography variant="body2" sx={{color: theme => theme.palette.text.disabled}}>- No Entry -</Typography></Box> }
-          {props.items.map((element, index) => <Grid2 size={12}
-            className={'array-element-wrapper'}
-            key={'array_ele_wrapper_' + index}
-            {...getElementGridConfig(element, (uiSchema || {}) as UiSchema, theme, nestingLevel) as Grid2Props}
-          >{isWriteMode(mode) ?  <ArrayFieldItemTemplate {...element} /> : element.children }</Grid2>)}
+          {props.items}
         </Grid2>
       </Grid2>
       <Grid2 container={true} sx={{width: "100%", paddingTop: gridConfig.spacing}} spacing={0}>

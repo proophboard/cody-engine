@@ -3,12 +3,11 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import {
-  ArrayFieldItemTemplateType,
   FormContextType,
   getUiOptions,
   getTemplate,
   RJSFSchema,
-  StrictRJSFSchema,
+  StrictRJSFSchema, ArrayFieldItemTemplateProps,
 } from '@rjsf/utils';
 
 /** The `ArrayFieldItemTemplate` component is the template used to render an items of an array.
@@ -20,7 +19,7 @@ export const ArrayFieldItemTemplate = <
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
 >(
-  props: ArrayFieldItemTemplateType<T, S, F>
+  props: ArrayFieldItemTemplateProps<T, S, F>
 ) => {
   const { children, buttonsProps, hasToolbar, uiSchema, registry } = props;
   const uiOptions = getUiOptions<T, S, F>(uiSchema);
