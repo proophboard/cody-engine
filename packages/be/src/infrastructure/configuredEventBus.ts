@@ -47,7 +47,7 @@ class LiveEventBus extends MessageBus implements EventBus {
       if (triggerLiveProjections) {
         await policy(event, dependencies, session);
       } else {
-        policy(event, dependencies, session).catch((e) => console.error(e));
+        policy(event, dependencies).catch((e) => console.error(e));
       }
     }
 
