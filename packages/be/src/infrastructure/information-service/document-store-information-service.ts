@@ -15,11 +15,27 @@ import {TypeRegistry} from "@event-engine/infrastructure/TypeRegistry";
 
 export class DocumentStoreInformationService implements InformationService {
   private ds: DocumentStore;
+  private session?: Session;
   private types: TypeRegistry;
 
   public constructor(ds: DocumentStore, types: TypeRegistry) {
     this.ds = ds;
     this.types = types;
+  }
+
+  /**
+   * @deprecated useSession will no longer work, pass the session to the
+   * InSession methods
+   */
+  public useSession(session: Session): void {
+    this.session = session;
+  }
+
+  /**
+   * @deprecated forgetSession will be removed with useSession
+   */
+  public forgetSession(): void {
+    this.session = undefined;
   }
 
   public useTypes(types: TypeRegistry): void {
@@ -84,7 +100,7 @@ export class DocumentStoreInformationService implements InformationService {
     return this.ds.countDocs(collectionName, filter);
   }
 
-  public async insertInSession(informationName: string, id: string, data: object, metadata?: object, version?: number, session?: Session): Promise<void> {
+  public async insertInSession(session: Session, informationName: string, id: string, data: object, metadata?: object, version?: number): Promise<void> {
     return this.insert(informationName, id, data, metadata, version, session);
   }
 

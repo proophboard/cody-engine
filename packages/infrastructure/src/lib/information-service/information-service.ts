@@ -9,7 +9,9 @@ import { TypeRegistry } from '@event-engine/infrastructure/TypeRegistry';
 export const INFORMATION_SERVICE_NAME = 'CodyInformationService';
 
 export interface InformationService {
+  useSession: (session: Session) => void;
   useTypes: (types: TypeRegistry) => void;
+  forgetSession: () => void;
   find: <T extends object>(
     informationName: string,
     filter: Filter,
