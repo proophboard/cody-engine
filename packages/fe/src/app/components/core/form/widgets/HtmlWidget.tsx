@@ -87,7 +87,7 @@ const HtmlWidget = (props: HtmlWidgetProps) => {
     },
     result: undefined,
     form: formContext || {data: {}, updateForm: () => { /* placeholder hook */ }},
-    mode: formContext!.mode
+    mode: formContext?.mode || 'pageForm'
   };
 
   if(isDynamicHtml && options.if && typeof options.if === "string") {

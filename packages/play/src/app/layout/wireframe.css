@@ -1,0 +1,287 @@
+/**
+ * Wireframe Theme Global Styles
+ * 
+ * Apply these styles when wireframe mode is active.
+ * The styles create a lo-fi, hand-drawn sketch appearance.
+ */
+
+/* Import Comic Neue font for handwritten feel */
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@300;400;700&display=swap');
+
+/* Wireframe mode container class
+   Apply this class to a parent element to enable wireframe styling */
+.wireframe-mode {
+  /* Force all transitions and animations to instant */
+  --wireframe-transition-override: 0s !important;
+}
+
+.wireframe-mode * {
+  /* Disable all animations and transitions for sketch-like feel */
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
+  animation-delay: 0s !important;
+  transition-delay: 0s !important;
+}
+
+/* Ensure Comic Neue font is applied everywhere */
+.wireframe-mode,
+.wireframe-mode body,
+.wireframe-mode html {
+  font-family: 'Comic Neue', cursive, system-ui, -apple-system, sans-serif !important;
+}
+
+/* Wireframe borders - thick and bold */
+.wireframe-mode .border,
+.wireframe-mode .border-t,
+.wireframe-mode .border-r,
+.wireframe-mode .border-b,
+.wireframe-mode .border-l {
+  border-width: 2px !important;
+}
+
+/* Override all MUI component shadows */
+.wireframe-mode .MuiPaper-root,
+.wireframe-mode .MuiCard-root,
+.wireframe-mode .MuiDialog-paper,
+.wireframe-mode .MuiDrawer-paper,
+.wireframe-mode .MuiPopover-paper,
+.wireframe-mode .MuiMenu-paper,
+.wireframe-mode .MuiAutocomplete-paper {
+  box-shadow: none !important;
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+/* Buttons with thick borders */
+.wireframe-mode .MuiButton-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+  box-shadow: none !important;
+  text-transform: none !important;
+  font-weight: 700 !important;
+}
+
+.wireframe-mode .MuiButton-contained:hover,
+.wireframe-mode .MuiButton-outlined:hover {
+  box-shadow: none !important;
+}
+
+/* Input fields with thick borders */
+.wireframe-mode .MuiOutlinedInput-notchedOutline {
+  border-width: 2px !important;
+}
+
+.wireframe-mode .MuiInput-underline:before,
+.wireframe-mode .MuiInput-underline:after {
+  border-bottom-width: 2px !important;
+}
+
+/* Tables with bold borders */
+.wireframe-mode .MuiTable-root,
+.wireframe-mode .MuiTableContainer-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+.wireframe-mode .MuiTableCell-root {
+  border-width: 1px !important;
+  border-style: solid !important;
+  border-bottom-width: 2px !important;
+}
+
+/* AppBar with bottom border only */
+.wireframe-mode .MuiAppBar-root {
+  border: none !important;
+  border-bottom: 2px solid !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+/* Dialogs and Drawers */
+.wireframe-mode .MuiDialog-paper,
+.wireframe-mode .MuiDrawer-paper {
+  border-width: 2px !important;
+  border-style: solid !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+/* Alerts and Snackbars */
+.wireframe-mode .MuiAlert-root,
+.wireframe-mode .MuiSnackbarContent-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+  box-shadow: none !important;
+}
+
+/* Chips */
+.wireframe-mode .MuiChip-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+  font-weight: 700 !important;
+}
+
+/* Accordion */
+.wireframe-mode .MuiAccordion-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+.wireframe-mode .MuiAccordion-root:before {
+  display: none !important;
+}
+
+.wireframe-mode .MuiAccordionSummary-root {
+  border-bottom-width: 2px !important;
+  border-bottom-style: solid !important;
+}
+
+/* Lists */
+.wireframe-mode .MuiList-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+.wireframe-mode .MuiListItem-root,
+.wireframe-mode .MuiMenuItem-root {
+  border-bottom-width: 1px !important;
+  border-bottom-style: solid !important;
+}
+
+/* Tooltip */
+.wireframe-mode .MuiTooltip-tooltip {
+  border-width: 2px !important;
+  border-style: solid !important;
+  box-shadow: none !important;
+  font-family: 'Comic Neue', cursive, system-ui, -apple-system, sans-serif !important;
+  font-weight: 700 !important;
+}
+
+/* Badges */
+.wireframe-mode .MuiBadge-badge {
+  border-width: 2px !important;
+  border-style: solid !important;
+  font-family: 'Comic Neue', cursive, system-ui, -apple-system, sans-serif !important;
+  font-weight: 700 !important;
+}
+
+/* Avatar */
+.wireframe-mode .MuiAvatar-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+/* FAB */
+.wireframe-mode .MuiFab-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+  box-shadow: none !important;
+}
+
+/* Slider */
+.wireframe-mode .MuiSlider-track,
+.wireframe-mode .MuiSlider-rail {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+.wireframe-mode .MuiSlider-thumb {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+/* Switch */
+.wireframe-mode .MuiSwitch-track {
+  border-width: 2px !important;
+  border-style: solid !important;
+  opacity: 1 !important;
+}
+
+/* Progress indicators */
+.wireframe-mode .MuiLinearProgress-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+  background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.wireframe-mode .MuiCircularProgress-svg {
+  stroke-width: 4 !important;
+}
+
+/* Divider */
+.wireframe-mode .MuiDivider-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+/* Toggle Buttons */
+.wireframe-mode .MuiToggleButton-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+.wireframe-mode .MuiToggleButtonGroup-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+/* Pagination */
+.wireframe-mode .MuiPaginationItem-root {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+/* Tabs */
+.wireframe-mode .MuiTabs-root {
+  border: none !important;
+  border-bottom: 2px solid !important;
+}
+
+.wireframe-mode .MuiTab-root {
+  font-family: 'Comic Neue', cursive, system-ui, -apple-system, sans-serif !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+}
+
+.wireframe-mode .MuiTabs-indicator {
+  height: 4px !important;
+}
+
+/* Backdrop */
+.wireframe-mode .MuiBackdrop-root {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Step connector */
+.wireframe-mode .MuiStepConnector-line {
+  border-width: 2px !important;
+  border-style: solid !important;
+}
+
+/* Speed Dial */
+.wireframe-mode .MuiSpeedDialAction-fab {
+  border-width: 2px !important;
+  border-style: solid !important;
+  box-shadow: none !important;
+}
+
+/* Hand-drawn style helper class
+   Can be applied to any element for extra sketch-like appearance */
+.wireframe-hand-drawn {
+  position: relative;
+}
+
+.wireframe-hand-drawn:before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border: 2px solid currentColor;
+  pointer-events: none;
+  opacity: 0.3;
+  transform: rotate(-0.5deg);
+}

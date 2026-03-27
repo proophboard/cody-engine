@@ -28,7 +28,6 @@ import {
 import { PlayPageRegistry } from '@cody-play/state/types';
 import CodyMessageServerInjection from '@cody-play/app/components/core/CodyMessageServer';
 import { getConfiguredPlayEventStore } from '@cody-play/infrastructure/multi-model-store/configured-event-store';
-import PlayToggleColorMode from '@cody-play/app/layout/PlayToggleColorMode';
 import PendingChanges from '@cody-play/infrastructure/multi-model-store/PendingChanges';
 import { getConfiguredPlayMessageBox } from '@cody-play/infrastructure/message-box/configured-message-box';
 import { PlayMessageBox } from '@cody-play/infrastructure/message-box/play-message-box';
@@ -53,6 +52,8 @@ import DragAndDrop from '@cody-play/app/providers/DragAndDrop';
 import PlayVibeCodyDrawerProvider from "@cody-play/state/vibe-cody-drawer";
 import PlayVibeCodyAiModeProvider from "@cody-play/state/vibe-cody-ai";
 import {useMockApiHandler} from "@cody-play/hooks/use-mock-api-handler";
+import PlayToggleColorMode from '@cody-play/app/layout/PlayToggleColorMode';
+import WireframeModeWrapper from '@cody-play/app/components/core/WireframeModeWrapper';
 
 let currentRoutes: string[] = [];
 let messageBoxRef: PlayMessageBox;
@@ -177,17 +178,21 @@ export function App() {
         <User>
           <TypesProvider types={config.types as unknown as TypeRegistry}>
             <PlayConfigProvider>
-                <PageDataProvider>
-                  <CodyMessageServerInjection>
-                    <PendingChanges>
-                      <PlayVibeCodyDrawerProvider>
-                        <PlayVibeCodyAiModeProvider>
-                          <RouterProvider router={router} />
-                        </PlayVibeCodyAiModeProvider>
-                      </PlayVibeCodyDrawerProvider>
-                    </PendingChanges>
-                  </CodyMessageServerInjection>
-                </PageDataProvider>
+              <PlayToggleColorMode>
+                <WireframeModeWrapper>
+                  <PageDataProvider>
+                    <CodyMessageServerInjection>
+                      <PendingChanges>
+                        <PlayVibeCodyDrawerProvider>
+                          <PlayVibeCodyAiModeProvider>
+                            <RouterProvider router={router} />
+                          </PlayVibeCodyAiModeProvider>
+                        </PlayVibeCodyDrawerProvider>
+                      </PendingChanges>
+                    </CodyMessageServerInjection>
+                  </PageDataProvider>
+                </WireframeModeWrapper>
+              </PlayToggleColorMode>
             </PlayConfigProvider>
           </TypesProvider>
         </User>

@@ -30,6 +30,7 @@ import VibeCodyDrawer, {
   VIBE_CODY_DRAWER_WIDTH_SMALL
 } from "@cody-play/app/components/core/vibe-cody/VibeCodyDrawer";
 import {useVibeCodyFocusElement, useVibeCodyOpen} from "@cody-play/hooks/use-vibe-cody";
+import ToggleWireframeMode from '@cody-play/app/components/core/ToggleWireframeMode';
 
 interface OwnProps {
   sidebarOpen: boolean;
@@ -130,6 +131,7 @@ const TopBar = (props: TopBarProps) => {
             <DarkModeIcon sx={{color: theme.palette.primary.contrastText}}/>
           )}
         </IconButton>}
+        <ToggleWireframeMode />
         <IconButton
           aria-label="App Settings"
           onClick={openSettingsModal}

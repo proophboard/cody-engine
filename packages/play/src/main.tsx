@@ -7,6 +7,7 @@ import {getConfiguredPlayDocumentStore} from "@cody-play/infrastructure/multi-mo
 import {getConfiguredPlayEventStore} from "@cody-play/infrastructure/multi-model-store/configured-event-store";
 import {EventMatcher} from "@event-engine/infrastructure/EventStore";
 import {Action, CodyPlayConfig} from "@cody-play/state/config-store";
+import './app/layout/wireframe.css';
 
 document.title = 'Cody Play';
 
