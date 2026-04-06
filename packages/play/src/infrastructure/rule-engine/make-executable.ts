@@ -694,8 +694,10 @@ const execTriggerCommandSync = (then: ThenTriggerCommand, ctx: ExecutionContext)
 
   const payload = execMappingSync(then.trigger.mapping, ctx);
 
+  const meta = then.trigger.meta ? execMappingSync(then.trigger.meta, ctx) : ctx.meta;
+
   const commands = ctx['commands'] || [];
-  commands.push(factory(payload, ctx.meta));
+  commands.push(factory(payload, meta));
   ctx['commands'] = commands;
 
   return ctx;
@@ -708,9 +710,11 @@ const execTriggerCommandAsync = async (then: ThenTriggerCommand, ctx: ExecutionC
 
   const payload = await execMappingAsync(then.trigger.mapping, ctx);
 
+  const meta = then.trigger.meta ? await execMappingAsync(then.trigger.meta, ctx) : ctx.meta;
+
   const commands = ctx['commands'] || [];
   try {
-    commands.push(factory(payload, ctx.meta));
+    commands.push(factory(payload, meta));
   } catch (e) {
     if(e instanceof ValidationError) {
       throw new Error(`Command payload validation failed for command "${cmdInfo.desc.name}" and payload "${JSON.stringify(payload)}" with error: ` + JSON.stringify(e.errors, null, 2));
