@@ -8,7 +8,7 @@ import {
   PlayAddPageAction,
   PlayAddPersona,
   PlayAddPureEventAction,
-  PlayAddQueryAction, PlayAddServiceAction,
+  PlayAddQueryAction, PlayAddServiceAction, PlayAddTransformAction,
   PlayAddTypeAction,
   PlayAddViewAction,
   PlayAggregateRegistry,
@@ -29,7 +29,7 @@ import {
   PlayRemoveEventPolicyAction,
   PlayRemovePageAction,
   PlayRemovePureEventAction,
-  PlayRemoveQueryAction, PlayRemoveServiceAction,
+  PlayRemoveQueryAction, PlayRemoveServiceAction, PlayRemoveTransformAction,
   PlayRemoveTypeAction,
   PlayRemoveViewAction,
   PlayRenameApp,
@@ -37,7 +37,7 @@ import {
   PlayResolverRegistry,
   PlaySchemaDefinitions, PlayServiceRegistry,
   PlaySetPersonas,
-  PlayTopLevelPage,
+  PlayTopLevelPage, PlayTransformRegistry,
   PlayUpdatePersona,
   PlayViewRegistry
 } from '@cody-play/state/types';
@@ -72,7 +72,12 @@ import {
   playInformationServiceFactory
 } from "@cody-play/infrastructure/infromation-service/play-information-service-factory";
 import {environment} from "@cody-play/environments/environment";
-import {v4} from "uuid";
+import jexl from "@app/shared/jexl/get-configured-jexl";
+import {
+  execRuleAsync,
+  makeAsyncExecutable,
+  makeSyncExecutable
+} from "@cody-play/infrastructure/rule-engine/make-executable";
 
 export interface CodyPlayConfig {
   appName: string,
@@ -97,6 +102,7 @@ export interface CodyPlayConfig {
   types: PlayInformationRegistry,
   definitions: PlaySchemaDefinitions,
   services: PlayServiceRegistry,
+  transforms: PlayTransformRegistry,
 }
 
 export const initialPlayConfig: CodyPlayConfig = {
@@ -178,6 +184,9 @@ export const initialPlayConfig: CodyPlayConfig = {
   },
   services: {
 
+  },
+  transforms: {
+
   }
 }
 
@@ -193,6 +202,28 @@ const syncTypesWithSharedRegistry = (config: CodyPlayConfig): void => {
 const syncServices = (config: CodyPlayConfig): void => {
   for (const service in config.services) {
     services[service] = makePlayRulesServiceFactory(service, config.services[service], playInformationServiceFactory);
+  }
+}
+
+const syncTransforms = (config: CodyPlayConfig): void => {
+
+  console.log("Registering transforms: ", config.transforms);
+
+  for (const transform in config.transforms) {
+
+    const {rules, async: isAsync} = config.transforms[transform];
+
+    console.log("Adding transform: ", transform, rules, isAsync);
+
+    jexl.addTransform(transform, async (...args: any[]) => {
+      const ctx = {args, result: null};
+
+      const exec = isAsync ? makeAsyncExecutable(rules) : makeSyncExecutable(rules);
+
+      isAsync ? await exec(ctx) : exec(ctx);
+
+      return ctx.result;
+    })
   }
 }
 
@@ -253,6 +284,7 @@ const defaultPlayConfig = storedConfigStr ? enhanceConfigWithDefaults(JSON.parse
 
 syncTypesWithSharedRegistry(defaultPlayConfig);
 syncServices(defaultPlayConfig);
+syncTransforms(defaultPlayConfig);
 
 console.log(`[PlayConfigStore] Initializing with config: `, defaultPlayConfig);
 
@@ -266,7 +298,7 @@ type Action = {ctx: ElementEditedContext} & (PlayInitAction | PlayRenameApp | Pl
   | PlayAddCommandAction | PlayRemoveCommandAction | PlayAddCommandHandlerAction | PlayRemoveCommandHandlerAction | PlayAddTypeAction | PlayRemoveTypeAction
   | PlayAddQueryAction | PlayRemoveQueryAction | PlayAddViewAction | PlayRemoveViewAction | PlayAddAggregateAction | PlayRemoveAggregateAction
   | PlayAddAggregateEventAction | PlayRemoveAggregateEventAction | PlayAddPureEventAction | PlayRemovePureEventAction | PlayAddEventPolicyAction | PlayRemoveEventPolicyAction
-  | PlayAddServiceAction | PlayRemoveServiceAction);
+  | PlayAddServiceAction | PlayRemoveServiceAction | PlayAddTransformAction | PlayRemoveTransformAction);
 
 type AfterDispatchListener = (state: CodyPlayConfig) => void;
 
@@ -314,6 +346,7 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
         const newConfig = _.isEmpty(action.payload)? initialPlayConfig : enhanceConfigWithDefaults(action.payload);
         syncTypesWithSharedRegistry(newConfig);
         syncServices(newConfig);
+        syncTransforms(newConfig);
         window.setTimeout(() => {
           setEnv({...env, DEFAULT_SERVICE: names(config.defaultService).className, PAGES: config.pages as unknown as PageRegistry});
         }, 50);
@@ -476,6 +509,15 @@ const PlayConfigProvider = (props: PropsWithChildren) => {
       case "REMOVE_SERVICE":
         config.services = {...config.services};
         delete config.services[action.name];
+        return {...config};
+      case "ADD_TRANSFORM":
+        config.transforms = {...config.transforms};
+        config.transforms[action.name] = action.config;
+        syncTransforms(config);
+        return {...config};
+      case "REMOVE_TRANSFORM":
+        config.transforms = {...config.transforms};
+        delete config.transforms[action.name];
         return {...config};
       default:
         return config;

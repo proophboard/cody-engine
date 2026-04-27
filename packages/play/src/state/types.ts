@@ -215,6 +215,17 @@ export interface PlayRemoveServiceAction {
   name: string,
 }
 
+export interface PlayAddTransformAction {
+  type: 'ADD_TRANSFORM',
+  name: string,
+  config: PlayTransformConfig,
+}
+
+export interface PlayRemoveTransformAction {
+  type: 'REMOVE_TRANSFORM',
+  name: string,
+}
+
 /* Commands */
 export type PlayCommandRegistry = {
   [commandName: string]: PlayCommandRuntimeInfo;
@@ -311,4 +322,13 @@ export type PlayServiceConfig = {
 
 export type PlayServiceRegistry = {
   [serviceName: string]: PlayServiceConfig;
+}
+
+export type PlayTransformConfig = {
+  rules: AnyRule[];
+  async?: boolean;
+}
+
+export type PlayTransformRegistry = {
+  [transformName: string]: PlayTransformConfig;
 }
