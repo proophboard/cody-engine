@@ -126,7 +126,7 @@ export class InMemoryFilterProcessor implements FilterProcessor {
       const value = getValueFromPath(filter.prop, doc);
 
       if (filter.valList.length === 0) {
-        return true;
+        return false;
       }
 
       return filter.valList.some((item) => value.includes(item));
