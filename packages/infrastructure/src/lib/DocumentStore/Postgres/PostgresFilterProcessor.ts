@@ -134,7 +134,7 @@ export class PostgresFilterProcessor implements FilterProcessor {
       options.push(`$${argumentRef}`);
     });
     if (options.length === 0) {
-      return 'TRUE';
+      return 'FALSE';
     }
 
     const propPath = this.propToJsonPath(filter.prop);
@@ -144,7 +144,7 @@ export class PostgresFilterProcessor implements FilterProcessor {
 
   processArrayIntersectFilter(filter: ArrayIntersectFilter): string {
     if (filter.valList.length === 0) {
-      return 'TRUE';
+      return 'FALSE';
     }
 
     const argumentRef = this.registerArgument(filter.valList);
